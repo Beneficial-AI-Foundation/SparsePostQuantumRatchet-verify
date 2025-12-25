@@ -1,6 +1,8 @@
 // Copyright 2025 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
+use std::cmp::min;
+
 use super::*;
 use crate::proto::pq_ratchet as pqrpb;
 use crate::{Error, SerializedMessage, Version};
@@ -145,21 +147,38 @@ fn encode_varint(mut a: u64, into: &mut SerializedMessage) {
     }
 }
 
-#[hax_lib::opaque] // while loop with return
-#[hax_lib::ensures(|res| hax_lib::implies(res.is_ok(), *future(at) < from.len()))]
+#[hax_lib::ensures(|res| if res.is_ok() { *at < from.len() && *future(at) <= from.len()} else { true })]
 fn decode_varint(from: &SerializedMessage, at: &mut usize) -> Result<u64, Error> {
     let mut out = 0u64;
-    let mut shift = 0;
-    while *at < from.len() {
-        let byte = from[*at];
-        out |= ((byte as u64) & 0x7f) << shift;
-        *at += 1;
-        if byte & 0x80 == 0 {
-            return Ok(out);
-        }
-        shift += 7;
+    const MAX_VARINT_BYTES_LEN: usize = 10;
+
+    let mut i: usize = 0;
+    // Helps prevent return in while loop for Hax
+    let mut done = false;
+    let start_at: usize = *at;
+    if start_at >= from.len() {
+        return Err(Error::MsgDecode);
     }
-    Err(Error::MsgDecode)
+
+    let max_i = min(MAX_VARINT_BYTES_LEN, from.len() - start_at);
+
+    while i < max_i && !done {
+        hax_lib::loop_invariant!(i <= max_i && *at == start_at);
+        hax_lib::loop_decreases!(max_i - i);
+
+        let byte = from[start_at + i];
+        out |= ((byte as u64) & 0x7f) << (7 * i as i32);
+
+        i += 1;
+        done = (byte & 0x80) == 0;
+    }
+
+    if done {
+        *at += i;
+        Ok(out)
+    } else {
+        Err(Error::MsgDecode)
+    }
 }
 
 fn encode_chunk(c: &Chunk, into: &mut SerializedMessage) {
@@ -225,15 +244,22 @@ impl Message {
         into
     }
 
+    #[hax_lib::ensures(|res| if let Ok((msg, _index, at)) = res { msg.epoch > 0 && at <= from.len() } else { true })]
     pub fn deserialize(from: &SerializedMessage) -> Result<(Self, u32, usize), Error> {
         if from.is_empty() || from[0] != Version::V1.into() {
             return Err(Error::MsgDecode);
         }
         let mut at = 1usize;
         let epoch = decode_varint(from, &mut at)? as Epoch;
+        if epoch == 0 {
+            return Err(Error::MsgDecode);
+        }
         let index: u32 = decode_varint(from, &mut at)?
             .try_into()
             .map_err(|_| Error::MsgDecode)?;
+        if at >= from.len() {
+            return Err(Error::MsgDecode);
+        }
         let msg_type = MessageType::try_from(from[at]).map_err(|_| Error::MsgDecode)?;
         at += 1;
         let payload = match msg_type {
@@ -271,7 +297,15 @@ mod test {
         let v = vec![0xFF, 0xAC, 0x02, 0xFF];
         let mut at = 1usize;
         assert_eq!(0x012C, decode_varint(&v, &mut at).unwrap());
-        assert_eq!(at, 3);
+        assert_eq!(at, 3, "at <= v.len()");
+    }
+
+    #[test]
+    fn decoding_varint_zero() {
+        let v = vec![0x00];
+        let mut at = 0usize;
+        assert_eq!(0x0, decode_varint(&v, &mut at).unwrap());
+        assert_eq!(at, 1, "at <= v.len()");
     }
 
     #[test]

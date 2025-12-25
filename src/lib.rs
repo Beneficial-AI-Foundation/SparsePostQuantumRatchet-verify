@@ -421,7 +421,7 @@ pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Er
             let (scka_msg, index, _) = v1states::Message::deserialize(msg)?;
 
             let v1states::Recv { key, state } = v1states::States::from_pb(pb)?.recv(&scka_msg)?;
-            hax_lib::assume!(scka_msg.epoch > 0);
+
             let msg_key_epoch = scka_msg.epoch - 1;
             let mut chain = chain_from(state_pb.chain, state_pb.version_negotiation.as_ref())?;
             if let Some(epoch_secret) = key {
