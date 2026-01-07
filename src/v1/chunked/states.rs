@@ -120,6 +120,9 @@ impl States {
             Self::KeysUnsampled(state) => {
                 let epoch = state.epoch();
                 let (state, chunk) = state.send_hdr_chunk(rng);
+
+                #[cfg(not(hax))]
+                log::info!("spqr v1.send_ek.send epoch {}: KeysUnsampled -> KeysSampled", epoch);
                 Ok(Send {
                     state: Self::KeysSampled(state),
                     msg: Message {
@@ -198,6 +201,8 @@ impl States {
                 let epoch = state.epoch();
                 let (state, chunk, epoch_secret) = state.send_ct1_chunk(rng);
 
+                #[cfg(not(hax))]
+                log::info!("spqr v1.send_ct.send epoch {}: HeaderReceived -> Ct1Sampled", epoch);
                 Ok(Send {
                     state: Self::Ct1Sampled(state),
                     msg: Message {
@@ -282,30 +287,41 @@ impl States {
                 Ordering::Less => Self::KeysSampled(state),
                 Ordering::Equal => {
                     if let MessagePayload::Ct1(ref chunk) = msg.payload {
+                        #[cfg(not(hax))]
+                        log::info!(
+                            "spqr v1.send_ek.recv epoch {}: KeysSampled -> HeaderSent",
+                            msg.epoch
+                        );
                         Self::HeaderSent(state.recv_ct1_chunk(msg.epoch, chunk))
                     } else {
                         Self::KeysSampled(state)
                     }
                 }
             },
-            Self::HeaderSent(state) => match msg.epoch.cmp(&state.epoch()) {
-                Ordering::Greater => {
-                    return Err(Error::EpochOutOfRange(msg.epoch));
-                }
-                Ordering::Less => Self::HeaderSent(state),
-                Ordering::Equal => {
-                    if let MessagePayload::Ct1(ref chunk) = msg.payload {
-                        match state.recv_ct1_chunk(msg.epoch, chunk) {
-                            send_ek::HeaderSentRecvChunk::StillReceiving(state) => {
-                                Self::HeaderSent(state)
+            Self::HeaderSent(state) => {
+                match msg.epoch.cmp(&state.epoch()) {
+                    Ordering::Greater => {
+                        return Err(Error::EpochOutOfRange(msg.epoch));
+                    }
+                    Ordering::Less => Self::HeaderSent(state),
+                    Ordering::Equal => {
+                        if let MessagePayload::Ct1(ref chunk) = msg.payload {
+                            match state.recv_ct1_chunk(msg.epoch, chunk) {
+                                send_ek::HeaderSentRecvChunk::StillReceiving(state) => {
+                                    Self::HeaderSent(state)
+                                }
+                                send_ek::HeaderSentRecvChunk::Done(state) => {
+                                    #[cfg(not(hax))]
+                                    log::info!("spqr v1.send_ek.recv epoch {}: HeaderSent -> Ct1Received", msg.epoch);
+                                    Self::Ct1Received(state)
+                                }
                             }
-                            send_ek::HeaderSentRecvChunk::Done(state) => Self::Ct1Received(state),
+                        } else {
+                            Self::HeaderSent(state)
                         }
-                    } else {
-                        Self::HeaderSent(state)
                     }
                 }
-            },
+            }
             Self::Ct1Received(state) => match msg.epoch.cmp(&state.epoch()) {
                 Ordering::Greater => {
                     return Err(Error::EpochOutOfRange(msg.epoch));
@@ -313,6 +329,11 @@ impl States {
                 Ordering::Less => Self::Ct1Received(state),
                 Ordering::Equal => {
                     if let MessagePayload::Ct2(ref chunk) = msg.payload {
+                        #[cfg(not(hax))]
+                        log::info!(
+                            "spqr v1.send_ek.recv epoch {}: Ct1Received -> EkSentCt1Received",
+                            msg.epoch
+                        );
                         Self::EkSentCt1Received(state.recv_ct2_chunk(msg.epoch, chunk))
                     } else {
                         Self::Ct1Received(state)
@@ -331,6 +352,11 @@ impl States {
                                 Self::EkSentCt1Received(state)
                             }
                             send_ek::EkSentCt1ReceivedRecvChunk::Done((state, sec)) => {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
+                                    msg.epoch, msg.epoch+1
+                                );
                                 key = Some(sec);
                                 Self::NoHeaderReceived(state)
                             }
@@ -356,6 +382,11 @@ impl States {
                                 Self::NoHeaderReceived(state)
                             }
                             send_ct::NoHeaderReceivedRecvChunk::Done(state) => {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}: NoHeaderReceived -> HeaderReceived",
+                                    msg.epoch
+                                );
                                 Self::HeaderReceived(state)
                             }
                         }
@@ -388,12 +419,29 @@ impl States {
                                 Self::Ct1Sampled(state)
                             }
                             send_ct::Ct1SampledRecvChunk::StillReceiving(state) => {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct1Acknowledged",
+                                    msg.epoch
+                                );
                                 Self::Ct1Acknowledged(state)
                             }
                             send_ct::Ct1SampledRecvChunk::StillSending(state) => {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> EkReceivedCt1Sampled",
+                                    msg.epoch
+                                );
                                 Self::EkReceivedCt1Sampled(state)
                             }
-                            send_ct::Ct1SampledRecvChunk::Done(state) => Self::Ct2Sampled(state),
+                            send_ct::Ct1SampledRecvChunk::Done(state) => {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct2Sampled",
+                                    msg.epoch
+                                );
+                                Self::Ct2Sampled(state)
+                            }
                         }
                     } else {
                         Self::Ct1Sampled(state)
@@ -410,6 +458,11 @@ impl States {
                         msg.payload,
                         MessagePayload::Ct1Ack(true) | MessagePayload::EkCt1Ack(_)
                     ) {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}: EkReceivedCt1Sampled -> Ct2Sampled",
+                                    msg.epoch
+                                );
                         Self::Ct2Sampled(state.recv_ct1_ack(msg.epoch))
                     } else {
                         Self::EkReceivedCt1Sampled(state)
@@ -437,6 +490,11 @@ impl States {
                                 Self::Ct1Acknowledged(state)
                             }
                             send_ct::Ct1AcknowledgedRecvChunk::Done(state) => {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}: Ct1Acknowledged -> Ct2Sampled",
+                                    msg.epoch
+                                );
                                 Self::Ct2Sampled(state)
                             }
                         }
@@ -448,6 +506,11 @@ impl States {
             Self::Ct2Sampled(state) => match msg.epoch.cmp(&state.epoch()) {
                 Ordering::Greater => {
                     if msg.epoch == state.epoch() + 1 {
+                                #[cfg(not(hax))]
+                                log::info!(
+                                    "spqr v1.send_ct.recv epoch {}->{}: Ct2Sampled -> KeysSampled",
+                                    msg.epoch-1, msg.epoch
+                                );
                         Self::KeysUnsampled(state.recv_next_epoch(msg.epoch))
                     } else {
                         return Err(Error::EpochOutOfRange(msg.epoch));

@@ -27,6 +27,7 @@ thiserror = "2.0.11"
 # When built directly, auto-enable the test-utils feature.
 spqr = { path = ".", features = ["test-utils"] }
 
+env_logger = "0.11"
 galois_field_2pm = "0.1.0"
 hmac = "0.12.1"
 matches = "0.1.10"

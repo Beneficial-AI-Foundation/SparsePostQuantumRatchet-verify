@@ -489,6 +489,7 @@ mod lib_test {
 
     #[test]
     fn ratchet() -> Result<(), Error> {
+        let _ = env_logger::builder().is_test(true).try_init();
         let mut rng = OsRng.unwrap_err();
 
         let version = Version::V1;
