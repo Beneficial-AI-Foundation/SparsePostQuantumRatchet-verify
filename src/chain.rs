@@ -227,7 +227,7 @@ impl ChainEpochDirection {
     fn next_key_internal(next: &mut [u8], ctr: &mut u32) -> (u32, [u8; 32]) {
         assert!(!next.is_empty());
         *ctr += 1;
-        let mut gen = [0u8; 64];
+        let mut genr8r = [0u8; 64];
         kdf::hkdf_to_slice(
             &[0u8; 32], // 32 is the hash output length
             &*next,
@@ -236,10 +236,10 @@ impl ChainEpochDirection {
                 b"Signal PQ Ratchet V1 Chain Next",
             ]
             .concat(),
-            &mut gen,
+            &mut genr8r,
         );
-        next.copy_from_slice(&gen[..32]);
-        (*ctr, gen[32..].try_into().expect("correct size"))
+        next.copy_from_slice(&genr8r[..32]);
+        (*ctr, genr8r[32..].try_into().expect("correct size"))
     }
 
     fn key(&mut self, at: u32, params: &pqrpb::ChainParams) -> Result<Vec<u8>, Error> {
@@ -305,31 +305,31 @@ impl ChainEpochDirection {
 
 #[hax_lib::attributes]
 impl Chain {
-    #[hax_lib::requires(gen.len() == 96)]
-    fn ced_for_direction(gen: &[u8], dir: &Direction) -> ChainEpochDirection {
+    #[hax_lib::requires(genr8r.len() == 96)]
+    fn ced_for_direction(genr8r: &[u8], dir: &Direction) -> ChainEpochDirection {
         ChainEpochDirection::new(match dir {
-            Direction::A2B => &gen[32..64],
-            Direction::B2A => &gen[64..96],
+            Direction::A2B => &genr8r[32..64],
+            Direction::B2A => &genr8r[64..96],
         })
     }
 
     pub fn new(initial_key: &[u8], dir: Direction, params: ChainParamsPB) -> Result<Self, Error> {
-        let mut gen = [0u8; 96];
+        let mut genr8r = [0u8; 96];
         kdf::hkdf_to_slice(
             &[0u8; 32],
             initial_key,
             b"Signal PQ Ratchet V1 Chain  Start",
-            &mut gen,
+            &mut genr8r,
         );
         Ok(Self {
             dir,
             current_epoch: 0,
             send_epoch: 0,
             links: VecDeque::from([ChainEpoch {
-                send: Self::ced_for_direction(&gen, &dir),
-                recv: Self::ced_for_direction(&gen, &dir.switch()),
+                send: Self::ced_for_direction(&genr8r, &dir),
+                recv: Self::ced_for_direction(&genr8r, &dir.switch()),
             }]),
-            next_root: gen[0..32].to_vec(),
+            next_root: genr8r[0..32].to_vec(),
             params,
         })
     }
@@ -340,18 +340,18 @@ impl Chain {
             self.current_epoch < u64::MAX && epoch_secret.epoch == self.current_epoch + 1
         );
         assert!(epoch_secret.epoch == self.current_epoch + 1);
-        let mut gen = [0u8; 96];
+        let mut genr8r = [0u8; 96];
         kdf::hkdf_to_slice(
             &self.next_root,
             &epoch_secret.secret,
             b"Signal PQ Ratchet V1 Chain Add Epoch",
-            &mut gen,
+            &mut genr8r,
         );
         self.current_epoch = epoch_secret.epoch;
-        self.next_root = gen[0..32].to_vec();
+        self.next_root = genr8r[0..32].to_vec();
         self.links.push_back(ChainEpoch {
-            send: Self::ced_for_direction(&gen, &self.dir),
-            recv: Self::ced_for_direction(&gen, &self.dir.switch()),
+            send: Self::ced_for_direction(&genr8r, &self.dir),
+            recv: Self::ced_for_direction(&genr8r, &self.dir.switch()),
         });
     }
 
@@ -443,8 +443,9 @@ impl Chain {
 mod test {
     use super::*;
     use crate::{Direction, EpochSecret, Error};
-    use rand::seq::SliceRandom;
+    use proptest::prelude::*;
     use rand::TryRngCore;
+    use rand::seq::SliceRandom;
 
     #[test]
     fn directions_match() {
@@ -525,5 +526,168 @@ mod test {
             a2b.send_key(0).unwrap_err(),
             Error::SendKeyEpochDecreased(1, 0)
         ));
+    }
+
+    #[derive(Clone, Debug)]
+    enum KeyHistoryAction {
+        AddNewNext,
+        AddNewSkip,
+        RequestStored(usize),
+        RequestNotStored(usize),
+        GarbageCollect,
+    }
+
+    impl KeyHistoryAction {
+        fn strategy() -> impl Strategy<Value = Self> {
+            proptest::prop_oneof![
+                Just(Self::AddNewNext),
+                Just(Self::AddNewSkip),
+                any::<usize>().prop_map(Self::RequestStored),
+                any::<usize>().prop_map(Self::RequestNotStored),
+                Just(Self::GarbageCollect),
+            ]
+        }
+    }
+
+    #[test]
+    fn key_history_prop_test() {
+        let _ = env_logger::builder().is_test(true).try_init();
+        proptest!(|(actions in proptest::collection::vec(KeyHistoryAction::strategy(), ..25))| {
+            let mut kh = KeyHistory::new();
+            let mut stored = vec![];
+            let mut not_stored = vec![];
+            let mut ctr = 0u32;
+            let params = pqrpb::ChainParams {
+                max_ooo_keys: 3u32,
+                max_jump: 5u32,
+            };
+            log::debug!("========= STARTING =========");
+            for action in actions {
+                match action {
+                    KeyHistoryAction::AddNewNext => {
+                        log::debug!("adding {}", ctr);
+                        kh.add((ctr, [1u8; 32]), &params);
+                        stored.push(ctr);
+                        ctr += 1;
+                    }
+                    KeyHistoryAction::AddNewSkip => {
+                        log::debug!("skipping {}", ctr);
+                        not_stored.push(ctr);
+                        ctr += 1;
+                    }
+                    KeyHistoryAction::RequestStored(i) => {
+                        if !stored.is_empty() {
+                            let k = stored.swap_remove(i % stored.len());
+                            log::debug!("requesting stored {}", k);
+                            kh.get(k, ctr, &params).unwrap();
+                            not_stored.push(k);
+                        }
+                    }
+                    KeyHistoryAction::RequestNotStored(i) => {
+                        if !not_stored.is_empty() {
+                            let k = not_stored.swap_remove(i % not_stored.len());
+                            log::debug!("requesting not stored {}", k);
+                            kh.get(k, ctr, &params).unwrap_err();
+                        }
+                    }
+                    KeyHistoryAction::GarbageCollect => {
+                        log::debug!("gc at {}", ctr);
+                        kh.gc(ctr, &params);
+                    }
+                }
+                let mut fell_off = vec![];
+                (fell_off, stored) = stored.into_iter().partition(
+                    |n| n + params.max_ooo_keys < ctr);
+                if !fell_off.is_empty() {
+                    log::debug!("fell off: {:?}", fell_off);
+                }
+                not_stored.extend(fell_off.into_iter());
+            }
+        });
+    }
+
+    #[derive(Clone, Debug)]
+    enum CEDAction {
+        NextKey,
+        NextKeyAt(u32),
+        RequestStored(usize),
+        RequestNotStored(usize),
+        TooHigh,
+    }
+
+    impl CEDAction {
+        fn strategy() -> impl Strategy<Value = Self> {
+            proptest::prop_oneof![
+                Just(Self::NextKey),
+                any::<u32>().prop_map(Self::NextKeyAt),
+                any::<usize>().prop_map(Self::RequestStored),
+                any::<usize>().prop_map(Self::RequestNotStored),
+                Just(Self::TooHigh),
+            ]
+        }
+    }
+
+    #[test]
+    fn ced_prop_test() {
+        let _ = env_logger::builder().is_test(true).try_init();
+        proptest!(|(actions in proptest::collection::vec(CEDAction::strategy(), ..25))| {
+            let mut ced = ChainEpochDirection::new(&[1u8; 32]);
+            let mut stored = vec![];
+            let mut not_stored = vec![0];
+            let mut ctr = 0u32;
+            let params = pqrpb::ChainParams {
+                max_ooo_keys: 3u32,
+                max_jump: 5u32,
+            };
+            log::debug!("========= STARTING =========");
+            for action in actions {
+                match action {
+                    CEDAction::NextKey => {
+                        ctr += 1;
+                        log::debug!("next_key {}", ctr);
+                        let k = ced.next_key().0;
+                        not_stored.push(k);
+                    }
+                    CEDAction::NextKeyAt(i) => {
+                        let jump = i % params.max_jump;
+                        ctr += 1;
+                        for at in ctr..ctr+jump {
+                            stored.push(at);
+                        }
+                        ctr += jump;
+                        log::debug!("next_key_at {}", ctr);
+                        ced.key(ctr, &params).unwrap();
+                        not_stored.push(ctr);
+                    }
+                    CEDAction::RequestStored(i) => {
+                        if !stored.is_empty() {
+                            let k = stored.swap_remove(i % stored.len());
+                            log::debug!("requesting stored {}", k);
+                            ced.key(k, &params).unwrap();
+                            not_stored.push(k);
+                        }
+                    }
+                    CEDAction::RequestNotStored(i) => {
+                        if !not_stored.is_empty() {
+                            let k = not_stored.swap_remove(i % not_stored.len());
+                            log::debug!("requesting not stored {}", k);
+                            ced.key(k, &params).unwrap_err();
+                        }
+                    }
+                    CEDAction::TooHigh => {
+                        let high = ctr + params.max_jump + 1;
+                        log::debug!("too high {}", high);
+                        ced.key(high, &params).unwrap_err();
+                    }
+                }
+                let mut fell_off = vec![];
+                (fell_off, stored) = stored.into_iter().partition(
+                    |n| n + params.max_ooo_keys < ctr);
+                if !fell_off.is_empty() {
+                    log::debug!("fell off: {:?}", fell_off);
+                }
+                not_stored.extend(fell_off.into_iter());
+            }
+        });
     }
 }
