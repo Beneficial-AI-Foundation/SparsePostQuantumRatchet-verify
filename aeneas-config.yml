@@ -1,0 +1,41 @@
+# Aeneas extraction configuration
+# See: https://github.com/oliver-butterley/aeneas-cli
+
+aeneas:
+  commit: "a9d7fd45" # pinned commit hash (or branch name)
+  repo: "https://github.com/AeneasVerif/aeneas.git"
+
+charon:
+  cargo_args: [] # extra cargo flags, e.g. ["--no-default-features", "--features", "alloc"]
+  start_from: # Rust paths to extract (uncomment modules one at a time)
+    - "spqr::util" # extracts without errors
+    # - "spqr::kdf" # Charon runs and runs...
+    # - "spqr::chain" # Charon runs and runs...
+    # - "spqr::encoding" # Charon fine, Aeneas errors
+    # - "spqr::authenticator" # Charon runs and runs...
+    - "spqr::serialize" # extracts without errors
+    # - "spqr::incremental_mlkem768" # Charon fine, Aeneas errors
+    # - "spqr::v1" # Charon runs and runs...
+    # - "spqr::proto" # Charon runs and runs...
+  exclude: [] # patterns to skip, e.g. ["my_crate::{impl core::fmt::Debug for _}"]
+  opaque: [] # treat as opaque (no body extracted), e.g. ["my_crate::internal"]
+
+aeneas_args:
+  options:
+    - split-files
+  dest: "LeanOutput" # output directory for generated Lean files
+
+crate:
+  dir: "." # path to Rust crate (relative to project root)
+  name: "spqr" # package name from Cargo.toml
+
+# Post-extraction find/replace applied to generated Lean files.
+# Useful for patching output that doesn't compile or needs adjustment.
+tweaks:
+  files: [] # Lean files to patch, e.g. ["Funs.lean", "Types.lean"]
+  substitutions: []
+  # Example:
+  # - find: "someGeneratedName"
+  #   replace: "betterName"
+  # - find: "open Result"
+  #   replace: "open Result\nopen MyModule"
