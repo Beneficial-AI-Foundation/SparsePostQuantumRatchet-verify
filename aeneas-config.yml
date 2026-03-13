@@ -25,13 +25,9 @@ charon:
     - "spqr::encoding::gf::accelerated"
     - "spqr::encoding::gf::mul2_u16" # dispatches to excluded accelerated code
     - "spqr::encoding::gf::{core::ops::arith::MulAssign<&spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}" # references excluded TOKEN
-    # Iterator combinator functions that Aeneas can't translate
-    # Names must use Charon's {impl} syntax (from error "Name pattern:" lines)
-    - "spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl"
-    - "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::compute_at"
-    - "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points"
-    - "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb"
-    - "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb"
+    # Only decoded_message benefits from opaque (saves 1 sorry). The other 5 iterator-combinator
+    # functions (div_impl, compute_at, from_complete_points, PolyEncoder::from_pb, PolyDecoder::from_pb)
+    # produce sorry regardless of opaque status - they need Rust refactoring.
     - "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message"
 
 aeneas_args:

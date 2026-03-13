@@ -118,33 +118,22 @@ structure encoding.polynomial.Poly where
   coefficients : alloc.vec.Vec encoding.gf.GF16
 
 /-- [spqr::encoding::polynomial::PolyConst]
-    Source: 'src/encoding/polynomial.rs', lines 353:0-355:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 356:0-358:1 -/
 structure encoding.polynomial.PolyConst (N : Std.Usize) where
   coefficients : Array encoding.gf.GF16 N
 
 /-- [spqr::encoding::polynomial::const_polys_to_polys::closure]
-    Source: 'src/encoding/polynomial.rs', lines 462:19-462:34 -/
+    Source: 'src/encoding/polynomial.rs', lines 465:19-465:34 -/
 @[reducible]
 def encoding.polynomial.const_polys_to_polys.closure (N : Std.Usize) := Unit
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::closure#1]
-    Source: 'src/encoding/polynomial.rs', lines 319:25-319:75 -/
-@[reducible]
-def encoding.polynomial.Poly.from_complete_points.closure_1 :=
-  alloc.vec.Vec encoding.polynomial.Pt
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::closure]
-    Source: 'src/encoding/polynomial.rs', lines 312:25-315:21 -/
-@[reducible]
-def encoding.polynomial.Poly.from_complete_points.closure := Unit
-
 /-- [spqr::encoding::polynomial::Point]
-    Source: 'src/encoding/polynomial.rs', lines 510:0-513:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 513:0-516:1 -/
 structure encoding.polynomial.Point where
   value : alloc.vec.Vec encoding.gf.GF16
 
 /-- [spqr::encoding::polynomial::EncoderState]
-    Source: 'src/encoding/polynomial.rs', lines 516:0-522:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 519:0-525:1 -/
 @[discriminant isize]
 inductive encoding.polynomial.EncoderState where
 | Points :
@@ -155,28 +144,18 @@ inductive encoding.polynomial.EncoderState where
   encoding.polynomial.EncoderState
 
 /-- [spqr::encoding::polynomial::PolyEncoder]
-    Source: 'src/encoding/polynomial.rs', lines 525:0-528:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 528:0-531:1 -/
 structure encoding.polynomial.PolyEncoder where
   idx : Std.U32
   s : encoding.polynomial.EncoderState
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb::closure#1]
-    Source: 'src/encoding/polynomial.rs', lines 598:66-598:83 -/
-@[reducible]
-def encoding.polynomial.PolyEncoder.from_pb.closure_1 := Unit
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb::closure]
-    Source: 'src/encoding/polynomial.rs', lines 579:47-581:13 -/
-@[reducible]
-def encoding.polynomial.PolyEncoder.from_pb.closure := Unit
-
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure#1]
-    Source: 'src/encoding/polynomial.rs', lines 628:25-631:21 -/
+    Source: 'src/encoding/polynomial.rs', lines 640:25-643:21 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.point_at.closure_1 := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure]
-    Source: 'src/encoding/polynomial.rs', lines 622:68-622:85 -/
+    Source: 'src/encoding/polynomial.rs', lines 634:68-634:85 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.point_at.closure := Unit
 
@@ -191,7 +170,7 @@ inductive encoding.EncodingError where
 | ChunkDataDecodingError : encoding.EncodingError
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::closure]
-    Source: 'src/encoding/polynomial.rs', lines 663:63-665:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 675:63-677:9 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.encode_bytes_base.closure := Slice Std.U8
 
@@ -209,7 +188,7 @@ structure encoding.Encoder (Self : Type) where
   next_chunk : Self → Result (encoding.Chunk × Self)
 
 /-- [spqr::encoding::polynomial::PolyDecoder]
-    Source: 'src/encoding/polynomial.rs', lines 729:0-748:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 741:0-760:1 -/
 structure encoding.polynomial.PolyDecoder where
   pts_needed : Std.Usize
   pts : Array (sorted_vec.SortedSet encoding.polynomial.Pt.Insts.CoreCmpOrd)
@@ -217,14 +196,9 @@ structure encoding.polynomial.PolyDecoder where
   is_complete : Bool
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::closure]
-    Source: 'src/encoding/polynomial.rs', lines 775:38-775:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 787:38-787:58 -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.new_with_poly_count.closure := Unit
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::closure]
-    Source: 'src/encoding/polynomial.rs', lines 808:47-808:67 -/
-@[reducible]
-def encoding.polynomial.PolyDecoder.from_pb.closure := Unit
 
 /-- Trait declaration: [spqr::encoding::Decoder]
     Source: 'src/encoding.rs', lines 40:0-47:1 -/

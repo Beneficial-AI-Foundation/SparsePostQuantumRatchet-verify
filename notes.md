@@ -131,6 +131,13 @@ All remaining `sorry` functions use iterator combinators (`zip`, `map`, `collect
 - The errors happen in Aeneas's interpretation phase, before opaque/transparent distinction matters
 - **Conclusion**: `opaque` in Charon config cannot suppress these Aeneas-internal errors
 
+#### Attempt 6: Quantify impact of `opaque` list on iterator-combinator functions
+- **With opaque** (6 entries): 5 errors (4 unique), 172 opaque functions, 136 transparent, **5 sorry** in Funs.lean
+- **Without opaque** (entries commented out): 6 errors (5 unique), 174 opaque functions, 139 transparent, **6 sorry** in Funs.lean
+- The only difference: `decoded_message` gains a sorry without the opaque entry (it was previously treated as opaque and skipped)
+- The other 5 functions (`div_impl`, `compute_at`, `from_complete_points`, `PolyEncoder::from_pb`, `PolyDecoder::from_pb`) produce sorry regardless
+- **Conclusion**: The opaque list has minimal effect - saves exactly 1 function from sorry. The real fix is refactoring the Rust code. Keeping the opaque entries is harmless but not a substitute for the refactoring.
+
 #### Current practical state
 - Lean files ARE generated despite exit code 1 (Aeneas treats errors as non-fatal for output)
 - 5 functions have `sorry` bodies - these need manual Lean implementations or Rust rewrites
@@ -161,20 +168,44 @@ These refactors should be semantically equivalent and testable against the exist
 
 ---
 
-## Status: Paused
+### 9. Refactoring encoding module for clean extraction
 
-Current state as of this session:
+Applied minimal Rust changes to eliminate all `sorry` functions. All 53 tests pass after each change.
+
+| Function | Problem | Minimal fix |
+|----------|---------|-------------|
+| `GF16.div_impl` | Opaque `mul2_u16` returns tuple; Aeneas can't handle tuple access from opaque fn | Replace `mul2_u16` call with direct `*` operator (already extracted) |
+| `Poly.compute_at` | `.iter().zip()` pattern | Index-based `for i in 0..len` loop |
+| `Poly.lagrange_sum` | `.iter().zip()` pattern | Index-based loop |
+| `Poly.from_complete_points` | `.iter().map().collect()` in fallback branch | Explicit `for` loop with `push` |
+| `Poly.deserialize` | `.chunks_exact(2)` | `while j+2 <= len` with manual indexing |
+| `PolyEncoder.from_pb` | `?` inside `if-else` binding + `core::array::from_fn` closure | Flatten to sequential `if`/`return`; explicit array literal init |
+| `PolyDecoder.from_pb` | `return Err` inside `for` loop (any early return in loop is "Unreachable") | Hoist validation to unrolled `if` before loop |
+
+Key Aeneas limitations discovered:
+1. **Iterator combinators** (`.zip()`, `.map()`, `.collect()`) - no Lean model, use index loops
+2. **Early return inside loops** (`return Err(...)` in `for`) - triggers "Unreachable", hoist validation before loop
+3. **`core::array::from_fn`** with closures - use explicit array literals
+4. **Tuple access from opaque functions** (`.0`, `.1` on opaque return) - avoid calling opaque functions that return tuples
+5. **`chunks_exact()`** - use `while` loop with manual index stepping
+
+**Result: 0 errors, 0 sorry, 126 transparent functions extracted cleanly.**
+
+---
+
+## Status: Active
+
+Current state:
 - Aeneas installed and configured (`aeneas-config.yml`)
-- `spqr::util` and `spqr::serialize` extract cleanly
-- `spqr::encoding` extracts 130+ functions, 5 need Rust refactoring
+- `spqr::util`, `spqr::serialize`, `spqr::encoding` all extract cleanly (0 sorry)
 - `spqr::kdf`, `chain`, `authenticator`, `v1`, `proto` - Charon hangs (external crypto dependency graphs)
 - `spqr::incremental_mlkem768` - Charon OK, Aeneas partial (similar iterator issues)
 
-### When resuming
-1. Refactor the 5 `sorry` functions in `encoding` to use explicit loops
-2. Re-run extraction to verify clean output
-3. Clean up `aeneas-config.yml` `opaque` list - the 6 iterator combinator entries (`div_impl`, `compute_at`, `from_complete_points`, `PolyEncoder::from_pb`, `PolyDecoder::from_pb`, `decoded_message`) had no effect since the errors happen in Aeneas prepasses before opaque/transparent distinction. Remove them after refactoring succeeds, or verify whether they actually help after the refactoring.
-4. Investigate Charon hanging modules - try adding external crates to `opaque` list
+### Next steps
+1. ~~Refactor the sorry functions in encoding~~ **DONE** - 0 sorry
+2. ~~Clean up opaque list~~ **DONE**
+3. Investigate Charon hanging modules - try adding external crates to `opaque` list
+4. Try `spqr::incremental_mlkem768` with similar refactoring
 5. Set up a Lean project to actually build/typecheck the generated output
 
 ### Observations
