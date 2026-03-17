@@ -25,6 +25,14 @@ def Array.Insts.CoreFmtDebug {T : Type} (N : Std.Usize) (fmtDebugInst :
   fmt := core.array.DebugArray.fmt fmtDebugInst
 }
 
+/-- Trait implementation: [core::borrow::{core::borrow::Borrow<T> for &0 (T)}]
+    Source: '/rustc/library/core/src/borrow.rs', lines 229:0-229:38
+    Name pattern: [core::borrow::Borrow<&'0 @T, @T>] -/
+@[reducible, rust_trait_impl "core::borrow::Borrow<&'0 @T, @T>"]
+def Shared0T.Insts.CoreBorrowBorrow (T : Type) : core.borrow.Borrow T T := {
+  borrow := Shared0T.Insts.CoreBorrowBorrow.borrow
+}
+
 /-- Trait implementation: [core::fmt::{core::fmt::Display for &0 (T)}]
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2864:8-2864:46
     Name pattern: [core::fmt::Display<&'0 @T>] -/
@@ -92,6 +100,36 @@ def I32.Insts.CoreIterRangeStep : core.iter.range.Step Std.I32 := {
   backward_checked := I32.Insts.CoreIterRangeStep.backward_checked
 }
 
+/-- Trait implementation: [core::ops::range::{core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}]
+    Source: '/rustc/library/core/src/ops/range.rs', lines 1067:0-1067:45
+    Name pattern: [core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>] -/
+@[reducible, rust_trait_impl
+  "core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>"]
+def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type) :
+  core.ops.range.RangeBounds (core.ops.range.RangeFrom T) T := {
+  start_bound :=
+    core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
+  end_bound := core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
+}
+
+/-- Trait implementation: [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<A, E>> for core::result::Result<V, E>}]
+    Source: '/rustc/library/core/src/result.rs', lines 2111:0-2111:74
+    Name pattern: [core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>] -/
+@[reducible, rust_trait_impl
+  "core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>"]
+def core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult {A : Type}
+  (E : Type) {V : Type} (itertraitscollectFromIteratorInst :
+  core.iter.traits.collect.FromIterator V A) :
+  core.iter.traits.collect.FromIterator (core.result.Result V E)
+  (core.result.Result A E) := {
+  from_iter := fun {I : Type} {Clause0_IntoIter : Type}
+    (itertraitscollectIntoIteratorPResultPInst :
+    core.iter.traits.collect.IntoIterator I (core.result.Result A E)
+    Clause0_IntoIter) =>
+    core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult.from_iter
+    itertraitscollectFromIteratorInst itertraitscollectIntoIteratorPResultPInst
+}
+
 /-- Trait implementation: [core::slice::index::private_slice_index::{core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFull}]
     Source: '/rustc/library/core/src/slice/index.rs', lines 120:4-120:34
     Name pattern: [core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFull>] -/
@@ -124,6 +162,59 @@ def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice (T :
     core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_mut
 }
 
+/-- Trait implementation: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}]
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
+    Name pattern: [core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>] -/
+@[reducible, rust_trait_impl
+  "core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>"]
+def
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
+  (T : Type) (A : Type) : core.iter.traits.iterator.Iterator
+  (alloc.collections.vec_deque.into_iter.IntoIter T A) T := {
+  next :=
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
+  step_by :=
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.step_by
+  map := fun {B : Type} {F : Type} (coreopsfunctionFnMutPTupleBPInst :
+    core.ops.function.FnMut F T B) =>
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
+    coreopsfunctionFnMutPTupleBPInst
+  enumerate :=
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.enumerate
+  collect := fun {B : Type} (coreitertraitscollectFromIteratorInst :
+    core.iter.traits.collect.FromIterator B T) =>
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.collect
+    coreitertraitscollectFromIteratorInst
+}
+
+/-- Trait implementation: [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}]
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3640:0-3640:39
+    Name pattern: [core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>] -/
+@[reducible, rust_trait_impl
+  "core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>"]
+def
+  alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator
+  (T : Type) : core.iter.traits.collect.FromIterator
+  (alloc.collections.vec_deque.VecDeque T Global) T := {
+  from_iter := fun {I : Type} {Clause0_IntoIter : Type}
+    (coreitertraitscollectIntoIteratorInst :
+    core.iter.traits.collect.IntoIterator I T Clause0_IntoIter) =>
+    alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator.from_iter
+    coreitertraitscollectIntoIteratorInst
+}
+
+/-- Trait implementation: [alloc::slice::{alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}]
+    Source: '/rustc/library/alloc/src/slice.rs', lines 727:0-727:48
+    Name pattern: [alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>] -/
+@[reducible, rust_trait_impl
+  "alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>"]
+def Slice.Insts.AllocSliceConcatTVec {T : Type} {V : Type} (corecloneCloneInst
+  : core.clone.Clone T) (coreborrowBorrowVSliceInst : core.borrow.Borrow V
+  (Slice T)) : alloc.slice.Concat (Slice V) T (alloc.vec.Vec T) := {
+  concat := Slice.Insts.AllocSliceConcatTVec.concat corecloneCloneInst
+    coreborrowBorrowVSliceInst
+}
+
 /-- Trait implementation: [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
     Name pattern: [core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>] -/
@@ -146,7 +237,7 @@ def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type} (corecloneCloneInst :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::PolynomialEncoder}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:9-3:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:9-2:14 -/
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.PolynomialEncoder) :
   Result proto.pq_ratchet.PolynomialEncoder
@@ -161,7 +252,7 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCloneClone.clone
   ok { idx := i, pts := v, polys := v1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:9-3:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:9-2:14 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.PolynomialEncoder := {
@@ -169,14 +260,14 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:16-3:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:16-2:25 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.PolynomialEncoder := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::PolynomialEncoder> for spqr::proto::pq_ratchet::PolynomialEncoder}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:16-3:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:16-2:25 -/
 def
   proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpPartialEqPolynomialEncoder.eq
   (self : proto.pq_ratchet.PolynomialEncoder)
@@ -196,7 +287,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::PolynomialEncoder> for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:16-3:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:16-2:25 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpPartialEqPolynomialEncoder
   : core.cmp.PartialEq proto.pq_ratchet.PolynomialEncoder
@@ -206,14 +297,14 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpPartialEqPolynomialEncoder
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::PolynomialEncoder}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:27-3:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:27-2:29 -/
 def
   proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.PolynomialEncoder) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:27-3:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:27-2:29 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.PolynomialEncoder := {
@@ -224,7 +315,7 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:37-3:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.PolynomialEncoder := {
@@ -242,7 +333,7 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::PolynomialEncoder}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:37-3:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53 -/
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.PolynomialEncoder := do
   ok
@@ -253,7 +344,7 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreDefaultDefault.default
     }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 3:37-3:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialEncoder.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.PolynomialEncoder := {
@@ -262,7 +353,7 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreDefaultDefault :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::PolynomialDecoder}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:9-15:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:9-14:14 -/
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.PolynomialDecoder) :
   Result proto.pq_ratchet.PolynomialDecoder
@@ -276,7 +367,7 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCloneClone.clone
   ok { pts_needed := i, polys := i1, pts := v, is_complete := b }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:9-15:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:9-14:14 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.PolynomialDecoder := {
@@ -284,14 +375,14 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:16-15:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:16-14:25 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.PolynomialDecoder := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::PolynomialDecoder> for spqr::proto::pq_ratchet::PolynomialDecoder}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:16-15:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:16-14:25 -/
 def
   proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpPartialEqPolynomialDecoder.eq
   (self : proto.pq_ratchet.PolynomialDecoder)
@@ -311,7 +402,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::PolynomialDecoder> for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:16-15:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:16-14:25 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpPartialEqPolynomialDecoder
   : core.cmp.PartialEq proto.pq_ratchet.PolynomialDecoder
@@ -321,14 +412,14 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpPartialEqPolynomialDecoder
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::PolynomialDecoder}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:27-15:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:27-14:29 -/
 def
   proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.PolynomialDecoder) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:27-15:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:27-14:29 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.PolynomialDecoder := {
@@ -339,7 +430,7 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:37-15:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.PolynomialDecoder := {
@@ -357,7 +448,7 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::PolynomialDecoder}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:37-15:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53 -/
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.PolynomialDecoder := do
   ok
@@ -369,7 +460,7 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreDefaultDefault.default
     }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 15:37-15:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53 -/
 @[reducible]
 def proto.pq_ratchet.PolynomialDecoder.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.PolynomialDecoder := {
@@ -378,7 +469,7 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreDefaultDefault :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::ChainParams}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:9-362:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:9-361:14 -/
 def proto.pq_ratchet.ChainParams.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.ChainParams) :
   Result proto.pq_ratchet.ChainParams
@@ -386,7 +477,7 @@ def proto.pq_ratchet.ChainParams.Insts.CoreCloneClone.clone
   ok self
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:9-362:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:9-361:14 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.ChainParams := {
@@ -394,7 +485,7 @@ def proto.pq_ratchet.ChainParams.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- [spqr::proto::pq_ratchet::chain::epoch::{core::clone::Clone for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:17-351:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:17-350:22 -/
 def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.chain.epoch.EpochDirection) :
   Result proto.pq_ratchet.chain.epoch.EpochDirection
@@ -405,7 +496,7 @@ def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCloneClone.clone
   ok { ctr := i, next := v, prev := v1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{core::clone::Clone for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:17-351:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:17-350:22 -/
 @[reducible]
 def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.chain.epoch.EpochDirection := {
@@ -414,7 +505,7 @@ def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::chain::{core::clone::Clone for spqr::proto::pq_ratchet::chain::Epoch}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:13-342:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:13-341:18 -/
 def proto.pq_ratchet.chain.Epoch.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.chain.Epoch) :
   Result proto.pq_ratchet.chain.Epoch
@@ -430,7 +521,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreCloneClone.clone
   ok { send := o, recv := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::{core::clone::Clone for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:13-342:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:13-341:18 -/
 @[reducible]
 def proto.pq_ratchet.chain.Epoch.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.chain.Epoch := {
@@ -438,7 +529,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Chain}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:9-325:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:9-324:14 -/
 def proto.pq_ratchet.Chain.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.Chain) : Result proto.pq_ratchet.Chain := do
   let i ← lift (core.clone.impls.CloneI32.clone self.direction)
@@ -462,7 +553,7 @@ def proto.pq_ratchet.Chain.Insts.CoreCloneClone.clone
     }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Chain}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:9-325:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:9-324:14 -/
 @[reducible]
 def proto.pq_ratchet.Chain.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.Chain := {
@@ -470,7 +561,7 @@ def proto.pq_ratchet.Chain.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Authenticator}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:9-92:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:9-91:14 -/
 def proto.pq_ratchet.Authenticator.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.Authenticator) :
   Result proto.pq_ratchet.Authenticator
@@ -480,7 +571,7 @@ def proto.pq_ratchet.Authenticator.Insts.CoreCloneClone.clone
   ok { root_key := v, mac_key := v1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Authenticator}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:9-92:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:9-91:14 -/
 @[reducible]
 def proto.pq_ratchet.Authenticator.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.Authenticator := {
@@ -488,7 +579,7 @@ def proto.pq_ratchet.Authenticator.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:17-203:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:17-202:22 -/
 def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) :
   Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent
@@ -500,7 +591,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCloneClone.clone
   ok { epoch := i, auth := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:17-203:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:17-202:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.Ct2Sent := {
@@ -509,7 +600,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:17-289:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:17-288:22 -/
 def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.Ct2Sampled) :
   Result proto.pq_ratchet.v1_state.chunked.Ct2Sampled
@@ -524,7 +615,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone.clone
   ok { uc := o, sending_ct2 := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:17-177:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:17-176:22 -/
 def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.Ct1Sent) :
   Result proto.pq_ratchet.v1_state.unchunked.Ct1Sent
@@ -539,7 +630,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCloneClone.clone
   ok { epoch := i, auth := o, hdr := v, es := v1, ct1 := v2 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:17-177:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:17-176:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.Ct1Sent := {
@@ -548,7 +639,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:17-282:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:17-281:22 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) :
@@ -564,7 +655,7 @@ def
   ok { uc := o, receiving_ek := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:17-190:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:17-189:22 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived) :
@@ -580,7 +671,7 @@ def
   ok { epoch := i, auth := o, es := v, ek := v1, ct1 := v2 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:17-190:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:17-189:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCloneClone
   : core.clone.Clone proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived := {
@@ -589,7 +680,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCloneClone
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:17-275:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:17-274:22 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled) :
@@ -605,7 +696,7 @@ def
   ok { uc := o, sending_ct1 := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:17-266:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:17-265:22 -/
 def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Sampled) :
   Result proto.pq_ratchet.v1_state.chunked.Ct1Sampled
@@ -623,7 +714,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone.clone
   ok { uc := o, sending_ct1 := o1, receiving_ek := o2 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:17-157:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:17-156:22 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
@@ -637,7 +728,7 @@ def
   ok { epoch := i, auth := o, hdr := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:17-157:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:17-156:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.HeaderReceived := {
@@ -646,7 +737,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:17-259:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:17-258:22 -/
 def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.HeaderReceived) :
   Result proto.pq_ratchet.v1_state.chunked.HeaderReceived
@@ -661,7 +752,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone.clone
   ok { uc := o, receiving_ek := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:17-150:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:17-149:22 -/
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived) :
@@ -674,7 +765,7 @@ def
   ok { epoch := i, auth := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:17-150:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:17-149:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived := {
@@ -683,7 +774,7 @@ def proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:17-252:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:17-251:22 -/
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) :
@@ -700,7 +791,7 @@ def
   ok { uc := o, receiving_hdr := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:17-138:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:17-137:22 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received) :
@@ -715,7 +806,7 @@ def
   ok { epoch := i, auth := o, dk := v, ct1 := v1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:17-138:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:17-137:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCloneClone
   : core.clone.Clone proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received := {
@@ -724,7 +815,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCloneClone
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:17-244:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:17-243:22 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) :
@@ -741,7 +832,7 @@ def
   ok { uc := o, receiving_ct2 := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:17-237:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:17-236:22 -/
 def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Received) :
   Result proto.pq_ratchet.v1_state.chunked.Ct1Received
@@ -756,7 +847,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone.clone
   ok { uc := o, sending_ek := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:17-129:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:17-128:22 -/
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.EkSent) :
   Result proto.pq_ratchet.v1_state.unchunked.EkSent
@@ -769,7 +860,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCloneClone.clone
   ok { epoch := i, auth := o, dk := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:17-129:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:17-128:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.EkSent := {
@@ -778,7 +869,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:17-228:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:17-227:22 -/
 def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.HeaderSent) :
   Result proto.pq_ratchet.v1_state.chunked.HeaderSent
@@ -797,7 +888,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone.clone
   ok { uc := o, sending_ek := o1, receiving_ct1 := o2 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:17-118:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:17-117:22 -/
 def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.HeaderSent) :
   Result proto.pq_ratchet.v1_state.unchunked.HeaderSent
@@ -811,7 +902,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCloneClone.clone
   ok { epoch := i, auth := o, ek := v, dk := v1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:17-118:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:17-117:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.HeaderSent := {
@@ -820,7 +911,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:17-221:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:17-220:22 -/
 def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
   Result proto.pq_ratchet.v1_state.chunked.KeysSampled
@@ -835,7 +926,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone.clone
   ok { uc := o, sending_hdr := o1 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:17-111:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:17-110:22 -/
 def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
@@ -848,7 +939,7 @@ def
   ok { epoch := i, auth := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:17-111:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:17-110:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.KeysUnsampled := {
@@ -857,7 +948,7 @@ def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:17-216:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:17-215:22 -/
 def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.chunked.KeysUnsampled) :
   Result proto.pq_ratchet.v1_state.chunked.KeysUnsampled
@@ -869,7 +960,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone.clone
   ok { uc := o }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::InnerState}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:13-297:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:13-296:18 -/
 def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.InnerState) :
   Result proto.pq_ratchet.v1_state.InnerState
@@ -932,7 +1023,7 @@ def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCloneClone.clone
     ok (proto.pq_ratchet.v1_state.InnerState.Ct2Sampled cs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::InnerState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:13-297:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:13-296:18 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.InnerState := {
@@ -940,7 +1031,7 @@ def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::V1State}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:9-99:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:9-98:14 -/
 def proto.pq_ratchet.V1State.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.V1State) : Result proto.pq_ratchet.V1State := do
   let o ←
@@ -950,7 +1041,7 @@ def proto.pq_ratchet.V1State.Insts.CoreCloneClone.clone
   ok { inner_state := o }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::clone::Clone for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:13-50:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:13-49:18 -/
 def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.pq_ratchet_state.Inner) :
   Result proto.pq_ratchet.pq_ratchet_state.Inner
@@ -960,7 +1051,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCloneClone.clone
   ok (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::clone::Clone for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:13-50:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:13-49:18 -/
 @[reducible]
 def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.pq_ratchet_state.Inner := {
@@ -968,7 +1059,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::clone::Clone for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:13-39:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:13-38:18 -/
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
@@ -983,7 +1074,7 @@ def
   ok { auth_key := v, direction := i, min_version := i1, chain_params := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::clone::Clone for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:13-39:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:13-38:18 -/
 @[reducible]
 def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.pq_ratchet_state.VersionNegotiation := {
@@ -992,7 +1083,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCloneClone :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::PqRatchetState}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:9-26:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:9-25:14 -/
 def proto.pq_ratchet.PqRatchetState.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.PqRatchetState) :
   Result proto.pq_ratchet.PqRatchetState
@@ -1010,7 +1101,7 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreCloneClone.clone
   ok { version_negotiation := o, chain := o1, inner := o2 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::PqRatchetState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:9-26:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:9-25:14 -/
 @[reducible]
 def proto.pq_ratchet.PqRatchetState.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.PqRatchetState := {
@@ -1018,14 +1109,14 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::PqRatchetState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:16-26:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:16-25:25 -/
 @[reducible]
 def proto.pq_ratchet.PqRatchetState.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.PqRatchetState := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::ChainParams> for spqr::proto::pq_ratchet::ChainParams}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:22-362:31 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:22-361:31 -/
 def proto.pq_ratchet.ChainParams.Insts.CoreCmpPartialEqChainParams.eq
   (self : proto.pq_ratchet.ChainParams) (other : proto.pq_ratchet.ChainParams)
   :
@@ -1036,7 +1127,7 @@ def proto.pq_ratchet.ChainParams.Insts.CoreCmpPartialEqChainParams.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::ChainParams> for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:22-362:31 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:22-361:31 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.CoreCmpPartialEqChainParams :
   core.cmp.PartialEq proto.pq_ratchet.ChainParams proto.pq_ratchet.ChainParams
@@ -1045,7 +1136,7 @@ def proto.pq_ratchet.ChainParams.Insts.CoreCmpPartialEqChainParams :
 }
 
 /-- [spqr::proto::pq_ratchet::chain::epoch::{core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::epoch::EpochDirection> for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:24-351:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:24-350:33 -/
 def
   proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpPartialEqEpochDirection.eq
   (self : proto.pq_ratchet.chain.epoch.EpochDirection)
@@ -1065,7 +1156,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::epoch::EpochDirection> for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:24-351:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:24-350:33 -/
 @[reducible]
 def
   proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpPartialEqEpochDirection
@@ -1076,7 +1167,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::chain::{core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::Epoch> for spqr::proto::pq_ratchet::chain::Epoch}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:20-342:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:20-341:29 -/
 def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpPartialEqEpoch.eq
   (self : proto.pq_ratchet.chain.Epoch) (other : proto.pq_ratchet.chain.Epoch)
   :
@@ -1094,7 +1185,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpPartialEqEpoch.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::{core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::Epoch> for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:20-342:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:20-341:29 -/
 @[reducible]
 def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpPartialEqEpoch :
   core.cmp.PartialEq proto.pq_ratchet.chain.Epoch proto.pq_ratchet.chain.Epoch
@@ -1103,7 +1194,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpPartialEqEpoch :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Chain> for spqr::proto::pq_ratchet::Chain}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:16-325:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:16-324:25 -/
 def proto.pq_ratchet.Chain.Insts.CoreCmpPartialEqChain.eq
   (self : proto.pq_ratchet.Chain) (other : proto.pq_ratchet.Chain) :
   Result Bool
@@ -1135,7 +1226,7 @@ def proto.pq_ratchet.Chain.Insts.CoreCmpPartialEqChain.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Chain> for spqr::proto::pq_ratchet::Chain}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:16-325:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:16-324:25 -/
 @[reducible]
 def proto.pq_ratchet.Chain.Insts.CoreCmpPartialEqChain : core.cmp.PartialEq
   proto.pq_ratchet.Chain proto.pq_ratchet.Chain := {
@@ -1143,7 +1234,7 @@ def proto.pq_ratchet.Chain.Insts.CoreCmpPartialEqChain : core.cmp.PartialEq
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Authenticator> for spqr::proto::pq_ratchet::Authenticator}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:16-92:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:16-91:25 -/
 def proto.pq_ratchet.Authenticator.Insts.CoreCmpPartialEqAuthenticator.eq
   (self : proto.pq_ratchet.Authenticator)
   (other : proto.pq_ratchet.Authenticator) :
@@ -1159,7 +1250,7 @@ def proto.pq_ratchet.Authenticator.Insts.CoreCmpPartialEqAuthenticator.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Authenticator> for spqr::proto::pq_ratchet::Authenticator}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:16-92:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:16-91:25 -/
 @[reducible]
 def proto.pq_ratchet.Authenticator.Insts.CoreCmpPartialEqAuthenticator :
   core.cmp.PartialEq proto.pq_ratchet.Authenticator
@@ -1168,7 +1259,7 @@ def proto.pq_ratchet.Authenticator.Insts.CoreCmpPartialEqAuthenticator :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:24-203:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:24-202:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpPartialEqCt2Sent.eq
   (self : proto.pq_ratchet.v1_state.unchunked.Ct2Sent)
@@ -1183,7 +1274,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:24-203:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:24-202:33 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpPartialEqCt2Sent :
   core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.Ct2Sent
@@ -1193,7 +1284,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpPartialEqCt2Sent :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:24-289:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:24-288:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpPartialEqCt2Sampled.eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct2Sampled)
@@ -1212,7 +1303,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:24-289:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:24-288:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpPartialEqCt2Sampled
@@ -1223,7 +1314,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:24-177:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:24-176:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpPartialEqCt1Sent.eq
   (self : proto.pq_ratchet.v1_state.unchunked.Ct1Sent)
@@ -1256,7 +1347,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:24-177:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:24-176:33 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpPartialEqCt1Sent :
   core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.Ct1Sent
@@ -1266,7 +1357,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpPartialEqCt1Sent :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:24-282:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:24-281:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpPartialEqCt1Acknowledged.eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged)
@@ -1285,7 +1376,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:24-282:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:24-281:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpPartialEqCt1Acknowledged
@@ -1296,7 +1387,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:24-190:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:24-189:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpPartialEqCt1SentEkReceived.eq
   (self : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived)
@@ -1329,7 +1420,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:24-190:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:24-189:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpPartialEqCt1SentEkReceived
@@ -1340,7 +1431,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:24-275:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:24-274:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpPartialEqEkReceivedCt1Sampled.eq
   (self : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled)
@@ -1359,7 +1450,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:24-275:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:24-274:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpPartialEqEkReceivedCt1Sampled
@@ -1370,7 +1461,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:24-266:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:24-265:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpPartialEqCt1Sampled.eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Sampled)
@@ -1396,7 +1487,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:24-266:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:24-265:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpPartialEqCt1Sampled
@@ -1407,7 +1498,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:24-157:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:24-156:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived.eq
   (self : proto.pq_ratchet.v1_state.unchunked.HeaderReceived)
@@ -1428,7 +1519,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:24-157:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:24-156:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived
@@ -1439,7 +1530,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:24-259:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:24-258:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived.eq
   (self : proto.pq_ratchet.v1_state.chunked.HeaderReceived)
@@ -1458,7 +1549,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:24-259:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:24-258:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived
@@ -1469,7 +1560,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:24-150:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:24-149:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived.eq
   (self : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived)
@@ -1484,7 +1575,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:24-150:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:24-149:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived
@@ -1495,7 +1586,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:24-252:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:24-251:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived.eq
   (self : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived)
@@ -1514,7 +1605,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:24-252:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:24-251:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived
@@ -1525,7 +1616,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:24-138:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:24-137:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received.eq
   (self : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received)
@@ -1552,7 +1643,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:24-138:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:24-137:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received
@@ -1563,7 +1654,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:24-244:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:24-243:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received.eq
   (self : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received)
@@ -1582,7 +1673,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:24-244:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:24-243:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received
@@ -1593,7 +1684,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:24-237:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:24-236:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpPartialEqCt1Received.eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Received)
@@ -1612,7 +1703,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:24-237:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:24-236:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpPartialEqCt1Received
@@ -1623,7 +1714,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSent> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:24-129:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:24-128:33 -/
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpPartialEqEkSent.eq
   (self : proto.pq_ratchet.v1_state.unchunked.EkSent)
   (other : proto.pq_ratchet.v1_state.unchunked.EkSent) :
@@ -1643,7 +1734,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpPartialEqEkSent.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSent> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:24-129:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:24-128:33 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpPartialEqEkSent :
   core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.EkSent
@@ -1653,7 +1744,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpPartialEqEkSent :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:24-228:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:24-227:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent.eq
   (self : proto.pq_ratchet.v1_state.chunked.HeaderSent)
@@ -1679,7 +1770,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:24-228:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:24-227:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent
@@ -1690,7 +1781,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:24-118:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:24-117:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent.eq
   (self : proto.pq_ratchet.v1_state.unchunked.HeaderSent)
@@ -1717,7 +1808,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:24-118:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:24-117:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent
@@ -1728,7 +1819,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:24-221:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:24-220:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpPartialEqKeysSampled.eq
   (self : proto.pq_ratchet.v1_state.chunked.KeysSampled)
@@ -1747,7 +1838,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:24-221:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:24-220:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpPartialEqKeysSampled
@@ -1758,7 +1849,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:24-111:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:24-110:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled.eq
   (self : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled)
@@ -1773,7 +1864,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:24-111:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:24-110:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled
@@ -1784,7 +1875,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:24-216:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:24-215:33 -/
 def
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled.eq
   (self : proto.pq_ratchet.v1_state.chunked.KeysUnsampled)
@@ -1796,7 +1887,7 @@ def
     self.uc other.uc
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:24-216:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:24-215:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled
@@ -1807,7 +1898,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::InnerState> for spqr::proto::pq_ratchet::v1_state::InnerState}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:20-297:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:20-296:29 -/
 def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpPartialEqInnerState.eq
   (self : proto.pq_ratchet.v1_state.InnerState)
   (other : proto.pq_ratchet.v1_state.InnerState) :
@@ -1996,7 +2087,7 @@ def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpPartialEqInnerState.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::InnerState> for spqr::proto::pq_ratchet::v1_state::InnerState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:20-297:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:20-296:29 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpPartialEqInnerState :
   core.cmp.PartialEq proto.pq_ratchet.v1_state.InnerState
@@ -2006,7 +2097,7 @@ def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpPartialEqInnerState :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::V1State> for spqr::proto::pq_ratchet::V1State}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:16-99:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:16-98:25 -/
 def proto.pq_ratchet.V1State.Insts.CoreCmpPartialEqV1State.eq
   (self : proto.pq_ratchet.V1State) (other : proto.pq_ratchet.V1State) :
   Result Bool
@@ -2016,7 +2107,7 @@ def proto.pq_ratchet.V1State.Insts.CoreCmpPartialEqV1State.eq
     self.inner_state other.inner_state
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::V1State> for spqr::proto::pq_ratchet::V1State}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:16-99:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:16-98:25 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.CoreCmpPartialEqV1State : core.cmp.PartialEq
   proto.pq_ratchet.V1State proto.pq_ratchet.V1State := {
@@ -2024,7 +2115,7 @@ def proto.pq_ratchet.V1State.Insts.CoreCmpPartialEqV1State : core.cmp.PartialEq
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::Inner> for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:20-50:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:20-49:29 -/
 def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpPartialEqInner.eq
   (self : proto.pq_ratchet.pq_ratchet_state.Inner)
   (other : proto.pq_ratchet.pq_ratchet_state.Inner) :
@@ -2035,7 +2126,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpPartialEqInner.eq
   proto.pq_ratchet.V1State.Insts.CoreCmpPartialEqV1State.eq __self_0 __arg1_0
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::Inner> for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:20-50:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:20-49:29 -/
 @[reducible]
 def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpPartialEqInner :
   core.cmp.PartialEq proto.pq_ratchet.pq_ratchet_state.Inner
@@ -2044,7 +2135,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpPartialEqInner :
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation> for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:20-39:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:20-38:29 -/
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpPartialEqVersionNegotiation.eq
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
@@ -2068,7 +2159,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation> for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:20-39:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:20-38:29 -/
 @[reducible]
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpPartialEqVersionNegotiation
@@ -2079,7 +2170,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::PqRatchetState> for spqr::proto::pq_ratchet::PqRatchetState}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:16-26:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:16-25:25 -/
 def proto.pq_ratchet.PqRatchetState.Insts.CoreCmpPartialEqPqRatchetState.eq
   (self : proto.pq_ratchet.PqRatchetState)
   (other : proto.pq_ratchet.PqRatchetState) :
@@ -2104,7 +2195,7 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreCmpPartialEqPqRatchetState.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::PqRatchetState> for spqr::proto::pq_ratchet::PqRatchetState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:16-26:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:16-25:25 -/
 @[reducible]
 def proto.pq_ratchet.PqRatchetState.Insts.CoreCmpPartialEqPqRatchetState :
   core.cmp.PartialEq proto.pq_ratchet.PqRatchetState
@@ -2113,7 +2204,7 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreCmpPartialEqPqRatchetState :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:27-26:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43 -/
 @[reducible]
 def proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.PqRatchetState := {
@@ -2131,7 +2222,7 @@ def proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::PqRatchetState}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:27-26:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43 -/
 def proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.PqRatchetState := do
   let o ←
@@ -2145,7 +2236,7 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault.default
   ok { version_negotiation := o, chain := o1, inner := o2 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::PqRatchetState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 26:27-26:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43 -/
 @[reducible]
 def proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.PqRatchetState := {
@@ -2153,7 +2244,7 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:20-39:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:20-38:29 -/
 @[reducible]
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreMarkerStructuralPartialEq
@@ -2162,7 +2253,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::Eq for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:31-39:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:31-38:33 -/
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
@@ -2171,7 +2262,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::Eq for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:31-39:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:31-38:33 -/
 @[reducible]
 def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.pq_ratchet_state.VersionNegotiation := {
@@ -2182,7 +2273,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 @[reducible]
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage
@@ -2203,19 +2294,19 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Direction}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 def proto.pq_ratchet.Direction.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.Direction := do
   ok proto.pq_ratchet.Direction.A2B
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Version}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 def proto.pq_ratchet.Version.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.Version := do
   ok proto.pq_ratchet.Version.V0
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::default::Default for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.pq_ratchet_state.VersionNegotiation := do
@@ -2232,7 +2323,7 @@ def
   ok { auth_key := v, direction := i1, min_version := i3, chain_params := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::default::Default for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 @[reducible]
 def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreDefaultDefault
@@ -2243,7 +2334,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::{core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Direction}::try_from]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 def
   proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
   (value : Std.I32) :
@@ -2256,7 +2347,7 @@ def
   | _ => ok (core.result.Result.Err value)
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::direction]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.direction
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
   Result proto.pq_ratchet.Direction
@@ -2268,7 +2359,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.direction
   core.result.Result.unwrap_or r d
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::set_direction]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_direction
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
   (value : proto.pq_ratchet.Direction) :
@@ -2279,7 +2370,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_direction
   ok { self with direction := i }
 
 /-- [spqr::proto::pq_ratchet::{core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Version}::try_from]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 def
   proto.pq_ratchet.Version.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
   (value : Std.I32) :
@@ -2292,7 +2383,7 @@ def
   | _ => ok (core.result.Result.Err value)
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::min_version]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.min_version
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
   Result proto.pq_ratchet.Version
@@ -2304,7 +2395,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.min_version
   core.result.Result.unwrap_or r v
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::set_min_version]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 39:41-39:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
 def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_min_version
   (self : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
   (value : proto.pq_ratchet.Version) :
@@ -2315,7 +2406,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_min_version
   ok { self with min_version := i }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:20-50:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:20-49:29 -/
 @[reducible]
 def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreMarkerStructuralPartialEq
   : core.marker.StructuralPartialEq proto.pq_ratchet.pq_ratchet_state.Inner
@@ -2323,14 +2414,14 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreMarkerStructuralPartialEq
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::Eq for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:31-50:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:31-49:33 -/
 def
   proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.pq_ratchet_state.Inner) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::Eq for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:31-50:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:31-49:33 -/
 @[reducible]
 def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.pq_ratchet_state.Inner := {
@@ -2341,7 +2432,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::closure<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:41-50:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
 def
   proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2354,7 +2445,7 @@ def
   ok (some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), vs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::closure<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:41-50:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
 @[reducible]
 def
   proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2368,7 +2459,7 @@ def
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:37-99:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.ProstMessageMessage : prost.message.Message
   proto.pq_ratchet.V1State := {
@@ -2385,7 +2476,7 @@ def proto.pq_ratchet.V1State.Insts.ProstMessageMessage : prost.message.Message
 }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encode]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:41-50:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
 def proto.pq_ratchet.pq_ratchet_state.Inner.encode
   {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0)
   (self : proto.pq_ratchet.pq_ratchet_state.Inner) (buf : T0) :
@@ -2397,7 +2488,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.encode
     bytesbufbuf_mutBufMutInst 3#u32 value buf
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::V1State}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:37-99:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
 def proto.pq_ratchet.V1State.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.V1State := do
   let o ←
@@ -2406,7 +2497,7 @@ def proto.pq_ratchet.V1State.Insts.CoreDefaultDefault.default
   ok { inner_state := o }
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:41-50:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
 def proto.pq_ratchet.pq_ratchet_state.Inner.merge
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
   (field : Option proto.pq_ratchet.pq_ratchet_state.Inner) (tag : Std.U32)
@@ -2455,7 +2546,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.merge
     fail panic
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encoded_len]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 50:41-50:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
 def proto.pq_ratchet.pq_ratchet_state.Inner.encoded_len
   (self : proto.pq_ratchet.pq_ratchet_state.Inner) : Result Std.Usize := do
   let ⟨ value ⟩ := self
@@ -2463,7 +2554,7 @@ def proto.pq_ratchet.pq_ratchet_state.Inner.encoded_len
     proto.pq_ratchet.V1State.Insts.ProstMessageMessage 3#u32 value
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Chunk}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:9-56:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:9-55:14 -/
 def proto.pq_ratchet.Chunk.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.Chunk) : Result proto.pq_ratchet.Chunk := do
   let i ← lift (core.clone.impls.CloneU32.clone self.index)
@@ -2471,7 +2562,7 @@ def proto.pq_ratchet.Chunk.Insts.CoreCloneClone.clone
   ok { index := i, data := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Chunk}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:9-56:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:9-55:14 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.Chunk := {
@@ -2479,14 +2570,14 @@ def proto.pq_ratchet.Chunk.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Chunk}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:16-56:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:16-55:25 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Chunk := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Chunk> for spqr::proto::pq_ratchet::Chunk}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:16-56:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:16-55:25 -/
 def proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk.eq
   (self : proto.pq_ratchet.Chunk) (other : proto.pq_ratchet.Chunk) :
   Result Bool
@@ -2498,7 +2589,7 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Chunk> for spqr::proto::pq_ratchet::Chunk}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:16-56:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:16-55:25 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk : core.cmp.PartialEq
   proto.pq_ratchet.Chunk proto.pq_ratchet.Chunk := {
@@ -2506,13 +2597,13 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk : core.cmp.PartialEq
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Chunk}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:27-56:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:27-55:29 -/
 def proto.pq_ratchet.Chunk.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.Chunk) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Chunk}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:27-56:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:27-55:29 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.CoreCmpEq : core.cmp.Eq proto.pq_ratchet.Chunk
   := {
@@ -2522,7 +2613,7 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpEq : core.cmp.Eq proto.pq_ratchet.Chunk
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:37-56:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.ProstMessageMessage : prost.message.Message
   proto.pq_ratchet.Chunk := {
@@ -2539,14 +2630,14 @@ def proto.pq_ratchet.Chunk.Insts.ProstMessageMessage : prost.message.Message
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Chunk}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:37-56:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53 -/
 def proto.pq_ratchet.Chunk.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.Chunk := do
   let v ← alloc.vec.Vec.Insts.CoreDefaultDefault.default Std.U8
   ok { index := 0#u32, data := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Chunk}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 56:37-56:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.Chunk := {
@@ -2554,7 +2645,7 @@ def proto.pq_ratchet.Chunk.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{core::clone::Clone for spqr::proto::pq_ratchet::v1_msg::InnerMsg}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:13-74:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:13-73:18 -/
 def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_msg.InnerMsg) :
   Result proto.pq_ratchet.v1_msg.InnerMsg
@@ -2580,7 +2671,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone.clone
     ok (proto.pq_ratchet.v1_msg.InnerMsg.Ct2 c)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{core::clone::Clone for spqr::proto::pq_ratchet::v1_msg::InnerMsg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:13-74:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:13-73:18 -/
 @[reducible]
 def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.v1_msg.InnerMsg := {
@@ -2588,7 +2679,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::V1Msg}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:9-63:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:9-62:14 -/
 def proto.pq_ratchet.V1Msg.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.V1Msg) : Result proto.pq_ratchet.V1Msg := do
   let i ← lift (core.clone.impls.CloneU64.clone self.epoch)
@@ -2599,7 +2690,7 @@ def proto.pq_ratchet.V1Msg.Insts.CoreCloneClone.clone
   ok { epoch := i, index := i1, inner_msg := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::V1Msg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:9-63:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:9-62:14 -/
 @[reducible]
 def proto.pq_ratchet.V1Msg.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.V1Msg := {
@@ -2607,14 +2698,14 @@ def proto.pq_ratchet.V1Msg.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::V1Msg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:16-63:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:16-62:25 -/
 @[reducible]
 def proto.pq_ratchet.V1Msg.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.V1Msg := {
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_msg::InnerMsg> for spqr::proto::pq_ratchet::v1_msg::InnerMsg}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:20-74:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:20-73:29 -/
 def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpPartialEqInnerMsg.eq
   (self : proto.pq_ratchet.v1_msg.InnerMsg)
   (other : proto.pq_ratchet.v1_msg.InnerMsg) :
@@ -2682,7 +2773,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpPartialEqInnerMsg.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_msg::InnerMsg> for spqr::proto::pq_ratchet::v1_msg::InnerMsg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:20-74:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:20-73:29 -/
 @[reducible]
 def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpPartialEqInnerMsg :
   core.cmp.PartialEq proto.pq_ratchet.v1_msg.InnerMsg
@@ -2691,7 +2782,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpPartialEqInnerMsg :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::V1Msg> for spqr::proto::pq_ratchet::V1Msg}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:16-63:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:16-62:25 -/
 def proto.pq_ratchet.V1Msg.Insts.CoreCmpPartialEqV1Msg.eq
   (self : proto.pq_ratchet.V1Msg) (other : proto.pq_ratchet.V1Msg) :
   Result Bool
@@ -2707,7 +2798,7 @@ def proto.pq_ratchet.V1Msg.Insts.CoreCmpPartialEqV1Msg.eq
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::V1Msg> for spqr::proto::pq_ratchet::V1Msg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:16-63:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:16-62:25 -/
 @[reducible]
 def proto.pq_ratchet.V1Msg.Insts.CoreCmpPartialEqV1Msg : core.cmp.PartialEq
   proto.pq_ratchet.V1Msg proto.pq_ratchet.V1Msg := {
@@ -2715,13 +2806,13 @@ def proto.pq_ratchet.V1Msg.Insts.CoreCmpPartialEqV1Msg : core.cmp.PartialEq
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::V1Msg}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:27-63:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:27-62:29 -/
 def proto.pq_ratchet.V1Msg.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.V1Msg) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::V1Msg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:27-63:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:27-62:29 -/
 @[reducible]
 def proto.pq_ratchet.V1Msg.Insts.CoreCmpEq : core.cmp.Eq proto.pq_ratchet.V1Msg
   := {
@@ -2731,7 +2822,7 @@ def proto.pq_ratchet.V1Msg.Insts.CoreCmpEq : core.cmp.Eq proto.pq_ratchet.V1Msg
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1Msg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:37-63:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53 -/
 @[reducible]
 def proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage : prost.message.Message
   proto.pq_ratchet.V1Msg := {
@@ -2748,7 +2839,7 @@ def proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage : prost.message.Message
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::V1Msg}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:37-63:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53 -/
 def proto.pq_ratchet.V1Msg.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.V1Msg := do
   let o ←
@@ -2757,7 +2848,7 @@ def proto.pq_ratchet.V1Msg.Insts.CoreDefaultDefault.default
   ok { epoch := 0#u64, index := 0#u32, inner_msg := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::V1Msg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 63:37-63:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53 -/
 @[reducible]
 def proto.pq_ratchet.V1Msg.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.V1Msg := {
@@ -2765,21 +2856,21 @@ def proto.pq_ratchet.V1Msg.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_msg::InnerMsg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:20-74:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:20-73:29 -/
 @[reducible]
 def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.v1_msg.InnerMsg := {
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_msg::InnerMsg}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:31-74:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:31-73:33 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_msg.InnerMsg) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_msg::InnerMsg}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:31-74:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:31-73:33 -/
 @[reducible]
 def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_msg.InnerMsg := {
@@ -2790,7 +2881,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2803,7 +2894,7 @@ def
   ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Hdr c1), c1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2816,7 +2907,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#1<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2829,7 +2920,7 @@ def
   ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ek c1), c1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#1<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2842,7 +2933,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#2<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2855,7 +2946,7 @@ def
   ok (some (proto.pq_ratchet.v1_msg.InnerMsg.EkCt1Ack c1), c1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#2<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2868,7 +2959,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#3<0, 1, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2881,7 +2972,7 @@ def
   ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ct1Ack b), b)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#3<0, 1, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2894,7 +2985,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#4<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2907,7 +2998,7 @@ def
   ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ct1 c1), c1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#4<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2920,7 +3011,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#5<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -2933,7 +3024,7 @@ def
   ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ct2 c1), c1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#5<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -2946,7 +3037,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::encode]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def proto.pq_ratchet.v1_msg.InnerMsg.encode
   {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0)
   (self : proto.pq_ratchet.v1_msg.InnerMsg) (buf : T0) :
@@ -2977,7 +3068,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.encode
       bytesbufbuf_mutBufMutInst 8#u32 value buf
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def proto.pq_ratchet.v1_msg.InnerMsg.merge
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
   (field : Option proto.pq_ratchet.v1_msg.InnerMsg) (tag : Std.U32)
@@ -3519,7 +3610,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.merge
     fail panic
 
 /-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::encoded_len]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 74:41-74:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 def proto.pq_ratchet.v1_msg.InnerMsg.encoded_len
   (self : proto.pq_ratchet.v1_msg.InnerMsg) : Result Std.Usize := do
   match self with
@@ -3542,20 +3633,20 @@ def proto.pq_ratchet.v1_msg.InnerMsg.encoded_len
       proto.pq_ratchet.Chunk.Insts.ProstMessageMessage 8#u32 value
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Authenticator}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:16-92:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:16-91:25 -/
 @[reducible]
 def proto.pq_ratchet.Authenticator.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Authenticator := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Authenticator}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:27-92:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:27-91:29 -/
 def proto.pq_ratchet.Authenticator.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.Authenticator) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Authenticator}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:27-92:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:27-91:29 -/
 @[reducible]
 def proto.pq_ratchet.Authenticator.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.Authenticator := {
@@ -3566,7 +3657,7 @@ def proto.pq_ratchet.Authenticator.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Authenticator}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:37-92:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53 -/
 @[reducible]
 def proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.Authenticator := {
@@ -3584,14 +3675,14 @@ def proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Authenticator}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:37-92:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53 -/
 def proto.pq_ratchet.Authenticator.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.Authenticator := do
   let v ← alloc.vec.Vec.Insts.CoreDefaultDefault.default Std.U8
   ok { root_key := v, mac_key := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Authenticator}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 92:37-92:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53 -/
 @[reducible]
 def proto.pq_ratchet.Authenticator.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.Authenticator := {
@@ -3599,7 +3690,7 @@ def proto.pq_ratchet.Authenticator.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::V1State}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:9-99:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:9-98:14 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.V1State := {
@@ -3607,20 +3698,20 @@ def proto.pq_ratchet.V1State.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::V1State}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:16-99:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:16-98:25 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.V1State := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::V1State}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:27-99:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:27-98:29 -/
 def proto.pq_ratchet.V1State.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.V1State) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::V1State}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:27-99:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:27-98:29 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.V1State := {
@@ -3630,7 +3721,7 @@ def proto.pq_ratchet.V1State.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::V1State}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 99:37-99:53 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.V1State := {
@@ -3638,7 +3729,7 @@ def proto.pq_ratchet.V1State.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::Unchunked}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:13-106:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:13-105:18 -/
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.Unchunked) :
   Result proto.pq_ratchet.v1_state.Unchunked
@@ -3646,7 +3737,7 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCloneClone.clone
   ok self
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:13-106:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:13-105:18 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.v1_state.Unchunked := {
@@ -3654,7 +3745,7 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::marker::Copy for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:20-106:24 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:20-105:24 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreMarkerCopy : core.marker.Copy
   proto.pq_ratchet.v1_state.Unchunked := {
@@ -3662,14 +3753,14 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:26-106:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:26-105:35 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.v1_state.Unchunked := {
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::Unchunked> for spqr::proto::pq_ratchet::v1_state::Unchunked}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:26-106:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:26-105:35 -/
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked.eq
   (self : proto.pq_ratchet.v1_state.Unchunked)
   (other : proto.pq_ratchet.v1_state.Unchunked) :
@@ -3678,7 +3769,7 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked.eq
   ok true
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::Unchunked> for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:26-106:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:26-105:35 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked :
   core.cmp.PartialEq proto.pq_ratchet.v1_state.Unchunked
@@ -3687,14 +3778,14 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::Unchunked}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:37-106:39 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:37-105:39 -/
 def
   proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.Unchunked) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:37-106:39 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:37-105:39 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.Unchunked := {
@@ -3705,7 +3796,7 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:47-106:63 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.Unchunked := {
@@ -3723,13 +3814,13 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::default::Default for spqr::proto::pq_ratchet::v1_state::Unchunked}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:47-106:63 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63 -/
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.Unchunked := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::default::Default for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 106:47-106:63 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.Unchunked := {
@@ -3738,7 +3829,7 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:24-111:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:24-110:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreMarkerStructuralPartialEq
@@ -3747,7 +3838,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:35-111:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:35-110:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
@@ -3756,7 +3847,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:35-111:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:35-110:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.KeysUnsampled := {
@@ -3767,7 +3858,7 @@ def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:45-111:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
@@ -3787,7 +3878,7 @@ def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:45-111:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.KeysUnsampled := do
@@ -3797,7 +3888,7 @@ def
   ok { epoch := 0#u64, auth := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 111:45-111:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreDefaultDefault
   : core.default.Default proto.pq_ratchet.v1_state.unchunked.KeysUnsampled := {
@@ -3806,7 +3897,7 @@ def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreDefaultDefault
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:24-118:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:24-117:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreMarkerStructuralPartialEq
@@ -3815,14 +3906,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:35-118:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:35-117:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.HeaderSent) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:35-118:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:35-117:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.HeaderSent := {
@@ -3833,7 +3924,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:45-118:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.unchunked.HeaderSent := {
@@ -3852,7 +3943,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:45-118:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.HeaderSent := do
@@ -3863,7 +3954,7 @@ def
   ok { epoch := 0#u64, auth := o, ek := v, dk := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 118:45-118:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.unchunked.HeaderSent := {
@@ -3872,7 +3963,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:24-129:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:24-128:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreMarkerStructuralPartialEq
@@ -3881,14 +3972,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:35-129:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:35-128:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.EkSent) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:35-129:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:35-128:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.unchunked.EkSent := {
@@ -3899,7 +3990,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:45-129:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.unchunked.EkSent := {
@@ -3918,7 +4009,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:45-129:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61 -/
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.EkSent := do
   let o ←
@@ -3928,7 +4019,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault.default
   ok { epoch := 0#u64, auth := o, dk := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 129:45-129:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.unchunked.EkSent := {
@@ -3937,7 +4028,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:24-138:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:24-137:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreMarkerStructuralPartialEq
@@ -3946,7 +4037,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:35-138:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:35-137:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received) :
@@ -3955,7 +4046,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:35-138:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:35-137:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received := {
@@ -3966,7 +4057,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:45-138:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage
@@ -3987,7 +4078,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:45-138:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received := do
@@ -3998,7 +4089,7 @@ def
   ok { epoch := 0#u64, auth := o, dk := v, ct1 := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 138:45-138:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreDefaultDefault
@@ -4009,7 +4100,7 @@ def
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:24-150:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:24-149:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreMarkerStructuralPartialEq
@@ -4018,7 +4109,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:35-150:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:35-149:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived) :
@@ -4027,7 +4118,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:35-150:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:35-149:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived := {
@@ -4038,7 +4129,7 @@ def proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:45-150:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage
@@ -4059,7 +4150,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:45-150:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived := do
@@ -4069,7 +4160,7 @@ def
   ok { epoch := 0#u64, auth := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 150:45-150:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreDefaultDefault
@@ -4080,7 +4171,7 @@ def
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:24-157:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:24-156:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreMarkerStructuralPartialEq
@@ -4089,7 +4180,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:35-157:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:35-156:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
@@ -4098,7 +4189,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:35-157:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:35-156:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.HeaderReceived := {
@@ -4109,7 +4200,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:45-157:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage
@@ -4130,7 +4221,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:45-157:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.HeaderReceived := do
@@ -4141,7 +4232,7 @@ def
   ok { epoch := 0#u64, auth := o, hdr := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 157:45-157:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreDefaultDefault
   : core.default.Default proto.pq_ratchet.v1_state.unchunked.HeaderReceived
@@ -4151,7 +4242,7 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreDefaultDefault
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:17-166:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:17-165:22 -/
 def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.unchunked.EkReceived) :
   Result proto.pq_ratchet.v1_state.unchunked.EkReceived
@@ -4165,7 +4256,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCloneClone.clone
   ok { epoch := i, auth := o, hdr := v, ek := v1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:17-166:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:17-165:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.unchunked.EkReceived := {
@@ -4174,7 +4265,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:24-166:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:24-165:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreMarkerStructuralPartialEq
@@ -4183,7 +4274,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:24-166:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:24-165:33 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpPartialEqEkReceived.eq
   (self : proto.pq_ratchet.v1_state.unchunked.EkReceived)
@@ -4210,7 +4301,7 @@ def
   else ok false
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:24-166:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:24-165:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpPartialEqEkReceived
@@ -4221,14 +4312,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:35-166:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:35-165:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.EkReceived) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:35-166:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:35-165:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.EkReceived := {
@@ -4239,7 +4330,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:45-166:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.unchunked.EkReceived := {
@@ -4258,7 +4349,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:45-166:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.EkReceived := do
@@ -4269,7 +4360,7 @@ def
   ok { epoch := 0#u64, auth := o, hdr := v, ek := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 166:45-166:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.unchunked.EkReceived := {
@@ -4278,7 +4369,7 @@ def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:24-177:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:24-176:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreMarkerStructuralPartialEq
@@ -4287,14 +4378,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:35-177:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:35-176:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.Ct1Sent) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:35-177:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:35-176:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.unchunked.Ct1Sent := {
@@ -4305,7 +4396,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:45-177:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.unchunked.Ct1Sent := {
@@ -4324,7 +4415,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:45-177:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.Ct1Sent := do
@@ -4335,7 +4426,7 @@ def
   ok { epoch := 0#u64, auth := o, hdr := v, es := v, ct1 := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 177:45-177:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.unchunked.Ct1Sent := {
@@ -4344,7 +4435,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:24-190:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:24-189:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreMarkerStructuralPartialEq
@@ -4353,7 +4444,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:35-190:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:35-189:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived) :
@@ -4362,7 +4453,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:35-190:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:35-189:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived := {
@@ -4373,7 +4464,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:45-190:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage
@@ -4394,7 +4485,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:45-190:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived := do
@@ -4405,7 +4496,7 @@ def
   ok { epoch := 0#u64, auth := o, es := v, ek := v, ct1 := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 190:45-190:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreDefaultDefault
@@ -4416,7 +4507,7 @@ def
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:24-203:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:24-202:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreMarkerStructuralPartialEq
@@ -4425,14 +4516,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:35-203:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:35-202:37 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:35-203:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:35-202:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.unchunked.Ct2Sent := {
@@ -4443,7 +4534,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:45-203:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.unchunked.Ct2Sent := {
@@ -4462,7 +4553,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:45-203:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61 -/
 def
   proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent := do
@@ -4472,7 +4563,7 @@ def
   ok { epoch := 0#u64, auth := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 203:45-203:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.unchunked.Ct2Sent := {
@@ -4481,7 +4572,7 @@ def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreDefaultDefault :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::Chunked}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:13-211:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:13-210:18 -/
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.v1_state.Chunked) :
   Result proto.pq_ratchet.v1_state.Chunked
@@ -4489,7 +4580,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCloneClone.clone
   ok self
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:13-211:18 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:13-210:18 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.v1_state.Chunked := {
@@ -4497,7 +4588,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::marker::Copy for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:20-211:24 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:20-210:24 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreMarkerCopy : core.marker.Copy
   proto.pq_ratchet.v1_state.Chunked := {
@@ -4505,14 +4596,14 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:26-211:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:26-210:35 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.v1_state.Chunked := {
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::Chunked> for spqr::proto::pq_ratchet::v1_state::Chunked}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:26-211:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:26-210:35 -/
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked.eq
   (self : proto.pq_ratchet.v1_state.Chunked)
   (other : proto.pq_ratchet.v1_state.Chunked) :
@@ -4521,7 +4612,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked.eq
   ok true
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::Chunked> for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:26-211:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:26-210:35 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked :
   core.cmp.PartialEq proto.pq_ratchet.v1_state.Chunked
@@ -4530,14 +4621,14 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::Chunked}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:37-211:39 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:37-210:39 -/
 def
   proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.Chunked) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:37-211:39 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:37-210:39 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.Chunked := {
@@ -4548,7 +4639,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:47-211:63 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.Chunked := {
@@ -4566,13 +4657,13 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::default::Default for spqr::proto::pq_ratchet::v1_state::Chunked}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:47-211:63 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63 -/
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.Chunked := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::default::Default for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 211:47-211:63 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.Chunked := {
@@ -4580,7 +4671,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:17-216:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:17-215:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.KeysUnsampled := {
@@ -4589,7 +4680,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:24-216:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:24-215:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreMarkerStructuralPartialEq
@@ -4598,14 +4689,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:35-216:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:35-215:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.KeysUnsampled) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:35-216:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:35-215:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.chunked.KeysUnsampled := {
@@ -4616,7 +4707,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:45-216:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysUnsampled := {
@@ -4635,7 +4726,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:45-216:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.KeysUnsampled := do
@@ -4645,7 +4736,7 @@ def
   ok { uc := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 216:45-216:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.KeysUnsampled := {
@@ -4654,7 +4745,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:17-221:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:17-220:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.KeysSampled := {
@@ -4663,7 +4754,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:24-221:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:24-220:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreMarkerStructuralPartialEq
@@ -4672,14 +4763,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:35-221:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:35-220:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.KeysSampled) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:35-221:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:35-220:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.chunked.KeysSampled := {
@@ -4690,7 +4781,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:45-221:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysSampled := {
@@ -4709,7 +4800,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:45-221:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.KeysSampled := do
@@ -4722,7 +4813,7 @@ def
   ok { uc := o, sending_hdr := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 221:45-221:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.KeysSampled := {
@@ -4731,7 +4822,7 @@ def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:17-228:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:17-227:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.HeaderSent := {
@@ -4740,7 +4831,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:24-228:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:24-227:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreMarkerStructuralPartialEq
@@ -4749,14 +4840,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:35-228:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:35-227:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.HeaderSent) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:35-228:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:35-227:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.chunked.HeaderSent := {
@@ -4767,7 +4858,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:45-228:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderSent := {
@@ -4786,7 +4877,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:45-228:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.HeaderSent := do
@@ -4802,7 +4893,7 @@ def
   ok { uc := o, sending_ek := o1, receiving_ct1 := o2 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 228:45-228:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.HeaderSent := {
@@ -4811,7 +4902,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:17-237:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:17-236:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.Ct1Received := {
@@ -4820,7 +4911,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:24-237:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:24-236:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreMarkerStructuralPartialEq
@@ -4829,14 +4920,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:35-237:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:35-236:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Received) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:35-237:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:35-236:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.chunked.Ct1Received := {
@@ -4847,7 +4938,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:45-237:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Received := {
@@ -4866,7 +4957,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:45-237:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.Ct1Received := do
@@ -4879,7 +4970,7 @@ def
   ok { uc := o, sending_ek := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 237:45-237:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.Ct1Received := {
@@ -4888,7 +4979,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:17-244:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:17-243:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.EkSentCt1Received := {
@@ -4897,7 +4988,7 @@ def proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:24-244:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:24-243:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreMarkerStructuralPartialEq
@@ -4906,7 +4997,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:35-244:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:35-243:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) :
@@ -4915,7 +5006,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:35-244:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:35-243:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.chunked.EkSentCt1Received := {
@@ -4926,7 +5017,7 @@ def proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:45-244:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage
@@ -4947,7 +5038,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:45-244:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.EkSentCt1Received := do
@@ -4960,7 +5051,7 @@ def
   ok { uc := o, receiving_ct2 := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 244:45-244:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreDefaultDefault
@@ -4971,7 +5062,7 @@ def
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:17-252:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:17-251:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.NoHeaderReceived := {
@@ -4980,7 +5071,7 @@ def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:24-252:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:24-251:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreMarkerStructuralPartialEq
@@ -4989,7 +5080,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:35-252:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:35-251:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) :
@@ -4998,7 +5089,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:35-252:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:35-251:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.chunked.NoHeaderReceived := {
@@ -5009,7 +5100,7 @@ def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:45-252:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage
@@ -5030,7 +5121,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:45-252:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.NoHeaderReceived := do
@@ -5043,7 +5134,7 @@ def
   ok { uc := o, receiving_hdr := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 252:45-252:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreDefaultDefault
   : core.default.Default proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
@@ -5053,7 +5144,7 @@ def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreDefaultDefault
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:17-259:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:17-258:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.HeaderReceived := {
@@ -5062,7 +5153,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:24-259:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:24-258:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreMarkerStructuralPartialEq
@@ -5071,14 +5162,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:35-259:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:35-258:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.HeaderReceived) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:35-259:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:35-258:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.chunked.HeaderReceived := {
@@ -5089,7 +5180,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:45-259:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderReceived := {
@@ -5108,7 +5199,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:45-259:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.HeaderReceived := do
@@ -5121,7 +5212,7 @@ def
   ok { uc := o, receiving_ek := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 259:45-259:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.HeaderReceived := {
@@ -5130,7 +5221,7 @@ def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:17-266:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:17-265:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.Ct1Sampled := {
@@ -5139,7 +5230,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:24-266:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:24-265:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreMarkerStructuralPartialEq
@@ -5148,14 +5239,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:35-266:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:35-265:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Sampled) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:35-266:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:35-265:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled := {
@@ -5166,7 +5257,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:45-266:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Sampled := {
@@ -5185,7 +5276,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:45-266:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.Ct1Sampled := do
@@ -5201,7 +5292,7 @@ def
   ok { uc := o, sending_ct1 := o1, receiving_ek := o2 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 266:45-266:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.Ct1Sampled := {
@@ -5210,7 +5301,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:17-275:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:17-274:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCloneClone
   : core.clone.Clone proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
@@ -5220,7 +5311,7 @@ def proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCloneClone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:24-275:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:24-274:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreMarkerStructuralPartialEq
@@ -5229,7 +5320,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:35-275:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:35-274:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled) :
@@ -5238,7 +5329,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:35-275:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:35-274:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := {
@@ -5249,7 +5340,7 @@ def proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:45-275:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage
@@ -5270,7 +5361,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:45-275:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := do
@@ -5283,7 +5374,7 @@ def
   ok { uc := o, sending_ct1 := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 275:45-275:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreDefaultDefault
@@ -5294,7 +5385,7 @@ def
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:17-282:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:17-281:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged := {
@@ -5303,7 +5394,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:24-282:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:24-281:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreMarkerStructuralPartialEq
@@ -5312,7 +5403,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:35-282:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:35-281:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) :
@@ -5321,7 +5412,7 @@ def
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:35-282:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:35-281:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpEq :
   core.cmp.Eq proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged := {
@@ -5332,7 +5423,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:45-282:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
@@ -5352,7 +5443,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:45-282:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged := do
@@ -5365,7 +5456,7 @@ def
   ok { uc := o, receiving_ek := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 282:45-282:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreDefaultDefault
   : core.default.Default proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged := {
@@ -5374,7 +5465,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreDefaultDefault
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:17-289:22 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:17-288:22 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone :
   core.clone.Clone proto.pq_ratchet.v1_state.chunked.Ct2Sampled := {
@@ -5383,7 +5474,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:24-289:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:24-288:33 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreMarkerStructuralPartialEq
@@ -5392,14 +5483,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:35-289:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:35-288:37 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.chunked.Ct2Sampled) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:35-289:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:35-288:37 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled := {
@@ -5410,7 +5501,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:45-289:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct2Sampled := {
@@ -5429,7 +5520,7 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:45-289:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61 -/
 def
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.v1_state.chunked.Ct2Sampled := do
@@ -5442,7 +5533,7 @@ def
   ok { uc := o, sending_ct2 := o1 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 289:45-289:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.v1_state.chunked.Ct2Sampled := {
@@ -5451,21 +5542,21 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::v1_state::InnerState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:20-297:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:20-296:29 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.InnerState.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.v1_state.InnerState := {
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::InnerState}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:31-297:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:31-296:33 -/
 def
   proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.v1_state.InnerState) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{core::cmp::Eq for spqr::proto::pq_ratchet::v1_state::InnerState}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:31-297:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:31-296:33 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.v1_state.InnerState := {
@@ -5476,7 +5567,7 @@ def proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5489,7 +5580,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku), ku)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5502,7 +5593,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#1<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5515,7 +5606,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.KeysSampled ks), ks)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#1<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5529,7 +5620,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#2<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5542,7 +5633,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.HeaderSent hs), hs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#2<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5556,7 +5647,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#3<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5569,7 +5660,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.Ct1Received cr), cr)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#3<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5583,7 +5674,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#4<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5596,7 +5687,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received escr), escr)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#4<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5610,7 +5701,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#5<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5623,7 +5714,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr), nhr)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#5<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5637,7 +5728,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#6<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_6.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5650,7 +5741,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.HeaderReceived hr), hr)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#6<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_6.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5664,7 +5755,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#7<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_7.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5677,7 +5768,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.Ct1Sampled cs), cs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#7<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_7.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5691,7 +5782,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#8<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_8.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5705,7 +5796,7 @@ def
     ercs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#8<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_8.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5719,7 +5810,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#9<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_9.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5732,7 +5823,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged ca), ca)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#9<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_9.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5746,7 +5837,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#10<0, T0>[TraitClause@0]}::call_once]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_10.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
@@ -5759,7 +5850,7 @@ def
   ok (some (proto.pq_ratchet.v1_state.InnerState.Ct2Sampled cs), cs)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#10<0, T0>[TraitClause@0]}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
 def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_10.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
@@ -5773,7 +5864,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::encode]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def proto.pq_ratchet.v1_state.InnerState.encode
   {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0)
   (self : proto.pq_ratchet.v1_state.InnerState) (buf : T0) :
@@ -5826,7 +5917,7 @@ def proto.pq_ratchet.v1_state.InnerState.encode
       bytesbufbuf_mutBufMutInst 11#u32 value buf
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def proto.pq_ratchet.v1_state.InnerState.merge
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
   (field : Option proto.pq_ratchet.v1_state.InnerState) (tag : Std.U32)
@@ -7547,7 +7638,7 @@ def proto.pq_ratchet.v1_state.InnerState.merge
     fail panic
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::encoded_len]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 297:41-297:55 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 def proto.pq_ratchet.v1_state.InnerState.encoded_len
   (self : proto.pq_ratchet.v1_state.InnerState) : Result Std.Usize := do
   match self with
@@ -7597,14 +7688,14 @@ def proto.pq_ratchet.v1_state.InnerState.encoded_len
       11#u32 value
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Chain}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:16-325:25 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:16-324:25 -/
 @[reducible]
 def proto.pq_ratchet.Chain.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Chain := {
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chain}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:27-325:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43 -/
 @[reducible]
 def proto.pq_ratchet.Chain.Insts.ProstMessageMessage : prost.message.Message
   proto.pq_ratchet.Chain := {
@@ -7621,7 +7712,7 @@ def proto.pq_ratchet.Chain.Insts.ProstMessageMessage : prost.message.Message
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Chain}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:27-325:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43 -/
 def proto.pq_ratchet.Chain.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.Chain := do
   let d ← proto.pq_ratchet.Direction.Insts.CoreDefaultDefault.default
@@ -7644,7 +7735,7 @@ def proto.pq_ratchet.Chain.Insts.CoreDefaultDefault.default
     }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Chain}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:27-325:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43 -/
 @[reducible]
 def proto.pq_ratchet.Chain.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.Chain := {
@@ -7652,7 +7743,7 @@ def proto.pq_ratchet.Chain.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Chain}::direction]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:27-325:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43 -/
 def proto.pq_ratchet.Chain.impl.direction
   (self : proto.pq_ratchet.Chain) : Result proto.pq_ratchet.Direction := do
   let r ←
@@ -7662,7 +7753,7 @@ def proto.pq_ratchet.Chain.impl.direction
   core.result.Result.unwrap_or r d
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Chain}::set_direction]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 325:27-325:43 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43 -/
 def proto.pq_ratchet.Chain.set_direction
   (self : proto.pq_ratchet.Chain) (value : proto.pq_ratchet.Direction) :
   Result proto.pq_ratchet.Chain
@@ -7672,20 +7763,20 @@ def proto.pq_ratchet.Chain.set_direction
   ok { self with direction := i }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:20-342:29 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:20-341:29 -/
 @[reducible]
 def proto.pq_ratchet.chain.Epoch.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.chain.Epoch := {
 }
 
 /-- [spqr::proto::pq_ratchet::chain::{core::cmp::Eq for spqr::proto::pq_ratchet::chain::Epoch}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:31-342:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:31-341:33 -/
 def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.chain.Epoch) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::{core::cmp::Eq for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:31-342:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:31-341:33 -/
 @[reducible]
 def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.chain.Epoch := {
@@ -7695,7 +7786,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::{prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:41-342:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57 -/
 @[reducible]
 def proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.chain.Epoch := {
@@ -7713,7 +7804,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::chain::{core::default::Default for spqr::proto::pq_ratchet::chain::Epoch}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:41-342:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57 -/
 def proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.chain.Epoch := do
   let o ←
@@ -7722,7 +7813,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault.default
   ok { send := o, recv := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::{core::default::Default for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 342:41-342:57 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57 -/
 @[reducible]
 def proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.chain.Epoch := {
@@ -7730,7 +7821,7 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:24-351:33 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:24-350:33 -/
 @[reducible]
 def
   proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreMarkerStructuralPartialEq
@@ -7739,14 +7830,14 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::chain::epoch::{core::cmp::Eq for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:35-351:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:35-350:37 -/
 def
   proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.chain.epoch.EpochDirection) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{core::cmp::Eq for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:35-351:37 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:35-350:37 -/
 @[reducible]
 def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.chain.epoch.EpochDirection := {
@@ -7757,7 +7848,7 @@ def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:45-351:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61 -/
 @[reducible]
 def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.chain.epoch.EpochDirection := {
@@ -7776,7 +7867,7 @@ def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::chain::epoch::{core::default::Default for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:45-351:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61 -/
 def
   proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.chain.epoch.EpochDirection := do
@@ -7784,7 +7875,7 @@ def
   ok { ctr := 0#u32, next := v, prev := v }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{core::default::Default for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 351:45-351:61 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61 -/
 @[reducible]
 def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.chain.epoch.EpochDirection := {
@@ -7793,7 +7884,7 @@ def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::Copy for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:16-362:20 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:16-361:20 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.CoreMarkerCopy : core.marker.Copy
   proto.pq_ratchet.ChainParams := {
@@ -7801,20 +7892,20 @@ def proto.pq_ratchet.ChainParams.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:22-362:31 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:22-361:31 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.ChainParams := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::ChainParams}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:33-362:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:33-361:35 -/
 def proto.pq_ratchet.ChainParams.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.ChainParams) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:33-362:35 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:33-361:35 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.ChainParams := {
@@ -7825,7 +7916,7 @@ def proto.pq_ratchet.ChainParams.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:43-362:59 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.ChainParams := {
@@ -7843,13 +7934,13 @@ def proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::ChainParams}::default]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:43-362:59 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59 -/
 def proto.pq_ratchet.ChainParams.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.ChainParams := do
   ok { max_jump := 0#u32, max_ooo_keys := 0#u32 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::ChainParams}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 362:43-362:59 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59 -/
 @[reducible]
 def proto.pq_ratchet.ChainParams.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.ChainParams := {
@@ -7857,13 +7948,13 @@ def proto.pq_ratchet.ChainParams.Insts.CoreDefaultDefault :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Version}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:9-374:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:9-373:14 -/
 def proto.pq_ratchet.Version.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.Version) : Result proto.pq_ratchet.Version := do
   ok self
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:9-374:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:9-373:14 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.Version := {
@@ -7871,7 +7962,7 @@ def proto.pq_ratchet.Version.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::Copy for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:16-374:20 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:16-373:20 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreMarkerCopy : core.marker.Copy
   proto.pq_ratchet.Version := {
@@ -7879,14 +7970,14 @@ def proto.pq_ratchet.Version.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:29-374:38 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:29-373:38 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Version := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Version> for spqr::proto::pq_ratchet::Version}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:29-374:38 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:29-373:38 -/
 def proto.pq_ratchet.Version.Insts.CoreCmpPartialEqVersion.eq
   (self : proto.pq_ratchet.Version) (other : proto.pq_ratchet.Version) :
   Result Bool
@@ -7896,7 +7987,7 @@ def proto.pq_ratchet.Version.Insts.CoreCmpPartialEqVersion.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Version> for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:29-374:38 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:29-373:38 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreCmpPartialEqVersion : core.cmp.PartialEq
   proto.pq_ratchet.Version proto.pq_ratchet.Version := {
@@ -7904,13 +7995,13 @@ def proto.pq_ratchet.Version.Insts.CoreCmpPartialEqVersion : core.cmp.PartialEq
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Version}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:40-374:42 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:40-373:42 -/
 def proto.pq_ratchet.Version.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.Version) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:40-374:42 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:40-373:42 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.Version := {
@@ -7920,7 +8011,7 @@ def proto.pq_ratchet.Version.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialOrd<spqr::proto::pq_ratchet::Version> for spqr::proto::pq_ratchet::Version}::partial_cmp]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:50-374:60 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:50-373:60 -/
 def proto.pq_ratchet.Version.Insts.CoreCmpPartialOrdVersion.partial_cmp
   (self : proto.pq_ratchet.Version) (other : proto.pq_ratchet.Version) :
   Result (Option Ordering)
@@ -7930,17 +8021,18 @@ def proto.pq_ratchet.Version.Insts.CoreCmpPartialOrdVersion.partial_cmp
   ok (core.cmp.impls.PartialCmpI32.partial_cmp self1 other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialOrd<spqr::proto::pq_ratchet::Version> for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:50-374:60 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:50-373:60 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreCmpPartialOrdVersion :
   core.cmp.PartialOrd proto.pq_ratchet.Version proto.pq_ratchet.Version := {
   partialEqInst := proto.pq_ratchet.Version.Insts.CoreCmpPartialEqVersion
   partial_cmp :=
     proto.pq_ratchet.Version.Insts.CoreCmpPartialOrdVersion.partial_cmp
+  le := proto.pq_ratchet.Version.Insts.CoreCmpPartialOrdVersion.le
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Ord for spqr::proto::pq_ratchet::Version}::cmp]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:62-374:65 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:62-373:65 -/
 def proto.pq_ratchet.Version.Insts.CoreCmpOrd.cmp
   (self : proto.pq_ratchet.Version) (other : proto.pq_ratchet.Version) :
   Result Ordering
@@ -7950,7 +8042,7 @@ def proto.pq_ratchet.Version.Insts.CoreCmpOrd.cmp
   ok (core.cmp.impls.OrdI32.cmp self1 other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Ord for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:62-374:65 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:62-373:65 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreCmpOrd : core.cmp.Ord
   proto.pq_ratchet.Version := {
@@ -7960,7 +8052,7 @@ def proto.pq_ratchet.Version.Insts.CoreCmpOrd : core.cmp.Ord
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.Version := {
@@ -7968,14 +8060,14 @@ def proto.pq_ratchet.Version.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Version> for i32}::from]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 def I32.Insts.CoreConvertFromVersion.from
   (value : proto.pq_ratchet.Version) : Result Std.I32 := do
   let value1 := read_discriminant value
   ok (IScalar.cast .I32 value1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Version> for i32}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 @[reducible]
 def I32.Insts.CoreConvertFromVersion : core.convert.From Std.I32
   proto.pq_ratchet.Version := {
@@ -7983,7 +8075,7 @@ def I32.Insts.CoreConvertFromVersion : core.convert.From Std.I32
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Version}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreConvertTryFromI32UnknownEnumValue :
   core.convert.TryFrom proto.pq_ratchet.Version Std.I32
@@ -7993,7 +8085,7 @@ def proto.pq_ratchet.Version.Insts.CoreConvertTryFromI32UnknownEnumValue :
 }
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Version}::is_valid]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 def proto.pq_ratchet.Version.is_valid (value : Std.I32) : Result Bool := do
   match value with
   | 0#iscalar => ok true
@@ -8001,7 +8093,7 @@ def proto.pq_ratchet.Version.is_valid (value : Std.I32) : Result Bool := do
   | _ => ok false
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Version}::from_i32]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 374:67-374:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 373:67-373:87 -/
 def proto.pq_ratchet.Version.from_i32
   (value : Std.I32) : Result (Option proto.pq_ratchet.Version) := do
   match value with
@@ -8010,13 +8102,13 @@ def proto.pq_ratchet.Version.from_i32
   | _ => ok none
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Direction}::clone]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:9-403:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:9-402:14 -/
 def proto.pq_ratchet.Direction.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.Direction) : Result proto.pq_ratchet.Direction := do
   ok self
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:9-403:14 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:9-402:14 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.Direction := {
@@ -8024,7 +8116,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::Copy for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:16-403:20 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:16-402:20 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreMarkerCopy : core.marker.Copy
   proto.pq_ratchet.Direction := {
@@ -8032,14 +8124,14 @@ def proto.pq_ratchet.Direction.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:29-403:38 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:29-402:38 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Direction := {
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:29-403:38 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:29-402:38 -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection.eq
   (self : proto.pq_ratchet.Direction) (other : proto.pq_ratchet.Direction) :
   Result Bool
@@ -8049,7 +8141,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialEq<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:29-403:38 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:29-402:38 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection :
   core.cmp.PartialEq proto.pq_ratchet.Direction proto.pq_ratchet.Direction := {
@@ -8057,13 +8149,13 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection :
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Direction}::assert_receiver_is_total_eq]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:40-403:42 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:40-402:42 -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpEq.assert_receiver_is_total_eq
   (self : proto.pq_ratchet.Direction) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:40-403:42 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:40-402:42 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.Direction := {
@@ -8073,7 +8165,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::PartialOrd<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::partial_cmp]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:50-403:60 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:50-402:60 -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.partial_cmp
   (self : proto.pq_ratchet.Direction) (other : proto.pq_ratchet.Direction) :
   Result (Option Ordering)
@@ -8083,7 +8175,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.partial_cmp
   ok (core.cmp.impls.PartialCmpI32.partial_cmp self1 other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::PartialOrd<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:50-403:60 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:50-402:60 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection :
   core.cmp.PartialOrd proto.pq_ratchet.Direction proto.pq_ratchet.Direction
@@ -8091,10 +8183,11 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection :
   partialEqInst := proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection
   partial_cmp :=
     proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.partial_cmp
+  le := proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.le
 }
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Ord for spqr::proto::pq_ratchet::Direction}::cmp]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:62-403:65 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:62-402:65 -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp
   (self : proto.pq_ratchet.Direction) (other : proto.pq_ratchet.Direction) :
   Result Ordering
@@ -8104,7 +8197,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp
   ok (core.cmp.impls.OrdI32.cmp self1 other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::cmp::Ord for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:62-403:65 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:62-402:65 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpOrd : core.cmp.Ord
   proto.pq_ratchet.Direction := {
@@ -8114,7 +8207,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpOrd : core.cmp.Ord
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.Direction := {
@@ -8122,14 +8215,14 @@ def proto.pq_ratchet.Direction.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}::from]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 def I32.Insts.CoreConvertFromDirection.from
   (value : proto.pq_ratchet.Direction) : Result Std.I32 := do
   let value1 := read_discriminant value
   ok (IScalar.cast .I32 value1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 @[reducible]
 def I32.Insts.CoreConvertFromDirection : core.convert.From Std.I32
   proto.pq_ratchet.Direction := {
@@ -8137,7 +8230,7 @@ def I32.Insts.CoreConvertFromDirection : core.convert.From Std.I32
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Direction}]
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue :
   core.convert.TryFrom proto.pq_ratchet.Direction Std.I32
@@ -8147,7 +8240,7 @@ def proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue :
 }
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::is_valid]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 def proto.pq_ratchet.Direction.is_valid (value : Std.I32) : Result Bool := do
   match value with
   | 0#iscalar => ok true
@@ -8155,13 +8248,1272 @@ def proto.pq_ratchet.Direction.is_valid (value : Std.I32) : Result Bool := do
   | _ => ok false
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::from_i32]:
-    Source: '/home/oliver/Projects/Verification/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 403:67-403:87 -/
+    Source: '/home/oliver/Projects/Verify/SparsePostQuantumRatchet/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
 def proto.pq_ratchet.Direction.from_i32
   (value : Std.I32) : Result (Option proto.pq_ratchet.Direction) := do
   match value with
   | 0#iscalar => ok (some proto.pq_ratchet.Direction.A2B)
   | 1#iscalar => ok (some proto.pq_ratchet.Direction.B2A)
   | _ => ok none
+
+/-- [spqr::authenticator::serialize::{spqr::authenticator::Authenticator}::into_pb]:
+    Source: 'src/authenticator/serialize.rs', lines 9:4-14:5 -/
+def authenticator.serialize.Authenticator.into_pb
+  (self : authenticator.Authenticator) :
+  Result proto.pq_ratchet.Authenticator
+  := do
+  ok { root_key := self.root_key, mac_key := self.mac_key }
+
+/-- [spqr::authenticator::serialize::{spqr::authenticator::Authenticator}::from_pb]:
+    Source: 'src/authenticator/serialize.rs', lines 16:4-21:5 -/
+def authenticator.serialize.Authenticator.from_pb
+  (pb : proto.pq_ratchet.Authenticator) :
+  Result authenticator.Authenticator
+  := do
+  let v ← alloc.vec.CloneVec.clone core.clone.CloneU8 pb.root_key
+  let v1 ← alloc.vec.CloneVec.clone core.clone.CloneU8 pb.mac_key
+  ok { root_key := v, mac_key := v1 }
+
+/-- [spqr::authenticator::{core::fmt::Debug for spqr::authenticator::Error}::fmt]:
+    Source: 'src/authenticator.rs', lines 10:9-10:14 -/
+def authenticator.Error.Insts.CoreFmtDebug.fmt
+  (self : authenticator.Error) (f : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  match self with
+  | authenticator.Error.InvalidCtMac =>
+    core.fmt.Formatter.write_str f (toStr "InvalidCtMac")
+  | authenticator.Error.InvalidHdrMac =>
+    core.fmt.Formatter.write_str f (toStr "InvalidHdrMac")
+  | authenticator.Error.AuthenticatorRootKeyPresent =>
+    core.fmt.Formatter.write_str f (toStr "AuthenticatorRootKeyPresent")
+  | authenticator.Error.AuthenticatorRootKeyMissing =>
+    core.fmt.Formatter.write_str f (toStr "AuthenticatorRootKeyMissing")
+  | authenticator.Error.AuthenticatorMacKeyPresent =>
+    core.fmt.Formatter.write_str f (toStr "AuthenticatorMacKeyPresent")
+  | authenticator.Error.AuthenticatorMacKeyMissing =>
+    core.fmt.Formatter.write_str f (toStr "AuthenticatorMacKeyMissing")
+
+/-- Trait implementation: [spqr::authenticator::{core::fmt::Debug for spqr::authenticator::Error}]
+    Source: 'src/authenticator.rs', lines 10:9-10:14 -/
+@[reducible]
+def authenticator.Error.Insts.CoreFmtDebug : core.fmt.Debug authenticator.Error
+  := {
+  fmt := authenticator.Error.Insts.CoreFmtDebug.fmt
+}
+
+/-- [spqr::authenticator::{core::fmt::Display for spqr::authenticator::Error}::fmt]:
+    Source: 'src/authenticator.rs', lines 10:16-10:32 -/
+def authenticator.Error.Insts.CoreFmtDisplay.fmt
+  (self : authenticator.Error) (__formatter : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  match self with
+  | authenticator.Error.InvalidCtMac =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Ciphertext MAC is invalid")
+  | authenticator.Error.InvalidHdrMac =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Encapsulation key MAC is invalid")
+  | authenticator.Error.AuthenticatorRootKeyPresent =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Authenticator previous root key present when should be erased")
+  | authenticator.Error.AuthenticatorRootKeyMissing =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Authenticator previous root key missing")
+  | authenticator.Error.AuthenticatorMacKeyPresent =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Authenticator previous MAC key present when should be erased")
+  | authenticator.Error.AuthenticatorMacKeyMissing =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Authenticator previous MAC key missing")
+
+/-- Trait implementation: [spqr::authenticator::{core::fmt::Display for spqr::authenticator::Error}]
+    Source: 'src/authenticator.rs', lines 10:16-10:32 -/
+@[reducible]
+def authenticator.Error.Insts.CoreFmtDisplay : core.fmt.Display
+  authenticator.Error := {
+  fmt := authenticator.Error.Insts.CoreFmtDisplay.fmt
+}
+
+/-- Trait implementation: [spqr::authenticator::{core::error::Error for spqr::authenticator::Error}]
+    Source: 'src/authenticator.rs', lines 10:16-10:32 -/
+@[reducible]
+def authenticator.Error.Insts.CoreErrorError : core.error.Error
+  authenticator.Error := {
+  fmtDebugInst := authenticator.Error.Insts.CoreFmtDebug
+  fmtDisplayInst := authenticator.Error.Insts.CoreFmtDisplay
+}
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::MACSIZE]
+    Source: 'src/authenticator.rs', lines 34:4-34:39 -/
+@[global_simps, irreducible]
+def authenticator.Authenticator.MACSIZE : Std.Usize := 32#usize
+
+/-- [spqr::kdf::hkdf_to_vec]:
+    Source: 'src/kdf.rs', lines 6:0-10:1 -/
+def kdf.hkdf_to_vec
+  (salt : Slice Std.U8) (ikm : Slice Std.U8) (info : Slice Std.U8)
+  (okm_len : Std.Usize) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let out ← alloc.vec.from_elem core.clone.CloneU8 0#u8 okm_len
+  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut out)
+  let s1 ← kdf.hkdf_to_slice salt ikm info s
+  ok (deref_mut_back s1)
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::update]:
+    Source: 'src/authenticator.rs', lines 44:4-54:5 -/
+def authenticator.Authenticator.update
+  (self : authenticator.Authenticator) (ep : Std.U64) (k : Slice Std.U8) :
+  Result authenticator.Authenticator
+  := do
+  let s ← alloc.vec.Vec.as_slice Global self.root_key
+  let s1 ← lift (Array.to_slice (Array.make 2#usize [ s, k ]))
+  let ikm ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s1
+  let s2 ←
+    core.array.Array.as_slice
+      (Array.make 45#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
+        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
+        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 65#u8, 117#u8, 116#u8,
+        104#u8, 101#u8, 110#u8, 116#u8, 105#u8, 99#u8, 97#u8, 116#u8, 111#u8,
+        114#u8, 32#u8, 85#u8, 112#u8, 100#u8, 97#u8, 116#u8, 101#u8
+        ])
+  let a ← lift (core.num.U64.to_be_bytes ep)
+  let s3 ← lift (Array.to_slice a)
+  let s4 ← lift (Array.to_slice (Array.make 2#usize [ s2, s3 ]))
+  let info ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s4
+  let a1 := Array.repeat 32#usize 0#u8
+  let s5 ← lift (Array.to_slice a1)
+  let s6 := alloc.vec.Vec.deref ikm
+  let s7 := alloc.vec.Vec.deref info
+  let kdf_out ← kdf.hkdf_to_vec s5 s6 s7 64#usize
+  let s8 ←
+    alloc.vec.Vec.index (core.slice.index.SliceIndexRangeToUsizeSlice Std.U8)
+      kdf_out { «end» := 32#usize }
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s8
+  let s9 ←
+    alloc.vec.Vec.index (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U8)
+      kdf_out { start := 32#usize }
+  let v1 ← alloc.slice.Slice.to_vec core.clone.CloneU8 s9
+  ok { root_key := v, mac_key := v1 }
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::new]:
+    Source: 'src/authenticator.rs', lines 35:4-42:5 -/
+def authenticator.Authenticator.new
+  (root_key : alloc.vec.Vec Std.U8) (ep : Std.U64) :
+  Result authenticator.Authenticator
+  := do
+  let v ← alloc.vec.from_elem core.clone.CloneU8 0#u8 32#usize
+  let s := alloc.vec.Vec.deref root_key
+  authenticator.Authenticator.update { root_key := v, mac_key := v } ep s
+
+/-- [spqr::util::inz]:
+    Source: 'src/util.rs', lines 7:0-13:1 -/
+def util.inz (value : Std.U8) : Result Std.U8 := do
+  let value1 ← lift (UScalar.cast .U16 value)
+  let i ← lift (~~~ value1)
+  let i1 ← lift (core.num.U16.wrapping_add i 1#u16)
+  let i2 ← lift (value1 ||| i1)
+  let i3 ← i2 >>> 8#i32
+  let result ← lift (i3 &&& 1#u16)
+  ok (UScalar.cast .U8 result)
+
+/-- [spqr::util::is_non_zero]:
+    Source: 'src/util.rs', lines 16:0-18:1 -/
+def util.is_non_zero (value : Std.U8) : Result Std.U8 := do
+  let i ← util.inz value
+  core.hint.black_box i
+
+/-- [spqr::util::compare]: loop body 0:
+    Source: 'src/util.rs', lines 28:4-30:5 -/
+@[rust_loop_body]
+def util.compare_loop.body
+  (lhs : Slice Std.U8) (rhs : Slice Std.U8)
+  (iter : core.ops.range.Range Std.Usize) (r : Std.U8) :
+  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U8) Std.U8)
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok (done r)
+  | some i =>
+    let i1 ← Slice.index_usize lhs i
+    let i2 ← Slice.index_usize rhs i
+    let i3 ← lift (i1 ^^^ i2)
+    let r1 ← lift (r ||| i3)
+    ok (cont (iter1, r1))
+
+/-- [spqr::util::compare]: loop 0:
+    Source: 'src/util.rs', lines 28:4-30:5 -/
+@[rust_loop]
+def util.compare_loop
+  (iter : core.ops.range.Range Std.Usize) (lhs : Slice Std.U8)
+  (rhs : Slice Std.U8) (r : Std.U8) :
+  Result Std.U8
+  := do
+  loop
+    (fun (iter1, r1) => util.compare_loop.body lhs rhs iter1 r1)
+    (iter, r)
+
+/-- [spqr::util::compare]:
+    Source: 'src/util.rs', lines 25:0-33:1 -/
+def util.compare
+  (lhs : Slice Std.U8) (rhs : Slice Std.U8) : Result Std.U8 := do
+  let i := Slice.len lhs
+  let r ← util.compare_loop { start := 0#usize, «end» := i } lhs rhs 0#u8
+  util.is_non_zero r
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::mac_ct]:
+    Source: 'src/authenticator.rs', lines 66:4-79:5 -/
+def authenticator.Authenticator.mac_ct
+  (self : authenticator.Authenticator) (ep : Std.U64) (ct : Slice Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let s ←
+    core.array.Array.as_slice
+      (Array.make 35#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
+        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
+        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 99#u8, 105#u8, 112#u8,
+        104#u8, 101#u8, 114#u8, 116#u8, 101#u8, 120#u8, 116#u8
+        ])
+  let a ← lift (core.num.U64.to_be_bytes ep)
+  let s1 ← lift (Array.to_slice a)
+  let s2 ← lift (Array.to_slice (Array.make 3#usize [ s, s1, ct ]))
+  let ct_mac_data ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s2
+  let s3 := alloc.vec.Vec.deref self.mac_key
+  let s4 := alloc.vec.Vec.deref ct_mac_data
+  libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 s3 s4 (some
+    authenticator.Authenticator.MACSIZE)
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::verify_ct]:
+    Source: 'src/authenticator.rs', lines 57:4-63:5 -/
+def authenticator.Authenticator.verify_ct
+  (self : authenticator.Authenticator) (ep : Std.U64) (ct : Slice Std.U8)
+  (expected_mac : Slice Std.U8) :
+  Result (core.result.Result Unit authenticator.Error)
+  := do
+  let v ← authenticator.Authenticator.mac_ct self ep ct
+  let s := alloc.vec.Vec.deref v
+  let i ← util.compare expected_mac s
+  if i != 0#u8
+  then ok (core.result.Result.Err authenticator.Error.InvalidCtMac)
+  else ok (core.result.Result.Ok ())
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::mac_hdr]:
+    Source: 'src/authenticator.rs', lines 91:4-104:5 -/
+def authenticator.Authenticator.mac_hdr
+  (self : authenticator.Authenticator) (ep : Std.U64) (hdr : Slice Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let s ←
+    core.array.Array.as_slice
+      (Array.make 33#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
+        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
+        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 101#u8, 107#u8, 104#u8,
+        101#u8, 97#u8, 100#u8, 101#u8, 114#u8
+        ])
+  let a ← lift (core.num.U64.to_be_bytes ep)
+  let s1 ← lift (Array.to_slice a)
+  let s2 ← lift (Array.to_slice (Array.make 3#usize [ s, s1, hdr ]))
+  let ct_mac_data ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s2
+  let s3 := alloc.vec.Vec.deref self.mac_key
+  let s4 := alloc.vec.Vec.deref ct_mac_data
+  libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 s3 s4 (some
+    authenticator.Authenticator.MACSIZE)
+
+/-- [spqr::authenticator::{spqr::authenticator::Authenticator}::verify_hdr]:
+    Source: 'src/authenticator.rs', lines 82:4-88:5 -/
+def authenticator.Authenticator.verify_hdr
+  (self : authenticator.Authenticator) (ep : Std.U64) (hdr : Slice Std.U8)
+  (expected_mac : Slice Std.U8) :
+  Result (core.result.Result Unit authenticator.Error)
+  := do
+  let v ← authenticator.Authenticator.mac_hdr self ep hdr
+  let s := alloc.vec.Vec.deref v
+  let i ← util.compare expected_mac s
+  if i != 0#u8
+  then ok (core.result.Result.Err authenticator.Error.InvalidHdrMac)
+  else ok (core.result.Result.Ok ())
+
+/-- [spqr::chain::{core::clone::Clone for spqr::chain::ChainParams}::clone]:
+    Source: 'src/chain.rs', lines 16:9-16:14 -/
+def chain.ChainParams.Insts.CoreCloneClone.clone
+  (self : chain.ChainParams) : Result chain.ChainParams := do
+  ok self
+
+/-- Trait implementation: [spqr::chain::{core::clone::Clone for spqr::chain::ChainParams}]
+    Source: 'src/chain.rs', lines 16:9-16:14 -/
+@[reducible]
+def chain.ChainParams.Insts.CoreCloneClone : core.clone.Clone chain.ChainParams
+  := {
+  clone := chain.ChainParams.Insts.CoreCloneClone.clone
+}
+
+/-- Trait implementation: [spqr::chain::{core::marker::Copy for spqr::chain::ChainParams}]
+    Source: 'src/chain.rs', lines 16:16-16:20 -/
+@[reducible]
+def chain.ChainParams.Insts.CoreMarkerCopy : core.marker.Copy chain.ChainParams
+  := {
+  cloneInst := chain.ChainParams.Insts.CoreCloneClone
+}
+
+/-- [spqr::chain::DEFAULT_CHAIN_PARAMS]
+    Source: 'src/chain.rs', lines 34:0-37:2 -/
+@[global_simps, irreducible]
+def chain.DEFAULT_CHAIN_PARAMS : chain.ChainParams :=
+  { max_jump := 25000#u32, max_ooo_keys := 2000#u32 }
+
+/-- [spqr::chain::{core::default::Default for spqr::chain::ChainParams}::default]:
+    Source: 'src/chain.rs', lines 29:4-31:5 -/
+def chain.ChainParams.Insts.CoreDefaultDefault.default
+  : Result chain.ChainParams := do
+  ok chain.DEFAULT_CHAIN_PARAMS
+
+/-- Trait implementation: [spqr::chain::{core::default::Default for spqr::chain::ChainParams}]
+    Source: 'src/chain.rs', lines 28:0-32:1 -/
+@[reducible]
+def chain.ChainParams.Insts.CoreDefaultDefault : core.default.Default
+  chain.ChainParams := {
+  default := chain.ChainParams.Insts.CoreDefaultDefault.default
+}
+
+/-- [spqr::chain::{spqr::chain::ChainParams}::into_pb]:
+    Source: 'src/chain.rs', lines 40:4-53:5 -/
+def chain.ChainParams.into_pb
+  (self : chain.ChainParams) : Result proto.pq_ratchet.ChainParams := do
+  let i ←
+    if self.max_jump = chain.DEFAULT_CHAIN_PARAMS.max_jump
+    then ok 0#u32
+    else ok self.max_jump
+  if self.max_ooo_keys = chain.DEFAULT_CHAIN_PARAMS.max_ooo_keys
+  then ok { max_jump := i, max_ooo_keys := 0#u32 }
+  else ok { max_jump := i, max_ooo_keys := self.max_ooo_keys }
+
+/-- [spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::max_jump_or_default]:
+    Source: 'src/chain.rs', lines 68:4-74:5 -/
+def chain.ChainParams.max_jump_or_default
+  (self : proto.pq_ratchet.ChainParams) : Result Std.U32 := do
+  if self.max_jump > 0#u32
+  then ok self.max_jump
+  else ok chain.DEFAULT_CHAIN_PARAMS.max_jump
+
+/-- [spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::max_ooo_keys_or_default]:
+    Source: 'src/chain.rs', lines 75:4-81:5 -/
+def chain.ChainParams.max_ooo_keys_or_default
+  (self : proto.pq_ratchet.ChainParams) : Result Std.U32 := do
+  if self.max_ooo_keys > 0#u32
+  then ok self.max_ooo_keys
+  else ok chain.DEFAULT_CHAIN_PARAMS.max_ooo_keys
+
+/-- [spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::trim_size]:
+    Source: 'src/chain.rs', lines 84:4-88:5 -/
+def chain.ChainParams.trim_size
+  (self : proto.pq_ratchet.ChainParams) : Result Std.Usize := do
+  let i ← chain.ChainParams.max_ooo_keys_or_default self
+  let max_ooo ← lift (UScalar.cast .Usize i)
+  let i1 ← max_ooo * 11#usize
+  let i2 ← i1 / 10#usize
+  i2 + 1#usize
+
+/-- [spqr::chain::EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH]
+    Source: 'src/chain.rs', lines 125:0-125:52 -/
+@[global_simps, irreducible]
+def chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH : Std.Usize := 1#usize
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::KEY_SIZE]
+    Source: 'src/chain.rs', lines 130:4-130:35 -/
+@[global_simps, irreducible]
+def chain.KeyHistory.KEY_SIZE : Result Std.Usize := 4#usize + 32#usize
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::new]:
+    Source: 'src/chain.rs', lines 132:4-136:5 -/
+def chain.KeyHistory.new : Result chain.KeyHistory := do
+  let i ← chain.KeyHistory.KEY_SIZE
+  let i1 ← i * 2#usize
+  let v := alloc.vec.Vec.with_capacity Std.U8 i1
+  ok { data := v }
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::add]:
+    Source: 'src/chain.rs', lines 139:4-142:5 -/
+def chain.KeyHistory.add
+  (self : chain.KeyHistory) (k : (Std.U32 × (Array Std.U8 32#usize)))
+  (_params : proto.pq_ratchet.ChainParams) :
+  Result chain.KeyHistory
+  := do
+  let (i, a) := k
+  let a1 ← lift (core.num.U32.to_be_bytes i)
+  let s ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
+      Std.U8)) a1 ()
+  let v ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 self.data s
+  let s1 ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
+      Std.U8)) a ()
+  let v1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 v s1
+  ok { data := v1 }
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::remove]:
+    Source: 'src/chain.rs', lines 175:4-182:5 -/
+def chain.KeyHistory.remove
+  (self : chain.KeyHistory) (my_array_index : Std.Usize)
+  (_params : proto.pq_ratchet.ChainParams) :
+  Result chain.KeyHistory
+  := do
+  let i ← chain.KeyHistory.KEY_SIZE
+  let i1 ← my_array_index + i
+  let i2 := alloc.vec.Vec.len self.data
+  let (v, my_array_index1) ←
+    if i1 < i2
+    then
+      let i3 := alloc.vec.Vec.len self.data
+      let new_end ← i3 - i
+      let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.data)
+      let s1 ←
+        core.slice.Slice.copy_within
+          (core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds Std.Usize)
+          core.marker.CopyU8 s { start := new_end } my_array_index
+      let v1 := deref_mut_back s1
+      ok (v1, new_end)
+    else ok (self.data, my_array_index)
+  let v1 ← alloc.vec.Vec.truncate Global v my_array_index1
+  ok { data := v1 }
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::gc]: loop body 0:
+    Source: 'src/chain.rs', lines 155:18-157:58 -/
+@[rust_loop_body]
+def chain.KeyHistory.gc_loop.body
+  (i : Std.Usize) (params : proto.pq_ratchet.ChainParams)
+  (trim_horizon : Slice Std.U8) (self : chain.KeyHistory) (i1 : Std.Usize) :
+  Result (ControlFlow (chain.KeyHistory × Std.Usize) (alloc.vec.Vec Std.U8))
+  := do
+  let i2 := alloc.vec.Vec.len self.data
+  if i1 < i2
+  then
+    let i3 ← i1 + 4#usize
+    let s ←
+      alloc.vec.Vec.index (core.slice.index.SliceIndexRangeUsizeSlice Std.U8)
+        self.data { start := i1, «end» := i3 }
+    let o ← Slice.Insts.CoreCmpOrd.cmp core.cmp.OrdU8 trim_horizon s
+    let b ←
+      match o with
+      | Ordering.lt => ok false
+      | Ordering.eq => ok false
+      | Ordering.gt => ok true
+    if b
+    then
+      let self1 ← chain.KeyHistory.remove self i1 params
+      ok (cont (self1, i1))
+    else let i4 ← i1 + i
+         ok (cont (self, i4))
+  else ok (done self.data)
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::gc]: loop 0:
+    Source: 'src/chain.rs', lines 155:18-157:58 -/
+@[rust_loop]
+def chain.KeyHistory.gc_loop
+  (i : Std.Usize) (self : chain.KeyHistory)
+  (params : proto.pq_ratchet.ChainParams) (trim_horizon : Slice Std.U8)
+  (i1 : Std.Usize) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  loop
+    (fun (self1, i2) => chain.KeyHistory.gc_loop.body i params trim_horizon
+      self1 i2)
+    (self, i1)
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::gc]:
+    Source: 'src/chain.rs', lines 145:4-168:5 -/
+def chain.KeyHistory.gc
+  (self : chain.KeyHistory) (current_key : Std.U32)
+  (params : proto.pq_ratchet.ChainParams) :
+  Result chain.KeyHistory
+  := do
+  let i := alloc.vec.Vec.len self.data
+  let i1 ← chain.ChainParams.trim_size params
+  let i2 ← chain.KeyHistory.KEY_SIZE
+  let i3 ← i1 * i2
+  if i >= i3
+  then
+    let i4 ← chain.ChainParams.max_ooo_keys_or_default params
+    massert (current_key >= i4)
+    let i5 ← current_key - i4
+    let a ← lift (core.num.U32.to_be_bytes i5)
+    let trim_horizon ←
+      core.array.Array.index (core.ops.index.IndexSlice
+        (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
+        Std.U8)) a ()
+    let v ← chain.KeyHistory.gc_loop i2 self params trim_horizon 0#usize
+    ok { data := v }
+  else ok self
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::clear]:
+    Source: 'src/chain.rs', lines 170:4-172:5 -/
+def chain.KeyHistory.clear
+  (self : chain.KeyHistory) : Result chain.KeyHistory := do
+  let v ← alloc.vec.Vec.clear Global self.data
+  ok { data := v }
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::get]: loop body 0:
+    Source: 'src/chain.rs', lines 197:8-207:5 -/
+@[rust_loop_body]
+def chain.KeyHistory.get_loop.body
+  (i : Std.Usize) (v : alloc.vec.Vec Std.U8) (at1 : Std.U32)
+  (params : proto.pq_ratchet.ChainParams) (want : Array Std.U8 4#usize)
+  (iter : core.iter.adapters.step_by.StepBy (core.ops.range.Range Std.Usize)) :
+  Result (ControlFlow (core.iter.adapters.step_by.StepBy (core.ops.range.Range
+    Std.Usize)) ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
+    chain.KeyHistory))
+  := do
+  let (o, iter1) ←
+    core.iter.adapters.step_by.IteratorStepBy.next
+      (core.iter.traits.iterator.IteratorRange core.iter.range.StepUsize) iter
+  match o with
+  | none =>
+    ok (done (core.result.Result.Err (Error.KeyAlreadyRequested at1),
+      { data := v }))
+  | some i1 =>
+    let i2 ← i1 + 4#usize
+    let s ←
+      alloc.vec.Vec.index (core.slice.index.SliceIndexRangeUsizeSlice Std.U8) v
+        { start := i1, «end» := i2 }
+    let b ← Slice.Insts.CoreCmpPartialEqArray.eq core.cmp.PartialEqU8 s want
+    if b
+    then
+      let i3 ← i1 + i
+      let s1 ←
+        alloc.vec.Vec.index (core.slice.index.SliceIndexRangeUsizeSlice Std.U8)
+          v { start := i2, «end» := i3 }
+      let out ← alloc.slice.Slice.to_vec core.clone.CloneU8 s1
+      let self ← chain.KeyHistory.remove { data := v } i1 params
+      ok (done (core.result.Result.Ok out, self))
+    else ok (cont iter1)
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::get]: loop 0:
+    Source: 'src/chain.rs', lines 197:8-207:5 -/
+@[rust_loop]
+def chain.KeyHistory.get_loop
+  (i : Std.Usize)
+  (iter : core.iter.adapters.step_by.StepBy (core.ops.range.Range Std.Usize))
+  (v : alloc.vec.Vec Std.U8) (at1 : Std.U32)
+  (params : proto.pq_ratchet.ChainParams) (want : Array Std.U8 4#usize) :
+  Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
+    chain.KeyHistory)
+  := do
+  loop
+    (fun iter1 => chain.KeyHistory.get_loop.body i v at1 params want iter1)
+    iter
+
+/-- [spqr::chain::{spqr::chain::KeyHistory}::get]:
+    Source: 'src/chain.rs', lines 185:4-207:5 -/
+def chain.KeyHistory.get
+  (self : chain.KeyHistory) (at1 : Std.U32) (current_ctr : Std.U32)
+  (params : proto.pq_ratchet.ChainParams) :
+  Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
+    chain.KeyHistory)
+  := do
+  let i := alloc.vec.Vec.len self.data
+  let i1 ← chain.KeyHistory.KEY_SIZE
+  let left_val ← i % i1
+  if left_val = 0#usize
+  then
+    let i2 ← chain.ChainParams.max_ooo_keys_or_default params
+    let i3 ← at1 + i2
+    if i3 < current_ctr
+    then ok (core.result.Result.Err (Error.KeyTrimmed at1), self)
+    else
+      let want ← lift (core.num.U32.to_be_bytes at1)
+      let i4 := alloc.vec.Vec.len self.data
+      let iter ←
+        core.iter.range.IteratorRange.step_by core.iter.range.StepUsize
+          { start := 0#usize, «end» := i4 } i1
+      chain.KeyHistory.get_loop i1 iter self.data at1 params want
+  else fail panic
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::new]:
+    Source: 'src/chain.rs', lines 212:4-218:5 -/
+def chain.ChainEpochDirection.new
+  (k : Slice Std.U8) : Result chain.ChainEpochDirection := do
+  let kh ← chain.KeyHistory.new
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 k
+  ok { ctr := 0#u32, next := v, prev := kh }
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::next_key_internal]:
+    Source: 'src/chain.rs', lines 228:4-245:5 -/
+def chain.ChainEpochDirection.next_key_internal
+  (next : Slice Std.U8) (ctr : Std.U32) :
+  Result ((Std.U32 × (Array Std.U8 32#usize)) × (Slice Std.U8) × Std.U32)
+  := do
+  let b ← core.slice.Slice.is_empty next
+  massert (¬ b)
+  let ctr1 ← ctr + 1#u32
+  let a := Array.repeat 32#usize 0#u8
+  let genr8r := Array.repeat 64#usize 0#u8
+  let s ← lift (Array.to_slice a)
+  let a1 ← lift (core.num.U32.to_be_bytes ctr1)
+  let s1 ← core.array.Array.as_slice a1
+  let s2 ←
+    lift (Array.to_slice
+      (Array.make 31#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 32#u8, 80#u8, 81#u8,
+        32#u8, 82#u8, 97#u8, 116#u8, 99#u8, 104#u8, 101#u8, 116#u8, 32#u8,
+        86#u8, 49#u8, 32#u8, 67#u8, 104#u8, 97#u8, 105#u8, 110#u8, 32#u8,
+        78#u8, 101#u8, 120#u8, 116#u8
+        ]))
+  let s3 ← lift (Array.to_slice (Array.make 2#usize [ s1, s2 ]))
+  let v ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s3
+  let s4 ← alloc.vec.Vec.as_slice Global v
+  let (s5, to_slice_mut_back) ← lift (Array.to_slice_mut genr8r)
+  let s6 ← kdf.hkdf_to_slice s next s4 s5
+  let genr8r1 := to_slice_mut_back s6
+  let s7 ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.slice.index.SliceIndexRangeToUsizeSlice Std.U8)) genr8r1
+      { «end» := 32#usize }
+  let next1 ← core.slice.Slice.copy_from_slice core.marker.CopyU8 next s7
+  let s8 ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U8)) genr8r1
+      { start := 32#usize }
+  let r ←
+    core.array.TryFromArrayCopySlice.try_from 32#usize core.marker.CopyU8 s8
+  let a2 ←
+    core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
+      "correct size")
+  ok ((ctr1, a2), next1, ctr1)
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::next_key]:
+    Source: 'src/chain.rs', lines 221:4-224:5 -/
+def chain.ChainEpochDirection.next_key
+  (self : chain.ChainEpochDirection) :
+  Result ((Std.U32 × (alloc.vec.Vec Std.U8)) × chain.ChainEpochDirection)
+  := do
+  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.next)
+  let (p, s1, i) ← chain.ChainEpochDirection.next_key_internal s self.ctr
+  let (idx, key) := p
+  let s2 ← lift (Array.to_slice key)
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s2
+  let v1 := deref_mut_back s1
+  ok ((idx, v), { self with ctr := i, next := v1 })
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::key]: loop body 0:
+    Source: 'src/chain.rs', lines 270:8-286:9 -/
+@[rust_loop_body]
+def chain.ChainEpochDirection.key_loop.body
+  (at1 : Std.U32) (params : proto.pq_ratchet.ChainParams) (i : Std.U32)
+  (v : alloc.vec.Vec Std.U8) (kh : chain.KeyHistory) :
+  Result (ControlFlow (Std.U32 × (alloc.vec.Vec Std.U8) × chain.KeyHistory)
+    (Std.U32 × (alloc.vec.Vec Std.U8) × chain.KeyHistory))
+  := do
+  let i1 ← i + 1#u32
+  if at1 > i1
+  then
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut v)
+    let (k, s1, i2) ← chain.ChainEpochDirection.next_key_internal s i
+    let i3 ← chain.ChainParams.max_ooo_keys_or_default params
+    let i4 ← i2 + i3
+    if i4 >= at1
+    then
+      let kh1 ← chain.KeyHistory.add kh k params
+      let v1 := deref_mut_back s1
+      ok (cont (i2, v1, kh1))
+    else let v1 := deref_mut_back s1
+         ok (cont (i2, v1, kh))
+  else ok (done (i, v, kh))
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::key]: loop 0:
+    Source: 'src/chain.rs', lines 270:8-286:9 -/
+@[rust_loop]
+def chain.ChainEpochDirection.key_loop
+  (i : Std.U32) (v : alloc.vec.Vec Std.U8) (kh : chain.KeyHistory)
+  (at1 : Std.U32) (params : proto.pq_ratchet.ChainParams) :
+  Result (Std.U32 × (alloc.vec.Vec Std.U8) × chain.KeyHistory)
+  := do
+  loop
+    (fun (i1, v1, kh1) => chain.ChainEpochDirection.key_loop.body at1 params i1
+      v1 kh1)
+    (i, v, kh)
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::key]:
+    Source: 'src/chain.rs', lines 247:4-296:5 -/
+def chain.ChainEpochDirection.key
+  (self : chain.ChainEpochDirection) (at1 : Std.U32)
+  (params : proto.pq_ratchet.ChainParams) :
+  Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
+    chain.ChainEpochDirection)
+  := do
+  let o ← lift (core.cmp.impls.OrdU32.cmp at1 self.ctr)
+  match o with
+  | Ordering.lt =>
+    let (r, kh) ← chain.KeyHistory.get self.prev at1 self.ctr params
+    ok (r, { self with prev := kh })
+  | Ordering.eq =>
+    ok (core.result.Result.Err (Error.KeyAlreadyRequested at1), self)
+  | Ordering.gt =>
+    let i ← at1 - self.ctr
+    let i1 ← chain.ChainParams.max_jump_or_default params
+    if i > i1
+    then ok (core.result.Result.Err (Error.KeyJump self.ctr at1), self)
+    else
+      let i2 ← chain.ChainParams.max_ooo_keys_or_default params
+      let i3 ← self.ctr + i2
+      let kh ←
+        if at1 > i3
+        then chain.KeyHistory.clear self.prev
+        else ok self.prev
+      let (i4, v, kh1) ←
+        chain.ChainEpochDirection.key_loop self.ctr self.next kh at1 params
+      let kh2 ← chain.KeyHistory.gc kh1 i4 params
+      let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut v)
+      let (p, s1, i5) ← chain.ChainEpochDirection.next_key_internal s i4
+      let (_, a) := p
+      let s2 ← lift (Array.to_slice a)
+      let v1 ← alloc.slice.Slice.to_vec core.clone.CloneU8 s2
+      let v2 := deref_mut_back s1
+      ok (core.result.Result.Ok v1, { ctr := i5, next := v2, prev := kh2 })
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::into_pb]:
+    Source: 'src/chain.rs', lines 298:4-304:5 -/
+def chain.ChainEpochDirection.into_pb
+  (self : chain.ChainEpochDirection) :
+  Result proto.pq_ratchet.chain.epoch.EpochDirection
+  := do
+  ok { ctr := self.ctr, next := self.next, prev := self.prev.data }
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::from_pb]:
+    Source: 'src/chain.rs', lines 306:4-312:5 -/
+def chain.ChainEpochDirection.from_pb
+  (pb : proto.pq_ratchet.chain.epoch.EpochDirection) :
+  Result (core.result.Result chain.ChainEpochDirection Error)
+  := do
+  ok (core.result.Result.Ok
+    { ctr := pb.ctr, next := pb.next, prev := { data := pb.prev } })
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::clear_next]:
+    Source: 'src/chain.rs', lines 314:4-316:5 -/
+def chain.ChainEpochDirection.clear_next
+  (self : chain.ChainEpochDirection) : Result chain.ChainEpochDirection := do
+  let v ← alloc.vec.Vec.clear Global self.next
+  ok { self with next := v }
+
+/-- [spqr::chain::{spqr::chain::Chain}::ced_for_direction]:
+    Source: 'src/chain.rs', lines 322:4-327:5 -/
+def chain.Chain.ced_for_direction
+  (genr8r : Slice Std.U8) (dir : proto.pq_ratchet.Direction) :
+  Result chain.ChainEpochDirection
+  := do
+  let s ←
+    match dir with
+    | proto.pq_ratchet.Direction.A2B =>
+      core.slice.index.Slice.index (core.slice.index.SliceIndexRangeUsizeSlice
+        Std.U8) genr8r { start := 32#usize, «end» := 64#usize }
+    | proto.pq_ratchet.Direction.B2A =>
+      core.slice.index.Slice.index (core.slice.index.SliceIndexRangeUsizeSlice
+        Std.U8) genr8r { start := 64#usize, «end» := 96#usize }
+  chain.ChainEpochDirection.new s
+
+/-- [spqr::{spqr::proto::pq_ratchet::Direction}::switch]:
+    Source: 'src/lib.rs', lines 63:4-68:5 -/
+def Direction.switch
+  (self : proto.pq_ratchet.Direction) : Result proto.pq_ratchet.Direction := do
+  match self with
+  | proto.pq_ratchet.Direction.A2B => ok proto.pq_ratchet.Direction.B2A
+  | proto.pq_ratchet.Direction.B2A => ok proto.pq_ratchet.Direction.A2B
+
+/-- [spqr::chain::{spqr::chain::Chain}::new]:
+    Source: 'src/chain.rs', lines 329:4-348:5 -/
+def chain.Chain.new
+  (initial_key : Slice Std.U8) (dir : proto.pq_ratchet.Direction)
+  (params : proto.pq_ratchet.ChainParams) :
+  Result (core.result.Result chain.Chain Error)
+  := do
+  let a := Array.repeat 32#usize 0#u8
+  let genr8r := Array.repeat 96#usize 0#u8
+  let s ← lift (Array.to_slice a)
+  let s1 ←
+    lift (Array.to_slice
+      (Array.make 33#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 32#u8, 80#u8, 81#u8,
+        32#u8, 82#u8, 97#u8, 116#u8, 99#u8, 104#u8, 101#u8, 116#u8, 32#u8,
+        86#u8, 49#u8, 32#u8, 67#u8, 104#u8, 97#u8, 105#u8, 110#u8, 32#u8,
+        32#u8, 83#u8, 116#u8, 97#u8, 114#u8, 116#u8
+        ]))
+  let (s2, to_slice_mut_back) ← lift (Array.to_slice_mut genr8r)
+  let s3 ← kdf.hkdf_to_slice s initial_key s1 s2
+  let genr8r1 := to_slice_mut_back s3
+  let s4 ← lift (Array.to_slice genr8r1)
+  let ced ← chain.Chain.ced_for_direction s4 dir
+  let s5 ← lift (Array.to_slice genr8r1)
+  let d ← Direction.switch dir
+  let ced1 ← chain.Chain.ced_for_direction s5 d
+  let vd ←
+    alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from
+      (Array.make 1#usize [
+        ({ send := ced, recv := ced1 } : chain.ChainEpoch)
+        ])
+  let s6 ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.slice.index.SliceIndexRangeUsizeSlice Std.U8)) genr8r1
+      { start := 0#usize, «end» := 32#usize }
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s6
+  ok (core.result.Result.Ok
+    {
+      dir,
+      current_epoch := 0#u64,
+      send_epoch := 0#u64,
+      links := vd,
+      next_root := v,
+      params
+    })
+
+/-- [spqr::chain::{spqr::chain::Chain}::add_epoch]:
+    Source: 'src/chain.rs', lines 350:4-369:5 -/
+def chain.Chain.add_epoch
+  (self : chain.Chain) (epoch_secret : EpochSecret) : Result chain.Chain := do
+  let i ← self.current_epoch + 1#u64
+  massert (epoch_secret.epoch = i)
+  let genr8r := Array.repeat 96#usize 0#u8
+  let s := alloc.vec.Vec.deref self.next_root
+  let s1 := alloc.vec.Vec.deref epoch_secret.secret
+  let s2 ←
+    lift (Array.to_slice
+      (Array.make 36#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 32#u8, 80#u8, 81#u8,
+        32#u8, 82#u8, 97#u8, 116#u8, 99#u8, 104#u8, 101#u8, 116#u8, 32#u8,
+        86#u8, 49#u8, 32#u8, 67#u8, 104#u8, 97#u8, 105#u8, 110#u8, 32#u8,
+        65#u8, 100#u8, 100#u8, 32#u8, 69#u8, 112#u8, 111#u8, 99#u8, 104#u8
+        ]))
+  let (s3, to_slice_mut_back) ← lift (Array.to_slice_mut genr8r)
+  let s4 ← kdf.hkdf_to_slice s s1 s2 s3
+  let genr8r1 := to_slice_mut_back s4
+  let s5 ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.slice.index.SliceIndexRangeUsizeSlice Std.U8)) genr8r1
+      { start := 0#usize, «end» := 32#usize }
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s5
+  let s6 ← lift (Array.to_slice genr8r1)
+  let ced ← chain.Chain.ced_for_direction s6 self.dir
+  let s7 ← lift (Array.to_slice genr8r1)
+  let d ← Direction.switch self.dir
+  let ced1 ← chain.Chain.ced_for_direction s7 d
+  let vd ←
+    alloc.collections.vec_deque.VecDeque.push_back self.links
+      ({ send := ced, recv := ced1 } : chain.ChainEpoch)
+  ok
+    {
+      self
+        with
+        current_epoch := epoch_secret.epoch, links := vd, next_root := v
+    }
+
+/-- [spqr::chain::{spqr::chain::Chain}::epoch_idx]:
+    Source: 'src/chain.rs', lines 372:4-382:5 -/
+def chain.Chain.epoch_idx
+  (self : chain.Chain) (epoch : Std.U64) :
+  Result ((core.result.Result Std.Usize Error) × chain.Chain)
+  := do
+  if epoch > self.current_epoch
+  then ok (core.result.Result.Err (Error.EpochOutOfRange epoch), self)
+  else
+    let i ← self.current_epoch - epoch
+    let back ← lift (UScalar.cast .Usize i)
+    let links ← alloc.collections.vec_deque.VecDeque.len self.links
+    if back >= links
+    then ok (core.result.Result.Err (Error.EpochOutOfRange epoch), self)
+    else
+      let i1 ← links - 1#usize
+      let i2 ← i1 - back
+      ok (core.result.Result.Ok i2, self)
+
+/-- [spqr::chain::{spqr::chain::Chain}::send_key]: loop body 0:
+    Source: 'src/chain.rs', lines 391:12-395:13 -/
+@[rust_loop_body]
+def chain.Chain.send_key_loop0.body
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+  (epoch_index : Std.Usize) :
+  Result (ControlFlow ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    Global) × Std.Usize) ((alloc.collections.vec_deque.VecDeque
+    chain.ChainEpoch Global) × Std.Usize))
+  := do
+  if epoch_index > chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
+  then
+    let (_, vd1) ← alloc.collections.vec_deque.VecDeque.pop_front vd
+    let epoch_index1 ← epoch_index - 1#usize
+    ok (cont (vd1, epoch_index1))
+  else ok (done (vd, epoch_index))
+
+/-- [spqr::chain::{spqr::chain::Chain}::send_key]: loop 0:
+    Source: 'src/chain.rs', lines 391:12-395:13 -/
+@[rust_loop]
+def chain.Chain.send_key_loop0
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+  (epoch_index : Std.Usize) :
+  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) ×
+    Std.Usize)
+  := do
+  loop
+    (fun (vd1, epoch_index1) => chain.Chain.send_key_loop0.body vd1
+      epoch_index1)
+    (vd, epoch_index)
+
+/-- [spqr::chain::{spqr::chain::Chain}::send_key]: loop body 1:
+    Source: 'src/chain.rs', lines 396:12-399:13 -/
+@[rust_loop_body]
+def chain.Chain.send_key_loop1.body
+  (iter : core.ops.range.Range Std.Usize)
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
+  Result (ControlFlow ((core.ops.range.Range Std.Usize) ×
+    (alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global))
+    (alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global))
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok (done vd)
+  | some i =>
+    let (ce, index_mut_back) ←
+      alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.index_mut
+        vd i
+    let ced ← chain.ChainEpochDirection.clear_next ce.send
+    let vd1 := index_mut_back { ce with send := ced }
+    ok (cont (iter1, vd1))
+
+/-- [spqr::chain::{spqr::chain::Chain}::send_key]: loop 1:
+    Source: 'src/chain.rs', lines 396:12-399:13 -/
+@[rust_loop]
+def chain.Chain.send_key_loop1
+  (iter : core.ops.range.Range Std.Usize)
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
+  Result (alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+  := do
+  loop
+    (fun (iter1, vd1) => chain.Chain.send_key_loop1.body iter1 vd1)
+    (iter, vd)
+
+/-- [spqr::chain::{spqr::chain::Chain}::send_key]:
+    Source: 'src/chain.rs', lines 384:4-407:5 -/
+def chain.Chain.send_key
+  (self : chain.Chain) (epoch : Std.U64) :
+  Result ((core.result.Result (Std.U32 × (alloc.vec.Vec Std.U8)) Error) ×
+    chain.Chain)
+  := do
+  if epoch < self.send_epoch
+  then
+    ok (core.result.Result.Err (Error.SendKeyEpochDecreased self.send_epoch
+      epoch), self)
+  else
+    let (r, self1) ← chain.Chain.epoch_idx self epoch
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      if self1.send_epoch != epoch
+      then
+        let (vd, epoch_index) ← chain.Chain.send_key_loop0 self1.links val
+        let vd1 ←
+          chain.Chain.send_key_loop1
+            { start := 0#usize, «end» := epoch_index } vd
+        let (ce, index_mut_back) ←
+          alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.index_mut
+            vd1 epoch_index
+        let (p, ced) ← chain.ChainEpochDirection.next_key ce.send
+        let vd2 := index_mut_back { ce with send := ced }
+        ok (core.result.Result.Ok p,
+          { self1 with send_epoch := epoch, links := vd2 })
+      else
+        let (ce, index_mut_back) ←
+          alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.index_mut
+            self1.links val
+        let (p, ced) ← chain.ChainEpochDirection.next_key ce.send
+        let vd := index_mut_back { ce with send := ced }
+        ok (core.result.Result.Ok p, { self1 with links := vd })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          (Std.U32 × (alloc.vec.Vec Std.U8)) (core.convert.FromSame Error)
+          residual
+      ok (r1, self1)
+
+/-- [spqr::chain::{spqr::chain::Chain}::recv_key]:
+    Source: 'src/chain.rs', lines 409:4-412:5 -/
+def chain.Chain.recv_key
+  (self : chain.Chain) (epoch : Std.U64) (index : Std.U32) :
+  Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) × chain.Chain)
+  := do
+  let (r, self1) ← chain.Chain.epoch_idx self epoch
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let (ce, index_mut_back) ←
+      alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.index_mut
+        self1.links val
+    let (r1, ced) ← chain.ChainEpochDirection.key ce.recv index self1.params
+    let vd := index_mut_back { ce with recv := ced }
+    ok (r1, { self1 with links := vd })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    let r1 ←
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        (alloc.vec.Vec Std.U8) (core.convert.FromSame Error) residual
+    ok (r1, self1)
+
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnMut<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}::call_mut]:
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+def
+  chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
+  (c : chain.Chain.into_pb.closure) (tupled_args : chain.ChainEpoch) :
+  Result (proto.pq_ratchet.chain.Epoch × chain.Chain.into_pb.closure)
+  := do
+  let ed ← chain.ChainEpochDirection.into_pb tupled_args.send
+  let ed1 ← chain.ChainEpochDirection.into_pb tupled_args.recv
+  ok ({ send := (some ed), recv := (some ed1) }, c)
+
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnOnce<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}::call_once]:
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+def
+  chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once
+  (c : chain.Chain.into_pb.closure) (ce : chain.ChainEpoch) :
+  Result proto.pq_ratchet.chain.Epoch
+  := do
+  let (e, _) ←
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
+      c ce
+  ok e
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnOnce<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}]
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+@[reducible]
+def chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
+  : core.ops.function.FnOnce chain.Chain.into_pb.closure chain.ChainEpoch
+  proto.pq_ratchet.chain.Epoch := {
+  call_once :=
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once
+}
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnMut<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}]
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+@[reducible]
+def chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
+  : core.ops.function.FnMut chain.Chain.into_pb.closure chain.ChainEpoch
+  proto.pq_ratchet.chain.Epoch := {
+  FnOnceInst :=
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
+  call_mut :=
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
+}
+
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb]:
+    Source: 'src/chain.rs', lines 415:4-431:5 -/
+def chain.Chain.into_pb
+  (self : chain.Chain) : Result proto.pq_ratchet.Chain := do
+  let i ←
+    core.convert.IntoFrom.into I32.Insts.CoreConvertFromDirection self.dir
+  let ii ←
+    alloc.collections.vec_deque.VecDeque.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter
+      self.links
+  let m ←
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
+      chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
+      ii ()
+  let v ←
+    core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
+      (alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
+      chain.ChainEpoch Global)
+      chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
+      (core.iter.traits.collect.FromIteratorVec proto.pq_ratchet.chain.Epoch) m
+  ok
+    {
+      direction := i,
+      current_epoch := self.current_epoch,
+      links := v,
+      next_root := self.next_root,
+      send_epoch := self.send_epoch,
+      params := (some self.params)
+    }
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}::call_mut]:
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
+  (c : chain.Chain.from_pb.closure_1)
+  (tupled_args : proto.pq_ratchet.chain.Epoch) :
+  Result ((core.result.Result chain.ChainEpoch Error) ×
+    chain.Chain.from_pb.closure_1)
+  := do
+  let r ← core.option.Option.ok_or tupled_args.send Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← chain.ChainEpochDirection.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or tupled_args.recv Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← chain.ChainEpochDirection.from_pb val2
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r3
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { send := val1, recv := val3 }, c)
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          let r4 ←
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              chain.ChainEpoch (core.convert.FromSame Error) residual
+          ok (r4, c)
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        let r3 ←
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            chain.ChainEpoch (core.convert.FromSame Error) residual
+        ok (r3, c)
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r2 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          chain.ChainEpoch (core.convert.FromSame Error) residual
+      ok (r2, c)
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    let r1 ←
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        chain.ChainEpoch (core.convert.FromSame Error) residual
+    ok (r1, c)
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}::call_once]:
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once
+  (c : chain.Chain.from_pb.closure_1) (e : proto.pq_ratchet.chain.Epoch) :
+  Result (core.result.Result chain.ChainEpoch Error)
+  := do
+  let (r, _) ←
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
+      c e
+  ok r
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}]
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+@[reducible]
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+  : core.ops.function.FnOnce chain.Chain.from_pb.closure_1
+  proto.pq_ratchet.chain.Epoch (core.result.Result chain.ChainEpoch Error) := {
+  call_once :=
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once
+}
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}]
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+@[reducible]
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
+  : core.ops.function.FnMut chain.Chain.from_pb.closure_1
+  proto.pq_ratchet.chain.Epoch (core.result.Result chain.ChainEpoch Error) := {
+  FnOnceInst :=
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+  call_mut :=
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
+}
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::closure}::call_once]:
+    Source: 'src/chain.rs', lines 436:49-436:71 -/
+def
+  chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
+  (c : chain.Chain.from_pb.closure)
+  (tupled_args : prost.error.UnknownEnumValue) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::closure}]
+    Source: 'src/chain.rs', lines 436:49-436:71 -/
+@[reducible]
+def
+  chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
+  : core.ops.function.FnOnce chain.Chain.from_pb.closure
+  prost.error.UnknownEnumValue Error := {
+  call_once :=
+    chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
+}
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb]:
+    Source: 'src/chain.rs', lines 434:4-452:5 -/
+def chain.Chain.from_pb
+  (pb : proto.pq_ratchet.Chain) :
+  Result (core.result.Result chain.Chain Error)
+  := do
+  let r ←
+    proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
+      pb.direction
+  let r1 ←
+    core.result.Result.map_err
+      chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
+      r ()
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let ii ← alloc.vec.IntoIteratorVec.into_iter pb.links
+    let m ←
+      alloc.vec.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
+        chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
+        ii ()
+    let r2 ←
+      core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
+        (core.iter.traits.iterator.IteratorVecIntoIter
+        proto.pq_ratchet.chain.Epoch)
+        chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
+        (core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult Error
+        (alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator
+        chain.ChainEpoch)) m
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r2
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r3 ← core.option.Option.ok_or pb.params Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r3
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        ok (core.result.Result.Ok
+          {
+            dir := val,
+            current_epoch := pb.current_epoch,
+            send_epoch := pb.send_epoch,
+            links := val1,
+            next_root := pb.next_root,
+            params := val2
+          })
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          chain.Chain (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        chain.Chain (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      chain.Chain (core.convert.FromSame Error) residual
 
 /-- [spqr::encoding::gf::POLY]
     Source: 'src/encoding/gf.rs', lines 7:0-7:30 -/
@@ -9039,6 +10391,7 @@ def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt : core.cmp.PartialOrd
   encoding.polynomial.Pt encoding.polynomial.Pt := {
   partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
   partial_cmp := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+  le := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.le
 }
 
 /-- [spqr::encoding::polynomial::{core::cmp::Ord for spqr::encoding::polynomial::Pt}::cmp]:
@@ -12187,6 +13540,36 @@ def incremental_mlkem768.decaps
   let s3 ← lift (Array.to_slice a3)
   alloc.slice.Slice.to_vec core.clone.CloneU8 s3
 
+/-- [spqr::{core::convert::From<spqr::authenticator::Error> for spqr::Error}::from]:
+    Source: 'src/lib.rs', lines 144:4-146:5 -/
+def Error.Insts.CoreConvertFromError.from
+  (_v : authenticator.Error) : Result Error := do
+  ok Error.MacVerifyFailed
+
+/-- Trait implementation: [spqr::{core::convert::From<spqr::authenticator::Error> for spqr::Error}]
+    Source: 'src/lib.rs', lines 143:0-147:1 -/
+@[reducible]
+def Error.Insts.CoreConvertFromError : core.convert.From Error
+  authenticator.Error := {
+  from_ := Error.Insts.CoreConvertFromError.from
+}
+
+/-- [spqr::{core::convert::From<spqr::proto::pq_ratchet::Version> for u8}::from]:
+    Source: 'src/lib.rs', lines 188:4-193:5 -/
+def U8.Insts.CoreConvertFromVersion.from
+  (v : proto.pq_ratchet.Version) : Result Std.U8 := do
+  match v with
+  | proto.pq_ratchet.Version.V0 => ok 0#u8
+  | proto.pq_ratchet.Version.V1 => ok 1#u8
+
+/-- Trait implementation: [spqr::{core::convert::From<spqr::proto::pq_ratchet::Version> for u8}]
+    Source: 'src/lib.rs', lines 187:0-194:1 -/
+@[reducible]
+def U8.Insts.CoreConvertFromVersion : core.convert.From Std.U8
+  proto.pq_ratchet.Version := {
+  from_ := U8.Insts.CoreConvertFromVersion.from
+}
+
 /-- [spqr::serialize::{core::fmt::Debug for spqr::serialize::Error}::fmt]:
     Source: 'src/serialize.rs', lines 6:9-6:14 -/
 def serialize.Error.Insts.CoreFmtDebug.fmt
@@ -12296,60 +13679,3038 @@ def serialize.Error.Insts.CoreConvertFromPolynomialError : core.convert.From
   from_ := serialize.Error.Insts.CoreConvertFromPolynomialError.from
 }
 
-/-- [spqr::util::inz]:
-    Source: 'src/util.rs', lines 7:0-13:1 -/
-def util.inz (value : Std.U8) : Result Std.U8 := do
-  let value1 ← lift (UScalar.cast .U16 value)
-  let i ← lift (~~~ value1)
-  let i1 ← lift (core.num.U16.wrapping_add i 1#u16)
-  let i2 ← lift (value1 ||| i1)
-  let i3 ← i2 >>> 8#i32
-  let result ← lift (i3 &&& 1#u16)
-  ok (UScalar.cast .U8 result)
-
-/-- [spqr::util::is_non_zero]:
-    Source: 'src/util.rs', lines 16:0-18:1 -/
-def util.is_non_zero (value : Std.U8) : Result Std.U8 := do
-  let i ← util.inz value
-  core.hint.black_box i
-
-/-- [spqr::util::compare]: loop body 0:
-    Source: 'src/util.rs', lines 28:4-30:5 -/
-@[rust_loop_body]
-def util.compare_loop.body
-  (lhs : Slice Std.U8) (rhs : Slice Std.U8)
-  (iter : core.ops.range.Range Std.Usize) (r : Std.U8) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U8) Std.U8)
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 10:4-15:5 -/
+def v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb
+  (self : v1.unchunked.send_ct.NoHeaderReceived) :
+  Result proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
   := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
-  match o with
-  | none => ok (done r)
-  | some i =>
-    let i1 ← Slice.index_usize lhs i
-    let i2 ← Slice.index_usize rhs i
-    let i3 ← lift (i1 ^^^ i2)
-    let r1 ← lift (r ||| i3)
-    ok (cont (iter1, r1))
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a) }
 
-/-- [spqr::util::compare]: loop 0:
-    Source: 'src/util.rs', lines 28:4-30:5 -/
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 11:4-16:5 -/
+def v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb
+  (self : v1.chunked.send_ct.NoHeaderReceived) :
+  Result proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
+  := do
+  let nhr ← v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_hdr
+  ok { uc := (some nhr), receiving_hdr := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 17:4-22:5 -/
+def v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived) :
+  Result (core.result.Result v1.unchunked.send_ct.NoHeaderReceived Error)
+  := do
+  let o ← core.option.Option.as_ref pb.auth
+  let r ← core.option.Option.ok_or o Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let a ← authenticator.serialize.Authenticator.from_pb val
+    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+      residual
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
+def
+  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 18:4-35:5 -/
+def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) :
+  Result (core.result.Result v1.chunked.send_ct.NoHeaderReceived Error)
+  := do
+  match pb.receiving_hdr with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+        residual
+  | some rhdr =>
+    let i ← incremental_mlkem768.HEADER_SIZE
+    let i1 ← i + authenticator.Authenticator.MACSIZE
+    let i2 ← i1 / 2#usize
+    let i3 ← lift (UScalar.cast .U32 i2)
+    if rhdr.pts_needed != i3
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ←
+            core.option.Option.ok_or pb.receiving_hdr Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame
+                Error) residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+          residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 26:4-32:5 -/
+def v1.unchunked.send_ct.serialize.HeaderReceived.into_pb
+  (self : v1.unchunked.send_ct.HeaderReceived) :
+  Result proto.pq_ratchet.v1_state.unchunked.HeaderReceived
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), hdr := self.hdr }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 39:4-44:5 -/
+def v1.chunked.send_ct.serialize.HeaderReceived.into_pb
+  (self : v1.chunked.send_ct.HeaderReceived) :
+  Result proto.pq_ratchet.v1_state.chunked.HeaderReceived
+  := do
+  let hr ← v1.unchunked.send_ct.serialize.HeaderReceived.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
+  ok { uc := (some hr), receiving_ek := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 34:4-44:5 -/
+def v1.unchunked.send_ct.serialize.HeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
+  Result (core.result.Result v1.unchunked.send_ct.HeaderReceived Error)
+  := do
+  let i := alloc.vec.Vec.len pb.hdr
+  if i = 64#usize
+  then
+    let o ← core.option.Option.as_ref pb.auth
+    let r ← core.option.Option.ok_or o Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let a ← authenticator.serialize.Authenticator.from_pb val
+      ok (core.result.Result.Ok
+        { epoch := pb.epoch, auth := a, hdr := pb.hdr })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.unchunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+        residual
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+def
+  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 46:4-59:5 -/
+def v1.chunked.send_ct.serialize.HeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.HeaderReceived) :
+  Result (core.result.Result v1.chunked.send_ct.HeaderReceived Error)
+  := do
+  match pb.receiving_ek with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+        residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+          residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 48:4-56:5 -/
+def v1.unchunked.send_ct.serialize.Ct1Sent.into_pb
+  (self : v1.unchunked.send_ct.Ct1Sent) :
+  Result proto.pq_ratchet.v1_state.unchunked.Ct1Sent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  let s := alloc.vec.Vec.deref self.ct1
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s
+  ok
+    {
+      epoch := self.epoch,
+      auth := (some a),
+      hdr := self.hdr,
+      es := self.es,
+      ct1 := v
+    }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 63:4-69:5 -/
+def v1.chunked.send_ct.serialize.Ct1Sampled.into_pb
+  (self : v1.chunked.send_ct.Ct1Sampled) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct1Sampled
+  := do
+  let cs ← v1.unchunked.send_ct.serialize.Ct1Sent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct1
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
+  ok { uc := (some cs), sending_ct1 := (some pe), receiving_ek := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 58:4-70:5 -/
+def v1.unchunked.send_ct.serialize.Ct1Sent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.Ct1Sent) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct1Sent Error)
+  := do
+  let i := alloc.vec.Vec.len pb.hdr
+  if i = 64#usize
+  then
+    let i1 := alloc.vec.Vec.len pb.es
+    if i1 = 2080#usize
+    then
+      let i2 := alloc.vec.Vec.len pb.ct1
+      if i2 = 960#usize
+      then
+        let o ← core.option.Option.as_ref pb.auth
+        let r ← core.option.Option.ok_or o Error.StateDecode
+        let cf ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let a ← authenticator.serialize.Authenticator.from_pb val
+          ok (core.result.Result.Ok
+            {
+              epoch := pb.epoch,
+              auth := a,
+              hdr := pb.hdr,
+              es := pb.es,
+              ct1 := pb.ct1
+            })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.unchunked.send_ct.Ct1Sent (core.convert.FromSame Error) residual
+      else ok (core.result.Result.Err Error.StateDecode)
+    else ok (core.result.Result.Err Error.StateDecode)
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 71:4-88:5 -/
+def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Sampled) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1Sampled Error)
+  := do
+  match pb.receiving_ek with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            let r5 ← core.option.Option.ok_or none Error.StateDecode
+            let cf4 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r5
+            match cf4 with
+            | core.ops.control_flow.ControlFlow.Continue val4 =>
+              let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
+              let r7 ←
+                core.result.Result.map_err
+                  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                  r6 ()
+              let cf5 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r7
+              match cf5 with
+              | core.ops.control_flow.ControlFlow.Continue val5 =>
+                ok (core.result.Result.Ok
+                  { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                  residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              let r5 ←
+                core.option.Option.ok_or pb.receiving_ek Error.StateDecode
+              let cf4 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r5
+              match cf4 with
+              | core.ops.control_flow.ControlFlow.Continue val4 =>
+                let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
+                let r7 ←
+                  core.result.Result.map_err
+                    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                    r6 ()
+                let cf5 ←
+                  core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                    r7
+                match cf5 with
+                | core.ops.control_flow.ControlFlow.Continue val5 =>
+                  ok (core.result.Result.Ok
+                    { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
+                | core.ops.control_flow.ControlFlow.Break residual =>
+                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                    v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                    residual
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                  residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 74:4-82:5 -/
+def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb
+  (self : v1.unchunked.send_ct.Ct1SentEkReceived) :
+  Result proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  let s := alloc.vec.Vec.deref self.ct1
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s
+  ok
+    {
+      epoch := self.epoch,
+      auth := (some a),
+      es := self.es,
+      ek := self.ek,
+      ct1 := v
+    }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 92:4-97:5 -/
+def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
+  Result proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
+  := do
+  let cser ← v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct1
+  ok { uc := (some cser), sending_ct1 := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 84:4-96:5 -/
+def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error)
+  := do
+  let i := alloc.vec.Vec.len pb.es
+  if i = 2080#usize
+  then
+    let i1 := alloc.vec.Vec.len pb.ct1
+    if i1 = 960#usize
+    then
+      let i2 := alloc.vec.Vec.len pb.ek
+      if i2 = 1152#usize
+      then
+        let o ← core.option.Option.as_ref pb.auth
+        let r ← core.option.Option.ok_or o Error.StateDecode
+        let cf ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let a ← authenticator.serialize.Authenticator.from_pb val
+          ok (core.result.Result.Ok
+            {
+              epoch := pb.epoch,
+              auth := a,
+              es := pb.es,
+              ek := pb.ek,
+              ct1 := pb.ct1
+            })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.unchunked.send_ct.Ct1SentEkReceived (core.convert.FromSame
+            Error) residual
+      else ok (core.result.Result.Err Error.StateDecode)
+    else ok (core.result.Result.Err Error.StateDecode)
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+def
+  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 99:4-107:5 -/
+def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled) :
+  Result (core.result.Result v1.chunked.send_ct.EkReceivedCt1Sampled Error)
+  := do
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+        let r4 ←
+          core.result.Result.map_err
+            v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            r3 ()
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r4
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { uc := val1, sending_ct1 := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame
+            Error) residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
+        residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
+      residual
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 111:4-116:5 -/
+def v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb
+  (self : v1.chunked.send_ct.Ct1Acknowledged) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
+  := do
+  let cs ← v1.unchunked.send_ct.serialize.Ct1Sent.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
+  ok { uc := (some cs), receiving_ek := (some pd) }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 118:4-131:5 -/
+def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1Acknowledged Error)
+  := do
+  match pb.receiving_ek with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+        residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame
+                Error) residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+          residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 100:4-105:5 -/
+def v1.unchunked.send_ct.serialize.Ct2Sent.into_pb
+  (self : v1.unchunked.send_ct.Ct2Sent) :
+  Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a) }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:4-140:5 -/
+def v1.chunked.send_ct.serialize.Ct2Sampled.into_pb
+  (self : v1.chunked.send_ct.Ct2Sampled) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct2Sampled
+  := do
+  let cs ← v1.unchunked.send_ct.serialize.Ct2Sent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct2
+  ok { uc := (some cs), sending_ct2 := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 107:4-112:5 -/
+def v1.unchunked.send_ct.serialize.Ct2Sent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct2Sent Error)
+  := do
+  let o ← core.option.Option.as_ref pb.auth
+  let r ← core.option.Option.ok_or o Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let a ← authenticator.serialize.Authenticator.from_pb val
+    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ct.Ct2Sent (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 142:4-150:5 -/
+def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct2Sampled) :
+  Result (core.result.Result v1.chunked.send_ct.Ct2Sampled Error)
+  := do
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ct.serialize.Ct2Sent.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or pb.sending_ct2 Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+        let r4 ←
+          core.result.Result.map_err
+            v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            r3 ()
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r4
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { uc := val1, sending_ct2 := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::new]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 92:4-97:5 -/
+def v1.unchunked.send_ct.NoHeaderReceived.new
+  (auth_key : Slice Std.U8) :
+  Result v1.unchunked.send_ct.NoHeaderReceived
+  := do
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 auth_key
+  let a ← authenticator.Authenticator.new v 1#u64
+  ok { epoch := 1#u64, auth := a }
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::new]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 71:4-79:5 -/
+def v1.chunked.send_ct.NoHeaderReceived.new
+  (auth_key : Slice Std.U8) : Result v1.chunked.send_ct.NoHeaderReceived := do
+  let i ← incremental_mlkem768.HEADER_SIZE
+  let i1 ← i + authenticator.Authenticator.MACSIZE
+  let decoder ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
+  let nhr ← v1.unchunked.send_ct.NoHeaderReceived.new auth_key
+  let pd ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
+      (toStr "should be able to decode header size")
+  ok { uc := nhr, receiving_hdr := pd }
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::recv_header]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 100:4-113:5 -/
+def v1.unchunked.send_ct.NoHeaderReceived.recv_header
+  (self : v1.unchunked.send_ct.NoHeaderReceived) (epoch : Std.U64)
+  (hdr : alloc.vec.Vec Std.U8) (mac : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result v1.unchunked.send_ct.HeaderReceived Error)
+  := do
+  if epoch = self.epoch
+  then
+    let s := alloc.vec.Vec.deref hdr
+    let s1 := alloc.vec.Vec.deref mac
+    let r ← authenticator.Authenticator.verify_hdr self.auth self.epoch s s1
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      ok (core.result.Result.Ok
+        { epoch := self.epoch, auth := self.auth, hdr })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.unchunked.send_ct.HeaderReceived Error.Insts.CoreConvertFromError
+        residual
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::recv_hdr_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 82:4-107:5 -/
+def v1.chunked.send_ct.NoHeaderReceived.recv_hdr_chunk
+  (self : v1.chunked.send_ct.NoHeaderReceived) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result (core.result.Result v1.chunked.send_ct.NoHeaderReceivedRecvChunk
+    Error)
+  := do
+  if epoch = self.uc.epoch
+  then
+    let receiving_hdr ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+        self.receiving_hdr chunk
+    let o ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+        receiving_hdr
+    match o with
+    | none =>
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.StillReceiving
+        { self with receiving_hdr }))
+    | some hdr =>
+      let i ← incremental_mlkem768.HEADER_SIZE
+      let (mac, hdr1) ←
+        alloc.vec.Vec.split_off core.core.clone.CloneGlobal hdr i
+      let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+      let receiving_ek ←
+        encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
+      let r ←
+        v1.unchunked.send_ct.NoHeaderReceived.recv_header self.uc epoch hdr1
+          mac
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let pd ←
+          core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+            receiving_ek (toStr
+            "should be able to decode EncapsulationKey size")
+        ok (core.result.Result.Ok
+          (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.Done
+          { uc := val, receiving_ek := pd }))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.NoHeaderReceivedRecvChunk (core.convert.FromSame
+          Error) residual
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 109:4-111:5 -/
+def v1.chunked.send_ct.NoHeaderReceived.epoch
+  (self : v1.chunked.send_ct.NoHeaderReceived) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::HeaderReceived}::send_ct1]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 120:4-148:5 -/
+def v1.unchunked.send_ct.HeaderReceived.send_ct1
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.unchunked.send_ct.HeaderReceived) 
+  (rng : R) :
+  Result ((v1.unchunked.send_ct.Ct1Sent × (alloc.vec.Vec Std.U8) ×
+    EpochSecret) × R)
+  := do
+  let (t, rng1) ←
+    incremental_mlkem768.encaps1 randrngRngInst rand_coreCryptoRngInst 
+      self.hdr rng
+  let (ct1, es, secret) := t
+  let s ←
+    lift (Array.to_slice
+      (Array.make 33#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
+        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
+        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 83#u8, 67#u8, 75#u8, 65#u8,
+        32#u8, 75#u8, 101#u8, 121#u8
+        ]))
+  let a ← lift (core.num.U64.to_be_bytes self.epoch)
+  let s1 ← core.array.Array.as_slice a
+  let s2 ← lift (Array.to_slice (Array.make 2#usize [ s, s1 ]))
+  let info ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s2
+  let a1 := Array.repeat 32#usize 0#u8
+  let s3 ← lift (Array.to_slice a1)
+  let s4 := alloc.vec.Vec.deref secret
+  let s5 := alloc.vec.Vec.deref info
+  let secret1 ← kdf.hkdf_to_vec s3 s4 s5 32#usize
+  let s6 := alloc.vec.Vec.deref secret1
+  let auth ← authenticator.Authenticator.update self.auth self.epoch s6
+  let v ← alloc.vec.CloneVec.clone core.clone.CloneU8 ct1
+  ok (({ epoch := self.epoch, auth, hdr := self.hdr, es, ct1 := v }, ct1,
+    { epoch := self.epoch, secret := secret1 }), rng1)
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::HeaderReceived}::send_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 120:4-139:5 -/
+def v1.chunked.send_ct.HeaderReceived.send_ct1_chunk
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.chunked.send_ct.HeaderReceived) (rng : R) :
+  Result ((v1.chunked.send_ct.Ct1Sampled × encoding.Chunk × EpochSecret) ×
+    R)
+  := do
+  let (t, rng1) ←
+    v1.unchunked.send_ct.HeaderReceived.send_ct1 randrngRngInst
+      rand_coreCryptoRngInst self.uc rng
+  let (uc, ct1, epoch_secret) := t
+  let s := alloc.vec.Vec.deref ct1
+  let encoder ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+  let sending_ct1 ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug encoder
+      (toStr "should be able to send CTSIZE")
+  let (chunk, sending_ct11) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      sending_ct1
+  ok (({ uc, sending_ct1 := sending_ct11, receiving_ek := self.receiving_ek },
+    chunk, epoch_secret), rng1)
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::HeaderReceived}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 141:4-143:5 -/
+def v1.chunked.send_ct.HeaderReceived.epoch
+  (self : v1.chunked.send_ct.HeaderReceived) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::send_ct2_encoder]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 156:0-160:1 -/
+def v1.chunked.send_ct.send_ct2_encoder
+  (ct2 : Slice Std.U8) (mac : Slice Std.U8) :
+  Result encoding.polynomial.PolyEncoder
+  := do
+  let msg ← alloc.slice.Slice.to_vec core.clone.CloneU8 ct2
+  let msg1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 msg mac
+  let s := alloc.vec.Vec.deref msg1
+  let r ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+  core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug r (toStr
+    "should be able to send ct2")
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1Sent}::recv_ek]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 154:4-171:5 -/
+def v1.unchunked.send_ct.Ct1Sent.recv_ek
+  (self : v1.unchunked.send_ct.Ct1Sent) (epoch : Std.U64)
+  (ek : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error)
+  := do
+  if epoch = self.epoch
+  then
+    let b ← incremental_mlkem768.ek_matches_header ek self.hdr
+    if b
+    then
+      ok (core.result.Result.Ok
+        {
+          epoch := self.epoch,
+          auth := self.auth,
+          es := self.es,
+          ek,
+          ct1 := self.ct1
+        })
+    else ok (core.result.Result.Err Error.ErroneousDataReceived)
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::recv_ek_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 165:4-197:5 -/
+def v1.chunked.send_ct.Ct1Sampled.recv_ek_chunk
+  (self : v1.chunked.send_ct.Ct1Sampled) (epoch : Std.U64)
+  (chunk : encoding.Chunk) (ct1_ack : Bool) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1SampledRecvChunk Error)
+  := do
+  let receiving_ek ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_ek chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_ek
+  match o with
+  | none =>
+    if ct1_ack
+    then
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.Ct1SampledRecvChunk.StillReceiving
+        { uc := self.uc, receiving_ek }))
+    else
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.Ct1SampledRecvChunk.StillReceivingStillSending
+        { self with receiving_ek }))
+  | some decoded =>
+    let r ← v1.unchunked.send_ct.Ct1Sent.recv_ek self.uc epoch decoded
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      if ct1_ack
+      then
+        let (uc, ct2, mac) ←
+          v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 val
+        let s := alloc.vec.Vec.deref ct2
+        let s1 := alloc.vec.Vec.deref mac
+        let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
+        ok (core.result.Result.Ok (v1.chunked.send_ct.Ct1SampledRecvChunk.Done
+          { uc, sending_ct2 := pe }))
+      else
+        ok (core.result.Result.Ok
+          (v1.chunked.send_ct.Ct1SampledRecvChunk.StillSending
+          { uc := val, sending_ct1 := self.sending_ct1 }))
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct1SampledRecvChunk (core.convert.FromSame Error)
+        residual
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::send_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 199:4-214:5 -/
+def v1.chunked.send_ct.Ct1Sampled.send_ct1_chunk
+  (self : v1.chunked.send_ct.Ct1Sampled) :
+  Result (v1.chunked.send_ct.Ct1Sampled × encoding.Chunk)
+  := do
+  let (chunk, sending_ct1) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ct1
+  ok ({ self with sending_ct1 }, chunk)
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 216:4-218:5 -/
+def v1.chunked.send_ct.Ct1Sampled.epoch
+  (self : v1.chunked.send_ct.Ct1Sampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::send_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 223:4-230:5 -/
+def v1.chunked.send_ct.EkReceivedCt1Sampled.send_ct1_chunk
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
+  Result (v1.chunked.send_ct.EkReceivedCt1Sampled × encoding.Chunk)
+  := do
+  let (chunk, sending_ct1) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ct1
+  ok ({ self with sending_ct1 }, chunk)
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::recv_ct1_ack]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 233:4-240:5 -/
+def v1.chunked.send_ct.EkReceivedCt1Sampled.recv_ct1_ack
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) (epoch : Std.U64) :
+  Result v1.chunked.send_ct.Ct2Sampled
+  := do
+  if epoch = self.uc.epoch
+  then
+    let (uc, ct2, mac) ←
+      v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 self.uc
+    let s := alloc.vec.Vec.deref ct2
+    let s1 := alloc.vec.Vec.deref mac
+    let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
+    ok { uc, sending_ct2 := pe }
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 242:4-244:5 -/
+def v1.chunked.send_ct.EkReceivedCt1Sampled.epoch
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::recv_ek_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 256:4-276:5 -/
+def v1.chunked.send_ct.Ct1Acknowledged.recv_ek_chunk
+  (self : v1.chunked.send_ct.Ct1Acknowledged) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1AcknowledgedRecvChunk Error)
+  := do
+  let receiving_ek ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_ek chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_ek
+  match o with
+  | none =>
+    ok (core.result.Result.Ok
+      (v1.chunked.send_ct.Ct1AcknowledgedRecvChunk.StillReceiving
+      { self with receiving_ek }))
+  | some decoded =>
+    let r ← v1.unchunked.send_ct.Ct1Sent.recv_ek self.uc epoch decoded
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let (uc, ct2, mac) ←
+        v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 val
+      let s := alloc.vec.Vec.deref ct2
+      let s1 := alloc.vec.Vec.deref mac
+      let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.Ct1AcknowledgedRecvChunk.Done
+        { uc, sending_ct2 := pe }))
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct1AcknowledgedRecvChunk (core.convert.FromSame
+        Error) residual
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 278:4-280:5 -/
+def v1.chunked.send_ct.Ct1Acknowledged.epoch
+  (self : v1.chunked.send_ct.Ct1Acknowledged) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::send_ct2_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 285:4-292:5 -/
+def v1.chunked.send_ct.Ct2Sampled.send_ct2_chunk
+  (self : v1.chunked.send_ct.Ct2Sampled) :
+  Result (v1.chunked.send_ct.Ct2Sampled × encoding.Chunk)
+  := do
+  let (chunk, sending_ct2) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ct2
+  ok ({ self with sending_ct2 }, chunk)
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct2Sent}::recv_next_epoch]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 201:4-208:5 -/
+def v1.unchunked.send_ct.Ct2Sent.recv_next_epoch
+  (self : v1.unchunked.send_ct.Ct2Sent) (next_epoch : Std.U64) :
+  Result v1.unchunked.send_ek.KeysUnsampled
+  := do
+  let left_val ← self.epoch + 1#u64
+  if left_val = next_epoch
+  then ok { epoch := left_val, auth := self.auth }
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::recv_next_epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 295:4-298:5 -/
+def v1.chunked.send_ct.Ct2Sampled.recv_next_epoch
+  (self : v1.chunked.send_ct.Ct2Sampled) (epoch : Std.U64) :
+  Result v1.chunked.send_ek.KeysUnsampled
+  := do
+  let uc ← v1.unchunked.send_ct.Ct2Sent.recv_next_epoch self.uc epoch
+  ok { uc }
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 300:4-302:5 -/
+def v1.chunked.send_ct.Ct2Sampled.epoch
+  (self : v1.chunked.send_ct.Ct2Sampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 10:4-15:5 -/
+def v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb
+  (self : v1.unchunked.send_ek.KeysUnsampled) :
+  Result proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a) }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 10:4-14:5 -/
+def v1.chunked.send_ek.serialize.KeysUnsampled.into_pb
+  (self : v1.chunked.send_ek.KeysUnsampled) :
+  Result proto.pq_ratchet.v1_state.chunked.KeysUnsampled
+  := do
+  let ku ← v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb self.uc
+  ok { uc := (some ku) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 17:4-22:5 -/
+def v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
+  Result (core.result.Result v1.unchunked.send_ek.KeysUnsampled Error)
+  := do
+  let o ← core.option.Option.as_ref pb.auth
+  let r ← core.option.Option.ok_or o Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let a ← authenticator.serialize.Authenticator.from_pb val
+    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 16:4-20:5 -/
+def v1.chunked.send_ek.serialize.KeysUnsampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.KeysUnsampled) :
+  Result (core.result.Result v1.chunked.send_ek.KeysUnsampled Error)
+  := do
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      ok (core.result.Result.Ok { uc := val1 })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 26:4-33:5 -/
+def v1.unchunked.send_ek.serialize.HeaderSent.into_pb
+  (self : v1.unchunked.send_ek.HeaderSent) :
+  Result proto.pq_ratchet.v1_state.unchunked.HeaderSent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), ek := self.ek, dk := self.dk }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 24:4-29:5 -/
+def v1.chunked.send_ek.serialize.KeysSampled.into_pb
+  (self : v1.chunked.send_ek.KeysSampled) :
+  Result proto.pq_ratchet.v1_state.chunked.KeysSampled
+  := do
+  let hs ← v1.unchunked.send_ek.serialize.HeaderSent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_hdr
+  ok { uc := (some hs), sending_hdr := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 35:4-46:5 -/
+def v1.unchunked.send_ek.serialize.HeaderSent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.HeaderSent) :
+  Result (core.result.Result v1.unchunked.send_ek.HeaderSent Error)
+  := do
+  let i := alloc.vec.Vec.len pb.dk
+  if i = 2400#usize
+  then
+    let i1 := alloc.vec.Vec.len pb.ek
+    if i1 = 1152#usize
+    then
+      let o ← core.option.Option.as_ref pb.auth
+      let r ← core.option.Option.ok_or o Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let a ← authenticator.serialize.Authenticator.from_pb val
+        ok (core.result.Result.Ok
+          { epoch := pb.epoch, auth := a, ek := pb.ek, dk := pb.dk })
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.unchunked.send_ek.HeaderSent (core.convert.FromSame Error)
+          residual
+    else ok (core.result.Result.Err Error.StateDecode)
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
+def
+  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
+@[reducible]
+def
+  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 31:4-39:5 -/
+def v1.chunked.send_ek.serialize.KeysSampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
+  Result (core.result.Result v1.chunked.send_ek.KeysSampled Error)
+  := do
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ek.serialize.HeaderSent.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or pb.sending_hdr Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+        let r4 ←
+          core.result.Result.map_err
+            v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            r3 ()
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r4
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { uc := val1, sending_hdr := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 50:4-56:5 -/
+def v1.unchunked.send_ek.serialize.EkSent.into_pb
+  (self : v1.unchunked.send_ek.EkSent) :
+  Result proto.pq_ratchet.v1_state.unchunked.EkSent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), dk := self.dk }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 44:4-50:5 -/
+def v1.chunked.send_ek.serialize.HeaderSent.into_pb
+  (self : v1.chunked.send_ek.HeaderSent) :
+  Result proto.pq_ratchet.v1_state.chunked.HeaderSent
+  := do
+  let es ← v1.unchunked.send_ek.serialize.EkSent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ek
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ct1
+  ok { uc := (some es), sending_ek := (some pe), receiving_ct1 := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 58:4-68:5 -/
+def v1.unchunked.send_ek.serialize.EkSent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.EkSent) :
+  Result (core.result.Result v1.unchunked.send_ek.EkSent Error)
+  := do
+  let i := alloc.vec.Vec.len pb.dk
+  if i = 2400#usize
+  then
+    let o ← core.option.Option.as_ref pb.auth
+    let r ← core.option.Option.ok_or o Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let a ← authenticator.serialize.Authenticator.from_pb val
+      ok (core.result.Result.Ok { epoch := pb.epoch, auth := a, dk := pb.dk })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.unchunked.send_ek.EkSent (core.convert.FromSame Error) residual
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure#1}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
+def
+  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure#1}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
+@[reducible]
+def
+  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
+def
+  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
+@[reducible]
+def
+  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 52:4-67:5 -/
+def v1.chunked.send_ek.serialize.HeaderSent.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.HeaderSent) :
+  Result (core.result.Result v1.chunked.send_ek.HeaderSent Error)
+  := do
+  match pb.receiving_ct1 with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ek.serialize.EkSent.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or pb.sending_ek Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            let r5 ← core.option.Option.ok_or none Error.StateDecode
+            let cf4 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r5
+            match cf4 with
+            | core.ops.control_flow.ControlFlow.Continue val4 =>
+              let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
+              let r7 ←
+                core.result.Result.map_err
+                  v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                  r6 ()
+              let cf5 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r7
+              match cf5 with
+              | core.ops.control_flow.ControlFlow.Continue val5 =>
+                ok (core.result.Result.Ok
+                  { uc := val1, sending_ek := val3, receiving_ct1 := val5 })
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+                  residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error) residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.CIPHERTEXT1_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ek.serialize.EkSent.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ← core.option.Option.ok_or pb.sending_ek Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              let r5 ←
+                core.option.Option.ok_or pb.receiving_ct1 Error.StateDecode
+              let cf4 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r5
+              match cf4 with
+              | core.ops.control_flow.ControlFlow.Continue val4 =>
+                let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
+                let r7 ←
+                  core.result.Result.map_err
+                    v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                    r6 ()
+                let cf5 ←
+                  core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                    r7
+                match cf5 with
+                | core.ops.control_flow.ControlFlow.Continue val5 =>
+                  ok (core.result.Result.Ok
+                    { uc := val1, sending_ek := val3, receiving_ct1 := val5 })
+                | core.ops.control_flow.ControlFlow.Break residual =>
+                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                    v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+                    residual
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+                  residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 72:4-79:5 -/
+def v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb
+  (self : v1.unchunked.send_ek.EkSentCt1Received) :
+  Result proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), dk := self.dk, ct1 := self.ct1 }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 71:4-76:5 -/
+def v1.chunked.send_ek.serialize.Ct1Received.into_pb
+  (self : v1.chunked.send_ek.Ct1Received) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct1Received
+  := do
+  let escr ← v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ek
+  ok { uc := (some escr), sending_ek := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 81:4-92:5 -/
+def v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received) :
+  Result (core.result.Result v1.unchunked.send_ek.EkSentCt1Received Error)
+  := do
+  let i := alloc.vec.Vec.len pb.dk
+  if i = 2400#usize
+  then
+    let i1 := alloc.vec.Vec.len pb.ct1
+    if i1 = 960#usize
+    then
+      let o ← core.option.Option.as_ref pb.auth
+      let r ← core.option.Option.ok_or o Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let a ← authenticator.serialize.Authenticator.from_pb val
+        ok (core.result.Result.Ok
+          { epoch := pb.epoch, auth := a, dk := pb.dk, ct1 := pb.ct1 })
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.unchunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          residual
+    else ok (core.result.Result.Err Error.StateDecode)
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+def
+  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+@[reducible]
+def
+  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 78:4-84:5 -/
+def v1.chunked.send_ek.serialize.Ct1Received.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Received) :
+  Result (core.result.Result v1.chunked.send_ek.Ct1Received Error)
+  := do
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or pb.sending_ek Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+        let r4 ←
+          core.result.Result.map_err
+            v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            r3 ()
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r4
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { uc := val1, sending_ek := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 88:4-93:5 -/
+def v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb
+  (self : v1.chunked.send_ek.EkSentCt1Received) :
+  Result proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
+  := do
+  let escr ← v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ct2
+  ok { uc := (some escr), receiving_ct2 := (some pd) }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+def
+  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+@[reducible]
+def
+  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 95:4-111:5 -/
+def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) :
+  Result (core.result.Result v1.chunked.send_ek.EkSentCt1Received Error)
+  := do
+  match pb.receiving_ct2 with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+              Error) residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+        residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.CIPHERTEXT2_SIZE
+    let i2 ← i1 + authenticator.Authenticator.MACSIZE
+    let i3 ← i2 / 2#usize
+    if i != i3
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ←
+            core.option.Option.ok_or pb.receiving_ct2 Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+                Error) residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+              Error) residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          residual
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::new]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 76:4-81:5 -/
+def v1.unchunked.send_ek.KeysUnsampled.new
+  (auth_key : Slice Std.U8) : Result v1.unchunked.send_ek.KeysUnsampled := do
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 auth_key
+  let a ← authenticator.Authenticator.new v 1#u64
+  ok { epoch := 1#u64, auth := a }
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::new]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 52:4-56:5 -/
+def v1.chunked.send_ek.KeysUnsampled.new
+  (auth_key : Slice Std.U8) : Result v1.chunked.send_ek.KeysUnsampled := do
+  let ku ← v1.unchunked.send_ek.KeysUnsampled.new auth_key
+  ok { uc := ku }
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::send_header]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 84:4-100:5 -/
+def v1.unchunked.send_ek.KeysUnsampled.send_header
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.unchunked.send_ek.KeysUnsampled) 
+  (rng : R) :
+  Result ((v1.unchunked.send_ek.HeaderSent × (alloc.vec.Vec Std.U8) ×
+    (alloc.vec.Vec Std.U8)) × R)
+  := do
+  let (keys, rng1) ←
+    incremental_mlkem768.generate randrngRngInst rand_coreCryptoRngInst rng
+  let s := alloc.vec.Vec.deref keys.hdr
+  let mac ← authenticator.Authenticator.mac_hdr self.auth self.epoch s
+  ok
+    (({ epoch := self.epoch, auth := self.auth, ek := keys.ek, dk := keys.dk },
+    keys.hdr, mac), rng1)
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::send_hdr_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 58:4-65:5 -/
+def v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) (rng : R) :
+  Result ((v1.chunked.send_ek.KeysSampled × encoding.Chunk) × R)
+  := do
+  let (t, rng1) ←
+    v1.unchunked.send_ek.KeysUnsampled.send_header randrngRngInst
+      rand_coreCryptoRngInst self.uc rng
+  let (uc, to_send, mac) := t
+  let (to_send1, _) ← alloc.vec.Vec.append Global to_send mac
+  let s := alloc.vec.Vec.deref to_send1
+  let encoder ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+  let sending_hdr ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug encoder
+      (toStr "should be able to encode header size")
+  let (chunk, sending_hdr1) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      sending_hdr
+  ok (({ uc, sending_hdr := sending_hdr1 }, chunk), rng1)
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 67:4-69:5 -/
+def v1.chunked.send_ek.KeysUnsampled.epoch
+  (self : v1.chunked.send_ek.KeysUnsampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::send_hdr_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 74:4-81:5 -/
+def v1.chunked.send_ek.KeysSampled.send_hdr_chunk
+  (self : v1.chunked.send_ek.KeysSampled) :
+  Result (v1.chunked.send_ek.KeysSampled × encoding.Chunk)
+  := do
+  let (chunk, sending_hdr) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_hdr
+  ok ({ self with sending_hdr }, chunk)
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::HeaderSent}::send_ek]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 106:4-115:5 -/
+def v1.unchunked.send_ek.HeaderSent.send_ek
+  (self : v1.unchunked.send_ek.HeaderSent) :
+  Result (v1.unchunked.send_ek.EkSent × (alloc.vec.Vec Std.U8))
+  := do
+  ok ({ epoch := self.epoch, auth := self.auth, dk := self.dk }, self.ek)
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::recv_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 84:4-97:5 -/
+def v1.chunked.send_ek.KeysSampled.recv_ct1_chunk
+  (self : v1.chunked.send_ek.KeysSampled) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result v1.chunked.send_ek.HeaderSent
+  := do
+  if epoch = self.uc.epoch
+  then
+    let i ← incremental_mlkem768.CIPHERTEXT1_SIZE
+    let decoder ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i
+    let receiving_ct1 ←
+      core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+        decoder (toStr "should be able to decode header size")
+    let receiving_ct11 ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+        receiving_ct1 chunk
+    let (uc, ek) ← v1.unchunked.send_ek.HeaderSent.send_ek self.uc
+    let s := alloc.vec.Vec.deref ek
+    let encoder ←
+      encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+    let sending_ek ←
+      core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+        encoder (toStr "should be able to send ek")
+    ok { uc, sending_ek, receiving_ct1 := receiving_ct11 }
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 99:4-101:5 -/
+def v1.chunked.send_ek.KeysSampled.epoch
+  (self : v1.chunked.send_ek.KeysSampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::send_ek_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 112:4-127:5 -/
+def v1.chunked.send_ek.HeaderSent.send_ek_chunk
+  (self : v1.chunked.send_ek.HeaderSent) :
+  Result (v1.chunked.send_ek.HeaderSent × encoding.Chunk)
+  := do
+  let (chunk, sending_ek) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ek
+  ok ({ self with sending_ek }, chunk)
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSent}::recv_ct1]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 121:4-133:5 -/
+def v1.unchunked.send_ek.EkSent.recv_ct1
+  (self : v1.unchunked.send_ek.EkSent) (epoch : Std.U64)
+  (ct1 : alloc.vec.Vec Std.U8) :
+  Result v1.unchunked.send_ek.EkSentCt1Received
+  := do
+  if epoch = self.epoch
+  then ok { epoch := self.epoch, auth := self.auth, dk := self.dk, ct1 }
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::recv_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 130:4-148:5 -/
+def v1.chunked.send_ek.HeaderSent.recv_ct1_chunk
+  (self : v1.chunked.send_ek.HeaderSent) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result v1.chunked.send_ek.HeaderSentRecvChunk
+  := do
+  if epoch = self.uc.epoch
+  then
+    let receiving_ct1 ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+        self.receiving_ct1 chunk
+    let o ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+        receiving_ct1
+    match o with
+    | none =>
+      ok (v1.chunked.send_ek.HeaderSentRecvChunk.StillReceiving
+        { self with receiving_ct1 })
+    | some decoded =>
+      let uc ← v1.unchunked.send_ek.EkSent.recv_ct1 self.uc epoch decoded
+      ok (v1.chunked.send_ek.HeaderSentRecvChunk.Done
+        { uc, sending_ek := self.sending_ek })
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 150:4-152:5 -/
+def v1.chunked.send_ek.HeaderSent.epoch
+  (self : v1.chunked.send_ek.HeaderSent) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::send_ek_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 157:4-161:5 -/
+def v1.chunked.send_ek.Ct1Received.send_ek_chunk
+  (self : v1.chunked.send_ek.Ct1Received) :
+  Result (v1.chunked.send_ek.Ct1Received × encoding.Chunk)
+  := do
+  let (chunk, sending_ek) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ek
+  ok ({ self with sending_ek }, chunk)
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::recv_ct2_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 164:4-179:5 -/
+def v1.chunked.send_ek.Ct1Received.recv_ct2_chunk
+  (self : v1.chunked.send_ek.Ct1Received) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result v1.chunked.send_ek.EkSentCt1Received
+  := do
+  if epoch = self.uc.epoch
+  then
+    let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
+    let i1 ← i + authenticator.Authenticator.MACSIZE
+    let i2 ← i1 % 2#usize
+    massert (i2 = 0#usize)
+    let i3 ← i + authenticator.Authenticator.MACSIZE
+    let decoder ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i3
+    let receiving_ct2 ←
+      core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+        decoder (toStr "should be able to decode ct2+mac size")
+    let receiving_ct21 ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+        receiving_ct2 chunk
+    ok { uc := self.uc, receiving_ct2 := receiving_ct21 }
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 181:4-183:5 -/
+def v1.chunked.send_ek.Ct1Received.epoch
+  (self : v1.chunked.send_ek.Ct1Received) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::recv_ct2]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 139:4-172:5 -/
+def v1.unchunked.send_ek.EkSentCt1Received.recv_ct2
+  (self : v1.unchunked.send_ek.EkSentCt1Received) (ct2 : alloc.vec.Vec Std.U8)
+  (mac : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result (v1.unchunked.send_ct.NoHeaderReceived ×
+    EpochSecret) Error)
+  := do
+  let ss ← incremental_mlkem768.decaps self.dk self.ct1 ct2
+  let s ←
+    lift (Array.to_slice
+      (Array.make 33#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
+        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
+        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 83#u8, 67#u8, 75#u8, 65#u8,
+        32#u8, 75#u8, 101#u8, 121#u8
+        ]))
+  let a ← lift (core.num.U64.to_be_bytes self.epoch)
+  let s1 ← core.array.Array.as_slice a
+  let s2 ← lift (Array.to_slice (Array.make 2#usize [ s, s1 ]))
+  let info ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s2
+  let a1 := Array.repeat 32#usize 0#u8
+  let s3 ← lift (Array.to_slice a1)
+  let s4 := alloc.vec.Vec.deref ss
+  let s5 := alloc.vec.Vec.deref info
+  let ss1 ← kdf.hkdf_to_vec s3 s4 s5 32#usize
+  let s6 := alloc.vec.Vec.deref ss1
+  let auth ← authenticator.Authenticator.update self.auth self.epoch s6
+  let s7 := alloc.vec.Vec.deref ct2
+  let ct1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 self.ct1 s7
+  let s8 := alloc.vec.Vec.deref ct1
+  let s9 := alloc.vec.Vec.deref mac
+  let r ← authenticator.Authenticator.verify_ct auth self.epoch s8 s9
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue _ =>
+    let i ← self.epoch + 1#u64
+    let s10 := alloc.vec.Vec.deref ss1
+    let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s10
+    ok (core.result.Result.Ok ({ epoch := i, auth },
+      { epoch := self.epoch, secret := v }))
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      (v1.unchunked.send_ct.NoHeaderReceived × EpochSecret)
+      Error.Insts.CoreConvertFromError residual
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::recv_ct2_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 194:4-223:5 -/
+def v1.chunked.send_ek.EkSentCt1Received.recv_ct2_chunk
+  (self : v1.chunked.send_ek.EkSentCt1Received) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result (core.result.Result v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk
+    Error)
+  := do
+  if epoch = self.uc.epoch
+  then
+    let receiving_ct2 ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+        self.receiving_ct2 chunk
+    let o ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+        receiving_ct2
+    match o with
+    | none =>
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.StillReceiving
+        { self with receiving_ct2 }))
+    | some ct2 =>
+      let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
+      let (mac, ct21) ←
+        alloc.vec.Vec.split_off core.core.clone.CloneGlobal ct2 i
+      let r ←
+        v1.unchunked.send_ek.EkSentCt1Received.recv_ct2 self.uc ct21 mac
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let (uc, sec) := val
+        let i1 ← incremental_mlkem768.HEADER_SIZE
+        let i2 ← i1 + authenticator.Authenticator.MACSIZE
+        let decoder ←
+          encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i2
+        let pd ←
+          core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+            decoder (toStr "should be able to decode header size")
+        ok (core.result.Result.Ok
+          (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.Done
+          ({ uc, receiving_hdr := pd }, sec)))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk (core.convert.FromSame
+          Error) residual
+  else fail panic
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 225:4-227:5 -/
+def v1.chunked.send_ek.EkSentCt1Received.epoch
+  (self : v1.chunked.send_ek.EkSentCt1Received) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::into_pb]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 12:4-47:5 -/
+def v1.chunked.states.serialize.States.into_pb
+  (self : v1.chunked.states.States) : Result proto.pq_ratchet.V1State := do
+  match self with
+  | v1.chunked.states.States.KeysUnsampled state =>
+    let ku ← v1.chunked.send_ek.serialize.KeysUnsampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku))
+      }
+  | v1.chunked.states.States.KeysSampled state =>
+    let ks ← v1.chunked.send_ek.serialize.KeysSampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.KeysSampled ks))
+      }
+  | v1.chunked.states.States.HeaderSent state =>
+    let hs ← v1.chunked.send_ek.serialize.HeaderSent.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.HeaderSent hs))
+      }
+  | v1.chunked.states.States.Ct1Received state =>
+    let cr ← v1.chunked.send_ek.serialize.Ct1Received.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Received cr))
+      }
+  | v1.chunked.states.States.EkSentCt1Received state =>
+    let escr ← v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received escr))
+      }
+  | v1.chunked.states.States.NoHeaderReceived state =>
+    let nhr ← v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr))
+      }
+  | v1.chunked.states.States.HeaderReceived state =>
+    let hr ← v1.chunked.send_ct.serialize.HeaderReceived.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.HeaderReceived hr))
+      }
+  | v1.chunked.states.States.Ct1Sampled state =>
+    let cs ← v1.chunked.send_ct.serialize.Ct1Sampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Sampled cs))
+      }
+  | v1.chunked.states.States.EkReceivedCt1Sampled state =>
+    let ercs ←
+      v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some
+            (proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled
+            ercs))
+      }
+  | v1.chunked.states.States.Ct1Acknowledged state =>
+    let ca ← v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged ca))
+      }
+  | v1.chunked.states.States.Ct2Sampled state =>
+    let cs ← v1.chunked.send_ct.serialize.Ct2Sampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct2Sampled cs))
+      }
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::from_pb]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 49:4-92:5 -/
+def v1.chunked.states.serialize.States.from_pb
+  (pb : proto.pq_ratchet.V1State) :
+  Result (core.result.Result v1.chunked.states.States Error)
+  := do
+  match pb.inner_state with
+  | none => ok (core.result.Result.Err Error.StateDecode)
+  | some is =>
+    match is with
+    | proto.pq_ratchet.v1_state.InnerState.KeysUnsampled pb1 =>
+      let r ← v1.chunked.send_ek.serialize.KeysUnsampled.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.KeysUnsampled val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.KeysSampled pb1 =>
+      let r ← v1.chunked.send_ek.serialize.KeysSampled.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.KeysSampled val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.HeaderSent pb1 =>
+      let r ← v1.chunked.send_ek.serialize.HeaderSent.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.HeaderSent val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.Ct1Received pb1 =>
+      let r ← v1.chunked.send_ek.serialize.Ct1Received.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.Ct1Received val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received pb1 =>
+      let r ← v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.EkSentCt1Received
+          val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived pb1 =>
+      let r ← v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.NoHeaderReceived
+          val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.HeaderReceived pb1 =>
+      let r ← v1.chunked.send_ct.serialize.HeaderReceived.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.HeaderReceived
+          val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.Ct1Sampled pb1 =>
+      let r ← v1.chunked.send_ct.serialize.Ct1Sampled.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.Ct1Sampled val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled pb1 =>
+      let r ← v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok
+          (v1.chunked.states.States.EkReceivedCt1Sampled val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged pb1 =>
+      let r ← v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.Ct1Acknowledged
+          val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+    | proto.pq_ratchet.v1_state.InnerState.Ct2Sampled pb1 =>
+      let r ← v1.chunked.send_ct.serialize.Ct2Sampled.from_pb pb1
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        ok (core.result.Result.Ok (v1.chunked.states.States.Ct2Sampled val))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.states.States (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::chunked::states::serialize::{core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}::from]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 95:9-95:22 -/
+def U8.Insts.CoreConvertFromMessageType.from
+  (enum_value : v1.chunked.states.serialize.MessageType) : Result Std.U8 := do
+  let enum_value1 := read_discriminant enum_value
+  ok (UScalar.cast .U8 enum_value1)
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 95:9-95:22 -/
+@[reducible]
+def U8.Insts.CoreConvertFromMessageType : core.convert.From Std.U8
+  v1.chunked.states.serialize.MessageType := {
+  from_ := U8.Insts.CoreConvertFromMessageType.from
+}
+
+/-- [spqr::v1::chunked::states::serialize::{core::convert::TryFrom<u8, alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}::try_from]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 109:4-120:5 -/
+def
+  v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from
+  (value : Std.U8) :
+  Result (core.result.Result v1.chunked.states.serialize.MessageType String)
+  := do
+  match value with
+  | 0#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.None)
+  | 1#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.Hdr)
+  | 2#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.Ek)
+  | 3#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.EkCt1Ack)
+  | 4#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.Ct1Ack)
+  | 5#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.Ct1)
+  | 6#uscalar =>
+    ok (core.result.Result.Ok v1.chunked.states.serialize.MessageType.Ct2)
+  | _ =>
+    let s ←
+      Str.Insts.AllocBorrowToOwnedString.to_owned (toStr
+        "Expected a number between 0 and 6")
+    ok (core.result.Result.Err s)
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{core::convert::TryFrom<u8, alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 107:0-121:1 -/
+@[reducible]
+def v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String :
+  core.convert.TryFrom v1.chunked.states.serialize.MessageType Std.U8 String
+  := {
+  try_from :=
+    v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from
+}
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::serialize::MessageType}::from_payload]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 124:4-134:5 -/
+def v1.chunked.states.serialize.MessageType.from_payload
+  (mp : v1.chunked.states.MessagePayload) :
+  Result v1.chunked.states.serialize.MessageType
+  := do
+  match mp with
+  | v1.chunked.states.MessagePayload.None =>
+    ok v1.chunked.states.serialize.MessageType.None
+  | v1.chunked.states.MessagePayload.Hdr _ =>
+    ok v1.chunked.states.serialize.MessageType.Hdr
+  | v1.chunked.states.MessagePayload.Ek _ =>
+    ok v1.chunked.states.serialize.MessageType.Ek
+  | v1.chunked.states.MessagePayload.EkCt1Ack _ =>
+    ok v1.chunked.states.serialize.MessageType.EkCt1Ack
+  | v1.chunked.states.MessagePayload.Ct1Ack _ =>
+    ok v1.chunked.states.serialize.MessageType.Ct1Ack
+  | v1.chunked.states.MessagePayload.Ct1 _ =>
+    ok v1.chunked.states.serialize.MessageType.Ct1
+  | v1.chunked.states.MessagePayload.Ct2 _ =>
+    ok v1.chunked.states.serialize.MessageType.Ct2
+
+/-- [spqr::v1::chunked::states::serialize::MAX_VARINT_BYTES_LEN]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 137:0-137:39 -/
+@[global_simps, irreducible]
+def v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN : Std.Usize := 10#usize
+
+/-- [spqr::v1::chunked::states::serialize::encode_varint]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 139:0-150:1 -/
+def v1.chunked.states.serialize.encode_varint
+  (a : Std.U64) (into : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  sorry
+
+/-- [spqr::v1::chunked::states::serialize::decode_varint]: loop body 0:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 166:4-175:5 -/
+@[rust_loop_body]
+def v1.chunked.states.serialize.decode_varint_loop.body
+  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) (max_i : Std.Usize)
+  (out : Std.U64) (i : Std.Usize) (done1 : Bool) :
+  Result (ControlFlow (Std.U64 × Std.Usize × Bool) (Std.U64 × Std.Usize ×
+    Bool))
+  := do
+  if i < max_i
+  then
+    if done1
+    then ok (done (out, i, true))
+    else
+      let i1 ← at1 + i
+      let byte ←
+        alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice Std.U8)
+          from1 i1
+      let i2 ← lift (UScalar.cast .U64 byte)
+      let i3 ← lift (i2 &&& 127#u64)
+      let i4 ← lift (UScalar.hcast .I32 i)
+      let i5 ← 7#i32 * i4
+      let i6 ← i3 <<< i5
+      let out1 ← lift (out ||| i6)
+      let i7 ← i + 1#usize
+      let i8 ← lift (byte &&& 128#u8)
+      ok (cont (out1, i7, i8 = 0#u8))
+  else ok (done (out, i, done1))
+
+/-- [spqr::v1::chunked::states::serialize::decode_varint]: loop 0:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 166:4-175:5 -/
 @[rust_loop]
-def util.compare_loop
-  (iter : core.ops.range.Range Std.Usize) (lhs : Slice Std.U8)
-  (rhs : Slice Std.U8) (r : Std.U8) :
-  Result Std.U8
+def v1.chunked.states.serialize.decode_varint_loop
+  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) (out : Std.U64)
+  (i : Std.Usize) (done1 : Bool) (max_i : Std.Usize) :
+  Result (Std.U64 × Std.Usize × Bool)
   := do
   loop
-    (fun (iter1, r1) => util.compare_loop.body lhs rhs iter1 r1)
-    (iter, r)
+    (fun (out1, i1, done2) =>
+      v1.chunked.states.serialize.decode_varint_loop.body from1 at1 max_i out1
+      i1 done2)
+    (out, i, done1)
 
-/-- [spqr::util::compare]:
-    Source: 'src/util.rs', lines 25:0-33:1 -/
-def util.compare
-  (lhs : Slice Std.U8) (rhs : Slice Std.U8) : Result Std.U8 := do
-  let i := Slice.len lhs
-  let r ← util.compare_loop { start := 0#usize, «end» := i } lhs rhs 0#u8
-  util.is_non_zero r
+/-- [spqr::v1::chunked::states::serialize::decode_varint]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 153:0-183:1 -/
+def v1.chunked.states.serialize.decode_varint
+  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
+  Result ((core.result.Result Std.U64 Error) × Std.Usize)
+  := do
+  let i := alloc.vec.Vec.len from1
+  if at1 >= i
+  then ok (core.result.Result.Err Error.MsgDecode, at1)
+  else
+    let i1 := alloc.vec.Vec.len from1
+    let i2 ← i1 - at1
+    let max_i ←
+      core.cmp.min core.cmp.OrdUsize
+        v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN i2
+    let (out, i3, done1) ←
+      v1.chunked.states.serialize.decode_varint_loop from1 at1 0#u64 0#usize
+        false max_i
+    if done1
+    then let at2 ← at1 + i3
+         ok (core.result.Result.Ok out, at2)
+    else ok (core.result.Result.Err Error.MsgDecode, at1)
+
+/-- [spqr::v1::chunked::states::serialize::encode_chunk]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 185:0-189:1 -/
+def v1.chunked.states.serialize.encode_chunk
+  (c : encoding.Chunk) (into : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let i ← lift (UScalar.cast .U64 c.index)
+  let into1 ← v1.chunked.states.serialize.encode_varint i into
+  let s ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
+      Std.U8)) c.data ()
+  alloc.vec.Vec.extend_from_slice core.clone.CloneU8 into1 s
+
+/-- [spqr::v1::chunked::states::serialize::decode_chunk]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 191:0-203:1 -/
+def v1.chunked.states.serialize.decode_chunk
+  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
+  Result ((core.result.Result encoding.Chunk Error) × Std.Usize)
+  := do
+  let (r, at2) ← v1.chunked.states.serialize.decode_varint from1 at1
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let at3 ← at2 + 32#usize
+    let i := alloc.vec.Vec.len from1
+    if at3 > i
+    then ok (core.result.Result.Err Error.MsgDecode, at3)
+    else
+      if val > 65535#u64
+      then ok (core.result.Result.Err Error.MsgDecode, at3)
+      else
+        let i1 ← lift (UScalar.cast .U16 val)
+        let s ←
+          alloc.vec.Vec.index (core.slice.index.SliceIndexRangeUsizeSlice
+            Std.U8) from1 { start := at2, «end» := at3 }
+        let r1 ←
+          core.array.TryFromArrayCopySlice.try_from 32#usize core.marker.CopyU8
+            s
+        let a ←
+          core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
+            "correct size")
+        ok (core.result.Result.Ok { index := i1, data := a }, at3)
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    let r1 ←
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        encoding.Chunk (core.convert.FromSame Error) residual
+    ok (r1, at2)
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 222:4-246:5 -/
+def v1.chunked.states.serialize.Message.serialize
+  (self : v1.chunked.states.Message) (index : Std.U32) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let into := alloc.vec.Vec.with_capacity Std.U8 40#usize
+  let i ←
+    core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
+      proto.pq_ratchet.Version.V1
+  let into1 ← alloc.vec.Vec.push into i
+  let into2 ← v1.chunked.states.serialize.encode_varint self.epoch into1
+  let i1 ← lift (UScalar.cast .U64 index)
+  let into3 ← v1.chunked.states.serialize.encode_varint i1 into2
+  let mt ← v1.chunked.states.serialize.MessageType.from_payload self.payload
+  let i2 ← core.convert.IntoFrom.into U8.Insts.CoreConvertFromMessageType mt
+  let into4 ← alloc.vec.Vec.push into3 i2
+  match self.payload with
+  | v1.chunked.states.MessagePayload.None => ok into4
+  | v1.chunked.states.MessagePayload.Hdr chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.Ek chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.EkCt1Ack chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.Ct1Ack _ => ok into4
+  | v1.chunked.states.MessagePayload.Ct1 chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.Ct2 chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(alloc::string::String), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1}::call_once]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 264:63-264:83 -/
+def
+  v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once
+  (c : v1.chunked.states.serialize.Message.deserialize.closure_1)
+  (tupled_args : String) :
+  Result Error
+  := do
+  ok Error.MsgDecode
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(alloc::string::String), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 264:63-264:83 -/
+@[reducible]
+def
+  v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError
+  : core.ops.function.FnOnce
+  v1.chunked.states.serialize.Message.deserialize.closure_1 String Error := {
+  call_once :=
+    v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once
+}
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(core::num::error::TryFromIntError), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure}::call_once]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 260:21-260:41 -/
+def
+  v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once
+  (c : v1.chunked.states.serialize.Message.deserialize.closure)
+  (tupled_args : core.num.error.TryFromIntError) :
+  Result Error
+  := do
+  ok Error.MsgDecode
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(core::num::error::TryFromIntError), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 260:21-260:41 -/
+@[reducible]
+def
+  v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.states.serialize.Message.deserialize.closure
+  core.num.error.TryFromIntError Error := {
+  call_once :=
+    v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 249:4-279:5 -/
+def v1.chunked.states.serialize.Message.deserialize
+  (from1 : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result (v1.chunked.states.Message × Std.U32 ×
+    Std.Usize) Error)
+  := do
+  let b ← alloc.vec.Vec.is_empty Global from1
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
+    let i ←
+      alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice Std.U8) from1
+        0#usize
+    let i1 ←
+      core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
+        proto.pq_ratchet.Version.V1
+    if i != i1
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let (r, at1) ← v1.chunked.states.serialize.decode_varint from1 1#usize
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        if val = 0#u64
+        then ok (core.result.Result.Err Error.MsgDecode)
+        else
+          let (r1, at2) ← v1.chunked.states.serialize.decode_varint from1 at1
+          let cf1 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r1
+          match cf1 with
+          | core.ops.control_flow.ControlFlow.Continue val1 =>
+            let r2 ←
+              U32.Insts.CoreConvertTryFromU64TryFromIntError.try_from val1
+            let r3 ←
+              core.result.Result.map_err
+                v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError
+                r2 ()
+            let cf2 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r3
+            match cf2 with
+            | core.ops.control_flow.ControlFlow.Continue val2 =>
+              let i2 := alloc.vec.Vec.len from1
+              if at2 >= i2
+              then ok (core.result.Result.Err Error.MsgDecode)
+              else
+                let i3 ←
+                  alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
+                    Std.U8) from1 at2
+                let r4 ←
+                  v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from
+                    i3
+                let r5 ←
+                  core.result.Result.map_err
+                    v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError
+                    r4 ()
+                let cf3 ←
+                  core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                    r5
+                match cf3 with
+                | core.ops.control_flow.ControlFlow.Continue val3 =>
+                  let at3 ← at2 + 1#usize
+                  match val3 with
+                  | v1.chunked.states.serialize.MessageType.None =>
+                    ok (core.result.Result.Ok
+                      ({
+                         epoch := val,
+                         payload := v1.chunked.states.MessagePayload.None
+                       }, val2, at3))
+                  | v1.chunked.states.serialize.MessageType.Hdr =>
+                    let (r6, at4) ←
+                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let cf4 ←
+                      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                        r6
+                    match cf4 with
+                    | core.ops.control_flow.ControlFlow.Continue val4 =>
+                      ok (core.result.Result.Ok
+                        ({
+                           epoch := val,
+                           payload :=
+                             (v1.chunked.states.MessagePayload.Hdr val4)
+                         }, val2, at4))
+                    | core.ops.control_flow.ControlFlow.Break residual =>
+                      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                        (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                        (core.convert.FromSame Error) residual
+                  | v1.chunked.states.serialize.MessageType.Ek =>
+                    let (r6, at4) ←
+                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let cf4 ←
+                      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                        r6
+                    match cf4 with
+                    | core.ops.control_flow.ControlFlow.Continue val4 =>
+                      ok (core.result.Result.Ok
+                        ({
+                           epoch := val,
+                           payload :=
+                             (v1.chunked.states.MessagePayload.Ek val4)
+                         }, val2, at4))
+                    | core.ops.control_flow.ControlFlow.Break residual =>
+                      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                        (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                        (core.convert.FromSame Error) residual
+                  | v1.chunked.states.serialize.MessageType.EkCt1Ack =>
+                    let (r6, at4) ←
+                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let cf4 ←
+                      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                        r6
+                    match cf4 with
+                    | core.ops.control_flow.ControlFlow.Continue val4 =>
+                      ok (core.result.Result.Ok
+                        ({
+                           epoch := val,
+                           payload :=
+                             (v1.chunked.states.MessagePayload.EkCt1Ack val4)
+                         }, val2, at4))
+                    | core.ops.control_flow.ControlFlow.Break residual =>
+                      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                        (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                        (core.convert.FromSame Error) residual
+                  | v1.chunked.states.serialize.MessageType.Ct1Ack =>
+                    ok (core.result.Result.Ok
+                      ({
+                         epoch := val,
+                         payload :=
+                           (v1.chunked.states.MessagePayload.Ct1Ack true)
+                       }, val2, at3))
+                  | v1.chunked.states.serialize.MessageType.Ct1 =>
+                    let (r6, at4) ←
+                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let cf4 ←
+                      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                        r6
+                    match cf4 with
+                    | core.ops.control_flow.ControlFlow.Continue val4 =>
+                      ok (core.result.Result.Ok
+                        ({
+                           epoch := val,
+                           payload :=
+                             (v1.chunked.states.MessagePayload.Ct1 val4)
+                         }, val2, at4))
+                    | core.ops.control_flow.ControlFlow.Break residual =>
+                      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                        (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                        (core.convert.FromSame Error) residual
+                  | v1.chunked.states.serialize.MessageType.Ct2 =>
+                    let (r6, at4) ←
+                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let cf4 ←
+                      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                        r6
+                    match cf4 with
+                    | core.ops.control_flow.ControlFlow.Continue val4 =>
+                      ok (core.result.Result.Ok
+                        ({
+                           epoch := val,
+                           payload :=
+                             (v1.chunked.states.MessagePayload.Ct2 val4)
+                         }, val2, at4))
+                    | core.ops.control_flow.ControlFlow.Break residual =>
+                      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                        (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                        (core.convert.FromSame Error) residual
+                | core.ops.control_flow.ControlFlow.Break residual =>
+                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                    (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                    (core.convert.FromSame Error) residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                (v1.chunked.states.Message × Std.U32 × Std.Usize)
+                (core.convert.FromSame Error) residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              (v1.chunked.states.Message × Std.U32 × Std.Usize)
+              (core.convert.FromSame Error) residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          (v1.chunked.states.Message × Std.U32 × Std.Usize)
+          (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::init_a]:
+    Source: 'src/v1/chunked/states.rs', lines 58:4-60:5 -/
+def v1.chunked.states.States.init_a
+  (auth_key : Slice Std.U8) : Result v1.chunked.states.States := do
+  let ku ← v1.chunked.send_ek.KeysUnsampled.new auth_key
+  ok (v1.chunked.states.States.KeysUnsampled ku)
+
+/-- [spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::init_b]:
+    Source: 'src/v1/chunked/states.rs', lines 62:4-64:5 -/
+def v1.chunked.states.States.init_b
+  (auth_key : Slice Std.U8) : Result v1.chunked.states.States := do
+  let nhr ← v1.chunked.send_ct.NoHeaderReceived.new auth_key
+  ok (v1.chunked.states.States.NoHeaderReceived nhr)
 
 end spqr
