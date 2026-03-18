@@ -44,7 +44,7 @@ charon:
 aeneas_args:
   options:
     - split-files
-  dest: "SPQR" # output directory for generated Lean files
+  dest: "Spqr" # output directory for generated Lean files
 
 crate:
   dir: "." # path to Rust crate
