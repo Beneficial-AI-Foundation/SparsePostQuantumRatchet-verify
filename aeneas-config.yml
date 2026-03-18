@@ -36,7 +36,7 @@ charon:
     - "spqr::encoding::gf::accelerated"
     - "spqr::encoding::gf::mul2_u16" # dispatches to excluded accelerated code
     - "spqr::encoding::gf::{core::ops::arith::MulAssign<&spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}" 
-    - "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message"
+    - "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message" # Aeneas internal error
     - "spqr::proto::_::{impl prost::message::Message for _}"
     - "spqr::proto::_::_::{impl prost::message::Message for _}"
     - "spqr::proto::_::_::_::{impl prost::message::Message for _}"
@@ -51,9 +51,174 @@ crate:
   name: "spqr" # package name
 
 # Post-extraction find/replace applied to generated Lean files.
+# Aeneas places Pt's Ord instance in Funs.lean, but PolyDecoder (in Types.lean)
+# references it in its type signature. Since Types.lean is compiled before Funs.lean,
+# we move the Pt trait instances into Types.lean and remove them from Funs.lean.
 tweaks:
-  files: [] # Lean files to patch, e.g. ["Funs.lean", "Types.lean"]
-  substitutions: []
-  # Example:
-  # - find: "someGeneratedName"
-  #   replace: "betterName"
+  files: ["Types.lean", "Funs.lean"]
+  substitutions:
+    # 1. Insert Pt trait instances into Types.lean after the Pt struct definition
+    - find: |
+        structure encoding.polynomial.Pt where
+          x : encoding.gf.GF16
+          y : encoding.gf.GF16
+
+        /-- [spqr::encoding::polynomial::Poly]
+      replace: |
+        structure encoding.polynomial.Pt where
+          x : encoding.gf.GF16
+          y : encoding.gf.GF16
+
+        -- Pt trait instances (moved here from Funs.lean because PolyDecoder references
+        -- encoding.polynomial.Pt.Insts.CoreCmpOrd in its type signature)
+
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt.eq
+          (self other : encoding.polynomial.Pt) : Result Bool := do
+          ok (self.x.value = other.x.value)
+
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt :
+          core.cmp.PartialEq encoding.polynomial.Pt encoding.polynomial.Pt := {
+          eq := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt.eq
+        }
+
+        def encoding.polynomial.Pt.Insts.CoreCmpEq.assert_receiver_is_total_eq
+          (_self : encoding.polynomial.Pt) : Result Unit := ok ()
+
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpEq :
+          core.cmp.Eq encoding.polynomial.Pt := {
+          partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
+          assert_receiver_is_total_eq :=
+            encoding.polynomial.Pt.Insts.CoreCmpEq.assert_receiver_is_total_eq
+        }
+
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+          (self other : encoding.polynomial.Pt) : Result (Option Ordering) := do
+          let o ← lift (core.cmp.impls.OrdU16.cmp self.x.value other.x.value)
+          ok (some o)
+
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt :
+          core.cmp.PartialOrd encoding.polynomial.Pt encoding.polynomial.Pt := {
+          partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
+          partial_cmp := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+          lt := core.cmp.PartialOrd.lt.default
+            encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+          le := core.cmp.PartialOrd.le.default
+            encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+          gt := core.cmp.PartialOrd.gt.default
+            encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+          ge := core.cmp.PartialOrd.ge.default
+            encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+        }
+
+        def encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp
+          (self other : encoding.polynomial.Pt) : Result Ordering := do
+          let o ←
+            encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp self other
+          core.option.Option.unwrap o
+
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpOrd :
+          core.cmp.Ord encoding.polynomial.Pt := {
+          eqInst := encoding.polynomial.Pt.Insts.CoreCmpEq
+          partialOrdInst := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt
+          cmp := encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp
+          max := core.cmp.Ord.max.default
+            (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.lt)
+          min := core.cmp.Ord.min.default
+            (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.lt)
+          clamp := core.cmp.Ord.clamp.default
+            (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.le)
+            (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.lt)
+            (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.gt)
+        }
+
+        /-- [spqr::encoding::polynomial::Poly]
+
+    # 2. Remove Pt PartialEq + Eq from Funs.lean (before serialize)
+    - find: |
+        /-- [spqr::encoding::polynomial::{core::cmp::PartialEq<spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::Pt}::eq]:
+            Source: 'src/encoding/polynomial.rs', lines 61:4-63:5 -/
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt.eq
+          (self : encoding.polynomial.Pt) (other : encoding.polynomial.Pt) :
+          Result Bool
+          := do
+          ok (self.x.value = other.x.value)
+
+        /-- Trait implementation: [spqr::encoding::polynomial::{core::cmp::PartialEq<spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::Pt}]
+            Source: 'src/encoding/polynomial.rs', lines 60:0-64:1 -/
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt : core.cmp.PartialEq
+          encoding.polynomial.Pt encoding.polynomial.Pt := {
+          eq := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt.eq
+        }
+
+        /-- [spqr::encoding::polynomial::{core::cmp::Eq for spqr::encoding::polynomial::Pt}::assert_receiver_is_total_eq]:
+            Source: 'src/encoding/polynomial.rs', lines 22:22-22:24 -/
+        def encoding.polynomial.Pt.Insts.CoreCmpEq.assert_receiver_is_total_eq
+          (self : encoding.polynomial.Pt) : Result Unit := do
+          ok ()
+
+        /-- Trait implementation: [spqr::encoding::polynomial::{core::cmp::Eq for spqr::encoding::polynomial::Pt}]
+            Source: 'src/encoding/polynomial.rs', lines 22:22-22:24 -/
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpEq : core.cmp.Eq encoding.polynomial.Pt
+          := {
+          partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
+          assert_receiver_is_total_eq :=
+            encoding.polynomial.Pt.Insts.CoreCmpEq.assert_receiver_is_total_eq
+        }
+
+        /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Pt}::serialize]:
+      replace: |
+        -- Pt PartialEq and Eq instances moved to Types.lean (needed by PolyDecoder type signature)
+
+        /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Pt}::serialize]:
+
+    # 3. Remove Pt PartialOrd + Ord from Funs.lean (before MAX_STORED_POLYNOMIAL_DEGREE_V1)
+    - find: |
+        /-- [spqr::encoding::polynomial::{core::cmp::PartialOrd<spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::Pt}::partial_cmp]:
+            Source: 'src/encoding/polynomial.rs', lines 55:4-57:5 -/
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+          (self : encoding.polynomial.Pt) (other : encoding.polynomial.Pt) :
+          Result (Option Ordering)
+          := do
+          let o ← lift (core.cmp.impls.OrdU16.cmp self.x.value other.x.value)
+          ok (some o)
+
+        /-- Trait implementation: [spqr::encoding::polynomial::{core::cmp::PartialOrd<spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::Pt}]
+            Source: 'src/encoding/polynomial.rs', lines 54:0-58:1 -/
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt : core.cmp.PartialOrd
+          encoding.polynomial.Pt encoding.polynomial.Pt := {
+          partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
+          partial_cmp := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+        }
+
+        /-- [spqr::encoding::polynomial::{core::cmp::Ord for spqr::encoding::polynomial::Pt}::cmp]:
+            Source: 'src/encoding/polynomial.rs', lines 47:4-49:5 -/
+        def encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp
+          (self : encoding.polynomial.Pt) (other : encoding.polynomial.Pt) :
+          Result Ordering
+          := do
+          let o ←
+            encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp self other
+          core.option.Option.unwrap o
+
+        /-- Trait implementation: [spqr::encoding::polynomial::{core::cmp::Ord for spqr::encoding::polynomial::Pt}]
+            Source: 'src/encoding/polynomial.rs', lines 46:0-50:1 -/
+        @[reducible]
+        def encoding.polynomial.Pt.Insts.CoreCmpOrd : core.cmp.Ord
+          encoding.polynomial.Pt := {
+          eqInst := encoding.polynomial.Pt.Insts.CoreCmpEq
+          partialOrdInst := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt
+          cmp := encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp
+        }
+
+        /-- [spqr::encoding::polynomial::MAX_STORED_POLYNOMIAL_DEGREE_V1]
+      replace: |
+        -- Pt PartialOrd and Ord instances moved to Types.lean (needed by PolyDecoder type signature)
+
+        /-- [spqr::encoding::polynomial::MAX_STORED_POLYNOMIAL_DEGREE_V1]

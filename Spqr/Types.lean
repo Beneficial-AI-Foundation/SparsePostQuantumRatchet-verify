@@ -774,6 +774,72 @@ structure encoding.polynomial.Pt where
   x : encoding.gf.GF16
   y : encoding.gf.GF16
 
+-- Pt trait instances (moved here from Funs.lean because PolyDecoder references
+-- encoding.polynomial.Pt.Insts.CoreCmpOrd in its type signature)
+
+def encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt.eq
+  (self other : encoding.polynomial.Pt) : Result Bool := do
+  ok (self.x.value = other.x.value)
+
+@[reducible]
+def encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt :
+  core.cmp.PartialEq encoding.polynomial.Pt encoding.polynomial.Pt := {
+  eq := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt.eq
+}
+
+def encoding.polynomial.Pt.Insts.CoreCmpEq.assert_receiver_is_total_eq
+  (_self : encoding.polynomial.Pt) : Result Unit := ok ()
+
+@[reducible]
+def encoding.polynomial.Pt.Insts.CoreCmpEq :
+  core.cmp.Eq encoding.polynomial.Pt := {
+  partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
+  assert_receiver_is_total_eq :=
+    encoding.polynomial.Pt.Insts.CoreCmpEq.assert_receiver_is_total_eq
+}
+
+def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+  (self other : encoding.polynomial.Pt) : Result (Option Ordering) := do
+  let o ← lift (core.cmp.impls.OrdU16.cmp self.x.value other.x.value)
+  ok (some o)
+
+@[reducible]
+def encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt :
+  core.cmp.PartialOrd encoding.polynomial.Pt encoding.polynomial.Pt := {
+  partialEqInst := encoding.polynomial.Pt.Insts.CoreCmpPartialEqPt
+  partial_cmp := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+  lt := core.cmp.PartialOrd.lt.default
+    encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+  le := core.cmp.PartialOrd.le.default
+    encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+  gt := core.cmp.PartialOrd.gt.default
+    encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+  ge := core.cmp.PartialOrd.ge.default
+    encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp
+}
+
+def encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp
+  (self other : encoding.polynomial.Pt) : Result Ordering := do
+  let o ←
+    encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp self other
+  core.option.Option.unwrap o
+
+@[reducible]
+def encoding.polynomial.Pt.Insts.CoreCmpOrd :
+  core.cmp.Ord encoding.polynomial.Pt := {
+  eqInst := encoding.polynomial.Pt.Insts.CoreCmpEq
+  partialOrdInst := encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt
+  cmp := encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp
+  max := core.cmp.Ord.max.default
+    (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.lt)
+  min := core.cmp.Ord.min.default
+    (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.lt)
+  clamp := core.cmp.Ord.clamp.default
+    (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.le)
+    (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.lt)
+    (encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.gt)
+}
+
 /-- [spqr::encoding::polynomial::Poly]
     Source: 'src/encoding/polynomial.rs', lines 79:0-88:1 -/
 structure encoding.polynomial.Poly where
