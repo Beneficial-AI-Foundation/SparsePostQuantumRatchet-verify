@@ -551,7 +551,7 @@ impl GF16 {
         let mut square = *other * *other;
         let mut out = *self;
         for _i in 1..16 {
-            out = out * square;
+            out *= square;
             square = square * square;
         }
         out

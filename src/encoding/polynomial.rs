@@ -265,6 +265,7 @@ impl Poly {
         }
         // Multiply and sum
         let mut out = GF16::ZERO;
+        #[allow(clippy::needless_range_loop)]
         for i in 0..self.coefficients.len() {
             out += self.coefficients[i] * xs[i];
         }
@@ -308,6 +309,7 @@ impl Poly {
             _ => {
                 debug_assert!(false, "missing precomputed poly of size {}", pts.len());
                 let mut ones = Vec::with_capacity(pts.len());
+                #[allow(clippy::needless_range_loop)]
                 for i in 0..pts.len() {
                     ones.push(Pt {
                         x: pts[i].x,
@@ -610,6 +612,7 @@ impl PolyEncoder {
                           Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
                           Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
                           Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1)];
+            #[allow(clippy::needless_range_loop)]
             for i in 0..NUM_POLYS {
                 out[i] = Poly::deserialize(&pb.polys[i])?;
             }
