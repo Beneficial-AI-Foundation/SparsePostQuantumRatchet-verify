@@ -2,7 +2,7 @@
 # See: https://www.npmjs.com/package/aeneas-cli
 
 aeneas:
-  commit: "e99c02e2" # pinned commit hash or branch name
+  commit: "f4b3593e" # pinned commit hash or branch name
   repo: "https://github.com/AeneasVerif/aeneas.git"
 
 charon:
