@@ -57,6 +57,10 @@ crate:
 tweaks:
   files: ["Types.lean", "Funs.lean"]
   substitutions:
+    # 0. Disable long line linter for auto-generated files
+    - find: "set_option linter.unusedVariables false"
+      replace: "set_option linter.unusedVariables false\nset_option linter.style.longLine false\nset_option linter.style.setOption false\nset_option linter.style.whitespace false"
+
     # 1. Insert Pt trait instances into Types.lean after the Pt struct definition
     - find: |
         structure encoding.polynomial.Pt where
