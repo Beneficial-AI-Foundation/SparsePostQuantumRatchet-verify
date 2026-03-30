@@ -797,7 +797,7 @@ inductive encoding.EncodingError where
 | ChunkDataDecodingError : encoding.EncodingError
 
 /-- [spqr::Error]
-    Source: 'src/lib.rs', lines 96:0-129:1
+    Source: 'src/lib.rs', lines 98:0-131:1
     Visibility: public -/
 @[discriminant isize]
 inductive Error where
@@ -819,7 +819,7 @@ inductive Error where
 | ChainNotAvailable : Error
 
 /-- [spqr::EpochSecret]
-    Source: 'src/lib.rs', lines 49:0-52:1
+    Source: 'src/lib.rs', lines 51:0-54:1
     Visibility: public -/
 structure EpochSecret where
   epoch : Std.U64

@@ -6088,7 +6088,7 @@ def chain.Chain.ced_for_direction
   chain.ChainEpochDirection.new s
 
 /-- [spqr::{spqr::proto::pq_ratchet::Direction}::switch]:
-    Source: 'src/lib.rs', lines 63:4-68:5
+    Source: 'src/lib.rs', lines 65:4-70:5
     Visibility: public -/
 def Direction.switch
   (self : proto.pq_ratchet.Direction) : Result proto.pq_ratchet.Direction := do
@@ -10569,14 +10569,14 @@ def incremental_mlkem768.decaps
   alloc.slice.Slice.to_vec core.clone.CloneU8 s3
 
 /-- [spqr::{core::convert::From<spqr::authenticator::Error> for spqr::Error}::from]:
-    Source: 'src/lib.rs', lines 144:4-146:5
+    Source: 'src/lib.rs', lines 146:4-148:5
     Visibility: public -/
 def Error.Insts.CoreConvertFromError.from
   (_v : authenticator.Error) : Result Error := do
   ok Error.MacVerifyFailed
 
 /-- Trait implementation: [spqr::{core::convert::From<spqr::authenticator::Error> for spqr::Error}]
-    Source: 'src/lib.rs', lines 143:0-147:1 -/
+    Source: 'src/lib.rs', lines 145:0-149:1 -/
 @[reducible]
 def Error.Insts.CoreConvertFromError : core.convert.From Error
   authenticator.Error := {
@@ -10584,7 +10584,7 @@ def Error.Insts.CoreConvertFromError : core.convert.From Error
 }
 
 /-- [spqr::{core::convert::From<spqr::proto::pq_ratchet::Version> for u8}::from]:
-    Source: 'src/lib.rs', lines 188:4-193:5
+    Source: 'src/lib.rs', lines 190:4-195:5
     Visibility: public -/
 def U8.Insts.CoreConvertFromVersion.from
   (v : proto.pq_ratchet.Version) : Result Std.U8 := do
@@ -10593,7 +10593,7 @@ def U8.Insts.CoreConvertFromVersion.from
   | proto.pq_ratchet.Version.V1 => ok 1#u8
 
 /-- Trait implementation: [spqr::{core::convert::From<spqr::proto::pq_ratchet::Version> for u8}]
-    Source: 'src/lib.rs', lines 187:0-194:1 -/
+    Source: 'src/lib.rs', lines 189:0-196:1 -/
 @[reducible]
 def U8.Insts.CoreConvertFromVersion : core.convert.From Std.U8
   proto.pq_ratchet.Version := {

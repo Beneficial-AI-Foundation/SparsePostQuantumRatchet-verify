@@ -224,6 +224,18 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
              }
              out_pts[i] = v;
          }
+diff -Naur --no-dereference a/src/lib.rs b/src/lib.rs
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,6 +1,8 @@
+ // Copyright 2025 Signal Messenger, LLC
+ // SPDX-License-Identifier: AGPL-3.0-only
+ 
++#![cfg_attr(feature = "extraction", allow(dead_code))]
++
+ pub(crate) mod authenticator;
+ #[cfg(feature = "test-utils")]
+ pub mod chain;
 diff -Naur --no-dereference a/src/v1/chunked/states/serialize.rs b/src/v1/chunked/states/serialize.rs
 --- a/src/v1/chunked/states/serialize.rs
 +++ b/src/v1/chunked/states/serialize.rs
