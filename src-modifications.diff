@@ -106,20 +106,19 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
              }
          };
          Ok(Self::lagrange_sum(pts, &polys))
-@@ -341,8 +344,10 @@
+@@ -341,8 +344,9 @@
              return Err(PolynomialError::SerializationInvalid);
          }
          let mut coefficients = Vec::<GF16>::with_capacity(serialized.len() / 2);
 -        for coeff in serialized.chunks_exact(2) {
 -            coefficients.push(GF16::new(u16::from_be_bytes(coeff.try_into().unwrap())));
-+        let mut j = 0;
-+        while j + 2 <= serialized.len() {
++        for i in 0..(serialized.len() / 2) {
++            let j = i * 2;
 +            coefficients.push(GF16::new(u16::from_be_bytes([serialized[j], serialized[j + 1]])));
-+            j += 2;
          }
          hax_lib::assume!(coefficients.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 + 1);
          Ok(Self { coefficients })
-@@ -569,16 +574,21 @@
+@@ -569,16 +573,21 @@
      pub(crate) fn from_pb(
          pb: proto::pq_ratchet::PolynomialEncoder,
      ) -> Result<Self, PolynomialError> {
@@ -145,7 +144,7 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
  
              #[allow(clippy::needless_range_loop)]
              for i in 0..NUM_POLYS {
-@@ -586,24 +596,29 @@
+@@ -586,24 +595,29 @@
                  if pts.len() % 2 != 0 {
                      return Err(PolynomialError::SerializationInvalid);
                  }
@@ -188,7 +187,7 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
      }
  
      #[requires(poly < 16)]
-@@ -805,16 +820,31 @@
+@@ -805,16 +819,31 @@
          if pb.pts.len() != 16 {
              return Err(PolynomialError::SerializationInvalid);
          }
