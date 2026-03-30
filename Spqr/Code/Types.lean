@@ -1356,12 +1356,12 @@ structure v1.chunked.states.Message where
   payload : v1.chunked.states.MessagePayload
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 265:63-265:83 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
 @[reducible]
 def v1.chunked.states.serialize.Message.deserialize.closure_1 := Unit
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 261:21-261:41 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
 @[reducible]
 def v1.chunked.states.serialize.Message.deserialize.closure := Unit
 

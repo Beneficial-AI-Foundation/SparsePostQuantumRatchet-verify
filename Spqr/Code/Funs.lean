@@ -13450,51 +13450,58 @@ def v1.chunked.states.serialize.MessageType.from_payload
 def v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN : Std.Usize := 10#usize
 
 /-- [spqr::v1::chunked::states::serialize::encode_varint]: loop body 0:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 141:4-151:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 140:4-149:1 -/
 @[rust_loop_body]
 def v1.chunked.states.serialize.encode_varint_loop.body
-  (a : Std.U64) (into : alloc.vec.Vec Std.U8) (i : Std.Usize) :
-  Result (ControlFlow (Std.U64 × (alloc.vec.Vec Std.U8) × Std.Usize)
-    (alloc.vec.Vec Std.U8))
+  (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
+  (into : alloc.vec.Vec Std.U8) :
+  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U64 ×
+    (alloc.vec.Vec Std.U8)) (alloc.vec.Vec Std.U8))
   := do
-  if i < v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN
-  then
-    let i1 ← lift (a &&& 127#u64)
-    let byte ← lift (UScalar.cast .U8 i1)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok (done into)
+  | some _ =>
+    let i ← lift (a &&& 127#u64)
+    let byte ← lift (UScalar.cast .U8 i)
     if a < 128#u64
     then let into1 ← alloc.vec.Vec.push into byte
          ok (done into1)
     else
-      let i2 ← lift (128#u8 ||| byte)
-      let into1 ← alloc.vec.Vec.push into i2
+      let i1 ← lift (128#u8 ||| byte)
+      let into1 ← alloc.vec.Vec.push into i1
       let a1 ← a >>> 7#i32
-      let i3 ← i + 1#usize
-      ok (cont (a1, into1, i3))
-  else ok (done into)
+      ok (cont (iter1, a1, into1))
 
 /-- [spqr::v1::chunked::states::serialize::encode_varint]: loop 0:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 141:4-151:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 140:4-149:1 -/
 @[rust_loop]
 def v1.chunked.states.serialize.encode_varint_loop
-  (a : Std.U64) (into : alloc.vec.Vec Std.U8) (i : Std.Usize) :
+  (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
+  (into : alloc.vec.Vec Std.U8) :
   Result (alloc.vec.Vec Std.U8)
   := do
   loop
-    (fun (a1, into1, i1) => v1.chunked.states.serialize.encode_varint_loop.body
-      a1 into1 i1)
-    (a, into, i)
+    (fun (iter1, a1, into1) =>
+      v1.chunked.states.serialize.encode_varint_loop.body iter1 a1 into1)
+    (iter, a, into)
 
 /-- [spqr::v1::chunked::states::serialize::encode_varint]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 139:0-151:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 139:0-149:1 -/
 @[reducible]
 def v1.chunked.states.serialize.encode_varint
   (a : Std.U64) (into : alloc.vec.Vec Std.U8) :
   Result (alloc.vec.Vec Std.U8)
   := do
-  v1.chunked.states.serialize.encode_varint_loop a into 0#usize
+  v1.chunked.states.serialize.encode_varint_loop
+    {
+      start := 0#usize,
+      «end» := v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN
+    } a into
 
 /-- [spqr::v1::chunked::states::serialize::decode_varint]: loop body 0:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 167:4-176:5 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 165:4-174:5 -/
 @[rust_loop_body]
 def v1.chunked.states.serialize.decode_varint_loop.body
   (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) (max_i : Std.Usize)
@@ -13523,7 +13530,7 @@ def v1.chunked.states.serialize.decode_varint_loop.body
   else ok (done (out, i, done1))
 
 /-- [spqr::v1::chunked::states::serialize::decode_varint]: loop 0:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 167:4-176:5 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 165:4-174:5 -/
 @[rust_loop]
 def v1.chunked.states.serialize.decode_varint_loop
   (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) (out : Std.U64)
@@ -13537,7 +13544,7 @@ def v1.chunked.states.serialize.decode_varint_loop
     (out, i, done1)
 
 /-- [spqr::v1::chunked::states::serialize::decode_varint]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 154:0-184:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 152:0-182:1 -/
 def v1.chunked.states.serialize.decode_varint
   (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
   Result ((core.result.Result Std.U64 Error) × Std.Usize)
@@ -13560,7 +13567,7 @@ def v1.chunked.states.serialize.decode_varint
     else ok (core.result.Result.Err Error.MsgDecode, at1)
 
 /-- [spqr::v1::chunked::states::serialize::encode_chunk]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 186:0-190:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 184:0-188:1 -/
 def v1.chunked.states.serialize.encode_chunk
   (c : encoding.Chunk) (into : alloc.vec.Vec Std.U8) :
   Result (alloc.vec.Vec Std.U8)
@@ -13574,7 +13581,7 @@ def v1.chunked.states.serialize.encode_chunk
   alloc.vec.Vec.extend_from_slice core.clone.CloneU8 into1 s
 
 /-- [spqr::v1::chunked::states::serialize::decode_chunk]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 192:0-204:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 190:0-202:1 -/
 def v1.chunked.states.serialize.decode_chunk
   (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
   Result ((core.result.Result encoding.Chunk Error) × Std.Usize)
@@ -13610,7 +13617,7 @@ def v1.chunked.states.serialize.decode_chunk
     ok (r1, at2)
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 223:4-247:5
+    Source: 'src/v1/chunked/states/serialize.rs', lines 221:4-245:5
     Visibility: public -/
 def v1.chunked.states.serialize.Message.serialize
   (self : v1.chunked.states.Message) (index : Std.U32) :
@@ -13642,7 +13649,7 @@ def v1.chunked.states.serialize.Message.serialize
     v1.chunked.states.serialize.encode_chunk chunk into4
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(alloc::string::String), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1}::call_once]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 265:63-265:83 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
 def
   v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once
   (c : v1.chunked.states.serialize.Message.deserialize.closure_1)
@@ -13652,7 +13659,7 @@ def
   ok Error.MsgDecode
 
 /-- Trait implementation: [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(alloc::string::String), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1}]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 265:63-265:83 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
 @[reducible]
 def
   v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError
@@ -13663,7 +13670,7 @@ def
 }
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(core::num::error::TryFromIntError), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure}::call_once]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 261:21-261:41 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
 def
   v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once
   (c : v1.chunked.states.serialize.Message.deserialize.closure)
@@ -13673,7 +13680,7 @@ def
   ok Error.MsgDecode
 
 /-- Trait implementation: [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(core::num::error::TryFromIntError), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure}]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 261:21-261:41 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
 @[reducible]
 def
   v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError
@@ -13685,7 +13692,7 @@ def
 }
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 250:4-280:5
+    Source: 'src/v1/chunked/states/serialize.rs', lines 248:4-278:5
     Visibility: public -/
 def v1.chunked.states.serialize.Message.deserialize
   (from1 : alloc.vec.Vec Std.U8) :
