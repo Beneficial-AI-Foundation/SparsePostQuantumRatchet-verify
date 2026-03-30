@@ -813,6 +813,7 @@ impl PolyDecoder {
     }
 
     #[hax_lib::ensures(|res| hax_lib::implies(res.is_ok(), res.unwrap().pts_needed == pb.pts_needed as usize))]
+    #[hax_lib::opaque] // return in loop
     pub(crate) fn from_pb(
         pb: proto::pq_ratchet::PolynomialDecoder,
     ) -> Result<Self, PolynomialError> {

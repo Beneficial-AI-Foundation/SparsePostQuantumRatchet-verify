@@ -188,14 +188,7 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
      }
  
      #[requires(poly < 16)]
-@@ -798,23 +813,37 @@
-     }
- 
-     #[hax_lib::ensures(|res| hax_lib::implies(res.is_ok(), res.unwrap().pts_needed == pb.pts_needed as usize))]
--    #[hax_lib::opaque] // return in loop
-     pub(crate) fn from_pb(
-         pb: proto::pq_ratchet::PolynomialDecoder,
-     ) -> Result<Self, PolynomialError> {
+@@ -805,16 +820,31 @@
          if pb.pts.len() != 16 {
              return Err(PolynomialError::SerializationInvalid);
          }
