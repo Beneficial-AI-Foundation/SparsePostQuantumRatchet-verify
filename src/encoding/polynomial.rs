@@ -344,10 +344,9 @@ impl Poly {
             return Err(PolynomialError::SerializationInvalid);
         }
         let mut coefficients = Vec::<GF16>::with_capacity(serialized.len() / 2);
-        let mut j = 0;
-        while j + 2 <= serialized.len() {
+        for i in 0..(serialized.len() / 2) {
+            let j = i * 2;
             coefficients.push(GF16::new(u16::from_be_bytes([serialized[j], serialized[j + 1]])));
-            j += 2;
         }
         hax_lib::assume!(coefficients.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 + 1);
         Ok(Self { coefficients })
