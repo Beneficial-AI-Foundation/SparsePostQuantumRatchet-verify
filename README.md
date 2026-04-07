@@ -1,4 +1,6 @@
-# SPQR: The Sparse Post Quantum Ratchet
+# Project to formally verify The Sparse Post Quantum Ratchet (SPQR) using Lean
+
+The following text is the original text from the SPQR repo.
 
 ## Table of Contents
 - [Overview](#overview)
