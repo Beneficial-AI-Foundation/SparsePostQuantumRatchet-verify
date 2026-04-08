@@ -113,4 +113,48 @@ lemma ckaAdvantage_le_ddhAdvantage_ennreal
   apply ENNReal.ofReal_le_ofReal
   exact ddh_implies_cka_security g hg A
 
+/-! ## Figure 3 asymptotic security -/
+
+/-- Figure 3 CKA security game indexed by security parameter.
+The adversary is a pair `(tStar, A)` where `tStar` is the challenge epoch
+and `A` is an adaptive `Figure3Adversary`. Uses DDH-CKA with `Δ = 1`.
+
+For DDH-CKA, the type parameters are: `SendCoins = F`, `Msg = G`,
+`Output = G`, `SenderState = G`, `ReceiverState = F`. -/
+noncomputable def figure3CkaSecurityGame (gFamily : ℕ → G) :
+    SecurityGame (ℕ × Figure3.Figure3Adversary F G G G F) where
+  advantage AtStar sp :=
+    ENNReal.ofReal (Figure3.figure3Advantage
+      (ddhCKAWithCoins (F := F) (gFamily sp)) AtStar.1 1 AtStar.2)
+
+/-- **Theorem 3, asymptotic form over Figure 3 game**: If DDH is hard, then
+DDH-CKA is secure in the full Figure 3 adaptive game for all PPT adversaries.
+
+The adversary type is `ℕ × Figure3Adversary` — the `ℕ` component is the
+challenge epoch `t*`, matching Definition 13's universal quantification.
+
+Parameters:
+- `reduce` : reduction from Figure 3 adversaries to DDH adversaries
+  (will be defined concretely when `ddh_implies_figure3_cka_security` is proved)
+- `hreduce` : reduction preserves PPT-ness (`t ≈ t'`)
+- `hDDH` : DDH hardness assumption
+
+The `sorry` covers the concrete advantage bound, which requires
+`ddh_implies_figure3_cka_security`. -/
+theorem ddh_implies_figure3_cka_security_asymptotic
+    (gFamily : ℕ → G)
+    (hg : ∀ sp, Function.Bijective (· • gFamily sp : F → G))
+    (isPPT_Fig3 : (ℕ × Figure3.Figure3Adversary F G G G F) → Prop)
+    (isPPT_DDH : DDHAdversary F G → Prop)
+    (reduce : (ℕ × Figure3.Figure3Adversary F G G G F) → DDHAdversary F G)
+    (hreduce : ∀ A, isPPT_Fig3 A → isPPT_DDH (reduce A))
+    (hDDH : (ddhSecurityGame (F := F) gFamily).secureAgainst isPPT_DDH) :
+    (figure3CkaSecurityGame (F := F) gFamily).secureAgainst isPPT_Fig3 := by
+  apply SecurityGame.secureAgainst_of_reduction hreduce _ hDDH
+  intro AtStar sp
+  -- Need: figure3CkaSecurityGame advantage ≤ ddhSecurityGame advantage
+  -- i.e., ofReal (figure3Advantage ...) ≤ ofReal (ddhDistAdvantage ...)
+  -- Requires ddh_implies_figure3_cka_security (currently sorry)
+  sorry
+
 end CKA
