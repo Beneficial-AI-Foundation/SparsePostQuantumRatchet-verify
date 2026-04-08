@@ -46,13 +46,19 @@ Implemented in `Theorems/AsymptoticSecurity.lean`:
 - `ckaAdvantage_le_ddhAdvantage_ennreal` — lifts concrete bound to `ℝ≥0∞`
 - `isPPT` left abstract (hypothesis); `hreduce` formalizes `t ≈ t'`
 
-## ✅ Figure 3 oracle game (DONE)
+## ✅ Figure 3 oracle game (DONE — semantics repaired)
 
 Implemented in `CKA/Figure3Game.lean` — paper-faithful oracle-based game:
 - `Figure3Adversary` — adaptive `OracleComp` adversary with game oracle access
 - `CKAQueryIdx` — oracle index: `sendHonest`, `sendBadRand`, `receive`,
   `challenge`, `corrupt` (all party-specific)
 - `ckaOracleSpec` / `ckaGameQueryImpl` — oracle spec and stateful implementation
+- All oracle return types wrapped in `Option` — failed `req` guards return `none`
+  with state unchanged (paper's rollback semantics, not game-abort)
+- `send-P'(r)` checks `allowCorrPostIncrement` (post-increment epoch), matching
+  the paper's `t_A++` then `req allow-corr` ordering
+- End-of-game tracked via `corruptedPostChalA`/`corruptedPostChalB`; all queries
+  return `none` after both parties corrupted post-challenge
 - `CKAGameState` — party states, epoch counters, ping-pong phase tracking
 - `allowCorrFig3` / `finishedParty` / `corruptionPermittedFig3` — party-specific
   corruption predicates matching Figure 3

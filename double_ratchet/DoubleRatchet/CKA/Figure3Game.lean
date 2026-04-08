@@ -40,9 +40,17 @@ non-adaptive transcript adversary in `MultiEpochGame.lean`.
 ## Ping-pong ordering
 
 Parties alternate: A sends → B receives → B sends → A receives → ...
-Enforced via `GamePhase` in the challenger state. Invalid queries set
-`valid := false` and the game outputs `false` (advantage = 0), modeling
-the paper's `req` guards as game-abort on protocol violation.
+Enforced via `GamePhase` in the challenger state. Invalid queries
+return `none` with state unchanged, modeling the paper's `req` guards
+as failed oracle calls (the adversary continues querying).
+
+## End-of-game condition
+
+The paper says the game ends (not made explicit) once both parties'
+states have been revealed after the challenge phase. Tracked via
+`corruptedPostChalA` and `corruptedPostChalB` in the game state:
+when both are set and `challengeUsed` is true, all oracle handlers
+return `none`.
 -/
 
 set_option autoImplicit false
@@ -98,12 +106,14 @@ inductive CKAQueryIdx where
   | corrupt : Party → CKAQueryIdx
   deriving Inhabited
 
-/-- Return type for each oracle query in the Figure 3 game. -/
+/-- Return type for each oracle query in the Figure 3 game.
+All oracles return `Option` — failed `req` guards yield `none` with
+state unchanged (paper's rollback semantics). -/
 @[reducible] def ckaReturnType : CKAQueryIdx SendCoins → Type
-  | .sendHonest _ => Msg × Output
-  | .sendBadRand _ _ => Msg × Output
-  | .receive _ => Unit
-  | .challenge _ => Msg × Output
+  | .sendHonest _ => Option (Msg × Output)
+  | .sendBadRand _ _ => Option (Msg × Output)
+  | .receive _ => Option Unit
+  | .challenge _ => Option (Msg × Output)
   | .corrupt _ => Option (SenderState ⊕ ReceiverState)
 
 /-- Oracle specification for the Figure 3 CKA game.
@@ -137,8 +147,10 @@ structure CKAGameState (SenderState ReceiverState Msg : Type) where
   pendingMsg : Option Msg
   /-- Whether the challenge oracle has been used. -/
   challengeUsed : Bool
-  /-- Game is valid (no protocol violations). Set to `false` on invalid query. -/
-  valid : Bool
+  /-- Party A's state was revealed after the challenge phase (`finished_A` held). -/
+  corruptedPostChalA : Bool
+  /-- Party B's state was revealed after the challenge phase (`finished_B` held). -/
+  corruptedPostChalB : Bool
 
 instance {SenderState ReceiverState Msg : Type}
     [Inhabited SenderState] [Inhabited ReceiverState] [Inhabited Msg] :
@@ -154,7 +166,8 @@ instance {SenderState ReceiverState Msg : Type}
     phase := .awaitingSend .A
     pendingMsg := none
     challengeUsed := false
-    valid := true
+    corruptedPostChalA := false
+    corruptedPostChalB := false
   }
 
 /-! ## Party-specific corruption predicates (Figure 3) -/
@@ -232,6 +245,47 @@ def CKAGameState.incEpoch (st : CKAGameState SenderState ReceiverState Msg)
 
 end StateAccess
 
+/-! ## Post-increment corruption check -/
+
+section PostIncrementCorr
+
+variable {SenderState ReceiverState Msg : Type}
+
+/-- `allow-corr` evaluated against the post-increment epoch for party `p`.
+Paper's `send-A'(r)`: `t_A++` then `req allow-corr`, rolled back on failure.
+Pre-checking against `st.incEpoch p` avoids needing rollback. -/
+def allowCorrPostIncrement (st : CKAGameState SenderState ReceiverState Msg)
+    (p : Party) : Prop :=
+  allowCorrFig3 (st.incEpoch p)
+
+instance (st : CKAGameState SenderState ReceiverState Msg) (p : Party) :
+    Decidable (allowCorrPostIncrement st p) := by
+  unfold allowCorrPostIncrement
+  exact inferInstanceAs (Decidable (allowCorrFig3 _))
+
+end PostIncrementCorr
+
+/-! ## End-of-game tracking -/
+
+section EndOfGame
+
+variable {SenderState ReceiverState Msg : Type}
+
+/-- The game has ended: challenge was used and both parties' states have
+been revealed post-challenge. After this, all oracle queries return `none`. -/
+def CKAGameState.gameEnded (st : CKAGameState SenderState ReceiverState Msg) : Bool :=
+  st.challengeUsed && st.corruptedPostChalA && st.corruptedPostChalB
+
+/-- Mark that party `p` was corrupted post-challenge. -/
+def CKAGameState.setCorruptedPostChal
+    (st : CKAGameState SenderState ReceiverState Msg)
+    (p : Party) : CKAGameState SenderState ReceiverState Msg :=
+  match p with
+  | .A => { st with corruptedPostChalA := true }
+  | .B => { st with corruptedPostChalB := true }
+
+end EndOfGame
+
 /-! ## Oracle implementation -/
 
 section OracleImpl
@@ -239,12 +293,12 @@ section OracleImpl
 variable {SharedKey SenderState ReceiverState Msg Output SendCoins : Type}
 
 /-- Handle a send operation: given sender state and coins, update game state
-and return (msg, output). Returns `default` if party not in sender state. -/
+and return `some (msg, output)`. Returns `none` (state unchanged) if party
+not in sender state. -/
 private def handleSend
     (cka : CKASchemeWithCoins SharedKey SenderState ReceiverState Msg Output SendCoins)
-    (p : Party) (coins : SendCoins)
-    [Inhabited Msg] [Inhabited Output] :
-    StateT (CKAGameState SenderState ReceiverState Msg) ProbComp (Msg × Output) := do
+    (p : Party) (coins : SendCoins) :
+    StateT (CKAGameState SenderState ReceiverState Msg) ProbComp (Option (Msg × Output)) := do
   let st ← get
   match st.stateOf p with
   | .inl ss =>
@@ -253,16 +307,16 @@ private def handleSend
     set { st' with
       phase := .awaitingReceive p.other,
       pendingMsg := some msg }
-    pure (msg, output)
-  | .inr _ => do
-    set { st with valid := false }
-    pure default
+    pure (some (msg, output))
+  | .inr _ =>
+    pure none
 
 /-- Oracle implementation for the Figure 3 CKA game.
 
 Each oracle handler runs in `StateT CKAGameState ProbComp`, maintaining the
-challenger's hidden state. Invalid queries (wrong phase, forbidden corruption)
-return `default`. -/
+challenger's hidden state. Failed `req` guards return `none` with state
+unchanged (paper's rollback semantics). Once the game has ended (both
+parties corrupted post-challenge), all queries return `none`. -/
 noncomputable def ckaGameQueryImpl
     (cka : CKASchemeWithCoins SharedKey SenderState ReceiverState Msg Output SendCoins)
     [SampleableType SendCoins] [SampleableType Output]
@@ -272,28 +326,28 @@ noncomputable def ckaGameQueryImpl
       (StateT (CKAGameState SenderState ReceiverState Msg) ProbComp)
   | .sendHonest p => do
       let st ← get
-      if ¬st.valid then pure default
+      if st.gameEnded then pure none
       else match st.phase with
       | .awaitingSend p' =>
         if p = p' then do
           let coins ← liftM ($ᵗ SendCoins : ProbComp SendCoins)
           handleSend cka p coins
-        else do modify fun s => { s with valid := false }; pure default
-      | _ => do modify fun s => { s with valid := false }; pure default
+        else pure none
+      | _ => pure none
 
   | .sendBadRand p r => do
       let st ← get
-      if ¬st.valid then pure default
+      if st.gameEnded then pure none
       else match st.phase with
       | .awaitingSend p' =>
-        if p = p' ∧ decide (allowCorrFig3 st) then
+        if p = p' ∧ decide (allowCorrPostIncrement st p) then
           handleSend cka p r
-        else do modify fun s => { s with valid := false }; pure default
-      | _ => do modify fun s => { s with valid := false }; pure default
+        else pure none
+      | _ => pure none
 
   | .receive p => do
       let st ← get
-      if ¬st.valid then pure ()
+      if st.gameEnded then pure none
       else match st.phase with
       | .awaitingReceive p' =>
         if p = p' then
@@ -304,14 +358,14 @@ noncomputable def ckaGameQueryImpl
             set ({ st' with
               phase := .awaitingSend p,
               pendingMsg := none } : CKAGameState SenderState ReceiverState Msg)
-            pure ()
-          | _, _ => do modify fun s => { s with valid := false }; pure ()
-        else do modify fun s => { s with valid := false }; pure ()
-      | _ => do modify fun s => { s with valid := false }; pure ()
+            pure (some ())
+          | _, _ => pure none
+        else pure none
+      | _ => pure none
 
   | .challenge p => do
       let st ← get
-      if ¬st.valid then pure default
+      if st.gameEnded then pure none
       else match st.phase with
       | .awaitingSend p' =>
         if p = p' ∧ st.epochOf p + 1 = st.tStar ∧ !st.challengeUsed then do
@@ -327,15 +381,17 @@ noncomputable def ckaGameQueryImpl
               phase := .awaitingReceive p.other,
               pendingMsg := some msg,
               challengeUsed := true }
-            pure (msg, output)
-          | .inr _ => do modify fun s => { s with valid := false }; pure default
-        else do modify fun s => { s with valid := false }; pure default
-      | _ => do modify fun s => { s with valid := false }; pure default
+            pure (some (msg, output))
+          | .inr _ => pure none
+        else pure none
+      | _ => pure none
 
   | .corrupt p => do
       let st ← get
-      if ¬st.valid then pure none
-      else if decide (corruptionPermittedFig3 st p) then
+      if st.gameEnded then pure none
+      else if decide (corruptionPermittedFig3 st p) then do
+        if st.challengeUsed && decide (finishedParty st p) then
+          modify fun s => s.setCorruptedPostChal p
         pure (some (st.stateOf p))
       else
         pure none
@@ -363,7 +419,8 @@ abbrev Figure3Adversary (SendCoins Msg Output SenderState ReceiverState : Type) 
 - `challengeIsRandom = false`: real experiment (all outputs genuine)
 - `challengeIsRandom = true`: random experiment (challenge output replaced)
 
-Returns the adversary's guess bit. -/
+Returns the adversary's guess bit directly. Failed oracle calls return
+`none` with state unchanged — the adversary continues querying. -/
 noncomputable def figure3Exp
     [SampleableType SharedKey] [SampleableType SendCoins] [SampleableType Output]
     [Inhabited Msg] [Inhabited Output]
@@ -385,13 +442,14 @@ noncomputable def figure3Exp
       phase := .awaitingSend .A
       pendingMsg := none
       challengeUsed := false
-      valid := true }
+      corruptedPostChalA := false
+      corruptedPostChalB := false }
   let unifImpl :=
     (HasQuery.toQueryImpl (spec := unifSpec) (m := ProbComp)).liftTarget
       (StateT (CKAGameState SenderState ReceiverState Msg) ProbComp)
   let gameImpl := ckaGameQueryImpl cka
-  let (guess, finalState) ← (simulateQ (unifImpl + gameImpl) adversary).run initState
-  pure (finalState.valid && guess)
+  let guess ← (simulateQ (unifImpl + gameImpl) adversary).run' initState
+  pure guess
 
 /-- Figure 3 CKA distinguishing advantage.
 `Adv^CKA_{ror,Δ}(A) = |Pr[A=1 | real] - Pr[A=1 | random]|`

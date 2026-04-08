@@ -89,14 +89,17 @@ instantiating with `B = ckaAdvToDDHAdv A` gives `ckaDistAdvantage ... A ≤ ε`.
 |-------|------|
 | (t, Δ, ε)-secure (Figure 3) | `Figure3CKASecure cka delta ε` (paper-faithful) |
 | Adaptive adversary | `Figure3Adversary` = `OracleComp (unifSpec + ckaOracleSpec) Bool` |
-| `send-P` | `CKAQueryIdx.sendHonest p` → returns `Msg × Output` |
-| `send-P'(r)` | `CKAQueryIdx.sendBadRand p r` → returns `Msg × Output` |
-| `receive-P` | `CKAQueryIdx.receive p` → returns `Unit` |
-| `chall-P` | `CKAQueryIdx.challenge p` → returns `Msg × Output` |
+| `send-P` | `CKAQueryIdx.sendHonest p` → returns `Option (Msg × Output)` |
+| `send-P'(r)` | `CKAQueryIdx.sendBadRand p r` → returns `Option (Msg × Output)` |
+| `receive-P` | `CKAQueryIdx.receive p` → returns `Option Unit` |
+| `chall-P` | `CKAQueryIdx.challenge p` → returns `Option (Msg × Output)` |
 | `corr-P` | `CKAQueryIdx.corrupt p` → returns `Option (SenderState ⊕ ReceiverState)` |
+| `req` (guard) | Failed oracle call → `none`, state unchanged (rollback semantics) |
 | `allow-corr_P` | `allowCorrFig3 st` — uses `max(epochA, epochB)` |
+| `allow-corr` post-increment | `allowCorrPostIncrement st p` — for `send-P'(r)` timing |
 | `finished_P` | `finishedParty st p` — per-party epoch counter |
 | Ping-pong ordering | `GamePhase` in `CKAGameState` — explicit turn discipline |
+| End-of-game | `gameEnded` — both parties corrupted post-challenge |
 | Explicit sender coins | `CKASchemeWithCoins.sendDet` — deterministic send core |
 | Adv^CKA_{ror,Δ}(A) | `figure3Advantage cka tStar delta adversary` |
 
@@ -176,7 +179,7 @@ The full adaptive oracle game from the paper, parameterized by Δ:
 - `ckaGameQueryImpl`: stateful oracle implementation in `StateT CKAGameState ProbComp`,
   following the VCV-io PRF/PRFTagReader pattern
 - `allowCorrFig3` / `finishedParty` / `corruptionPermittedFig3`: party-specific
-  corruption predicates using `max(epochA, epochB)`, `valid : Bool` for game-abort
+  corruption predicates using `max(epochA, epochB)`
 - `GamePhase`: explicit ping-pong turn discipline (`awaitingSend` / `awaitingReceive`)
 - `figure3Advantage`: `|Pr[A=1 | real] - Pr[A=1 | random]|`
 - `Figure3CKASecure cka delta ε`: `∀ tStar adversary, figure3Advantage ≤ ε`

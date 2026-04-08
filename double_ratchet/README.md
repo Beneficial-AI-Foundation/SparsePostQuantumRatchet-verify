@@ -14,9 +14,11 @@ parameter Delta = 1.
 This is the core theorem connecting the DDH assumption to CKA security —
 the "public-key ratchet" building block of Signal's double ratchet.
 
-Status: **paper-oriented Theorem 3 skeleton** — Figure 3 oracle game implemented
-with adaptive adversary, party-specific corruption, bad-randomness oracles, and
-explicit ping-pong enforcement. Proofs use `sorry`.
+Status: **paper-faithful Theorem 3 skeleton** — Figure 3 oracle game with
+paper-faithful `req` semantics (failed calls return `none`, state unchanged),
+post-increment `allow-corr` check for `send-P'(r)`, explicit end-of-game
+tracking, adaptive adversary, party-specific corruption, bad-randomness oracles,
+and ping-pong enforcement. Proofs use `sorry`.
 
 ## Project Structure
 
