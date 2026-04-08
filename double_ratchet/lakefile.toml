@@ -1,0 +1,17 @@
+name = "DoubleRatchet"
+version = "0.1.0"
+keywords = ["formal verification", "cryptography", "CKA", "double ratchet"]
+defaultTargets = ["DoubleRatchet"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+relaxedAutoImplicit = false
+
+[[require]]
+name = "VCV-io"
+scope = "Verified-zkEVM"
+rev = "a3d6c41"
+
+[[lean_lib]]
+name = "DoubleRatchet"
