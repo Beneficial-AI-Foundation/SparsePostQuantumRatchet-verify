@@ -114,15 +114,15 @@ theorem ddh_implies_cka_security (g : G)
       ddhDistAdvantage (F := F) g (ckaAdvToDDHAdv adversary) := by
   sorry
 
-/-- **Theorem 3** (Alwen-Coretti-Dodis 2020), paper form:
+/-- **Theorem 3** (Alwen-Coretti-Dodis 2020), single-epoch epsilon form:
 
-"Assume group G is (t,ε)-DDH-secure. Then the above CKA scheme CKA is
-(t, Δ, ε)-secure for t ≈ t' and Δ = 1."
+If every DDH adversary has advantage ≤ ε, then every single-epoch CKA
+adversary has advantage ≤ ε. This follows from `ddh_implies_cka_security`
+by instantiation.
 
-This is the paper's exact claim, minus the runtime parameter t.
-It follows from `ddh_implies_cka_security` by instantiation: if every
-DDH adversary has advantage ≤ ε, then for any CKA adversary A,
-  `ckaDistAdvantage ... A ≤ ddhDistAdvantage ... (ckaAdvToDDHAdv A) ≤ ε` -/
+**Note**: This targets `CKASecure` (single-epoch game), not the full
+Figure 3 adaptive game. For the paper-faithful Figure 3 statement, see
+`ddh_implies_figure3_cka_security`. -/
 theorem ddh_implies_cka_security_paper_form (g : G)
     (hg : Function.Bijective (· • g : F → G))
     (ε : ℝ)
@@ -130,20 +130,15 @@ theorem ddh_implies_cka_security_paper_form (g : G)
     CKASecure (ddhCKA (F := F) g) ε := by
   sorry
 
-/-- **Theorem 3** (paper-faithful, multi-epoch with Δ=1):
+/-- **Theorem 3** (restricted multi-epoch game, auxiliary, Δ=1):
 
-"Assume group G of prime order p is (t,ε)-DDH-secure. Then the above CKA
-scheme CKA is (t, Δ, ε)-secure for t ≈ t' and Δ = 1."
+If every DDH adversary has advantage ≤ ε, then the DDH-CKA scheme is
+`CKASecureDelta` with Δ=1 in the restricted non-adaptive multi-epoch game.
 
-This uses the multi-epoch game from Figure 3 with healing parameter Δ=1.
-Δ=1 means one fresh DH exchange after the challenge epoch suffices to make
-the state independent of the challenged key: the new sender picks fresh
-`x ← F` and computes `x • g`, which is independent of the challenged output.
-
-Proved via reduction: any multi-epoch CKA adversary can be converted to a
-DDH adversary with the same advantage, by embedding the DDH challenge at
-epoch `t*` and simulating all other epochs honestly (the reduction knows
-the shared key from init and can run CKA-S/CKA-R for non-challenge epochs). -/
+**Note**: This targets `CKASecureDelta` from `MultiEpochGame.lean` — a
+restricted non-adaptive game where the adversary commits upfront. This is
+NOT the paper's full Figure 3 model. For the paper-faithful adaptive
+statement, see `ddh_implies_figure3_cka_security`. -/
 theorem ddh_implies_cka_security_delta (g : G)
     (hg : Function.Bijective (· • g : F → G))
     (ε : ℝ)

@@ -77,6 +77,19 @@ Kept as auxiliary reduction kernel. Not the paper's full Figure 3 model:
 - No bad-randomness oracle (`send-P'(r)` absent)
 - `CKASecureDelta` / `ddh_implies_cka_security_delta` target this restricted game
 
+## Lift asymptotic wrapper to Figure 3 adaptive game
+
+`AsymptoticSecurity.lean` currently targets the single-epoch `ckaDistAdvantage`,
+not the full Figure 3 adaptive game. To complete the asymptotic story:
+
+- Define a `figure3SecurityGame` using `figure3Advantage` from `Figure3Game.lean`
+- Prove `ddh_implies_figure3_cka_security_asymptotic` by lifting
+  `ddh_implies_figure3_cka_security` via `secureAgainst_of_reduction`
+- State clearly what remains abstract: adversary efficiency, runtime preservation,
+  security-parameter indexing
+
+This is blocked on proving `ddh_implies_figure3_cka_security` (currently `sorry`).
+
 ## Additional building blocks for the full paper
 
 To formalize the complete double ratchet:

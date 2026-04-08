@@ -11,12 +11,12 @@ for the Signal Protocol" to the Lean 4 formalization in this project.
 | `g^a` | `a • g` | Scalar multiplication (additive/EC notation, via `Module F G`) |
 | `x ←$ S` | `x ← $ᵗ S` | Uniform random sampling from finite set/type `S` |
 | `ε` (epsilon) | Not explicit | The advantage bound; see [Epsilon section](#where-is-epsilon) below |
-| `Δ_CKA` | `delta : ℕ` in `CKASecureDelta` | Healing delay parameter; = 1 for DDH-CKA |
-| `t` (runtime) | `isPPT` predicate in `AsymptoticSecurity.lean` | Asymptotic: PPT (Probabilistic Polynomial-Time) adversary class; concrete: quantify over all adversaries |
+| `Δ_CKA` | `delta : ℕ` in `Figure3CKASecure` (paper-faithful) / `CKASecureDelta` (auxiliary) | Healing delay parameter; = 1 for DDH-CKA |
+| `t` (runtime) | `isPPT` predicate in `AsymptoticSecurity.lean` | Asymptotic: PPT adversary class; concrete: quantify over all adversaries |
 | `t ≈ t'` | `hreduce` hypothesis in `ddh_implies_cka_security_asymptotic` | Reduction preserves PPT-ness (B runs A as black box with O(1) overhead) |
-| `allow-corr` | `allowCorr epoch tStar` | Corruption allowed when `epoch + 2 ≤ tStar` |
-| `finished` | `epochFinished epoch tStar delta` | Corruption allowed when `epoch ≥ tStar + delta` |
-| `Adv^CKA_{ror,Δ}(A)` | `ckaDistAdvantage cka adversary` | CKA real-or-random advantage |
+| `allow-corr` | `allowCorrFig3 st` (Figure 3) / `allowCorr epoch tStar` (auxiliary) | Corruption allowed when `max(t_A,t_B) + 2 ≤ t*` |
+| `finished_P` | `finishedParty st p` (Figure 3) / `epochFinished epoch tStar delta` (auxiliary) | Party P done when `t_P ≥ t* + Δ` |
+| `Adv^CKA_{ror,Δ}(A)` | `figure3Advantage` (paper-faithful) / `ckaDistAdvantage` (single-epoch) | CKA real-or-random advantage |
 | `Adv^DDH(B)` | `ddhDistAdvantage g adversary` | DDH distinguishing advantage |
 | `send-P'(r)` | `CKAQueryIdx.sendBadRand p r` | Send with adversary-chosen coins |
 | `CKA-S` deterministic core | `CKASchemeWithCoins.sendDet` | Pure send given explicit coins |

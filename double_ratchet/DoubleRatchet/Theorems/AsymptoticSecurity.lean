@@ -61,8 +61,12 @@ noncomputable def ddhSecurityGame (gFamily : ℕ → G) :
     SecurityGame (DDHAdversary F G) where
   advantage A sp := ENNReal.ofReal (ddhDistAdvantage (F := F) (gFamily sp) A)
 
-/-- CKA security game (single-epoch) indexed by security parameter.
-Uses the DDH-CKA construction with generator `gFamily sp`. -/
+/-- CKA security game (single-epoch, not Figure 3) indexed by security parameter.
+Uses the DDH-CKA construction with generator `gFamily sp`.
+
+**Note**: This targets the single-epoch `ckaDistAdvantage`, not the full
+Figure 3 adaptive game. A Figure 3 asymptotic wrapper would require
+lifting `ddh_implies_figure3_cka_security` instead. -/
 noncomputable def ckaSecurityGame (gFamily : ℕ → G) :
     SecurityGame (CKAAdversary G G) where
   advantage A sp := ENNReal.ofReal (ckaDistAdvantage (ddhCKA (F := F) (gFamily sp)) A)
