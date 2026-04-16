@@ -377,8 +377,9 @@ axiom
     Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index"]
-axiom core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index
-  {T : Type} : core.ops.range.RangeFull → Slice T → Result (Slice T)
+def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index
+  {T : Type} : core.ops.range.RangeFull → Slice T → Result (Slice T) :=
+  fun _ s => ok s
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_unchecked_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 650:4-650:66
@@ -478,9 +479,10 @@ axiom
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4254:4-4256:44
     Name pattern: [core::slice::{[@T]}::clone_from_slice] -/
 @[rust_fun "core::slice::{[@T]}::clone_from_slice"]
-axiom core.slice.Slice.clone_from_slice
+def core.slice.Slice.clone_from_slice
   {T : Type} (cloneCloneInst : core.clone.Clone T) :
-  Slice T → Slice T → Result (Slice T)
+  Slice T → Slice T → Result (Slice T) :=
+  fun dst src => Slice.clone cloneCloneInst.clone src
 
 /-- [core::slice::{[T]}::copy_within]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16
