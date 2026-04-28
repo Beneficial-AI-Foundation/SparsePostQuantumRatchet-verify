@@ -1,14 +1,106 @@
-name: Lean Action CI
+name: Lean Verification
+
+# This workflow builds and checks the Lean verification project.
+# It ensures that all proofs compile and that the formal verification remains valid.
 
 on:
   push:
+    branches: [ '**' ]
+    paths:
+      - 'Spqr/**'
+      - 'lakefile.toml'
+      - 'lean-toolchain'
+      - '.github/workflows/lean.yml'
   pull_request:
+    branches: [ '**' ]
+    # paths:
+    #   - 'Curve25519Dalek/**'
+    #   - 'Utils/**'
+    #   - 'lakefile.toml'
+    #   - 'lean-toolchain'
+    #   - '.github/workflows/lean.yml'
   workflow_dispatch:
+
+env:
+  LEAN_ABORT_ON_PANIC: 1
 
 jobs:
   build:
+    name: Build Lean Project
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install elan (Lean version manager)
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Verify elan installation
+        run: |
+          elan --version
+          lean --version
+
+      - name: Cache Lean build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .lake
+            build
+          key: ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-${{ hashFiles('Curve25519Dalek/**/*.lean', 'Utils/**/*.lean') }}
+          restore-keys: |
+            ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-
+            ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-
+            ${{ runner.os }}-lean-
+
+      - name: Download dependency caches
+        run: lake exe cache get
+
+      - name: Build Lean project
+        run: lake build
+
+      - name: Check functions.json and status.csv are up to date
+        run: |
+          echo "Running syncstatus to regenerate functions.json and status.csv..."
+          lake exe syncstatus
+
+          # Check functions.json
+          FUNC_DIFF=$(git diff functions.json || true)
+          if [ -n "$FUNC_DIFF" ]; then
+            echo "❌ functions.json is out of date!"
+            echo ""
+            echo "Diff:"
+            echo "$FUNC_DIFF"
+            echo ""
+            FUNC_OUTDATED=1
+          else
+            echo "✓ functions.json is up to date!"
+            FUNC_OUTDATED=0
+          fi
+
+          # Check status.csv
+          STATUS_DIFF=$(git diff status.csv || true)
+          if [ -n "$STATUS_DIFF" ]; then
+            echo "❌ status.csv is out of date!"
+            echo ""
+            echo "Diff:"
+            echo "$STATUS_DIFF"
+            echo ""
+            STATUS_OUTDATED=1
+          else
+            echo "✓ status.csv is up to date!"
+            STATUS_OUTDATED=0
+          fi
+
+          # Fail if either is outdated
+          if [ "$FUNC_OUTDATED" = "1" ] || [ "$STATUS_OUTDATED" = "1" ]; then
+            echo ""
+            echo "Please run 'lake exe syncstatus' and commit the changes."
+            exit 1
+          fi
+
+      - name: Verify build success
+        run: |
+          echo "✓ Build successful!"
