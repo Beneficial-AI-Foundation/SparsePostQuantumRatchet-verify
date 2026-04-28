@@ -1,5 +1,4 @@
 name: Lean Verification
-
 # This workflow builds and checks the Lean verification project.
 # It ensures that all proofs compile and that the formal verification remains valid.
 
@@ -11,14 +10,6 @@ on:
       - 'lakefile.toml'
       - 'lean-toolchain'
       - '.github/workflows/lean.yml'
-  pull_request:
-    branches: [ '**' ]
-    # paths:
-    #   - 'Curve25519Dalek/**'
-    #   - 'Utils/**'
-    #   - 'lakefile.toml'
-    #   - 'lean-toolchain'
-    #   - '.github/workflows/lean.yml'
   workflow_dispatch:
 
 env:
