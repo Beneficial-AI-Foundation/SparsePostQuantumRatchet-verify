@@ -1,13 +1,7 @@
 # Confirm Aeneas extraction succeeds
 
 name: Aeneas extraction
-
-on:
-  push:
-    branches: ['**']
-  pull_request:
-    branches: ['**']
-  workflow_dispatch:
+on: [pull_request]
 
 jobs:
   extract:
