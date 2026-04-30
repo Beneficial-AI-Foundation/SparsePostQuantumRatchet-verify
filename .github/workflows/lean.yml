@@ -1,5 +1,4 @@
 name: Lean Verification
-
 # This workflow builds and checks the Lean verification project.
 # It ensures that all proofs compile and that the formal verification remains valid.
 
@@ -11,14 +10,10 @@ on:
       - 'lakefile.toml'
       - 'lean-toolchain'
       - '.github/workflows/lean.yml'
-  pull_request:
+  # since it is required for merging, it must run on each PR even if the files affected aren't in paths
+  # see https://docs.github.com/en/enterprise-cloud@latest/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+  pull_request: 
     branches: [ '**' ]
-    # paths:
-    #   - 'Curve25519Dalek/**'
-    #   - 'Utils/**'
-    #   - 'lakefile.toml'
-    #   - 'lean-toolchain'
-    #   - '.github/workflows/lean.yml'
   workflow_dispatch:
 
 env:
