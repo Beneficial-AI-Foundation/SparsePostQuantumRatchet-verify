@@ -420,7 +420,6 @@ The result equals the spec-level carry-less product
 
 **Source**: spqr/src/encoding/gf.rs (lines 381:4-427:5)
 -/
-
 theorem poly_mul_spec' (a b : Std.U16) :
     poly_mul a b ⦃ result =>
       result.val = clmul a.val b.val 16 ⦄ := by
