@@ -132,27 +132,6 @@ theorem mul_spec (a b : Std.U16) :
   unfold mul
   step*
 
-lemma hom_coe_nsmul(φ : (ZMod 2)[X] →+* GF216):
-    φ POLY_GF2 = 0 := by
-  sorry
-
-
-
-
-/-! ## GF216-level postcondition (parametric form, fully provable)
-
-The literal `Nat`-cast form `(result.val : GF216) = a * b` cannot be
-proved (see file-level discussion above and the explicit counter-
-example with `a = b = 0x100`).  The mathematically valid corollary
-goes through any ring-homomorphism `φ : (ZMod 2)[X] →+* GF216` that
-vanishes on `POLY_GF2`.  Such a `φ` is exactly the canonical map
-witnessing `GF216 ≃ (ZMod 2)[X] ⧸ (POLY_GF2)` (which exists once one
-proves `POLY_GF2` is irreducible — a non-trivial finite-field
-computation).
--/
-
-
-
 /-- **GF216-level postcondition (provable, parametric)**:
 
 For any ring-homomorphism `φ : (ZMod 2)[X] →+* GF216` that vanishes
@@ -183,6 +162,5 @@ theorem mul_spec_via_ringHom
       simp_all
     rw [hPoly]
   rw [key, ringHom_modByMonic φ POLY_GF2 hMonic hφ, map_mul]
-
 
 end spqr.encoding.gf.unaccelerated
