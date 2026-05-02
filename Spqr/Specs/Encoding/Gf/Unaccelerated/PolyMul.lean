@@ -34,7 +34,7 @@ POLY = x¹⁶ + x¹² + x³ + x + 1 (0x1100b) via `poly_reduce`.
 -/
 
 open Aeneas Aeneas.Std Result
-
+open Polynomial
 namespace spqr.encoding.gf.unaccelerated
 
 /-- Spec-level carry-less (XOR-based) polynomial multiplication.
@@ -63,7 +63,6 @@ product modulo the irreducible polynomial
   POLY = X¹⁶ + X¹² + X³ + X + 1   (0x1100b).
 -/
 
-open Polynomial in
 /-- Convert a natural number to a GF(2) polynomial by interpreting
     its binary representation as polynomial coefficients.
 
@@ -73,7 +72,6 @@ noncomputable def natToGF2Poly (n : Nat) : (ZMod 2)[X] :=
   ∑ i ∈ Finset.range (n.log2 + 1),
     if n.testBit i then (X : (ZMod 2)[X]) ^ i else 0
 
-open Polynomial in
 /-- Carry-less multiplication in the polynomial ring (ZMod 2)[X].
 
     This is the algebraic equivalent of `clmul` on `Nat`:
@@ -88,7 +86,6 @@ noncomputable def clmul_poly (a b : (ZMod 2)[X]) : (n : Nat) → (ZMod 2)[X]
     let acc := clmul_poly a b n
     if b.coeff n ≠ 0 then acc + a * X ^ n else acc
 
-open Polynomial in
 /-- The irreducible polynomial used for GF(2¹⁶) reduction:
     POLY = X¹⁶ + X¹² + X³ + X + 1   (0x1100b in hex).
 
@@ -96,10 +93,9 @@ open Polynomial in
 noncomputable def POLY_GF2 : (ZMod 2)[X] :=
   X ^ 16 + X ^ 12 + X ^ 3 + X + 1
 
-open Polynomial in
 /-- The coefficient of `natToGF2Poly n` at position `m` is `1` when bit `m`
     of `n` is set, and `0` otherwise. -/
-private lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
+lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
     (natToGF2Poly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
   unfold natToGF2Poly
   simp only [finset_sum_coeff]
@@ -119,18 +115,17 @@ private lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
     rw [Finset.sum_eq_single_of_mem m hm (fun j _ hjm => by simp [Ne.symm hjm])]
     simp [htb]
 
-private lemma natToGF2Poly_zero : natToGF2Poly 0 = 0 := by
+lemma natToGF2Poly_zero : natToGF2Poly 0 = 0 := by
   ext m; simp [natToGF2Poly_coeff]
 
 open Polynomial in
-private lemma natToGF2Poly_xor (a b : Nat) :
+lemma natToGF2Poly_xor (a b : Nat) :
     natToGF2Poly (a ^^^ b) = natToGF2Poly a + natToGF2Poly b := by
   ext m
   simp only [natToGF2Poly_coeff, coeff_add, Nat.testBit_xor]
   cases a.testBit m <;> cases b.testBit m <;> decide
 
-open Polynomial in
-private lemma natToGF2Poly_shiftLeft (a k : Nat) :
+lemma natToGF2Poly_shiftLeft (a k : Nat) :
     natToGF2Poly (a <<< k) = natToGF2Poly a * X ^ k := by
   ext m
   simp only [natToGF2Poly_coeff, coeff_mul_X_pow', Nat.testBit_shiftLeft,
@@ -169,12 +164,11 @@ theorem clmul_eq_clmul_poly (a b n : Nat) :
       rw [h1, natToGF2Poly_xor, natToGF2Poly_shiftLeft, ih]; symm
       simp (config := { zeta := true }) [clmul_poly, hcoeff]
 
-open Polynomial in
+
 private lemma clmul_poly_b_zero (a : (ZMod 2)[X]) : ∀ n, clmul_poly a 0 n = 0
   | 0 => rfl
   | n + 1 => by dsimp [clmul_poly]; simp [clmul_poly_b_zero a n]
 
-open Polynomial in
 private lemma clmul_poly_coeff_eq (a b c : (ZMod 2)[X]) :
     ∀ n, (∀ i, i < n → b.coeff i = c.coeff i) → clmul_poly a b n = clmul_poly a c n
   | 0, _ => rfl
@@ -182,7 +176,6 @@ private lemma clmul_poly_coeff_eq (a b c : (ZMod 2)[X]) :
       dsimp [clmul_poly]
       rw [clmul_poly_coeff_eq a b c n (fun i hi => h i (by omega)), h n (by omega)]
 
-open Polynomial in
 /-- **`clmul_poly` computes polynomial multiplication**:
 
     For any polynomials `a, b ∈ GF(2)[X]` with `natDegree b < n`,
@@ -242,7 +235,6 @@ theorem clmul_poly_eq_mul (a b : (ZMod 2)[X]) (n : Nat)
           omega
         exact ih b hlt
 
-open Polynomial in
 lemma degree_lt (a : U16) :
   (natToGF2Poly a).natDegree < 16 := by
   rcases eq_or_ne (natToGF2Poly (a : Nat)) 0 with h | h
