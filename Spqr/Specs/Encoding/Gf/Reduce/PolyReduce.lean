@@ -224,10 +224,10 @@ Note: `polyMod_poly` processes bit positions from low to high
 which has already been processed. Hence `polyMod_poly p n` may
 not be fully reduced (i.e. may have degree ≥ 16), but it always
 preserves congruence modulo POLY_GF2. -/
-theorem polyMod_poly_eq_modByMonic (p : (ZMod 2)[X]) (n : Nat)
-    (hirr : POLY_GF2.Monic) :
+theorem polyMod_poly_eq_modByMonic (p : (ZMod 2)[X]) (n : Nat) :
     (polyMod_poly p n) %ₘ POLY_GF2 =
       p %ₘ POLY_GF2 := by
+  have hirr : POLY_GF2.Monic := POLY_GF2_monic
   have h : POLY_GF2 ∣
       (polyMod_poly p n - p) := by
     have h₁ := polyMod_poly_dvd_sub p n

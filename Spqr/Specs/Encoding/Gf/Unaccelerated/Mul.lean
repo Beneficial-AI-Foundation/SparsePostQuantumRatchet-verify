@@ -125,12 +125,19 @@ at the polynomial level.
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
 @[step]
-theorem mul_poly_spec (a b : Std.U16) :
+theorem mul_spec (a b : Std.U16) :
     mul a b ⦃ result =>
       natToGF2Poly result.val =
         (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
   unfold mul
   step*
+
+lemma hom_coe_nsmul(φ : (ZMod 2)[X] →+* GF216):
+    φ POLY_GF2 = 0 := by
+  sorry
+
+
+
 
 /-! ## GF216-level postcondition (parametric form, fully provable)
 
@@ -143,6 +150,8 @@ witnessing `GF216 ≃ (ZMod 2)[X] ⧸ (POLY_GF2)` (which exists once one
 proves `POLY_GF2` is irreducible — a non-trivial finite-field
 computation).
 -/
+
+
 
 /-- **GF216-level postcondition (provable, parametric)**:
 
@@ -162,73 +171,18 @@ theorem mul_spec_via_ringHom
       φ (natToGF2Poly result.val) =
         φ (natToGF2Poly a.val) * φ (natToGF2Poly b.val) ⦄ := by
   have hMonic : POLY_GF2.Monic :=   POLY_GF2_monic
-  -- Combine the polynomial-level spec with the modByMonic ring-hom bridge.
-  have h := mul_poly_spec a b
-  -- `step*` does not apply to a generic `WP`; use direct manipulation:
+  have h := mul_spec a b
   unfold mul
   step*
-  -- After `step*` the goal becomes the polynomial-level equation
-  -- on `i.val` and `result.val`; transport along φ.
   have key :
       φ (natToGF2Poly result.val) =
         φ ((natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2) := by
-    -- We get the polynomial-level postcondition from the hypotheses
-    -- introduced by `step*` (named `i_post` and `result_post` in the
-    -- original `mul_spec` proof).
     have hPoly :
         natToGF2Poly result.val =
           (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 := by
-      -- `step*` introduces hypotheses tracking each let-binding's
-      -- post-condition; `simp_all` chains them to derive the goal.
       simp_all
     rw [hPoly]
-  -- Strip the `%ₘ POLY_GF2` via the ring-hom bridge, then split the product.
   rw [key, ringHom_modByMonic φ POLY_GF2 hMonic hφ, map_mul]
-
-/-- **Postcondition theorem for `encoding.gf.unaccelerated.mul`**:
-
-Carry-less polynomial multiplication of two `u16` values in GF(2¹⁶),
-followed by reduction modulo the irreducible polynomial
-POLY = 0x1100b.
-
-The function composes `poly_mul` (carry-less long multiplication
-producing a 32-bit intermediate) with `poly_reduce` (table-based
-reduction modulo POLY).
-
-The result satisfies `(result.val : GF216) = a * b` where:
-- `GF216 = GaloisField 2 16` is Mathlib's abstract construction
-  of the Galois field with 65 536 elements.
-- The coercion `(result.val : GF216)` interprets the 16-bit natural
-  number as an element of GF(2¹⁶) via the standard embedding
-  `Nat → GF216`.
-- The multiplication `a * b` on the right-hand side is GF(2¹⁶)
-  multiplication (polynomial multiplication modulo the irreducible).
-
-**Mathematical note on this formulation.** The `Nat.cast : Nat → GF216`
-embedding factors through `ZMod 2` (since `GF216` has characteristic 2),
-so it only sees the parity of its input.  The literal equation
-`(result.val : GF216) = a * b` therefore reduces to
-`result.val % 2 = (a.val % 2) * (b.val % 2) % 2`, which fails for e.g.
-`a = b = 0x100` — see the parametric `mul_spec_via_ringHom` above for the
-mathematically correct statement.  The bridge from the polynomial-level
-result (`mul_poly_spec`) to abstract `GaloisField` multiplication that
-*does* validate the parity-only equation requires:
-  - An explicit isomorphism `GF216 ≅ (ZMod 2)[X] / (POLY_GF2)`
-  - Showing that POLY_GF2 is irreducible over GF(2)
-  - Connecting `natToGF2Poly` to the `Nat → GF216` coercion
-
-This deep algebraic connection is left as `sorry` pending the
-construction of the explicit field isomorphism in Mathlib/Lean 4.
-
-**Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
--/
-@[step]
-theorem mul_spec (a b : Std.U16) :
-    mul a b ⦃ result =>
-      natToGF2Poly result.val =
-        (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
-  unfold spqr.encoding.gf.unaccelerated.mul
-  step*
 
 
 end spqr.encoding.gf.unaccelerated

@@ -220,8 +220,7 @@ private lemma reduceByteLoopFull_inv (a out : Nat) (n : Nat) (ha : a < 256) :
         simp only [natToGF2Poly_coeff, coeff_add, coeff_mul_X_pow',
                    Nat.testBit_mod_two_pow, Nat.testBit_shiftRight]
         by_cases hm : 16 ≤ m
-        · simp only [hm, ↓reduceIte, show ¬ m < 16 from by omega, zero_add]
-          congr 1
+        · simp only [hm, ↓reduceIte, show ¬ m < 16 from by omega]
           grind
         · push_neg at hm
           simp only [show ¬ 16 ≤ m from by omega, ↓reduceIte, hm, ↓reduceIte, add_zero]
@@ -249,7 +248,7 @@ private lemma reduceByteLoopFull_inv (a out : Nat) (n : Nat) (ha : a < 256) :
 /-- The carry register vanishes after 8 steps for all byte values k < 256. -/
 private lemma reduceByteLoopFull_carry_zero (k : Nat) (hk : k < 256) :
     (reduceByteLoopFull k 0 8).1 = 0 := by
-  have h : ∀ k' : Fin 256, (reduceByteLoopFull k'.val 0 8).1 = 0 := by native_decide
+  have h : ∀ k' : Fin 256, (reduceByteLoopFull k'.val 0 8).1 = 0 := by decide
   exact h ⟨k, hk⟩
 
 /-- **(a) Full-range table polynomial correctness (spec-level).**
