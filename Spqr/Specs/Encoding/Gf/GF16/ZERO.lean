@@ -113,7 +113,7 @@ for the chosen `φ : (ZMod 2)[X] →+* GF216`.
 -/
 @[step]
 theorem zero_spec :
-    ok encoding.gf.GF16.ZERO ⦃ result =>
+    ok ZERO ⦃ result =>
       (result.value.val.toGF216 : GF216) = 0 ⦄ := by
   simp [Nat.toGF216, natToGF2Poly_zero]
 

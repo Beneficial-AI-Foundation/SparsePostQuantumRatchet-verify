@@ -7,8 +7,6 @@ import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
-
-
 /-! # Spec Theorem for `reduce::reduce_from_byte` — loop body
 
 Specification and proof for

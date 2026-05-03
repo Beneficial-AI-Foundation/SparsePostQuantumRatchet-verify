@@ -88,7 +88,7 @@ and closes the resulting trivial equality.
 -/
 @[simp]
 theorem mk_value_toGF216 (value : Std.U16) :
-    (({ value } : spqr.encoding.gf.GF16).value.val.toGF216 : GF216)
+    (({ value } : GF16).value.val.toGF216 : GF216)
       = value.val.toGF216 := by
   rfl
 

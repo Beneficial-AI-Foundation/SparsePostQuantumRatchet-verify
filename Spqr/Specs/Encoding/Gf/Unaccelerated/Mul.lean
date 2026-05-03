@@ -66,7 +66,6 @@ at the polynomial level.
 
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
-
 theorem mul_spec' (a b : Std.U16) :
     mul a b ⦃ result =>
       natToGF2Poly result.val =
