@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-import Spqr.Math.Basic
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
 import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
@@ -43,22 +42,6 @@ open Polynomial spqr.encoding.gf.reduce
 
 namespace spqr.encoding.gf.unaccelerated
 
-/-! ## Bridging lemmas: polynomial level → ring-homomorphism level
-
-The general facts `ringHom_modByMonic` and `natToGF2Poly_modByMonic_eq`
-have been moved to `Spqr.Math.Gf` for reuse. -/
-
-/-- **Composition lemma**: combining `poly_mul_spec` with the
-algebraic property of `%ₘ POLY_GF2`, for any `u32` value `v` whose
-`natToGF2Poly` encoding equals the polynomial product of two `u16`
-inputs, taking `%ₘ POLY_GF2` of either side gives the same residue
-class in `GF(2)[X]`. -/
-private lemma natToGF2Poly_modByMonic_of_eq
-    (v : Nat) (p q : (ZMod 2)[X])
-    (h : natToGF2Poly v = p * q) :
-    natToGF2Poly v %ₘ POLY_GF2 = (p * q) %ₘ POLY_GF2 := by
-  rw [h]
-
 /-- **Polynomial-level postcondition for `encoding.gf.unaccelerated.mul`**:
 
 Carry-less polynomial multiplication of two `u16` values in GF(2¹⁶),
@@ -83,8 +66,8 @@ at the polynomial level.
 
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
-@[step]
-theorem mul_spec (a b : Std.U16) :
+
+theorem mul_spec' (a b : Std.U16) :
     mul a b ⦃ result =>
       natToGF2Poly result.val =
         (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
@@ -101,13 +84,13 @@ Specializing `φ` to the canonical isomorphism (whose construction
 requires irreducibility of `POLY_GF2` over `ZMod 2`, i.e. a finite-
 field development we omit here) recovers the GF(2¹⁶) interpretation
 of the result. -/
-theorem mul_spec_via_ringHom
+@[step]
+theorem mul_spec
     (a b : Std.U16) :
     mul a b ⦃ result =>
-      result.val.toGF216 =
-        a.val.toGF216 * b.val.toGF216 ⦄ := by
+      result.val.toGF216 = a.val.toGF216 * b.val.toGF216 ⦄ := by
   have hMonic : POLY_GF2.Monic := POLY_GF2_monic
-  have h := mul_spec a b
+  have h := mul_spec' a b
   unfold mul
   step*
   simp only [Nat.toGF216]

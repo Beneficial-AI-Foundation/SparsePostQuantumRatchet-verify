@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-import Spqr.Math.Basic
 import Spqr.Math.Gf
 
 /-! # Spec Theorem for `unaccelerated::poly_mul`
@@ -202,7 +201,6 @@ lemma poly_u16_eq_u32 (a : U16) (me : U32) (h : me = UScalar.cast UScalarTy.U32 
   subst h
   exact (UScalar.cast_val_mod_pow_greater_numBits_eq UScalarTy.U32 a (by simp)).symm
 
-
 /-
 natural language description:
 
@@ -368,7 +366,6 @@ theorem poly_mul_spec' (a b : Std.U16) :
   unfold poly_mul
   step*
   simp[clmul]
-
 
 @[step]
 theorem poly_mul_spec (a b : Std.U16) :

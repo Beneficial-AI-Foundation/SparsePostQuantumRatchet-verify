@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-import Spqr.Math.Basic
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 
 /-! # Spec Theorem for `GF16::sub` (Sub trait, by-reference)
@@ -32,6 +31,7 @@ observationally identical to the by-value version:
 -/
 
 open Aeneas Aeneas.Std Result
+open spqr.encoding.gf.unaccelerated
 
 namespace spqr.encoding.gf.GF16.Insts.CoreOpsArithSubShared0GF16GF16
 

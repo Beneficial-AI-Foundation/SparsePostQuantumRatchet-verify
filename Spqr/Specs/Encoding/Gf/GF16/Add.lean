@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-import Spqr.Math.Basic
+import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 
 /-! # Spec Theorem for `GF16::add` (Add trait, by-value)
@@ -39,6 +39,7 @@ since every element is its own additive inverse (`a + a = 0`).
 -/
 
 open Aeneas Aeneas.Std Result
+open spqr.encoding.gf.unaccelerated
 
 namespace spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16
 

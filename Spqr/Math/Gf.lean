@@ -3,7 +3,9 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Basic
+import Spqr.Code.Funs
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.FieldTheory.Finite.GaloisField
 import Mathlib.RingTheory.Polynomial.Basic
 
 /-! # GF(2)[X] Polynomial Library
@@ -25,7 +27,12 @@ Conventions:
 open Aeneas Aeneas.Std Result
 open Polynomial
 
+abbrev GF216 := GaloisField 2 16
+
 namespace spqr.encoding.gf.unaccelerated
+
+
+/-! ## Constants -/
 
 /-! ## Core definitions -/
 
