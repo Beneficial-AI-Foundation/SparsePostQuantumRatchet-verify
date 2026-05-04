@@ -7,7 +7,7 @@ import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 
-/-! # Spec Theorem for `unaccelerated::mul2`
+/-! # Spec theorem for `spqr::encoding::gf::unaccelerated::mul2`
 
 Specification and proof for `encoding.gf.unaccelerated.mul2`,
 which performs *two* GF(2¹⁶) multiplications sharing a common left

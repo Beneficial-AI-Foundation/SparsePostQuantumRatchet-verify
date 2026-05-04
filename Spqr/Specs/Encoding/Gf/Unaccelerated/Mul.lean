@@ -8,7 +8,7 @@ import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
 import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
-/-! # Spec Theorem for `unaccelerated::mul`
+/-! # Spec theorem for `spqr::encoding::gf::unaccelerated::mul`
 
 Specification and proof for `encoding.gf.unaccelerated.mul`,
 which implements carry-less polynomial multiplication of two `u16`

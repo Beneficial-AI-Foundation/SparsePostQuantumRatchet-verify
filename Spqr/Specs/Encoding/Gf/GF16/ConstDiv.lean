@@ -6,7 +6,6 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
-
 /-! # Spec Theorem for `GF16::const_div`
 
 Specification and proof for `encoding.gf.GF16.const_div`,
@@ -215,7 +214,7 @@ closed-form exponent collapses to `2¹⁶ − 2`.
 -/
 @[step]
 theorem const_div_spec (self other : spqr.encoding.gf.GF16) :
-    const_div self other ⦃ result =>
+    const_div self other ⦃ (result : spqr.encoding.gf.GF16) =>
       (result.value.val.toGF216 : GF216) =
         self.value.val.toGF216 *
           other.value.val.toGF216 ^ (2 ^ 16 - 2) ⦄ := by

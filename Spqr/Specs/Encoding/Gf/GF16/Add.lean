@@ -6,10 +6,9 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+/-! # Spec Theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`
 
-/-! # Spec Theorem for `GF16::add` (Add trait, by-value)
-
-Specification and proof for `encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`,
+Specification and proof for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`,
 which implements `Add<GF16> for GF16` by delegating to the by-value
 `AddAssign<GF16> for GF16` (i.e.
 `CoreOpsArithAddAssignShared0GF16.add_assign`), which itself forwards
@@ -68,8 +67,7 @@ natural language specs:
   `GF216 = GaloisField 2 16`.
 -/
 
-/-- **Spec and proof concerning
-`encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`**:
+/-- **Spec and proof concerning `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`**:
 
 The by-value `Add<GF16> for GF16` computes GF(2¹⁶) addition by
 delegating to the by-value `AddAssign<GF16> for GF16`, which
@@ -93,8 +91,9 @@ already-registered `add_assign_spec`.
 -/
 @[step]
 theorem add_spec (self other : spqr.encoding.gf.GF16) :
-    add self other ⦃ result =>
-      (result.value.val.toGF216 : GF216)= self.value.val.toGF216 + other.value.val.toGF216 ⦄ := by
+    add self other ⦃ (result : spqr.encoding.gf.GF16) =>
+      (result.value.val.toGF216 : GF216) =
+        self.value.val.toGF216 + other.value.val.toGF216 ⦄ := by
   unfold add
   step*
 

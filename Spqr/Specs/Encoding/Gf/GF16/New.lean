@@ -5,8 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
 import Spqr.Math.Gf
-
-/-! # Spec Theorem for `GF16::new`
+/-! # Spec theorem for `spqr::encoding::gf::GF16::new`
 
 Specification and proof for `encoding.gf.GF16.new`, the public
 constructor that lifts a raw `u16` value into a `GF16` field element
@@ -112,7 +111,7 @@ the underlying `u16` of the resulting `GF16` is definitionally
 -/
 @[step]
 theorem new_spec (value : Std.U16) :
-    new value ⦃ result =>
+    new value ⦃ (result : spqr.encoding.gf.GF16) =>
       (result.value.val.toGF216 : GF216) = value.val.toGF216 ⦄ := by
   simp [new]
 

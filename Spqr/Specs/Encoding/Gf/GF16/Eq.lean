@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-
 /-! # Spec Theorem for `GF16::eq` (PartialEq / Eq)
 
 Specification and proof for `encoding.gf.GF16.Insts.CoreCmpPartialEqGF16.eq`,

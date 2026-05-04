@@ -5,8 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
 import Spqr.Math.Gf
-
-/-! # Spec Theorem for `GF16::ZERO`
+/-! # Spec theorem for `spqr::encoding::gf::GF16::ZERO`
 
 Specification and proof for `encoding.gf.GF16.ZERO`, the constant
 representing the additive identity (zero element) of the Galois
@@ -113,7 +112,7 @@ for the chosen `φ : (ZMod 2)[X] →+* GF216`.
 -/
 @[step]
 theorem zero_spec :
-    ok ZERO ⦃ result =>
+    ok ZERO ⦃ (result : spqr.encoding.gf.GF16) =>
       (result.value.val.toGF216 : GF216) = 0 ⦄ := by
   simp [Nat.toGF216, natToGF2Poly_zero]
 

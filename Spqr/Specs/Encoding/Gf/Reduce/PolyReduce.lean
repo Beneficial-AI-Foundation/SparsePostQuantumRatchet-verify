@@ -5,10 +5,9 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
+/-! # Spec Theorem for `spqr::encoding::gf::reduce::poly_reduce`
 
-/-! # Spec Theorem for `reduce::poly_reduce`
-
-Specification and proof for `encoding.gf.reduce.poly_reduce`,
+Specification and proof for `spqr.encoding.gf.reduce.poly_reduce`,
 which implements table-based polynomial reduction of a 32-bit
 carry-less product modulo the irreducible polynomial
 POLY = x¹⁶ + x¹² + x³ + x + 1 (0x1100b), yielding a 16-bit
@@ -34,14 +33,13 @@ POLY.  This is equivalent to computing `(k · x¹⁶) mod POLY`
 for the second pass, and `(k · x²⁴) mod POLY` (after appropriate
 shifting) for the first pass.
 
-**Source**: spqr/src/encoding/gf.rs (lines 489:4-498:5)
+Source: "spqr/src/encoding/gf.rs" (lines 489:4-498:5)
 -/
 
 open Aeneas Aeneas.Std Result
 open Polynomial spqr.encoding.gf.unaccelerated
 
 namespace spqr.encoding.gf.reduce
-
 
 /-- Spec-level bit-by-bit polynomial reduction modulo POLY over GF(2).
 
@@ -154,7 +152,6 @@ private lemma polyMod_poly_dvd_sub (p : (ZMod 2)[X]) (n : Nat) :
           (p - polyMod_poly p n) -
           POLY_GF2 * X ^ n from by ring]
       exact dvd_sub ih (dvd_mul_right _ _)
-
 
 /-- **`polyMod_poly` preserves congruence modulo POLY_GF2**:
 
@@ -310,6 +307,7 @@ theorem xor_table_shift_dvd (k n : Nat)
   -- h : p %ₘ POLY_GF2 + (p /ₘ POLY_GF2) * POLY_GF2 = p
   refine ⟨p /ₘ POLY_GF2, ?_⟩
   -- Goal: p - p %ₘ POLY_GF2 = POLY_GF2 * (p /ₘ POLY_GF2)
+  -- `grind` closes the ring-level rearrangement of the Euclidean division identity
   grind
 
 /-- **First pass preserves congruence modulo POLY_GF2.**
@@ -422,7 +420,6 @@ theorem second_pass_congr (v1 : Nat)
     (Polynomial.modByMonic_eq_zero_iff_dvd POLY_GF2_monic).mpr
       (xor_table_shift_dvd (v1 >>> 16) 0 (htable (v1 >>> 16) hsh)),
     add_zero]
-
 
 /- **Combined two-pass reduction correctness (spec-level).**
 
@@ -648,7 +645,7 @@ we obtain the end-to-end result:
 which is exactly multiplication in GF(2¹⁶) ≅ GF(2)[X] / (POLY_GF2).
 -/
 
-/-- **Postcondition theorem for `encoding.gf.reduce.poly_reduce`**:
+/-- **Spec theorem for `spqr::encoding::gf::reduce::poly_reduce`**:
 
 Table-based polynomial reduction of a 32-bit carry-less product
 modulo the irreducible polynomial POLY = 0x1100b, yielding a

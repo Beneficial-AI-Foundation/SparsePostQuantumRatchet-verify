@@ -6,7 +6,6 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
-
 /-! # Spec Theorem for `GF16::const_mul`
 
 Specification and proof for `encoding.gf.GF16.const_mul`,
@@ -89,7 +88,7 @@ The proof unfolds `const_mul` to expose the underlying
 -/
 @[step]
 theorem const_mul_spec (self other : spqr.encoding.gf.GF16) :
-    const_mul self other ⦃ result =>
+    const_mul self other ⦃ (result : spqr.encoding.gf.GF16) =>
       (result.value.val.toGF216 : GF216) =
         self.value.val.toGF216 * other.value.val.toGF216 ⦄ := by
   unfold const_mul

@@ -7,7 +7,7 @@ import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
-/-! # Spec Theorem for `reduce::reduce_from_byte` — loop body
+/-! # Spec Theorem for `spqr::encoding::gf::reduce::reduce_from_byte` — loop body
 
 Specification and proof for
 `encoding.gf.reduce.reduce_from_byte_loop.body`, which executes
@@ -300,7 +300,7 @@ def reduceFromByte (a : Nat) : (n : Nat) → Nat × Nat
     else (a', out)
 
 
-/-! # Spec Theorem for `reduce::reduce_from_byte`
+/-! # Spec Theorem for `spqr::encoding::gf::reduce::reduce_from_byte`
 
 Specification and proof for `encoding.gf.reduce.reduce_from_byte`,
 which computes the 32-bit XOR mask associated with a byte value `a`

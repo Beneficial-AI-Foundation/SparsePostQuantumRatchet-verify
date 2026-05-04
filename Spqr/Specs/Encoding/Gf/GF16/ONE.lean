@@ -5,8 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
 import Spqr.Math.Gf
-
-/-! # Spec Theorem for `GF16::ONE`
+/-! # Spec theorem for `spqr::encoding::gf::GF16::ONE`
 
 Specification and proof for `encoding.gf.GF16.ONE`, the constant
 representing the multiplicative identity (one element) of the Galois
@@ -118,7 +117,7 @@ for the chosen `φ : (ZMod 2)[X] →+* GF216`.
 -/
 @[step]
 theorem one_spec :
-    ok ONE ⦃ result =>
+    ok ONE ⦃ (result : spqr.encoding.gf.GF16) =>
       (result.value.val.toGF216 : GF216) = 1 ⦄ := by
   simp [Nat.toGF216, natToGF2Poly_one]
 

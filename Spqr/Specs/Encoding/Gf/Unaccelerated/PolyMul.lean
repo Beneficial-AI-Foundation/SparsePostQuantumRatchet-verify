@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 
-/-! # Spec Theorem for `unaccelerated::poly_mul`
+/-! # Spec theorem for `spqr::encoding::gf::unaccelerated::poly_mul`
 
 Specification and proof for `encoding.gf.unaccelerated.poly_mul`,
 which implements carry-less (XOR-based) polynomial multiplication of two

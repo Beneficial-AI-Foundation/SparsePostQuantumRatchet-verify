@@ -5,8 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
-
-/-! # Spec Theorem for `GF16::sub` (Sub trait, by-reference)
+/-! # Spec theorem for `spqr::encoding::gf::{impl ops::Sub<&GF16> for GF16}::sub`
 
 Specification and proof for `encoding.gf.GF16.Insts.CoreOpsArithSubShared0GF16GF16.sub`,
 which implements `Sub<&GF16> for GF16` by delegating to the
@@ -77,8 +76,9 @@ is definitionally equal to `add_assign` (via `sub_assign`).
 -/
 @[step]
 theorem sub_spec (self other : spqr.encoding.gf.GF16) :
-    sub self other ⦃ result =>
-      (result.value.val.toGF216 : GF216) = self.value.val.toGF216 - other.value.val.toGF216 ⦄ := by
+    sub self other ⦃ (result : spqr.encoding.gf.GF16) =>
+      (result.value.val.toGF216 : GF216) =
+        self.value.val.toGF216 - other.value.val.toGF216 ⦄ := by
   unfold sub CoreOpsArithSubAssignShared0GF16.sub_assign
   step*
 
