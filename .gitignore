@@ -16,3 +16,6 @@ TypesExternal_Template.lean
 # Node
 node_modules/
 dist/
+
+# MacOS
+.DS_Store
