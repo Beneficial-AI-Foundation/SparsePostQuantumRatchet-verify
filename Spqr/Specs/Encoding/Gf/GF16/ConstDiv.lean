@@ -6,9 +6,9 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
-/-! # Spec Theorem for `GF16::const_div`
+/-! # Spec Theorem for `spqr::encoding::gf::GF16::const_div`
 
-Specification and proof for `encoding.gf.GF16.const_div`,
+Specification and proof for `spqr::encoding::gf::GF16::const_div`,
 which implements GF(2¹⁶) division on the `GF16` wrapper by
 Fermat-style iterated squaring, delegating its actual computation
 to the extracted `while`-loop `const_div_loop`.

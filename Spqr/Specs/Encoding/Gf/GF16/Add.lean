@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
-/-! # Spec Theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`
+/-! # Spec Theorem for `spqr::encoding::gf::{impl ops::Add for GF16}::add`
 
 Specification and proof for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16.add`,
 which implements `Add<GF16> for GF16` by delegating to the by-value

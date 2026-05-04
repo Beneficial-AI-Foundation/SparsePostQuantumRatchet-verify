@@ -6,12 +6,12 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
-/-! # Spec Theorem for `GF16::const_mul`
+/-! # Spec Theorem for `spqr::encoding::gf::GF16::const_mul`
 
-Specification and proof for `encoding.gf.GF16.const_mul`,
+Specification and proof for `spqr::encoding::gf::GF16::const_mul`,
 which implements GF(2¹⁶) multiplication on the `GF16` wrapper by
 delegating to the underlying carry-less multiplication on `u16`,
-`encoding.gf.unaccelerated.mul`, and re-wrapping the result back
+`spqr::encoding::gf::unaccelerated::mul`, and re-wrapping the result back
 into a `GF16`.
 
 In GF(2¹⁶) — the Galois field with 65 536 elements — multiplication

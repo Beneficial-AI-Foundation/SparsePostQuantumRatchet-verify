@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 import Spqr.Code.Funs
 import Spqr.Math.Gf
 import Mathlib.Data.Nat.Bitwise
-/-! # Spec Theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddAssignShared0GF16.add_assign`
+/-! # Spec Theorem for `spqr::encoding::gf::{impl ops::AddAssign for GF16}::add_assign`
 
 Specification and proof for
 `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddAssignShared0GF16.add_assign`,
