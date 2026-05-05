@@ -11,11 +11,11 @@ import Mathlib.RingTheory.Polynomial.Basic
 /-! # GF(2)[X] Polynomial Library
 
 Consolidated definitions, lemmas, and theorems about the function
-`natToGF2Poly : Nat → (ZMod 2)[X]` (which interprets a natural number's
+`natToGF2Poly : Nat → GF2Poly` (which interprets a natural number's
 binary representation as the coefficient vector of a polynomial over
 GF(2)) and about the irreducible polynomial
 `POLY_GF2 = X¹⁶ + X¹² + X³ + X + 1` used to model `GF(2¹⁶)` as
-`(ZMod 2)[X] / (POLY_GF2)`.
+`GF2Poly / (POLY_GF2)`.
 
 Conventions:
 - XOR (`^^^`) on `Nat` corresponds to polynomial addition (`+`) over GF(2).
@@ -27,7 +27,9 @@ Conventions:
 open Aeneas Aeneas.Std Result
 open Polynomial
 
+abbrev GF2Poly := (ZMod 2)[X]
 abbrev GF216 := GaloisField 2 16
+
 
 namespace spqr.encoding.gf.unaccelerated
 
@@ -41,15 +43,15 @@ its binary representation as polynomial coefficients.
 
 For example, `natToGF2Poly 0b1011 = X³ + X + 1` since bits 0, 1,
 and 3 are set. -/
-noncomputable def natToGF2Poly (n : Nat) : (ZMod 2)[X] :=
+noncomputable def natToGF2Poly (n : Nat) : GF2Poly :=
   ∑ i ∈ Finset.range (n.log2 + 1),
-    if n.testBit i then (X : (ZMod 2)[X]) ^ i else 0
+    if n.testBit i then (X : GF2Poly) ^ i else 0
 
 /-- The irreducible polynomial used for GF(2¹⁶) reduction:
     POLY = X¹⁶ + X¹² + X³ + X + 1   (0x1100b in hex).
 
     GF(2¹⁶) ≅ GF(2)[X] / (POLY). -/
-noncomputable def POLY_GF2 : (ZMod 2)[X] :=
+noncomputable def POLY_GF2 : GF2Poly :=
   X ^ 16 + X ^ 12 + X ^ 3 + X + 1
 
 /-! ## Coefficient characterization and basic lemmas of `natToGF2Poly` -/
@@ -60,7 +62,7 @@ lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
     (natToGF2Poly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
   unfold natToGF2Poly
   simp only [finset_sum_coeff]
-  simp_rw [apply_ite (fun (p : (ZMod 2)[X]) => p.coeff m), coeff_X_pow, coeff_zero]
+  simp_rw [apply_ite (fun (p : GF2Poly) => p.coeff m), coeff_X_pow, coeff_zero]
   cases htb : n.testBit m with
   | false =>
     exact Finset.sum_eq_zero fun i _ => by
@@ -171,7 +173,7 @@ lemma natToGF2Poly_inj (a b : Nat)
 /-- **`POLY_GF2` is monic** (leading coefficient is 1). -/
 theorem POLY_GF2_monic : POLY_GF2.Monic := by
   unfold POLY_GF2 Polynomial.Monic Polynomial.leadingCoeff
-  have hnd : (X ^ 16 + X ^ 12 + X ^ 3 + X + (1 : (ZMod 2)[X])).natDegree = 16 := by
+  have hnd : (X ^ 16 + X ^ 12 + X ^ 3 + X + (1 : GF2Poly)).natDegree = 16 := by
     compute_degree!
   rw [hnd]
   simp [coeff_add, coeff_X_pow, coeff_X, coeff_one]
@@ -200,19 +202,19 @@ requires either:
 Both approaches are non-trivial in Lean 4 / Mathlib.  For the purposes
 of the rest of this development we record the theorem statement now and
 defer the proof; it is the key fact that makes the quotient
-`(ZMod 2)[X] / (POLY_GF2)` a field — namely `GF(2¹⁶)`. -/
+`GF2Poly / (POLY_GF2)` a field — namely `GF(2¹⁶)`. -/
 theorem POLY_GF2_irreducible : Irreducible POLY_GF2 := by
   sorry
 
 
 
 
-/-! ## Characteristic-2 facts in `(ZMod 2)[X]` -/
+/-! ## Characteristic-2 facts in `GF2Poly` -/
 
-/-- **In `(ZMod 2)[X]`, every element is its own negation.**
+/-- **In `GF2Poly`, every element is its own negation.**
 
 This is a consequence of characteristic 2: `a + a = 0` implies `-a = a`. -/
-lemma zmod2_poly_neg_eq (a : (ZMod 2)[X]) : -a = a := by
+lemma zmod2_poly_neg_eq (a : GF2Poly) : -a = a := by
   have h : a + a = 0 := by
     ext n; simp only [coeff_add, coeff_zero]
     have h2 : (2 : ZMod 2) = 0 := by decide
@@ -221,10 +223,10 @@ lemma zmod2_poly_neg_eq (a : (ZMod 2)[X]) : -a = a := by
       _ = 0 := by ring
   exact neg_eq_of_add_eq_zero_left h
 
-/-- **In `(ZMod 2)[X]`, subtraction equals addition.**
+/-- **In `GF2Poly`, subtraction equals addition.**
 
 Direct consequence of `zmod2_poly_neg_eq`: `a - b = a + (-b) = a + b`. -/
-lemma zmod2_poly_sub_eq_add (a b : (ZMod 2)[X]) : a - b = a + b := by
+lemma zmod2_poly_sub_eq_add (a b : GF2Poly) : a - b = a + b := by
   rw [sub_eq_add_neg, zmod2_poly_neg_eq]
 
 /-! ## Modular-reduction utilities for `POLY_GF2` -/
@@ -233,7 +235,7 @@ lemma zmod2_poly_sub_eq_add (a b : (ZMod 2)[X]) : a - b = a + b := by
 
 A direct consequence of the division identity
 `p %ₘ POLY_GF2 + (p /ₘ POLY_GF2) * POLY_GF2 = p`. -/
-lemma POLY_GF2_dvd_modByMonic_sub (p : (ZMod 2)[X]) :
+lemma POLY_GF2_dvd_modByMonic_sub (p : GF2Poly) :
     POLY_GF2 ∣ (p %ₘ POLY_GF2 - p) := by
   have hadd := Polynomial.modByMonic_add_div p POLY_GF2_monic
   refine ⟨-(p /ₘ POLY_GF2), ?_⟩
@@ -241,7 +243,7 @@ lemma POLY_GF2_dvd_modByMonic_sub (p : (ZMod 2)[X]) :
 
 /-- **Idempotence of `%ₘ POLY_GF2`**: applying the reduction twice is
 the same as applying it once. -/
-lemma modByMonic_modByMonic_self (p : (ZMod 2)[X]) :
+lemma modByMonic_modByMonic_self (p : GF2Poly) :
     (p %ₘ POLY_GF2) %ₘ POLY_GF2 = p %ₘ POLY_GF2 :=
   Polynomial.modByMonic_eq_of_dvd_sub POLY_GF2_monic
     (POLY_GF2_dvd_modByMonic_sub p)
@@ -250,16 +252,16 @@ lemma modByMonic_modByMonic_self (p : (ZMod 2)[X]) :
 that vanishes at `P` makes the residue `p %ₘ P` φ-equal to `p` itself.
 
 This is the standard "transport along the quotient map" identity:
-if `φ : (ZMod 2)[X] →+* R` factors through `(ZMod 2)[X] ⧸ (P)` (i.e.
+if `φ : GF2Poly →+* R` factors through `GF2Poly ⧸ (P)` (i.e.
 `φ P = 0`), then `φ p = φ (p %ₘ P)`.  Multiplying through by the
 quotient identity `p = P * (p /ₘ P) + (p %ₘ P)`, the `P · q` term is
 killed by `φ P = 0`.
 -/
 lemma ringHom_modByMonic
     {R : Type*} [CommRing R]
-    (φ : (ZMod 2)[X] →+* R)
-    (P : (ZMod 2)[X]) (hMonic : P.Monic) (hφ : φ P = 0)
-    (p : (ZMod 2)[X]) :
+    (φ : GF2Poly →+* R)
+    (P : GF2Poly) (hMonic : P.Monic) (hφ : φ P = 0)
+    (p : GF2Poly) :
     φ (p %ₘ P) = φ p := by
   -- `modByMonic_add_div p hMonic : p %ₘ P + P * (p /ₘ P) = p`
   have heq : p %ₘ P + P * (p /ₘ P) = p :=
@@ -278,7 +280,7 @@ For any two natural numbers `p` and `q`, reducing the product of their
 `natToGF2Poly` encodings modulo `POLY_GF2` is the same as first reducing
 each factor modulo `POLY_GF2`, multiplying the residues, and reducing the
 result again.  This is the algebraic statement that the quotient map
-`(ZMod 2)[X] → (ZMod 2)[X] ⧸ (POLY_GF2)` is a ring homomorphism.
+`GF2Poly → GF2Poly ⧸ (POLY_GF2)` is a ring homomorphism.
 
 **Mathematical note.** The "naive" identity without the outer `%ₘ POLY_GF2`,
 i.e.
@@ -296,23 +298,23 @@ lemma natToGF2Poly_modByMonic_eq (p q : Nat) :
       (natToGF2Poly p * natToGF2Poly q) %ₘ POLY_GF2 :=
   (Polynomial.mul_modByMonic _ _ _).symm
 
-/- **Existence of a ring homomorphism from `(ZMod 2)[X]` to `GF216`
+/- **Existence of a ring homomorphism from `GF2Poly` to `GF216`
 that vanishes on `POLY_GF2`.**
 
 Concretely, since `POLY_GF2` is irreducible of degree `16` over `ZMod 2`,
-the quotient `AdjoinRoot POLY_GF2 = (ZMod 2)[X] ⧸ (POLY_GF2)` is a field
+the quotient `AdjoinRoot POLY_GF2 = GF2Poly ⧸ (POLY_GF2)` is a field
 with `2 ^ 16` elements, hence (non-canonically) isomorphic — as a
 `ZMod 2`-algebra — to `GF216 = GaloisField 2 16` via
 `GaloisField.algEquivGaloisFieldOfFintype`.  Composing the canonical
 quotient map `AdjoinRoot.mk POLY_GF2` with this isomorphism gives a
-ring homomorphism `(ZMod 2)[X] →+* GF216` which sends `POLY_GF2` to
+ring homomorphism `GF2Poly →+* GF216` which sends `POLY_GF2` to
 `0` (because `AdjoinRoot.mk_self` says `AdjoinRoot.mk POLY_GF2 POLY_GF2 = 0`).
 -/
 
 lemma exists_ringHom_modByMonic :
-    ∃ φ : (ZMod 2)[X] →+* GF216,
+    ∃ φ : GF2Poly →+* GF216,
       φ POLY_GF2 = 0 := by
-  -- The quotient map `(ZMod 2)[X] → (ZMod 2)[X] ⧸ (P)` is a ring homomorphism that vanishes at `P`.
+  -- The quotient map `GF2Poly → GF2Poly ⧸ (P)` is a ring homomorphism that vanishes at `P`.
   classical
   have hmonic : POLY_GF2.Monic := POLY_GF2_monic
   have hne : POLY_GF2 ≠ 0 := hmonic.ne_zero
@@ -339,9 +341,9 @@ lemma exists_ringHom_modByMonic :
   refine ⟨(e : AdjoinRoot POLY_GF2 →+* GF216).comp (AdjoinRoot.mk POLY_GF2), ?_⟩
   rw [RingHom.comp_apply, hmk, map_zero]
 
-/-- A chosen ring homomorphism `(ZMod 2)[X] →+* GF216` that vanishes on
+/-- A chosen ring homomorphism `GF2Poly →+* GF216` that vanishes on
 `POLY_GF2`.  We pick one provided by `exists_ringHom_modByMonic`. -/
-noncomputable def φ : (ZMod 2)[X] →+* GF216 :=
+noncomputable def φ : GF2Poly →+* GF216 :=
   Classical.choose exists_ringHom_modByMonic
 
 /-- The chosen ring homomorphism `φ` sends `POLY_GF2` to `0`. -/
@@ -350,10 +352,10 @@ lemma hφ : φ POLY_GF2 = 0 :=
 
 /-- Interpret a natural number as an element of `GF216 = GF(2¹⁶)`,
 using the canonical chain
-`Nat → (ZMod 2)[X] → GF216`
+`Nat → GF2Poly → GF216`
 where the first arrow is `natToGF2Poly` (binary expansion as a
 GF(2)-polynomial) and the second arrow is the chosen ring homomorphism
-`φ` (which factors through `(ZMod 2)[X] / (POLY_GF2)`). -/
+`φ` (which factors through `GF2Poly / (POLY_GF2)`). -/
 noncomputable def _root_.Nat.toGF216 (n : Nat) : GF216 :=
   φ (natToGF2Poly n)
 

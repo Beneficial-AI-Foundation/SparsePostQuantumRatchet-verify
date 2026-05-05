@@ -326,7 +326,7 @@ def reduceByteTable (k : Nat) : Nat :=
 ## Algebraic (GF(2)[X]) formulation of the reduction table
 
 The following definition expresses `reduceByteTable` in terms of the
-polynomial ring GF(2)[X] = (ZMod 2)[X], making the algebraic structure
+polynomial ring GF(2)[X] = GF2Poly, making the algebraic structure
 explicit:
 - Each byte `k` represents a polynomial of degree < 8 in GF(2)[X].
 - `REDUCE_BYTES[k]` represents the remainder of `k · X¹⁶` divided by
@@ -336,14 +336,14 @@ explicit:
 -/
 
 
-/-- Spec-level polynomial table entry in (ZMod 2)[X].
+/-- Spec-level polynomial table entry in GF2Poly.
 
 Given a polynomial `p ∈ GF(2)[X]` (representing a byte value of
 degree < 8), `reduceByteTable_poly p` is the canonical remainder of
 `p * X¹⁶` modulo POLY_GF2:
 
   `reduceByteTable_poly p = (p * X ^ 16) %ₘ POLY_GF2` -/
-noncomputable def reduceByteTable_poly (p : (ZMod 2)[X]) : (ZMod 2)[X] :=
+noncomputable def reduceByteTable_poly (p : GF2Poly) : GF2Poly :=
   (p * X ^ 16) %ₘ POLY_GF2
 
 /-- The carry register vanishes after 8 reduction steps of `reduceFromByte`
@@ -430,7 +430,7 @@ theorem reduceByteTable_eq_reduceByteTable_poly (k : Nat) (hk : k < 16) :
   have hPOLYdeg : POLY_GF2.natDegree = 16 := POLY_GF2_natDegree
   have hne1 : POLY_GF2 ≠ 1 := by
     intro heq
-    have : (POLY_GF2 : (ZMod 2)[X]).coeff 16 = (1 : (ZMod 2)[X]).coeff 16 := by rw [heq]
+    have : (POLY_GF2 : GF2Poly).coeff 16 = (1 : GF2Poly).coeff 16 := by rw [heq]
     simp [POLY_GF2, coeff_add, coeff_X_pow, coeff_X, coeff_one] at this
   have hself : natToGF2Poly ((reduceFromByte k 8).2 % 2 ^ 16) %ₘ POLY_GF2 =
                natToGF2Poly ((reduceFromByte k 8).2 % 2 ^ 16) := by
@@ -482,7 +482,7 @@ theorem reduceByteTable_eq_reduceByteTable_poly (k : Nat) (hk : k < 16) :
 For any polynomial `p ∈ GF(2)[X]` with `natDegree p < 8`,
 `reduceByteTable_poly p` equals the remainder of `p * X¹⁶` modulo
 POLY_GF2, and has degree strictly less than 16. -/
-theorem reduceByteTable_poly_degree_lt (p : (ZMod 2)[X])
+theorem reduceByteTable_poly_degree_lt (p : GF2Poly)
     (hirr : POLY_GF2.Monic) :
     (reduceByteTable_poly p).natDegree < POLY_GF2.natDegree := by
   unfold reduceByteTable_poly
@@ -500,12 +500,12 @@ theorem reduceByteTable_poly_degree_lt (p : (ZMod 2)[X])
 ## Algebraic (GF(2)[X]) formulation of `reduce_from_byte`
 -/
 
-/-- Spec-level polynomial result of `reduce_from_byte a` in (ZMod 2)[X]. -/
-noncomputable def reduceFromByteSpec_poly (p : (ZMod 2)[X]) : (ZMod 2)[X] :=
+/-- Spec-level polynomial result of `reduce_from_byte a` in GF2Poly. -/
+noncomputable def reduceFromByteSpec_poly (p : GF2Poly) : GF2Poly :=
   (p * X ^ 16) %ₘ POLY_GF2
 
 /-- **`reduceFromByteSpec_poly` equals `reduceByteTable_poly`**. -/
-theorem reduceFromByteSpec_poly_eq_reduceByteTable_poly (p : (ZMod 2)[X]) :
+theorem reduceFromByteSpec_poly_eq_reduceByteTable_poly (p : GF2Poly) :
     reduceFromByteSpec_poly p = reduceByteTable_poly p := by
   simp [reduceFromByteSpec_poly, reduceByteTable_poly]
 

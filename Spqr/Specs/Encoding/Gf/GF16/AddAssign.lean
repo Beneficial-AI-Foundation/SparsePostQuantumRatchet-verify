@@ -69,7 +69,7 @@ The result satisfies the GF(2¹⁶)-level postcondition:
 
 where `Nat.toGF216 n = φ (natToGF2Poly n)` interprets a natural
 number as an element of `GF216 = GaloisField 2 16` via the chosen
-ring homomorphism `φ : (ZMod 2)[X] →+* GF216` that vanishes on
+ring homomorphism `φ : GF2Poly →+* GF216` that vanishes on
 `POLY_GF2`.
 
 The proof reduces `result.value` to `self.value ^^^ other.value`,
