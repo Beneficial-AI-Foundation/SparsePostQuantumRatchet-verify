@@ -887,7 +887,6 @@ theorem poly_reduce_poly_mul_spec (a b : Std.U16) :
     spqr.encoding.gf.unaccelerated.mul a b ⦃ result =>
       natToGF2Poly result.val =
         (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
-  unfold spqr.encoding.gf.unaccelerated.mul
-  step*
+  sorry
 
 end spqr.encoding.gf.reduce

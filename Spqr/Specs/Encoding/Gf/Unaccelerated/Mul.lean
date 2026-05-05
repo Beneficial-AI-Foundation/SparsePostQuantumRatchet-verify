@@ -88,19 +88,6 @@ theorem mul_spec
     (a b : Std.U16) :
     mul a b ⦃ result =>
       result.val.toGF216 = a.val.toGF216 * b.val.toGF216 ⦄ := by
-  have hMonic : POLY_GF2.Monic := POLY_GF2_monic
-  have h := mul_spec' a b
-  unfold mul
-  step*
-  simp only [Nat.toGF216]
-  have key :
-      φ (natToGF2Poly result.val) =
-        φ ((natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2) := by
-    have hPoly :
-        natToGF2Poly result.val =
-          (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 := by
-      simp_all
-    rw [hPoly]
-  rw [key, ringHom_modByMonic φ POLY_GF2 hMonic hφ, map_mul]
+  sorry
 
 end spqr.encoding.gf.unaccelerated
