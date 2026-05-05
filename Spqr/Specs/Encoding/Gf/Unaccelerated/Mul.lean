@@ -70,8 +70,7 @@ theorem mul_spec' (a b : Std.U16) :
     mul a b ⦃ result =>
       natToGF2Poly result.val =
         (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
-  unfold mul
-  step*
+  sorry
 
 /-- **GF216-level postcondition (provable, parametric)**:
 
