@@ -7,6 +7,7 @@ on:
     branches: [ '**' ]
     paths:
       - 'Spqr/**'
+      - 'scripts/**'
       - 'lakefile.toml'
       - 'lean-toolchain'
       - '.github/workflows/lean.yml'
@@ -23,6 +24,9 @@ jobs:
   build:
     name: Build Lean Project
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
 
     steps:
       - name: Checkout repository
@@ -41,10 +45,8 @@ jobs:
       - name: Cache Lean build
         uses: actions/cache@v4
         with:
-          path: |
-            .lake
-            build
-          key: ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-${{ hashFiles('Curve25519Dalek/**/*.lean', 'Utils/**/*.lean') }}
+          path: .lake
+          key: ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-${{ hashFiles('Spqr/**/*.lean', 'scripts/**/*.lean') }}
           restore-keys: |
             ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-
             ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-
@@ -59,3 +61,71 @@ jobs:
       - name: Verify build success
         run: |
           echo "✓ Build successful!"
+
+      - name: Axiom audit
+        run: lake env lean scripts/PrintAxioms.lean
+
+      - name: Restore base sorry manifest
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
+        with:
+          key: sorry-manifest-${{ github.event.pull_request.base.ref }}-${{ github.event.pull_request.base.sha }}
+          path: sorry-manifest.txt
+
+      - name: Prepare base manifest
+        if: github.event_name == 'pull_request'
+        run: |
+          [ -f sorry-manifest.txt ] && mv sorry-manifest.txt sorry-manifest-base.txt || true
+
+      - name: Generate sorry manifest
+        run: lake env lean scripts/SorryLister.lean
+
+      - name: Save sorry manifest to cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v4
+        with:
+          key: sorry-manifest-main-${{ github.sha }}
+          path: sorry-manifest.txt
+
+      - name: Upload sorry manifests
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sorry-manifests
+          path: |
+            sorry-manifest.txt
+            sorry-manifest-base.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+  report-sorry-delta:
+    name: Report Sorry Delta
+    if: github.event_name == 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    # Write permissions are isolated to this lightweight job.
+    # For fork PRs the token is read-only; the action degrades gracefully.
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts/
+
+      - name: Download sorry manifests
+        uses: actions/download-artifact@v4
+        with:
+          name: sorry-manifests
+          path: sorry-manifests
+
+      - name: Compute sorry delta
+        run: python3 scripts/sorry-diff.py sorry-manifests/sorry-manifest-base.txt sorry-manifests/sorry-manifest.txt
+
+      - name: Post PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: sorry-delta
+          path: .sorry-delta-comment.md
