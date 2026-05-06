@@ -59,3 +59,6 @@ jobs:
       - name: Verify build success
         run: |
           echo "✓ Build successful!"
+
+      - name: Axiom audit
+        run: lake env lean scripts/PrintAxioms.lean
