@@ -7,6 +7,8 @@ import Spqr.Code.Funs
 import Mathlib.Algebra.Field.ZMod
 import Mathlib.FieldTheory.Finite.GaloisField
 import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Data.Nat.BitIndices
+import Mathlib.Data.Nat.Bits
 
 /-! # GF(2)[X] Polynomial Library
 
@@ -43,9 +45,8 @@ its binary representation as polynomial coefficients.
 
 For example, `natToGF2Poly 0b1011 = X³ + X + 1` since bits 0, 1,
 and 3 are set. -/
-noncomputable def natToGF2Poly (n : Nat) : GF2Poly :=
-  ∑ i ∈ Finset.range (n.log2 + 1),
-    if n.testBit i then (X : GF2Poly) ^ i else 0
+noncomputable def natToGF2Poly (n : ℕ) : (ZMod 2)[X] :=
+  (n.bitIndices.map (X ^ ·)).sum
 
 /-- The irreducible polynomial used for GF(2¹⁶) reduction:
     POLY = X¹⁶ + X¹² + X³ + X + 1   (0x1100b in hex).
@@ -54,6 +55,59 @@ noncomputable def natToGF2Poly (n : Nat) : GF2Poly :=
 noncomputable def POLY_GF2 : GF2Poly :=
   X ^ 16 + X ^ 12 + X ^ 3 + X + 1
 
+/-! ## Helper lemma relating `bitIndices` to `testBit` -/
+
+/-- Membership in `n.bitIndices` is equivalent to `n.testBit m = true`. -/
+private lemma mem_bitIndices_iff_testBit {n m : ℕ} :
+    m ∈ n.bitIndices ↔ n.testBit m = true := by
+  induction n using Nat.binaryRec generalizing m with
+  | zero => simp
+  | bit b n ih =>
+    cases m with
+    | zero =>
+      cases b
+      · -- 0 ∉ (bitIndices n).map (· + 1) since ·+1 ≥ 1
+        rw [Nat.bitIndices_bit_false, Nat.testBit_bit_zero]
+        simp only [Bool.false_eq_true, iff_false]
+        intro h; rw [List.mem_map] at h; obtain ⟨_, _, h⟩ := h; omega
+      · rw [Nat.bitIndices_bit_true, Nat.testBit_bit_zero]
+        simp
+    | succ m =>
+      cases b
+      · rw [Nat.bitIndices_bit_false, Nat.testBit_bit_succ]
+        simp only [List.mem_map]
+        exact ⟨fun ⟨a, ha, h⟩ => (Nat.succ_injective h) ▸ ih.mp ha,
+               fun h => ⟨m, ih.mpr h, rfl⟩⟩
+      · rw [Nat.bitIndices_bit_true, Nat.testBit_bit_succ]
+        simp only [List.mem_cons, List.mem_map]
+        constructor
+        · rintro (heq | ⟨a, ha, heq⟩)
+          · omega
+          · exact (Nat.succ_injective heq) ▸ ih.mp ha
+        · intro h; exact Or.inr ⟨m, ih.mpr h, rfl⟩
+
+/-- Helper: for a `Nodup` list, mapping `if a = · then 1 else 0` and summing
+gives 1 when `a` is in the list. -/
+private lemma list_sum_ite_eq_one_of_mem {l : List ℕ} {a : ℕ}
+    (hmem : a ∈ l) (hnd : l.Nodup) :
+    (l.map (fun x => if a = x then (1 : ZMod 2) else 0)).sum = 1 := by
+  induction l with
+  | nil => simp at hmem
+  | cons b t iht =>
+    simp only [List.map_cons, List.sum_cons]
+    rw [List.nodup_cons] at hnd
+    rcases List.mem_cons.mp hmem with rfl | hmem'
+    · simp only [↓reduceIte]
+      suffices h : (t.map (fun x => if a = x then (1 : ZMod 2) else 0)).sum = 0 by
+        rw [h]; ring
+      exact List.sum_eq_zero (fun x hx => by
+        simp only [List.mem_map] at hx
+        obtain ⟨y, hy, rfl⟩ := hx
+        simp [show a ≠ y from fun h => hnd.1 (h ▸ hy)])
+    · have hab : a ≠ b := fun h => hnd.1 (h ▸ hmem')
+      simp only [hab, ↓reduceIte, zero_add]
+      exact iht hmem' hnd.2
+
 /-! ## Coefficient characterization and basic lemmas of `natToGF2Poly` -/
 
 /-- The coefficient of `natToGF2Poly n` at position `m` is `1` when bit `m`
@@ -61,22 +115,25 @@ of `n` is set, and `0` otherwise. -/
 lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
     (natToGF2Poly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
   unfold natToGF2Poly
-  simp only [finset_sum_coeff]
-  simp_rw [apply_ite (fun (p : GF2Poly) => p.coeff m), coeff_X_pow, coeff_zero]
-  cases htb : n.testBit m with
-  | false =>
-    exact Finset.sum_eq_zero fun i _ => by
-      by_cases him : m = i
-      · subst him; simp [htb]
-      · simp [him]
-  | true =>
-    have hne : n ≠ 0 := by rintro rfl; simp at htb
-    have hm : m ∈ Finset.range (n.log2 + 1) := by
-      rw [Finset.mem_range]
-      have := (Nat.le_log2 hne).mpr (Nat.ge_two_pow_of_testBit htb)
-      omega
-    rw [Finset.sum_eq_single_of_mem m hm (fun j _ hjm => by simp [Ne.symm hjm])]
-    simp [htb]
+  -- Distribute coeff over the list sum using lcoeff as an AddMonoidHom
+  have hdist : (n.bitIndices.map (X ^ ·)).sum.coeff m =
+      ((n.bitIndices.map (X ^ ·)).map (fun p => p.coeff m)).sum :=
+    map_list_sum (Polynomial.lcoeff (ZMod 2) m) _
+  rw [hdist, List.map_map]
+  simp only [Function.comp_def, coeff_X_pow]
+  -- Goal: (n.bitIndices.map (fun i => if m = i then 1 else 0)).sum = ...
+  by_cases hm : n.testBit m = true
+  · simp only [hm, ↓reduceIte]
+    exact list_sum_ite_eq_one_of_mem
+      (mem_bitIndices_iff_testBit.mpr hm) Nat.bitIndices_nodup
+  · push_neg at hm
+    simp only [hm, ↓reduceIte, Bool.false_eq_true]
+    exact List.sum_eq_zero (fun x hx => by
+      simp only [List.mem_map] at hx
+      obtain ⟨i, hi, rfl⟩ := hx
+      have hmi : m ≠ i := fun h => by
+        subst h; exact absurd (mem_bitIndices_iff_testBit.mp hi) (by simp [hm])
+      simp [hmi])
 
 /-- `natToGF2Poly 0 = 0`. -/
 lemma natToGF2Poly_zero : natToGF2Poly 0 = 0 := by
