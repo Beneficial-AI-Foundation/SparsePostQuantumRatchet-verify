@@ -98,3 +98,81 @@ theorem add_spec (self other : spqr.encoding.gf.GF16) :
   step*
 
 end spqr.encoding.gf.GF16.Insts.CoreOpsArithAddGF16GF16
+
+/-! ## By-reference `Add<&GF16> for GF16`
+
+The by-reference `Add<&GF16, Output = GF16> for GF16` takes `other`
+by reference in the original Rust source.  In the Aeneas extraction
+the reference is erased, so the Lean signature is identical to the
+by-value variant.  The implementation delegates directly to the
+by-reference `AddAssign<&GF16> for GF16` (i.e.
+`CoreOpsArithAddAssignShared0GF16.add_assign`), which computes
+`self.value ^^^ other.value` (bitwise XOR).
+
+Since the by-reference `Add` introduces no additional logic beyond
+the delegation, its postcondition is inherited from the corresponding
+`AddAssign` specification.
+
+**Source**: spqr/src/encoding/gf.rs (lines 67:4-71:5)
+-/
+
+namespace spqr.encoding.gf.GF16.Insts.CoreOpsArithAddShared0GF16GF16
+
+/-
+natural language description:
+
+• Takes two `GF16` field elements `self` and `other`, each wrapping
+  a `u16` value representing an element of GF(2¹⁶).
+  In the original Rust source `other` is passed by reference
+  (`&GF16`); after Aeneas extraction the reference is erased and
+  both arguments are plain `GF16` values.
+• Delegates immediately to the by-reference `add_assign`:
+    `CoreOpsArithAddAssignShared0GF16.add_assign self other`
+  which computes `self.value ^^^ other.value` (bitwise XOR).
+• Returns the resulting `GF16` whose `value` field is the GF(2¹⁶)
+  sum of the two inputs.
+
+natural language specs:
+
+• The function always succeeds (no panic) for any pair of `GF16`
+  inputs, since XOR is a total operation on bounded integers.
+• Lifting `result.value.val` into `GF216` via the canonical map
+  `Nat.toGF216 = φ ∘ natToGF2Poly` yields the GF(2¹⁶) sum of the
+  similarly-lifted inputs:
+    `(result.value.val.toGF216 : GF216) =
+        self.value.val.toGF216 + other.value.val.toGF216`
+  where the `+` on the right-hand side is addition in
+  `GF216 = GaloisField 2 16`.
+-/
+
+/-- **Spec and proof concerning `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddShared0GF16GF16.add`**:
+
+The by-reference `Add<&GF16> for GF16` computes GF(2¹⁶) addition by
+delegating to the by-reference `AddAssign<&GF16> for GF16`, which
+ultimately performs bitwise XOR of the two underlying `u16` values.
+
+The result satisfies the GF(2¹⁶)-level postcondition:
+
+  `(result.value.val.toGF216 : GF216) =
+       self.value.val.toGF216 + other.value.val.toGF216`
+
+where `Nat.toGF216 n = φ (natToGF2Poly n)` interprets a natural
+number as an element of `GF216 = GaloisField 2 16` via the chosen
+ring homomorphism `φ : GF2Poly →+* GF216` that vanishes on
+`POLY_GF2`.
+
+The proof unfolds `add` to expose the underlying `add_assign` call
+and discharges the resulting goal with `step*`, which applies the
+already-registered `add_assign_spec`.
+
+**Source**: spqr/src/encoding/gf.rs (lines 67:4-71:5)
+-/
+@[step]
+theorem add_spec (self other : spqr.encoding.gf.GF16) :
+    add self other ⦃ (result : spqr.encoding.gf.GF16) =>
+      (result.value.val.toGF216 : GF216) =
+        self.value.val.toGF216 + other.value.val.toGF216 ⦄ := by
+  unfold add
+  step*
+
+end spqr.encoding.gf.GF16.Insts.CoreOpsArithAddShared0GF16GF16
