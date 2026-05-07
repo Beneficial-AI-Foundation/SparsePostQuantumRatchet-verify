@@ -112,7 +112,7 @@ private lemma list_sum_ite_eq_one_of_mem {l : List ℕ} {a : ℕ}
 
 /-- The coefficient of `natToGF2Poly n` at position `m` is `1` when bit `m`
 of `n` is set, and `0` otherwise. -/
-lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
+lemma natToGF2Poly_coeff (n m : Nat) :
     (natToGF2Poly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
   unfold natToGF2Poly
   -- Distribute coeff over the list sum using lcoeff as an AddMonoidHom
@@ -175,14 +175,6 @@ lemma natToGF2Poly_POLY :
                add_zero]
     simp
 
-/-- **Truncation to `n` bits is the identity for values `< 2^n`.**
-
-If `v < 2^n`, then `v % 2^n = v`, so
-`natToGF2Poly (v % 2^n) = natToGF2Poly v`. -/
-theorem natToGF2Poly_mod_eq_of_lt (v n : Nat) (hv : v < 2 ^ n) :
-    natToGF2Poly (v % 2 ^ n) = natToGF2Poly v := by
-  congr 1; exact Nat.mod_eq_of_lt hv
-
 /-- **Natural-number polynomial decomposition at an arbitrary bit boundary.**
 
 For any natural number `v` and bit position `n`:
@@ -239,6 +231,12 @@ theorem POLY_GF2_monic : POLY_GF2.Monic := by
 theorem POLY_GF2_natDegree : POLY_GF2.natDegree = 16 := by
   unfold POLY_GF2; compute_degree!
 
+/-- **`POLY_GF2 ≠ 1`** (its degree is 16, not 0). -/
+theorem POLY_GF2_ne_one : POLY_GF2 ≠ 1 := by
+  intro h; have := congr_arg Polynomial.natDegree h
+  simp [POLY_GF2_natDegree] at this
+
+
 /-- **`POLY_GF2 = X¹⁶ + X¹² + X³ + X + 1` is irreducible over `GF(2) = ZMod 2`.**
 
 Since `POLY_GF2` is a polynomial of degree 16 over the finite field `GF(2)`,
@@ -263,28 +261,6 @@ defer the proof; it is the key fact that makes the quotient
 theorem POLY_GF2_irreducible : Irreducible POLY_GF2 := by
   sorry
 
-
-
-
-/-! ## Characteristic-2 facts in `GF2Poly` -/
-
-/-- **In `GF2Poly`, every element is its own negation.**
-
-This is a consequence of characteristic 2: `a + a = 0` implies `-a = a`. -/
-lemma zmod2_poly_neg_eq (a : GF2Poly) : -a = a := by
-  have h : a + a = 0 := by
-    ext n; simp only [coeff_add, coeff_zero]
-    have h2 : (2 : ZMod 2) = 0 := by decide
-    calc (a.coeff n) + (a.coeff n) = 2 * (a.coeff n) := by ring
-      _ = 0 * (a.coeff n) := by rw [h2]
-      _ = 0 := by ring
-  exact neg_eq_of_add_eq_zero_left h
-
-/-- **In `GF2Poly`, subtraction equals addition.**
-
-Direct consequence of `zmod2_poly_neg_eq`: `a - b = a + (-b) = a + b`. -/
-lemma zmod2_poly_sub_eq_add (a b : GF2Poly) : a - b = a + b := by
-  rw [sub_eq_add_neg, zmod2_poly_neg_eq]
 
 /-! ## Modular-reduction utilities for `POLY_GF2` -/
 
@@ -339,23 +315,7 @@ each factor modulo `POLY_GF2`, multiplying the residues, and reducing the
 result again.  This is the algebraic statement that the quotient map
 `GF2Poly → GF2Poly ⧸ (POLY_GF2)` is a ring homomorphism.
 
-**Mathematical note.** The "naive" identity without the outer `%ₘ POLY_GF2`,
-i.e.
-  `(natToGF2Poly p %ₘ POLY_GF2) * (natToGF2Poly q %ₘ POLY_GF2)
-     = (natToGF2Poly p * natToGF2Poly q) %ₘ POLY_GF2`,
-is **false in general**.  Counter-example: take `p = q = 2 ^ 15` so that
-`natToGF2Poly p = natToGF2Poly q = X ^ 15`.  Both factors already have
-degree `< 16`, so `%ₘ POLY_GF2` is the identity on each.  The LHS is
-`X ^ 30` (degree 30), while the RHS, being a residue, has degree `< 16`.
-Hence the two sides cannot be equal.  The correct statement, proved
-below, requires an outer `%ₘ POLY_GF2` on the LHS — exactly Mathlib's
-`Polynomial.mul_modByMonic`. -/
-lemma natToGF2Poly_modByMonic_eq (p q : Nat) :
-    ((natToGF2Poly p %ₘ POLY_GF2) * (natToGF2Poly q %ₘ POLY_GF2)) %ₘ POLY_GF2 =
-      (natToGF2Poly p * natToGF2Poly q) %ₘ POLY_GF2 :=
-  (Polynomial.mul_modByMonic _ _ _).symm
-
-/- **Existence of a ring homomorphism from `GF2Poly` to `GF216`
+ **Existence of a ring homomorphism from `GF2Poly` to `GF216`
 that vanishes on `POLY_GF2`.**
 
 Concretely, since `POLY_GF2` is irreducible of degree `16` over `ZMod 2`,
@@ -367,7 +327,6 @@ quotient map `AdjoinRoot.mk POLY_GF2` with this isomorphism gives a
 ring homomorphism `GF2Poly →+* GF216` which sends `POLY_GF2` to
 `0` (because `AdjoinRoot.mk_self` says `AdjoinRoot.mk POLY_GF2 POLY_GF2 = 0`).
 -/
-
 lemma exists_ringHom_modByMonic :
     ∃ φ : GF2Poly →+* GF216,
       φ POLY_GF2 = 0 := by
