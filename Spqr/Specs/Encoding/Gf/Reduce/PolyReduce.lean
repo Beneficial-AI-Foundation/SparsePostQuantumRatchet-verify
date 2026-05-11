@@ -3,7 +3,8 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Gf
+import Spqr.Math.Gf16.Field
+import Spqr.Code.Funs
 /-! # Spec Theorem for `spqr::encoding::gf::reduce::poly_reduce`
 
 Specification and proof for `spqr.encoding.gf.reduce.poly_reduce`,
@@ -36,7 +37,7 @@ Source: "spqr/src/encoding/gf.rs" (lines 489:4-498:5)
 -/
 
 open Aeneas Aeneas.Std Result
-open Polynomial spqr.encoding.gf.unaccelerated
+open Polynomial spqr.encoding.gf.unaccelerated spqr.math.gf
 
 namespace spqr.encoding.gf.reduce
 
@@ -227,7 +228,7 @@ and then substitutes the intermediate postconditions:
 
 Together these yield the combined result by rewriting. -/
 theorem poly_reduce_poly_mul_spec (a b : Std.U16) :
-    spqr.encoding.gf.unaccelerated.mul a b ⦃ result =>
+    mul a b ⦃ result =>
       natToGF2Poly result.val =
         (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
   sorry

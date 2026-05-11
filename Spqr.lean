@@ -2,7 +2,12 @@ import Spqr.Code.Funs
 import Spqr.Code.FunsExternal
 import Spqr.Code.Types
 import Spqr.Code.TypesExternal
-import Spqr.Math.Gf
+import Spqr.Math.Gf16.Basic
+import Spqr.Math.Gf16.Field
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Gf2Poly.Basic
+import Spqr.Math.Gf2Poly.NatRep
+import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Encoding.Gf.GF16.Add
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 import Spqr.Specs.Encoding.Gf.GF16.Eq

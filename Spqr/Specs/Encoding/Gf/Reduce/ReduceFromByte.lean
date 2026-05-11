@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-import Spqr.Math.Gf
+import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
 /-! # Spec Theorem for `spqr::encoding::gf::reduce::reduce_from_byte` — loop body
@@ -50,8 +50,7 @@ The shared polynomial-library facts (`natToGF2Poly`, `POLY_GF2`,
 **Source**: spqr/src/encoding/gf.rs (lines 505:8–513:9)
 -/
 
-open Aeneas Aeneas.Std Result
-open Polynomial spqr.encoding.gf.unaccelerated
+open Aeneas Aeneas.Std Result Polynomial spqr.encoding.gf.unaccelerated spqr.math.gf
 
 namespace spqr.encoding.gf.reduce
 
