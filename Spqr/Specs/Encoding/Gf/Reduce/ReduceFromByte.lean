@@ -43,9 +43,9 @@ The central invariant maintained by every step:
 This is the one-step unfolding of `reduceFromByteLoopSpec`,
 which mirrors the Rust loop structure exactly.
 
-The shared polynomial-library facts (`natToGF2Poly`, `POLY_GF2`,
-`POLY_GF2_monic`, `natToGF2Poly_xor`, `natToGF2Poly_shiftLeft`,
-`natToGF2Poly_POLY`, etc.) are imported from `Spqr.Math.Gf`.
+The shared polynomial-library facts (`natToBinaryPoly`, `polyGF2`,
+`polyGF2_monic`, `natToBinaryPoly_xor`, `natToBinaryPoly_shiftLeft`,
+`natToBinaryPoly_POLY`, etc.) are imported from `Spqr.Math.Gf`.
 
 **Source**: spqr/src/encoding/gf.rs (lines 505:8–513:9)
 -/
@@ -280,7 +280,7 @@ The function iterates over the 8 bits of `a` from bit 7 down to bit 0
 The low 16 bits of the returned `u32` represent the canonical GF(2¹⁶)
 element obtained by reducing `a · x¹⁶` modulo POLY:
 
-  `(reduce_from_byte(a) as u16)  =  (a · X¹⁶) mod POLY_GF2`
+  `(reduce_from_byte(a) as u16)  =  (a · X¹⁶) mod polyGF2`
 
 This value is subsequently stored as `REDUCE_BYTES[a]` in the
 precomputed lookup table used by `poly_reduce`.
@@ -306,25 +306,25 @@ def reduceByteTable (k : Nat) : Nat :=
 ## Algebraic (GF(2)[X]) formulation of the reduction table
 
 The following definition expresses `reduceByteTable` in terms of the
-polynomial ring GF(2)[X] = GF2Poly, making the algebraic structure
+polynomial ring GF(2)[X] = BinaryPoly, making the algebraic structure
 explicit:
 - Each byte `k` represents a polynomial of degree < 8 in GF(2)[X].
 - `REDUCE_BYTES[k]` represents the remainder of `k · X¹⁶` divided by
-  POLY_GF2 = X¹⁶ + X¹² + X³ + X + 1.
+  polyGF2 = X¹⁶ + X¹² + X³ + X + 1.
 - The table entry is the canonical 16-bit representative of this
-  remainder, which has degree < 16 since POLY_GF2 is monic of degree 16.
+  remainder, which has degree < 16 since polyGF2 is monic of degree 16.
 -/
 
 
-/-- Spec-level polynomial table entry in GF2Poly.
+/-- Spec-level polynomial table entry in BinaryPoly.
 
 Given a polynomial `p ∈ GF(2)[X]` (representing a byte value of
 degree < 8), `reduceByteTable_poly p` is the canonical remainder of
-`p * X¹⁶` modulo POLY_GF2:
+`p * X¹⁶` modulo polyGF2:
 
-  `reduceByteTable_poly p = (p * X ^ 16) %ₘ POLY_GF2` -/
-noncomputable def reduceByteTable_poly (p : GF2Poly) : GF2Poly :=
-  (p * X ^ 16) %ₘ POLY_GF2
+  `reduceByteTable_poly p = (p * X ^ 16) %ₘ polyGF2` -/
+noncomputable def reduceByteTable_poly (p : BinaryPoly) : BinaryPoly :=
+  (p * X ^ 16) %ₘ polyGF2
 
 
 /-

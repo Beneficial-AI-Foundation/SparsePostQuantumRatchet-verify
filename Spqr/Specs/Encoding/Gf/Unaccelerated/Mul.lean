@@ -31,8 +31,8 @@ This function is the software (unaccelerated) fallback; on x86/x86_64
 and aarch64, the same operation may be dispatched to hardware carry-
 less multiplication instructions (`PCLMULQDQ` / `PMULL`).
 
-The shared polynomial-library facts (`natToGF2Poly`, `POLY_GF2`,
-`POLY_GF2_monic`, etc.) are imported from `Spqr.Math.Gf`.
+The shared polynomial-library facts (`natToBinaryPoly`, `polyGF2`,
+`polyGF2_monic`, etc.) are imported from `Spqr.Math.Gf`.
 
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
@@ -52,33 +52,33 @@ producing a 32-bit intermediate) with `poly_reduce` (table-based
 reduction modulo POLY).
 
 The result satisfies the polynomial-level specification:
-  `natToGF2Poly result.val =
-     (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2`
+  `natToBinaryPoly result.val =
+     (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2`
 
 This follows from composing:
-  1. `poly_mul_spec`:    `natToGF2Poly (poly_mul a b).val = natToGF2Poly a.val * natToGF2Poly b.val`
-  2. `poly_reduce_spec`: `natToGF2Poly (poly_reduce v).val = (natToGF2Poly v.val) %ₘ POLY_GF2`
+  1. `poly_mul_spec`:    `natToBinaryPoly (poly_mul a b).val = natToBinaryPoly a.val * natToBinaryPoly b.val`
+  2. `poly_reduce_spec`: `natToBinaryPoly (poly_reduce v).val = (natToBinaryPoly v.val) %ₘ polyGF2`
 
 This establishes that `mul` computes multiplication in the quotient ring
-  GF(2¹⁶) ≅ GF(2)[X] / (POLY_GF2)
+  GF(2¹⁶) ≅ GF(2)[X] / (polyGF2)
 at the polynomial level.
 
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
 theorem mul_spec' (a b : Std.U16) :
     mul a b ⦃ result =>
-      natToGF2Poly result.val =
-        (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
+      natToBinaryPoly result.val =
+        (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2 ⦄ := by
   sorry
 
 /-- **GF216-level postcondition (provable, parametric)**:
 
 For any ring-homomorphism `φ : (ZMod 2)[X] →+* GF216` that vanishes
-on `POLY_GF2`, the result of `mul a b` corresponds — via `φ ∘
-natToGF2Poly` — to the product of `a` and `b` in `GF216`.
+on `polyGF2`, the result of `mul a b` corresponds — via `φ ∘
+natToBinaryPoly` — to the product of `a` and `b` in `GF216`.
 
 Specializing `φ` to the canonical isomorphism (whose construction
-requires irreducibility of `POLY_GF2` over `ZMod 2`, i.e. a finite-
+requires irreducibility of `polyGF2` over `ZMod 2`, i.e. a finite-
 field development we omit here) recovers the GF(2¹⁶) interpretation
 of the result. -/
 @[step]

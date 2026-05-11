@@ -9,11 +9,11 @@ import Mathlib.Tactic.LinearCombination
 import Mathlib.Tactic.IntervalCases
 import Mathlib.Algebra.Polynomial.Div
 
-/-! # The SPQR irreducible polynomial POLY_GF2
+/-! # The SPQR irreducible polynomial polyGF2
 
-Definition of `POLY_GF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`,
+Definition of `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`,
 its basic properties (monic, degree 16, ≠ 1), and the bridge lemma
-`natToGF2Poly 0x1100b = POLY_GF2`.
+`natToBinaryPoly 0x1100b = polyGF2`.
 -/
 
 open Polynomial
@@ -21,18 +21,18 @@ open Polynomial
 namespace spqr.math.gf
 
 /-- The irreducible polynomial used for GF(2¹⁶) reduction:
-    POLY = X¹⁶ + X¹² + X³ + X + 1   (0x1100b in hex).
+    `polyGF2 = X¹⁶ + X¹² + X³ + X + 1`   (0x1100b in hex).
 
-    GF(2¹⁶) ≅ GF(2)[X] / (POLY). -/
-noncomputable def POLY_GF2 : GF2Poly :=
+    `GF(2¹⁶) ≅ GF(2)[X] / (polyGF2)`. -/
+noncomputable def polyGF2 : BinaryPoly :=
   X ^ 16 + X ^ 12 + X ^ 3 + X + 1
 
 @[simp]
-lemma natToGF2Poly_POLY :
-    natToGF2Poly 0x1100b = POLY_GF2 := by
+lemma natToBinaryPoly_polyGF2 :
+    natToBinaryPoly 0x1100b = polyGF2 := by
   ext m
-  simp only [natToGF2Poly_coeff]
-  unfold POLY_GF2
+  simp only [natToBinaryPoly_coeff]
+  unfold polyGF2
   simp only [coeff_add, coeff_X_pow, coeff_X, coeff_one]
   rcases Nat.lt_or_ge m 17 with hlt | hge
   · interval_cases m <;> decide
@@ -45,32 +45,32 @@ lemma natToGF2Poly_POLY :
                add_zero]
     simp
 
-/-! ## Properties of `POLY_GF2` -/
+/-! ## Properties of `polyGF2` -/
 
-/-- **`POLY_GF2` is monic** (leading coefficient is 1). -/
-theorem POLY_GF2_monic : POLY_GF2.Monic := by
-  unfold POLY_GF2; monicity!
+/-- **`polyGF2` is monic** (leading coefficient is 1). -/
+theorem polyGF2_monic : polyGF2.Monic := by
+  unfold polyGF2; monicity!
 
-/-- **`POLY_GF2` has degree 16.** -/
-theorem POLY_GF2_natDegree : POLY_GF2.natDegree = 16 := by
-  unfold POLY_GF2; compute_degree!
+/-- **`polyGF2` has degree 16.** -/
+theorem polyGF2_natDegree : polyGF2.natDegree = 16 := by
+  unfold polyGF2; compute_degree!
 
-/-- **`POLY_GF2 ≠ 1`** (its degree is 16, not 0). -/
-theorem POLY_GF2_ne_one : POLY_GF2 ≠ 1 := by
+/-- **`polyGF2 ≠ 1`** (its degree is 16, not 0). -/
+theorem polyGF2_ne_one : polyGF2 ≠ 1 := by
   intro h; have := congr_arg Polynomial.natDegree h
-  simp [POLY_GF2_natDegree] at this
+  simp [polyGF2_natDegree] at this
 
-/-! ## Modular-reduction utilities for `POLY_GF2` -/
+/-! ## Modular-reduction utilities for `polyGF2` -/
 
-lemma POLY_GF2_dvd_modByMonic_sub (p : GF2Poly) :
-    POLY_GF2 ∣ (p %ₘ POLY_GF2 - p) := by
-  have hadd := Polynomial.modByMonic_add_div p POLY_GF2_monic
-  refine ⟨-(p /ₘ POLY_GF2), ?_⟩
+lemma polyGF2_dvd_modByMonic_sub (p : BinaryPoly) :
+    polyGF2 ∣ (p %ₘ polyGF2 - p) := by
+  have hadd := Polynomial.modByMonic_add_div p polyGF2_monic
+  refine ⟨-(p /ₘ polyGF2), ?_⟩
   linear_combination hadd
 
-lemma modByMonic_modByMonic_self (p : GF2Poly) :
-    (p %ₘ POLY_GF2) %ₘ POLY_GF2 = p %ₘ POLY_GF2 :=
-  Polynomial.modByMonic_eq_of_dvd_sub POLY_GF2_monic
-    (POLY_GF2_dvd_modByMonic_sub p)
+lemma polyGF2_modByMonic_idem (p : BinaryPoly) :
+    (p %ₘ polyGF2) %ₘ polyGF2 = p %ₘ polyGF2 :=
+  Polynomial.modByMonic_eq_of_dvd_sub polyGF2_monic
+    (polyGF2_dvd_modByMonic_sub p)
 
 end spqr.math.gf

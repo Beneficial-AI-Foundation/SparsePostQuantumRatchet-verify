@@ -29,8 +29,8 @@ The result is an unreduced 32-bit product; to obtain a GF(2¹⁶) element,
 it must subsequently be reduced modulo the irreducible polynomial
 POLY = x¹⁶ + x¹² + x³ + x + 1 (0x1100b) via `poly_reduce`.
 
-The core polynomial-library definitions and lemmas (`natToGF2Poly`,
-`POLY_GF2`, and the basic coefficient/XOR/shift identities) are now
+The core polynomial-library definitions and lemmas (`natToBinaryPoly`,
+`polyGF2`, and the basic coefficient/XOR/shift identities) are now
 gathered once in `Spqr.Math.Gf`; this file imports them rather than
 re-proving them.
 
@@ -83,33 +83,33 @@ noncomputable def clmul_poly (a b : (ZMod 2)[X]) : (n : Nat) → (ZMod 2)[X]
 /-- **Correspondence between `clmul` on `Nat` and `clmul_poly` on GF(2)[X]**:
 
     Interpreting the natural-number inputs as GF(2) polynomials via
-    `natToGF2Poly`, the `Nat`-level `clmul` and the algebraic
+    `natToBinaryPoly`, the `Nat`-level `clmul` and the algebraic
     `clmul_poly` agree:
 
-      `natToGF2Poly (clmul a b n) = clmul_poly (natToGF2Poly a) (natToGF2Poly b) n`
+      `natToBinaryPoly (clmul a b n) = clmul_poly (natToBinaryPoly a) (natToBinaryPoly b) n`
 
     This justifies reasoning about the XOR/shift implementation in
     terms of polynomial algebra over GF(2). -/
 theorem clmul_eq_clmul_poly (a b n : Nat) :
-    natToGF2Poly (clmul a b n) =
-      clmul_poly (natToGF2Poly a) (natToGF2Poly b) n := by
+    natToBinaryPoly (clmul a b n) =
+      clmul_poly (natToBinaryPoly a) (natToBinaryPoly b) n := by
   induction n with
-  | zero => simp [clmul, clmul_poly, natToGF2Poly_zero]
+  | zero => simp [clmul, clmul_poly, natToBinaryPoly_zero]
   | succ n ih =>
     cases htb : b.testBit n with
     | false =>
-      have hcoeff : (natToGF2Poly b).coeff n = 0 := by
-        rw [natToGF2Poly_coeff]; simp [htb]
+      have hcoeff : (natToBinaryPoly b).coeff n = 0 := by
+        rw [natToBinaryPoly_coeff]; simp [htb]
       have h1 : clmul a b (n + 1) = clmul a b n := by
         simp (config := { zeta := true }) [clmul, htb]
       rw [h1, ih]; symm
       simp (config := { zeta := true }) [clmul_poly, hcoeff]
     | true =>
-      have hcoeff : (natToGF2Poly b).coeff n ≠ 0 := by
-        rw [natToGF2Poly_coeff]; simp [htb]
+      have hcoeff : (natToBinaryPoly b).coeff n ≠ 0 := by
+        rw [natToBinaryPoly_coeff]; simp [htb]
       have h1 : clmul a b (n + 1) = clmul a b n ^^^ (a <<< n) := by
         simp (config := { zeta := true }) [clmul, htb]
-      rw [h1, natToGF2Poly_xor, natToGF2Poly_shiftLeft, ih]; symm
+      rw [h1, natToBinaryPoly_xor, natToBinaryPoly_shiftLeft, ih]; symm
       simp (config := { zeta := true }) [clmul_poly, hcoeff]
 
 
@@ -184,18 +184,18 @@ theorem clmul_poly_eq_mul (a b : (ZMod 2)[X]) (n : Nat)
         exact ih b hlt
 
 lemma degree_lt (a : U16) :
-  (natToGF2Poly a).natDegree < 16 := by
-  rcases eq_or_ne (natToGF2Poly (a : Nat)) 0 with h | h
+  (natToBinaryPoly a).natDegree < 16 := by
+  rcases eq_or_ne (natToBinaryPoly (a : Nat)) 0 with h | h
   · simp [h]
   · rw [natDegree_lt_iff_degree_lt h, degree_lt_iff_coeff_zero]
     intro m hm
-    rw [natToGF2Poly_coeff]
+    rw [natToBinaryPoly_coeff]
     simp [Nat.testBit_eq_false_of_lt (calc
       (a : Nat) < 2 ^ 16 := by scalar_tac
       _ ≤ 2 ^ m := Nat.pow_le_pow_right (by omega) hm)]
 
 lemma poly_u16_eq_u32 (a : U16) (me : U32) (h : me = UScalar.cast UScalarTy.U32 a) :
-  (natToGF2Poly a) =(natToGF2Poly me)  := by
+  (natToBinaryPoly a) =(natToBinaryPoly me)  := by
   congr 1
   subst h
   exact (UScalar.cast_val_mod_pow_greater_numBits_eq UScalarTy.U32 a (by simp)).symm
@@ -369,12 +369,12 @@ theorem poly_mul_spec' (a b : Std.U16) :
 @[step]
 theorem poly_mul_spec (a b : Std.U16) :
     poly_mul a b ⦃ result =>
-      natToGF2Poly result.val = natToGF2Poly a.val * natToGF2Poly b.val ⦄ := by
+      natToBinaryPoly result.val = natToBinaryPoly a.val * natToBinaryPoly b.val ⦄ := by
   unfold poly_mul
   step*
   · simp only [UScalar.ofNatCore_val_eq, clmul]
   rw[result_post, clmul_eq_clmul_poly,
-  clmul_poly_eq_mul (natToGF2Poly me.val) (natToGF2Poly b.val) 16 (degree_lt b)]
+  clmul_poly_eq_mul (natToBinaryPoly me.val) (natToBinaryPoly b.val) 16 (degree_lt b)]
   simp only [me_post, UScalarTy.U16_numBits_eq, UScalarTy.U32_numBits_eq, Nat.reduceLeDiff,
     UScalar.cast_val_mod_pow_greater_numBits_eq, poly_u16_eq_u32]
 

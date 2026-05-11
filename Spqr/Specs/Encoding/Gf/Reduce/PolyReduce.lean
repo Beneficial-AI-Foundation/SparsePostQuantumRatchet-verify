@@ -69,18 +69,18 @@ ring GF(2)[X] = (ZMod 2)[X], making the algebraic structure explicit:
 - Shift-left by n (`<<< n`) becomes multiplication by `X ^ n`
 - `Nat.testBit n` becomes checking if the n-th coefficient is nonzero
 
-The reduction computes `v mod POLY_GF2` where
-  POLY_GF2 = X¹⁶ + X¹² + X³ + X + 1.
+The reduction computes `v mod polyGF2` where
+  polyGF2 = X¹⁶ + X¹² + X³ + X + 1.
 -/
 
-/-- Spec-level polynomial reduction modulo POLY_GF2 in (ZMod 2)[X].
+/-- Spec-level polynomial reduction modulo polyGF2 in (ZMod 2)[X].
 
-Given a polynomial `p ∈ GF(2)[X]`, reduces it modulo POLY_GF2 by
+Given a polynomial `p ∈ GF(2)[X]`, reduces it modulo polyGF2 by
 iterating from degree `n + 15` down to degree 16, subtracting
-(= adding, in characteristic 2) `POLY_GF2 * X^k` for each nonzero
+(= adding, in characteristic 2) `polyGF2 * X^k` for each nonzero
 coefficient at position `k + 16`.
 
-Morally, `polyMod_poly p n = p %ₘ POLY_GF2` when
+Morally, `polyMod_poly p n = p %ₘ polyGF2` when
 `natDegree p < n + 16`. -/
 noncomputable def polyMod_poly (p : (ZMod 2)[X]) :
     (n : Nat) → (ZMod 2)[X]
@@ -88,52 +88,52 @@ noncomputable def polyMod_poly (p : (ZMod 2)[X]) :
   | n + 1 =>
     let p' := polyMod_poly p n
     if p'.coeff (n + 16) ≠ 0
-    then p' + POLY_GF2 * X ^ n
+    then p' + polyGF2 * X ^ n
     else p'
 
 /-- **Correspondence between `polyMod` on `Nat` and `polyMod_poly` on GF(2)[X]**:
 
 Interpreting the natural-number input as a GF(2) polynomial via
-`natToGF2Poly`, the `Nat`-level `polyMod` and the algebraic
+`natToBinaryPoly`, the `Nat`-level `polyMod` and the algebraic
 `polyMod_poly` agree:
 
-  `natToGF2Poly (polyMod v n) = polyMod_poly (natToGF2Poly v) n`
+  `natToBinaryPoly (polyMod v n) = polyMod_poly (natToBinaryPoly v) n`
 
 This justifies reasoning about the XOR/shift implementation in
 terms of polynomial algebra over GF(2). -/
 theorem polyMod_eq_polyMod_poly (v n : Nat) :
-    natToGF2Poly (polyMod v n) = polyMod_poly (natToGF2Poly v) n := by
+    natToBinaryPoly (polyMod v n) = polyMod_poly (natToBinaryPoly v) n := by
   induction n with
   | zero => simp [polyMod, polyMod_poly]
   | succ n ih =>
     cases htb : (polyMod v n).testBit (n + 16) with
     | false =>
-      have hcoeff : (polyMod_poly (natToGF2Poly v) n).coeff (n + 16) = 0 := by
-        rw [← ih, natToGF2Poly_coeff]; simp [htb]
+      have hcoeff : (polyMod_poly (natToBinaryPoly v) n).coeff (n + 16) = 0 := by
+        rw [← ih, natToBinaryPoly_coeff]; simp [htb]
       have h1 : polyMod v (n + 1) = polyMod v n := by
         simp (config := { zeta := true }) [polyMod, htb]
       rw [h1, ih]; symm
       simp (config := { zeta := true }) [polyMod_poly, hcoeff]
     | true =>
-      have hcoeff : (polyMod_poly (natToGF2Poly v) n).coeff (n + 16) ≠ 0 := by
-        rw [← ih, natToGF2Poly_coeff]; simp [htb]
+      have hcoeff : (polyMod_poly (natToBinaryPoly v) n).coeff (n + 16) ≠ 0 := by
+        rw [← ih, natToBinaryPoly_coeff]; simp [htb]
       have h1 : polyMod v (n + 1) = polyMod v n ^^^ (0x1100b <<< n) := by
         simp (config := { zeta := true }) [polyMod, htb]
-      rw [h1, natToGF2Poly_xor, natToGF2Poly_shiftLeft, ih, natToGF2Poly_POLY]; symm
+      rw [h1, natToBinaryPoly_xor, natToBinaryPoly_shiftLeft, ih, natToBinaryPoly_polyGF2]; symm
       simp (config := { zeta := true }) [polyMod_poly, hcoeff]
 
-/-- Each step of `polyMod_poly` adds a multiple of `POLY_GF2` to the
+/-- Each step of `polyMod_poly` adds a multiple of `polyGF2` to the
     accumulator, so the result is always congruent to the original
-    polynomial modulo `POLY_GF2`:
+    polynomial modulo `polyGF2`:
 
-      `POLY_GF2 ∣ (p − polyMod_poly p n)`
+      `polyGF2 ∣ (p − polyMod_poly p n)`
 
     Proof by induction: the base case is trivial (`p − p = 0`),
     and each successor step either leaves the polynomial unchanged
-    (divisibility preserved) or adds `POLY_GF2 * X ^ n`, which is
-    itself divisible by `POLY_GF2`. -/
+    (divisibility preserved) or adds `polyGF2 * X ^ n`, which is
+    itself divisible by `polyGF2`. -/
 private lemma polyMod_poly_dvd_sub (p : (ZMod 2)[X]) (n : Nat) :
-    POLY_GF2 ∣ (p - polyMod_poly p n) := by
+    polyGF2 ∣ (p - polyMod_poly p n) := by
   induction n with
   | zero => simp [polyMod_poly]
   | succ n ih =>
@@ -142,36 +142,36 @@ private lemma polyMod_poly_dvd_sub (p : (ZMod 2)[X]) (n : Nat) :
       have h1 : polyMod_poly p (n + 1) = polyMod_poly p n := by
         simp (config := { zeta := true }) [polyMod_poly, hc]
       rw [h1]; exact ih
-    · -- coefficient nonzero ⇒ polyMod_poly p (n+1) = polyMod_poly p n + POLY_GF2 * X^n
+    · -- coefficient nonzero ⇒ polyMod_poly p (n+1) = polyMod_poly p n + polyGF2 * X^n
       have hne : (polyMod_poly p n).coeff (n + 16) ≠ 0 := hc
       have h1 : polyMod_poly p (n + 1) =
-          polyMod_poly p n + POLY_GF2 * X ^ n := by
+          polyMod_poly p n + polyGF2 * X ^ n := by
         simp (config := { zeta := true }) [polyMod_poly, hne]
       rw [h1, show p - (polyMod_poly p n +
-          POLY_GF2 * X ^ n) =
+          polyGF2 * X ^ n) =
           (p - polyMod_poly p n) -
-          POLY_GF2 * X ^ n from by ring]
+          polyGF2 * X ^ n from by ring]
       exact dvd_sub ih (dvd_mul_right _ _)
 
-/-- **`polyMod_poly` preserves congruence modulo POLY_GF2**:
+/-- **`polyMod_poly` preserves congruence modulo polyGF2**:
 
 For any polynomial `p ∈ GF(2)[X]`, the result of `polyMod_poly p n`
-is congruent to `p` modulo POLY_GF2:
+is congruent to `p` modulo polyGF2:
 
-  `(polyMod_poly p n) %ₘ POLY_GF2 = p %ₘ POLY_GF2`
+  `(polyMod_poly p n) %ₘ polyGF2 = p %ₘ polyGF2`
 
 Note: `polyMod_poly` processes bit positions from low to high
-(16, 17, …, n+15). Because POLY_GF2 has a sub-leading term X¹²
+(16, 17, …, n+15). Because polyGF2 has a sub-leading term X¹²
 (degree gap of only 4), reducing a coefficient at position k+16
 (for k ≥ 4) re-introduces a coefficient at position k+12 ≥ 16
 which has already been processed. Hence `polyMod_poly p n` may
 not be fully reduced (i.e. may have degree ≥ 16), but it always
-preserves congruence modulo POLY_GF2. -/
+preserves congruence modulo polyGF2. -/
 theorem polyMod_poly_eq_modByMonic (p : (ZMod 2)[X]) (n : Nat) :
-    (polyMod_poly p n) %ₘ POLY_GF2 =
-      p %ₘ POLY_GF2 := by
-  have hirr : POLY_GF2.Monic := POLY_GF2_monic
-  have h : POLY_GF2 ∣
+    (polyMod_poly p n) %ₘ polyGF2 =
+      p %ₘ polyGF2 := by
+  have hirr : polyGF2.Monic := polyGF2_monic
+  have h : polyGF2 ∣
       (polyMod_poly p n - p) := by
     have h₁ := polyMod_poly_dvd_sub p n
     rwa [show p - polyMod_poly p n =
@@ -186,22 +186,22 @@ The combined specification for `mul(a, b) = poly_reduce(poly_mul(a, b))`
 follows from:
 
   1. `poly_mul_spec` (from `PolyMul.lean`):
-     `natToGF2Poly (poly_mul a b).val = natToGF2Poly a.val * natToGF2Poly b.val`
+     `natToBinaryPoly (poly_mul a b).val = natToBinaryPoly a.val * natToBinaryPoly b.val`
 
   2. `poly_reduce_spec` (above):
-     `natToGF2Poly (poly_reduce v).val = (natToGF2Poly v.val) %ₘ POLY_GF2`
+     `natToBinaryPoly (poly_reduce v).val = (natToBinaryPoly v.val) %ₘ polyGF2`
 
 Together:
-  `natToGF2Poly (mul a b).val
-     = (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2`
+  `natToBinaryPoly (mul a b).val
+     = (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2`
 
 This is exactly multiplication in the quotient ring
-  GF(2¹⁶) ≅ GF(2)[X] / (POLY_GF2)
+  GF(2¹⁶) ≅ GF(2)[X] / (polyGF2)
 
 The remaining bridge to `GaloisField 2 16` (Mathlib's abstract
 construction) requires:
-  - An explicit isomorphism `GaloisField 2 16 ≅ (ZMod 2)[X] / (POLY_GF2)`
-  - Showing that POLY_GF2 is irreducible over GF(2)
+  - An explicit isomorphism `GaloisField 2 16 ≅ (ZMod 2)[X] / (polyGF2)`
+  - Showing that polyGF2 is irreducible over GF(2)
   - Connecting the natural-number ↔ polynomial ↔ quotient-ring chain
 
 This algebraic bridge is stated below for use by `Mul.lean`.
@@ -211,11 +211,11 @@ This algebraic bridge is stated below for use by `Mul.lean`.
 
 For `u16` values `a` and `b`, the composition
 `poly_reduce(poly_mul(a, b))` yields a `u16` result whose
-`natToGF2Poly` encoding equals the product of the input polynomials
-reduced modulo POLY_GF2:
+`natToBinaryPoly` encoding equals the product of the input polynomials
+reduced modulo polyGF2:
 
-  `natToGF2Poly result.val =
-     (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2`
+  `natToBinaryPoly result.val =
+     (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2`
 
 This is the polynomial-level specification for `unaccelerated.mul`,
 composing `poly_mul_spec` and `poly_reduce_spec`.
@@ -223,14 +223,14 @@ composing `poly_mul_spec` and `poly_reduce_spec`.
 The proof unfolds `mul`, applies `step*` (which uses both
 `poly_mul_spec` and `poly_reduce_spec` from the `@[step]` database),
 and then substitutes the intermediate postconditions:
-  1. `poly_mul_spec`: `natToGF2Poly i.val = natToGF2Poly a.val * natToGF2Poly b.val`
-  2. `poly_reduce_spec`: `natToGF2Poly result.val = (natToGF2Poly i.val) %ₘ POLY_GF2`
+  1. `poly_mul_spec`: `natToBinaryPoly i.val = natToBinaryPoly a.val * natToBinaryPoly b.val`
+  2. `poly_reduce_spec`: `natToBinaryPoly result.val = (natToBinaryPoly i.val) %ₘ polyGF2`
 
 Together these yield the combined result by rewriting. -/
 theorem poly_reduce_poly_mul_spec (a b : Std.U16) :
     mul a b ⦃ result =>
-      natToGF2Poly result.val =
-        (natToGF2Poly a.val * natToGF2Poly b.val) %ₘ POLY_GF2 ⦄ := by
+      natToBinaryPoly result.val =
+        (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2 ⦄ := by
   sorry
 
 end spqr.encoding.gf.reduce

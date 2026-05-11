@@ -18,9 +18,9 @@ namespace spqr.math.gf
 
 lemma ringHom_modByMonic
     {R : Type*} [CommRing R]
-    (φ : GF2Poly →+* R)
-    (P : GF2Poly) (hMonic : P.Monic) (hφ : φ P = 0)
-    (p : GF2Poly) :
+    (φ : BinaryPoly →+* R)
+    (P : BinaryPoly) (hMonic : P.Monic) (hφ : φ P = 0)
+    (p : BinaryPoly) :
     φ (p %ₘ P) = φ p := by
   have heq : p %ₘ P + P * (p /ₘ P) = p :=
     Polynomial.modByMonic_add_div p hMonic

@@ -8,40 +8,72 @@ import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Data.Nat.BitIndices
 import Mathlib.Data.Nat.Bits
 
-/-! # GF(2)[X] Polynomial API
+/-! # The binary polynomial ring `(ZMod 2)[X]`
 
-The bridge `natToGF2Poly : ℕ → (ZMod 2)[X]` that interprets a natural
-number's binary representation as the coefficient vector of a polynomial
-over GF(2), together with its basic algebraic properties.
+This file develops a small API around the bridge
 
-Conventions:
-- XOR (`^^^`) on `Nat` corresponds to polynomial addition (`+`) over GF(2).
-- Shift-left (`<<< n`) corresponds to multiplication by `X ^ n`.
-- `Nat.testBit n` corresponds to checking whether the n-th coefficient
-  is non-zero.
+  `natToBinaryPoly : ℕ → (ZMod 2)[X]`
+
+which interprets the binary representation of a natural number as the
+coefficient vector of a polynomial over the binary field `ZMod 2`. It
+also collects a couple of elementary characteristic-2 facts about
+`BinaryPoly := (ZMod 2)[X]` that are convenient throughout the rest of
+the library.
+
+The identifier names follow Mathlib's conventions for similar objects:
+`BinaryPoly` for the type abbreviation `(ZMod 2)[X]`, `natToBinaryPoly`
+for the canonical map from `ℕ`, and `BinaryPoly.neg_eq` /
+`BinaryPoly.sub_eq_add` for the basic algebraic facts in
+characteristic 2.
+
+Note: this development is intended to be upstream-friendly so that it
+can be reused by other projects working with the same Galois field.
+
+## Main definitions
+
+* `BinaryPoly`: the polynomial ring `(ZMod 2)[X]`.
+* `natToBinaryPoly n`: the polynomial whose coefficient at position `m`
+  equals the `m`-th bit of `n`.
+
+## Main statements
+
+* `natToBinaryPoly_coeff`: coefficient characterization in terms of
+  `Nat.testBit`.
+* `natToBinaryPoly_xor`, `natToBinaryPoly_shiftLeft`,
+  `natToBinaryPoly_split`: bit-level operations translate to the
+  expected polynomial operations.
+* `natToBinaryPoly_inj`: `natToBinaryPoly` is injective on `ℕ`.
+* `BinaryPoly.neg_eq`, `BinaryPoly.sub_eq_add`: characteristic-2
+  identities in `BinaryPoly`.
+
+## Conventions
+
+* XOR (`^^^`) on `Nat` corresponds to polynomial addition (`+`).
+* Shift-left (`<<< n`) corresponds to multiplication by `X ^ n`.
+* `Nat.testBit n` corresponds to checking whether the `n`-th
+  coefficient is non-zero.
 -/
 
 open Polynomial
 
-abbrev GF2Poly := (ZMod 2)[X]
+/-- Polynomials over the binary field `ZMod 2`. -/
+abbrev BinaryPoly := (ZMod 2)[X]
 
 namespace spqr.math.gf
 
-/-! ## Core definitions -/
+/-! ## Core definition -/
 
-/-- Convert a natural number to a GF(2) polynomial by interpreting
-its binary representation as polynomial coefficients.
+/-- Interpret a natural number as a `BinaryPoly` by taking its binary
+expansion as the sequence of coefficients.
 
-For example, `natToGF2Poly 0b1011 = X³ + X + 1` since bits 0, 1,
-and 3 are set. -/
-noncomputable def natToGF2Poly (n : ℕ) : (ZMod 2)[X] :=
+For example, `natToBinaryPoly 0b1011 = X ^ 3 + X + 1`, since bits `0`,
+`1`, and `3` of `11` are set. -/
+noncomputable def natToBinaryPoly (n : ℕ) : BinaryPoly :=
   (n.bitIndices.map (X ^ ·)).sum
 
-/-! ## Helper lemma relating `bitIndices` to `testBit` -/
+/-! ## Helper lemma relating `Nat.bitIndices` and `Nat.testBit` -/
 
-/-- Membership in `n.bitIndices` is equivalent to `n.testBit m = true`.
-prepare and upstream to Mathlib/Data/Nat/BitIndices.lean.
--/
+/-- Membership in `n.bitIndices` is equivalent to `n.testBit m = true`. -/
 private lemma mem_bitIndices_iff_testBit {n m : ℕ} :
     m ∈ n.bitIndices ↔ n.testBit m := by
   induction n using Nat.binaryRec generalizing m with
@@ -51,13 +83,13 @@ private lemma mem_bitIndices_iff_testBit {n m : ℕ} :
     | zero => rw [Nat.testBit_bit_zero]; cases b <;> simp
     | succ m => rw [Nat.testBit_bit_succ]; cases b <;> simp [ih]
 
-/-! ## Coefficient characterization and basic lemmas of `natToGF2Poly` -/
+/-! ## Coefficient characterization and basic lemmas of `natToBinaryPoly` -/
 
-/-- The coefficient of `natToGF2Poly n` at position `m` is `1` when bit `m`
-of `n` is set, and `0` otherwise. -/
-lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
-    (natToGF2Poly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
-  unfold natToGF2Poly
+/-- The coefficient of `natToBinaryPoly n` at position `m` is `1` when
+bit `m` of `n` is set, and `0` otherwise. -/
+lemma natToBinaryPoly_coeff (n m : ℕ) :
+    (natToBinaryPoly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
+  unfold natToBinaryPoly
   have hdist : (n.bitIndices.map (X ^ ·)).sum.coeff m =
       ((n.bitIndices.map (X ^ ·)).map (fun p => p.coeff m)).sum :=
     map_list_sum (Polynomial.lcoeff (ZMod 2) m) _
@@ -76,40 +108,42 @@ lemma natToGF2Poly_coeff (n : Nat) (m : Nat) :
         subst h; exact absurd (mem_bitIndices_iff_testBit.mp hi) (by simp [hm])
       simp [hmi])
 
-/-- `natToGF2Poly 0 = 0`. -/
+/-- `natToBinaryPoly 0 = 0`. -/
 @[simp]
-lemma natToGF2Poly_zero : natToGF2Poly 0 = 0 := by
+lemma natToBinaryPoly_zero : natToBinaryPoly 0 = 0 := by
   ext m
-  simp [natToGF2Poly_coeff]
+  simp [natToBinaryPoly_coeff]
 
-/-- XOR of natural numbers corresponds to addition of GF(2) polynomials. -/
-lemma natToGF2Poly_xor (a b : Nat) :
-    natToGF2Poly (a ^^^ b) = natToGF2Poly a + natToGF2Poly b := by
+/-- XOR of natural numbers corresponds to addition in `BinaryPoly`. -/
+lemma natToBinaryPoly_xor (a b : ℕ) :
+    natToBinaryPoly (a ^^^ b) = natToBinaryPoly a + natToBinaryPoly b := by
   ext m
-  simp only [natToGF2Poly_coeff, coeff_add, Nat.testBit_xor]
+  simp only [natToBinaryPoly_coeff, coeff_add, Nat.testBit_xor]
   cases a.testBit m <;> cases b.testBit m <;> decide
 
-/-- Left-shift on naturals corresponds to multiplication by `X ^ k` over GF(2). -/
-lemma natToGF2Poly_shiftLeft (a k : Nat) :
-    natToGF2Poly (a <<< k) = natToGF2Poly a * X ^ k := by
+/-- Left-shift on naturals corresponds to multiplication by `X ^ k`
+in `BinaryPoly`. -/
+lemma natToBinaryPoly_shiftLeft (a k : ℕ) :
+    natToBinaryPoly (a <<< k) = natToBinaryPoly a * X ^ k := by
   ext m
-  simp only [natToGF2Poly_coeff, coeff_mul_X_pow', Nat.testBit_shiftLeft,
+  simp only [natToBinaryPoly_coeff, coeff_mul_X_pow', Nat.testBit_shiftLeft,
     Bool.and_eq_true, decide_eq_true_eq]
   by_cases hkm : k ≤ m <;> simp [hkm]
 
 /-- **Natural-number polynomial decomposition at an arbitrary bit boundary.**
 
-For any natural number `v` and bit position `n`:
+For any natural number `v` and bit position `n`,
 
-  `natToGF2Poly v = natToGF2Poly (v % 2^n) + natToGF2Poly (v >>> n) * X^n`
+  `natToBinaryPoly v =
+     natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n`.
 
-This decomposes a GF(2) polynomial into its lower `n` coefficients
-and its upper coefficients shifted down. -/
-theorem natToGF2Poly_split (v n : Nat) :
-    natToGF2Poly v =
-      natToGF2Poly (v % 2 ^ n) + natToGF2Poly (v >>> n) * X ^ n := by
+This decomposes a binary polynomial into its lower `n` coefficients and
+its upper coefficients shifted down. -/
+theorem natToBinaryPoly_split (v n : ℕ) :
+    natToBinaryPoly v =
+      natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n := by
   ext m
-  simp only [natToGF2Poly_coeff, coeff_add, coeff_mul_X_pow',
+  simp only [natToBinaryPoly_coeff, coeff_add, coeff_mul_X_pow',
              Nat.testBit_mod_two_pow, Nat.testBit_shiftRight]
   by_cases hm : n ≤ m
   · simp only [hm, ↓reduceIte, show ¬ m < n from by omega]
@@ -118,19 +152,19 @@ theorem natToGF2Poly_split (v n : Nat) :
     simp only [show ¬ n ≤ m from by omega, ↓reduceIte, hm, ↓reduceIte, add_zero]
     congr 1
 
-/-- **Injectivity of `natToGF2Poly` on naturals.**
+/-- **Injectivity of `natToBinaryPoly` on naturals.**
 
-If two natural numbers map to the same GF(2) polynomial, they are equal.
-This is because the coefficient of `natToGF2Poly n` at position `m` is
-`1` iff bit `m` of `n` is set, so equal polynomials force equal bit
+If two natural numbers map to the same binary polynomial, they are
+equal: the coefficient of `natToBinaryPoly n` at position `m` is `1`
+iff bit `m` of `n` is set, so equal polynomials force equal bit
 patterns. -/
-lemma natToGF2Poly_inj (a b : Nat)
-    (h : natToGF2Poly a = natToGF2Poly b) : a = b := by
+lemma natToBinaryPoly_inj (a b : ℕ)
+    (h : natToBinaryPoly a = natToBinaryPoly b) : a = b := by
   apply Nat.eq_of_testBit_eq
   intro m
-  have hcoeff : (natToGF2Poly a).coeff m = (natToGF2Poly b).coeff m :=
+  have hcoeff : (natToBinaryPoly a).coeff m = (natToBinaryPoly b).coeff m :=
     congrArg (fun p => p.coeff m) h
-  simp only [natToGF2Poly_coeff] at hcoeff
+  simp only [natToBinaryPoly_coeff] at hcoeff
   by_cases ha : a.testBit m
   · by_cases hb : b.testBit m
     · exact ha.trans hb.symm
@@ -139,8 +173,9 @@ lemma natToGF2Poly_inj (a b : Nat)
     · simp [ha, hb] at hcoeff
     · exact (Bool.eq_false_iff.mpr ha).trans (Bool.eq_false_iff.mpr hb).symm
 
-lemma natToGF2Poly_one : natToGF2Poly 1 = 1 := by
-  ext m; simp only [natToGF2Poly_coeff, coeff_one]
+/-- `natToBinaryPoly 1 = 1`. -/
+lemma natToBinaryPoly_one : natToBinaryPoly 1 = 1 := by
+  ext m; simp only [natToBinaryPoly_coeff, coeff_one]
   cases m with
   | zero => decide
   | succ n =>
@@ -148,9 +183,17 @@ lemma natToGF2Poly_one : natToGF2Poly 1 = 1 := by
       Nat.testBit_eq_false_of_lt (Nat.one_lt_pow (by omega) (by norm_num))
     simp [htb]
 
-/-! ## Characteristic-2 facts in `GF2Poly` -/
+end spqr.math.gf
 
-lemma zmod2_poly_neg_eq (a : GF2Poly) : -a = a := by
+/-! ## Characteristic-2 facts in `BinaryPoly`
+
+The two lemmas below record that `BinaryPoly` has characteristic `2`,
+in the form `-a = a` and `a - b = a + b`. They live in the root
+namespace under the `BinaryPoly` prefix so that dot notation is
+available on elements of `BinaryPoly`. -/
+
+/-- In characteristic `2`, negation is the identity on `BinaryPoly`. -/
+lemma BinaryPoly.neg_eq (a : BinaryPoly) : -a = a := by
   have h : a + a = 0 := by
     ext n; simp only [coeff_add, coeff_zero]
     have h2 : (2 : ZMod 2) = 0 := by decide
@@ -159,7 +202,7 @@ lemma zmod2_poly_neg_eq (a : GF2Poly) : -a = a := by
       _ = 0 := by ring
   exact neg_eq_of_add_eq_zero_left h
 
-lemma zmod2_poly_sub_eq_add (a b : GF2Poly) : a - b = a + b := by
-  rw [sub_eq_add_neg, zmod2_poly_neg_eq]
-
-end spqr.math.gf
+/-- In characteristic `2`, subtraction in `BinaryPoly` agrees with
+addition. -/
+lemma BinaryPoly.sub_eq_add (a b : BinaryPoly) : a - b = a + b := by
+  rw [sub_eq_add_neg, BinaryPoly.neg_eq]
