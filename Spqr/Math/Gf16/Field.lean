@@ -20,36 +20,23 @@ abbrev GF216 := GaloisField 2 16
 
 namespace spqr.math.gf
 
-lemma exists_ringHom_modByMonic :
-    ∃ φ : GF2Poly →+* GF216,
-      φ POLY_GF2 = 0 := by
-  classical
-  have hmonic : POLY_GF2.Monic := POLY_GF2_monic
-  have hne : POLY_GF2 ≠ 0 := hmonic.ne_zero
-  have hirr : Irreducible POLY_GF2 := POLY_GF2_irreducible
-  haveI : Fact (Irreducible POLY_GF2) := ⟨hirr⟩
-  let pb := AdjoinRoot.powerBasis hne
-  haveI : Module.Finite (ZMod 2) (AdjoinRoot POLY_GF2) := pb.finite
-  haveI : Fintype (AdjoinRoot POLY_GF2) := Module.fintypeOfFintype pb.basis
-  have hdim : Module.finrank (ZMod 2) (AdjoinRoot POLY_GF2) = 16 := by
-    rw [pb.finrank, AdjoinRoot.powerBasis_dim, POLY_GF2_natDegree]
-  have hcard : Fintype.card (AdjoinRoot POLY_GF2) = 2 ^ 16 := by
-    rw [Module.card_fintype pb.basis, ZMod.card, Fintype.card_fin,
-        AdjoinRoot.powerBasis_dim, POLY_GF2_natDegree]
-  let e : AdjoinRoot POLY_GF2 ≃ₐ[ZMod 2] GF216 :=
-    GaloisField.algEquivGaloisFieldOfFintype 2 16 hcard
-  have hmk : (AdjoinRoot.mk POLY_GF2) POLY_GF2 = 0 := AdjoinRoot.mk_self
-  refine ⟨(e : AdjoinRoot POLY_GF2 →+* GF216).comp (AdjoinRoot.mk POLY_GF2), ?_⟩
-  rw [RingHom.comp_apply, hmk, map_zero]
+/-- `ZMod 2`-algebra isomorphism between `AdjoinRoot POLY_GF2` and `GF216 = GaloisField 2 16`. -/
+noncomputable opaque adjoinRootEquivGF216 : AdjoinRoot POLY_GF2 ≃ₐ[ZMod 2] GF216 := by
+  let pb := AdjoinRoot.powerBasis POLY_GF2_monic.ne_zero
+  have : Fintype (AdjoinRoot POLY_GF2) := Module.fintypeOfFintype pb.basis
+  have hcard : Fintype.card (AdjoinRoot POLY_GF2) = 2 ^ 16 := by rw [Module.card_fintype pb.basis,
+    ZMod.card, Fintype.card_fin, AdjoinRoot.powerBasis_dim, POLY_GF2_natDegree]
+  have : Fact (Irreducible POLY_GF2) := ⟨POLY_GF2_irreducible⟩
+  exact GaloisField.algEquivGaloisFieldOfFintype 2 16 hcard
 
-/-- A chosen ring homomorphism `GF2Poly →+* GF216` that vanishes on
-`POLY_GF2`.  We pick one provided by `exists_ringHom_modByMonic`. -/
+/-- The chosen ring homomorphism `GF2Poly →+* GF216`. -/
 noncomputable def φ : GF2Poly →+* GF216 :=
-  Classical.choose exists_ringHom_modByMonic
+  (adjoinRootEquivGF216 : AdjoinRoot POLY_GF2 →+* GF216).comp (AdjoinRoot.mk POLY_GF2)
+
 
 /-- The chosen ring homomorphism `φ` sends `POLY_GF2` to `0`. -/
-lemma hφ : φ POLY_GF2 = 0 :=
-  Classical.choose_spec exists_ringHom_modByMonic
+lemma hφ : φ POLY_GF2 = 0 := by
+  simp [φ, AdjoinRoot.mk_self]
 
 /-- Interpret a natural number as an element of `GF216 = GF(2¹⁶)`,
 using the canonical chain
