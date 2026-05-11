@@ -39,7 +39,9 @@ noncomputable def natToGF2Poly (n : ℕ) : (ZMod 2)[X] :=
 
 /-! ## Helper lemma relating `bitIndices` to `testBit` -/
 
-/-- Membership in `n.bitIndices` is equivalent to `n.testBit m = true`. -/
+/-- Membership in `n.bitIndices` is equivalent to `n.testBit m = true`.
+prepare and upstream to Mathlib/Data/Nat/BitIndices.lean.
+-/
 private lemma mem_bitIndices_iff_testBit {n m : ℕ} :
     m ∈ n.bitIndices ↔ n.testBit m := by
   induction n using Nat.binaryRec generalizing m with

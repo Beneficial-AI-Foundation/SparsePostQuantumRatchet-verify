@@ -6,18 +6,6 @@ Authors: Hoang Le Truong
 import Spqr.Math.Gf2Poly.Basic
 import Mathlib.Tactic.IntervalCases
 
-/-! # Computable Nat-level representation of GF(2)[X]
-
-Bit-pattern arithmetic on `Nat` (`gf2ModAux`, `gf2Mod`,
-`gf2NoDivisorOfDeg`) together with round-trip lemmas tying the Nat
-representation to `natToGF2Poly`.
-
-This module provides the computational backbone for verifying
-irreducibility of specific GF(2) polynomials: the `decide`-friendly
-functions operate on natural numbers, and the bridge lemmas connect
-their results back to the abstract polynomial ring `(ZMod 2)[X]`.
--/
-
 open Polynomial
 
 namespace spqr.math.gf
