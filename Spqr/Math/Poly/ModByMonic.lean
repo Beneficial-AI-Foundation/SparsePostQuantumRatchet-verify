@@ -6,10 +6,11 @@ Authors: Hoang Le Truong
 import Spqr.Math.Gf2Poly.Basic
 import Mathlib.Algebra.Polynomial.Div
 
-/-! # Generic monic-polynomial utilities
+/-!
+# Generic monic-polynomial utilities
 
-A generic lemma `ringHom_modByMonic` that says any ring homomorphism vanishing on a monic
-polynomial `P` commutes with reduction modulo `P`.
+A generic lemma `ringHom_modByMonic` that says any ring homomorphism vanishing on a monic polynomial
+`P` commutes with reduction modulo `P`.
 -/
 
 open Polynomial

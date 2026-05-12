@@ -9,7 +9,8 @@ import Mathlib.Data.Nat.BitIndices
 import Mathlib.Data.Nat.Bits
 import Mathlib.Algebra.CharP.Two
 
-/-! # The binary polynomial ring `(ZMod 2)[X]`
+/-!
+# The binary polynomial ring `(ZMod 2)[X]`
 
 This file develops a small API around the bridge
 
@@ -29,8 +30,8 @@ projects working with the same Galois field.
 ## Main definitions
 
 * `BinaryPoly`: the polynomial ring `(ZMod 2)[X]`.
-* `natToBinaryPoly n`: the polynomial whose coefficient at position `m` equals the `m`-th bit
-  of `n`.
+* `natToBinaryPoly n`: the polynomial whose coefficient at position `m` equals the `m`-th bit of
+  `n`.
 
 ## Main statements
 
@@ -56,11 +57,12 @@ namespace spqr.math.gf
 
 /-! ## Core definition -/
 
-/-- Interpret a natural number as a `BinaryPoly` by taking its binary expansion as the sequence of
+/--
+Interpret a natural number as a `BinaryPoly` by taking its binary expansion as the sequence of
 coefficients.
 
-For example, `natToBinaryPoly 0b1011 = X ^ 3 + X + 1`, since bits `0`, `1`, and `3` of `11` are
-set. -/
+For example, `natToBinaryPoly 0b1011 = X ^ 3 + X + 1`, since bits `0`, `1`, and `3` of `11` are set.
+-/
 noncomputable def natToBinaryPoly (n : ℕ) : BinaryPoly :=
   (n.bitIndices.map (X ^ ·)).sum
 
@@ -78,8 +80,10 @@ private lemma mem_bitIndices_iff_testBit {n m : ℕ} :
 
 /-! ## Coefficient characterization and basic lemmas of `natToBinaryPoly` -/
 
-/-- The coefficient of `natToBinaryPoly n` at position `m` is `1` when bit `m` of `n` is set, and
-`0` otherwise. -/
+/--
+The coefficient of `natToBinaryPoly n` at position `m` is `1` when bit `m` of `n` is set, and `0`
+otherwise.
+-/
 lemma natToBinaryPoly_coeff (n m : ℕ) :
     (natToBinaryPoly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
   unfold natToBinaryPoly
@@ -122,14 +126,16 @@ lemma natToBinaryPoly_shiftLeft (a k : ℕ) :
     Bool.and_eq_true, decide_eq_true_eq]
   by_cases hkm : k ≤ m <;> simp [hkm]
 
-/-- **Natural-number polynomial decomposition at an arbitrary bit boundary.**
+/--
+**Natural-number polynomial decomposition at an arbitrary bit boundary.**
 
 For any natural number `v` and bit position `n`,
 
   `natToBinaryPoly v = natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n`.
 
 This decomposes a binary polynomial into its lower `n` coefficients and its upper coefficients
-shifted down. -/
+shifted down.
+-/
 theorem natToBinaryPoly_split (v n : ℕ) :
     natToBinaryPoly v =
       natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n := by
@@ -143,13 +149,15 @@ theorem natToBinaryPoly_split (v n : ℕ) :
     simp only [show ¬ n ≤ m from by omega, hm, ↓reduceIte, add_zero]
     congr 1
 
-/-- **Injectivity of `natToBinaryPoly` on naturals.**
+/--
+**Injectivity of `natToBinaryPoly` on naturals.**
 
 If two natural numbers map to the same binary polynomial, they are equal: the coefficient of
 `natToBinaryPoly n` at position `m` is `1` iff bit `m` of `n` is set, so equal polynomials force
-equal bit patterns. -/
-lemma natToBinaryPoly_inj (a b : ℕ)
-    (h : natToBinaryPoly a = natToBinaryPoly b) : a = b := by
+equal bit patterns.
+-/
+lemma natToBinaryPoly_inj : Function.Injective natToBinaryPoly := by
+  intro a b h
   apply Nat.eq_of_testBit_eq
   intro m
   have hcoeff : (natToBinaryPoly a).coeff m = (natToBinaryPoly b).coeff m :=
@@ -175,11 +183,13 @@ lemma natToBinaryPoly_one : natToBinaryPoly 1 = 1 := by
 
 end spqr.math.gf
 
-/-! ## Characteristic-2 facts in `BinaryPoly`
+/-!
+## Characteristic-2 facts in `BinaryPoly`
 
-The two lemmas below record that `BinaryPoly` has characteristic `2`, in the form `-a = a` and
-`a - b = a + b`. They live in the root namespace under the `BinaryPoly` prefix so that dot notation
-is available on elements of `BinaryPoly`. -/
+The two lemmas below record that `BinaryPoly` has characteristic `2`, in the form `-a = a` and `a -
+b = a + b`. They live in the root namespace under the `BinaryPoly` prefix so that dot notation is
+available on elements of `BinaryPoly`.
+-/
 
 /-- In characteristic `2`, negation is the identity on `BinaryPoly`. -/
 lemma BinaryPoly.neg_eq (a : BinaryPoly) : -a = a := CharTwo.neg_eq a

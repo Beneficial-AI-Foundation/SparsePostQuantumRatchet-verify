@@ -6,7 +6,8 @@ Authors: Hoang Le Truong
 import Spqr.Math.Gf16.Basic
 import Spqr.Math.Gf2Poly.NatRep
 
-/-! # Irreducibility of polyGF2
+/-!
+# Irreducibility of polyGF2
 
 Proof that `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` is irreducible over `GF(2) = ZMod 2`, using the
 computable Nat-level representation and bridge lemmas from `Spqr.Math.Gf2Poly.NatRep`.
@@ -16,12 +17,14 @@ open Polynomial
 
 namespace spqr.math.gf
 
-/-- **`polyGF2 = X¹⁶ + X¹² + X³ + X + 1` is irreducible over `GF(2) = ZMod 2`.**
+/--
+**`polyGF2 = X¹⁶ + X¹² + X³ + X + 1` is irreducible over `GF(2) = ZMod 2`.**
 
 The proof proceeds by computational verification: we implement a GF(2) polynomial remainder function
 via XOR bit-manipulation on natural numbers, check that no monic polynomial of degree 1 through 8
 divides `0x1100b` (the bit-encoding of `polyGF2`), and link this computation back to the algebraic
-statement using `natToBinaryPoly` and `Monic.irreducible_iff_lt_natDegree_lt`. -/
+statement using `natToBinaryPoly` and `Monic.irreducible_iff_lt_natDegree_lt`.
+-/
 theorem polyGF2_irreducible : Irreducible polyGF2 := by
   have hmonic := polyGF2_monic
   rw [hmonic.irreducible_iff_lt_natDegree_lt polyGF2_ne_one, polyGF2_natDegree]
