@@ -15,35 +15,36 @@ This file develops a small API around the bridge
 
   `natToBinaryPoly : ℕ → (ZMod 2)[X]`
 
-which interprets the binary representation of a natural number as the
-coefficient vector of a polynomial over the binary field `ZMod 2`. It
-also collects a couple of elementary characteristic-2 facts about
-`BinaryPoly := (ZMod 2)[X]` that are convenient throughout the rest of
-the library.
+which interprets the binary representation of a natural number as the coefficient vector of a
+polynomial over the binary field `ZMod 2`. It also collects a couple of elementary characteristic-2
+facts about `BinaryPoly := (ZMod 2)[X]` that are convenient throughout the rest of the library.
+
+The identifier names follow Mathlib's conventions for similar objects: `BinaryPoly` for the type
+abbreviation `(ZMod 2)[X]`, `natToBinaryPoly` for the canonical map from `ℕ`, and
+`BinaryPoly.neg_eq` / `BinaryPoly.sub_eq_add` for the basic algebraic facts in characteristic 2.
+
+Note: this development is intended to be upstream-friendly so that it can be reused by other
+projects working with the same Galois field.
 
 ## Main definitions
 
 * `BinaryPoly`: the polynomial ring `(ZMod 2)[X]`.
-* `natToBinaryPoly n`: the polynomial whose coefficient at position `m`
-  equals the `m`-th bit of `n`.
+* `natToBinaryPoly n`: the polynomial whose coefficient at position `m` equals the `m`-th bit
+  of `n`.
 
 ## Main statements
 
-* `natToBinaryPoly_coeff`: coefficient characterization in terms of
-  `Nat.testBit`.
-* `natToBinaryPoly_xor`, `natToBinaryPoly_shiftLeft`,
-  `natToBinaryPoly_split`: bit-level operations translate to the
-  expected polynomial operations.
+* `natToBinaryPoly_coeff`: coefficient characterization in terms of `Nat.testBit`.
+* `natToBinaryPoly_xor`, `natToBinaryPoly_shiftLeft`, `natToBinaryPoly_split`: bit-level operations
+  translate to the expected polynomial operations.
 * `natToBinaryPoly_inj`: `natToBinaryPoly` is injective on `ℕ`.
-* `BinaryPoly.neg_eq`, `BinaryPoly.sub_eq_add`: characteristic-2
-  identities in `BinaryPoly`.
+* `BinaryPoly.neg_eq`, `BinaryPoly.sub_eq_add`: characteristic-2 identities in `BinaryPoly`.
 
 ## Conventions
 
 * XOR (`^^^`) on `Nat` corresponds to polynomial addition (`+`).
 * Shift-left (`<<< n`) corresponds to multiplication by `X ^ n`.
-* `Nat.testBit n` corresponds to checking whether the `n`-th
-  coefficient is non-zero.
+* `Nat.testBit n` corresponds to checking whether the `n`-th coefficient is non-zero.
 -/
 
 open Polynomial
@@ -55,11 +56,11 @@ namespace spqr.math.gf
 
 /-! ## Core definition -/
 
-/-- Interpret a natural number as a `BinaryPoly` by taking its binary
-expansion as the sequence of coefficients.
+/-- Interpret a natural number as a `BinaryPoly` by taking its binary expansion as the sequence of
+coefficients.
 
-For example, `natToBinaryPoly 0b1011 = X ^ 3 + X + 1`, since bits `0`,
-`1`, and `3` of `11` are set. -/
+For example, `natToBinaryPoly 0b1011 = X ^ 3 + X + 1`, since bits `0`, `1`, and `3` of `11` are
+set. -/
 noncomputable def natToBinaryPoly (n : ℕ) : BinaryPoly :=
   (n.bitIndices.map (X ^ ·)).sum
 
@@ -77,8 +78,8 @@ private lemma mem_bitIndices_iff_testBit {n m : ℕ} :
 
 /-! ## Coefficient characterization and basic lemmas of `natToBinaryPoly` -/
 
-/-- The coefficient of `natToBinaryPoly n` at position `m` is `1` when
-bit `m` of `n` is set, and `0` otherwise. -/
+/-- The coefficient of `natToBinaryPoly n` at position `m` is `1` when bit `m` of `n` is set, and
+`0` otherwise. -/
 lemma natToBinaryPoly_coeff (n m : ℕ) :
     (natToBinaryPoly n).coeff m = if n.testBit m then (1 : ZMod 2) else 0 := by
   unfold natToBinaryPoly
@@ -113,8 +114,7 @@ lemma natToBinaryPoly_xor (a b : ℕ) :
   simp only [natToBinaryPoly_coeff, coeff_add, Nat.testBit_xor]
   cases a.testBit m <;> cases b.testBit m <;> decide
 
-/-- Left-shift on naturals corresponds to multiplication by `X ^ k`
-in `BinaryPoly`. -/
+/-- Left-shift on naturals corresponds to multiplication by `X ^ k` in `BinaryPoly`. -/
 lemma natToBinaryPoly_shiftLeft (a k : ℕ) :
     natToBinaryPoly (a <<< k) = natToBinaryPoly a * X ^ k := by
   ext m
@@ -126,11 +126,10 @@ lemma natToBinaryPoly_shiftLeft (a k : ℕ) :
 
 For any natural number `v` and bit position `n`,
 
-  `natToBinaryPoly v =
-     natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n`.
+  `natToBinaryPoly v = natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n`.
 
-This decomposes a binary polynomial into its lower `n` coefficients and
-its upper coefficients shifted down. -/
+This decomposes a binary polynomial into its lower `n` coefficients and its upper coefficients
+shifted down. -/
 theorem natToBinaryPoly_split (v n : ℕ) :
     natToBinaryPoly v =
       natToBinaryPoly (v % 2 ^ n) + natToBinaryPoly (v >>> n) * X ^ n := by
@@ -146,10 +145,9 @@ theorem natToBinaryPoly_split (v n : ℕ) :
 
 /-- **Injectivity of `natToBinaryPoly` on naturals.**
 
-If two natural numbers map to the same binary polynomial, they are
-equal: the coefficient of `natToBinaryPoly n` at position `m` is `1`
-iff bit `m` of `n` is set, so equal polynomials force equal bit
-patterns. -/
+If two natural numbers map to the same binary polynomial, they are equal: the coefficient of
+`natToBinaryPoly n` at position `m` is `1` iff bit `m` of `n` is set, so equal polynomials force
+equal bit patterns. -/
 lemma natToBinaryPoly_inj (a b : ℕ)
     (h : natToBinaryPoly a = natToBinaryPoly b) : a = b := by
   apply Nat.eq_of_testBit_eq
@@ -179,14 +177,12 @@ end spqr.math.gf
 
 /-! ## Characteristic-2 facts in `BinaryPoly`
 
-The two lemmas below record that `BinaryPoly` has characteristic `2`,
-in the form `-a = a` and `a - b = a + b`. They live in the root
-namespace under the `BinaryPoly` prefix so that dot notation is
-available on elements of `BinaryPoly`. -/
+The two lemmas below record that `BinaryPoly` has characteristic `2`, in the form `-a = a` and
+`a - b = a + b`. They live in the root namespace under the `BinaryPoly` prefix so that dot notation
+is available on elements of `BinaryPoly`. -/
 
 /-- In characteristic `2`, negation is the identity on `BinaryPoly`. -/
 lemma BinaryPoly.neg_eq (a : BinaryPoly) : -a = a := CharTwo.neg_eq a
 
-/-- In characteristic `2`, subtraction in `BinaryPoly` agrees with
-addition. -/
+/-- In characteristic `2`, subtraction in `BinaryPoly` agrees with addition. -/
 lemma BinaryPoly.sub_eq_add (a b : BinaryPoly) : a - b = a + b := CharTwo.sub_eq_add a b

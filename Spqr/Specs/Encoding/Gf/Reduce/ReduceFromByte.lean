@@ -10,15 +10,15 @@ import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 /-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_from_byte` — loop body
 
 
-One call to the body with state `(a, out, i)` (where `i.val ≤ 8`)
-performs the following computation:
+One call to the body with state `(a, out, i)` (where `i.val ≤ 8`) performs the following
+computation:
 
-  1. **Termination guard** — if `i = 0`, the loop is exhausted:
-       return `done out` (the accumulated 32-bit XOR mask).
-  2. **Active step** — if `i > 0`, let `i' = i − 1` (the *next*
-     bit position to process, zero-indexed):
-       a. Compute the bit-test mask `(1 : u8) << i'` and AND it with
-          `a`.  This tests whether bit `i'` of `a` is set.
+  1. **Termination guard** — if `i = 0`, the loop is exhausted: return `done out` (the
+     accumulated 32-bit XOR mask).
+  2. **Active step** — if `i > 0`, let `i' = i − 1` (the *next* bit position to process,
+     zero-indexed):
+       a. Compute the bit-test mask `(1 : u8) << i'` and AND it with `a`.  This tests whether
+          bit `i'` of `a` is set.
        b. **Bit set** (`(1 << i') & a ≠ 0`):
             - `poly_shifted = POLY << i'`  (`POLY = 0x1100b`).
             - `out' = out ⊕ poly_shifted`  (accumulate reduction).
@@ -33,8 +33,8 @@ The central invariant maintained by every step:
   reduceFromByteLoopSpec a'.val out'.val i'.val
     = reduceFromByteLoopSpec a.val out.val i.val
 ```
-This is the one-step unfolding of `reduceFromByteLoopSpec`,
-which mirrors the Rust loop structure exactly.
+This is the one-step unfolding of `reduceFromByteLoopSpec`, which mirrors the Rust loop
+structure exactly.
 
 **Source**: spqr/src/encoding/gf.rs (lines 505:8–513:9)
 -/
@@ -46,21 +46,20 @@ namespace spqr.encoding.gf.reduce
 
 /-- Spec-level high-to-low loop for `reduce_from_byte`.
 
-Starting from byte `a`, accumulator `out`, and decrement counter `i`,
-processes bit positions `i-1, i-2, …, 0` in that order (high to low),
-directly mirroring the Rust `while i > 0 { i -= 1; … }` structure.
+Starting from byte `a`, accumulator `out`, and decrement counter `i`, processes bit positions
+`i-1, i-2, …, 0` in that order (high to low), directly mirroring the Rust
+`while i > 0 { i -= 1; … }` structure.
 
 For each bit position `n` (from `i-1` down to `0`):
   - If bit `n` of the current `a` is set:
       • XOR `POLY << n` (= `0x1100b <<< n`) into `out`.
-      • XOR `((POLY << n) >> 16)` — truncated to 8 bits via `% 256`
-        to match the `as u8` cast in Rust — back into `a`.
+      • XOR `((POLY << n) >> 16)` — truncated to 8 bits via `% 256` to match the `as u8` cast in
+        Rust — back into `a`.
   - Otherwise: leave `(a, out)` unchanged and continue.
 
 The return value is the final `out` accumulator after all `i` steps.
 
-Starting with `(a₀, 0, 8)` gives the full 32-bit return value of
-`reduce_from_byte(a₀)`:
+Starting with `(a₀, 0, 8)` gives the full 32-bit return value of `reduce_from_byte(a₀)`:
   `reduce_from_byte_loop a₀ 0#u32 8#u32 = ok (reduceFromByteLoopSpec a₀.val 0 8)` -/
 def reduceFromByteLoopSpec (a out : Nat) : (i : Nat) → Nat
   | 0     => out
@@ -74,8 +73,8 @@ def reduceFromByteLoopSpec (a out : Nat) : (i : Nat) → Nat
 
 /-- One-step unfolding of `reduceFromByteLoopSpec` for the successor case.
 
-`reduceFromByteLoopSpec a out (n + 1)` unfolds to a conditional on
-`a.testBit n`, which is exactly the body computation:
+`reduceFromByteLoopSpec a out (n + 1)` unfolds to a conditional on `a.testBit n`, which is
+exactly the body computation:
   - **Bit set**: recurse with updated `a` and `out`.
   - **Bit not set**: recurse with unchanged `a` and `out`. -/
 theorem reduce_from_byte_loop_body_spec1
@@ -119,19 +118,17 @@ private lemma nat_xor_lt {a b n : Nat} (ha : a < 2 ^ n) (hb : b < 2 ^ n) :
 
 /--**Spec theorem for `encoding.gf.reduce.reduce_from_byte_loop.body`**:
 
-• The function always succeeds (returns `ok`) for all inputs with
-  `i.val ≤ 8`, since:
-    - `(1 : u8) <<< i1` is valid for `i1 ≤ 7` (left shift of a u8 by
-      at most 7 bits never overflows).
-    - `POLY <<< i1` for `i1 ≤ 7` is at most `0x880580 < 2^24 < 2^32`,
-      so the u32 shift never overflows.
-    - `(u8)(i4 >>> 16)` for `i4 ≤ 0x880580` has the value
-      `(0x1100b <<< i1) >>> 16 ≤ 0x88 < 256`, so the `UScalar.cast .U8`
-      always succeeds.
+• The function always succeeds (returns `ok`) for all inputs with `i.val ≤ 8`, since:
+    - `(1 : u8) <<< i1` is valid for `i1 ≤ 7` (left shift of a u8 by at most 7 bits never
+      overflows).
+    - `POLY <<< i1` for `i1 ≤ 7` is at most `0x880580 < 2^24 < 2^32`, so the u32 shift never
+      overflows.
+    - `(u8)(i4 >>> 16)` for `i4 ≤ 0x880580` has the value `(0x1100b <<< i1) >>> 16 ≤ 0x88 < 256`,
+      so the `UScalar.cast .U8` always succeeds.
     - `a ^^^ i6` stays within u8 arithmetic.
-• The step is terminating: when `i.val > 0`, the returned `i'.val`
-  satisfies `i'.val = i.val - 1 < i.val`, strictly decreasing the
-  measure.  When `i.val = 0`, the loop returns `done`, ending iteration.
+• The step is terminating: when `i.val > 0`, the returned `i'.val` satisfies
+  `i'.val = i.val - 1 < i.val`, strictly decreasing the measure.  When `i.val = 0`, the loop
+  returns `done`, ending iteration.
 • **Loop invariant** — for every call with `i.val ≤ 8`:
     `reduceFromByteLoopSpec (result_a).val (result_out).val (result_i).val
        = reduceFromByteLoopSpec a.val out.val i.val`
@@ -221,19 +218,19 @@ theorem reduce_from_byte_loop_body_spec
 
 /-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_from_byte`
 
-The function iterates over the 8 bits of `a` from bit 7 down to bit 0
-(high to low).  For each set bit `i`, it:
+The function iterates over the 8 bits of `a` from bit 7 down to bit 0 (high to low).  For each
+set bit `i`, it:
   1. XORs `POLY << i` into the 32-bit output accumulator `out`.
-  2. Updates `a` by XOR-ing `((POLY << i) >> 16) as u8` into it,
-     feeding the high-bit carry back into the lower bits of `a`.
+  2. Updates `a` by XOR-ing `((POLY << i) >> 16) as u8` into it, feeding the high-bit carry back
+     into the lower bits of `a`.
 
-The low 16 bits of the returned `u32` represent the canonical GF(2¹⁶)
-element obtained by reducing `a · x¹⁶` modulo POLY:
+The low 16 bits of the returned `u32` represent the canonical GF(2¹⁶) element obtained by
+reducing `a · x¹⁶` modulo POLY:
 
   `(reduce_from_byte(a) as u16)  =  (a · X¹⁶) mod polyGF2`
 
-This value is subsequently stored as `REDUCE_BYTES[a]` in the
-precomputed lookup table used by `poly_reduce`.
+This value is subsequently stored as `REDUCE_BYTES[a]` in the precomputed lookup table used by
+`poly_reduce`.
 
 **Source**: spqr/src/encoding/gf.rs (lines 502:4-515:5)
 -/
@@ -242,10 +239,9 @@ precomputed lookup table used by `poly_reduce`.
 
 /-- Spec-level table entry: the 16-bit reduction mask for byte `k`.
 
-Given a byte value `k` (0 ≤ k < 256), `reduceByteTable k` is the
-16-bit XOR mask obtained by the high-to-low loop spec
-`reduceFromByteLoopSpec` (which matches the Rust `while i > 0`
-loop order) retaining the low 16 bits of the 32-bit accumulator.
+Given a byte value `k` (0 ≤ k < 256), `reduceByteTable k` is the 16-bit XOR mask obtained by the
+high-to-low loop spec `reduceFromByteLoopSpec` (which matches the Rust `while i > 0` loop order)
+retaining the low 16 bits of the 32-bit accumulator.
 
   `reduceByteTable k = reduceFromByteLoopSpec k 0 8 % 2 ^ 16`
 -/
@@ -255,22 +251,20 @@ def reduceByteTable (k : Nat) : Nat :=
 /-!
 ## Algebraic (GF(2)[X]) formulation of the reduction table
 
-The following definition expresses `reduceByteTable` in terms of the
-polynomial ring GF(2)[X] = BinaryPoly, making the algebraic structure
-explicit:
+The following definition expresses `reduceByteTable` in terms of the polynomial ring
+GF(2)[X] = BinaryPoly, making the algebraic structure explicit:
 - Each byte `k` represents a polynomial of degree < 8 in GF(2)[X].
 - `REDUCE_BYTES[k]` represents the remainder of `k · X¹⁶` divided by
   polyGF2 = X¹⁶ + X¹² + X³ + X + 1.
-- The table entry is the canonical 16-bit representative of this
-  remainder, which has degree < 16 since polyGF2 is monic of degree 16.
+- The table entry is the canonical 16-bit representative of this remainder, which has degree
+  < 16 since polyGF2 is monic of degree 16.
 -/
 
 
 /-- Spec-level polynomial table entry in BinaryPoly.
 
-Given a polynomial `p ∈ GF(2)[X]` (representing a byte value of
-degree < 8), `reduceByteTable_poly p` is the canonical remainder of
-`p * X¹⁶` modulo polyGF2:
+Given a polynomial `p ∈ GF(2)[X]` (representing a byte value of degree < 8),
+`reduceByteTable_poly p` is the canonical remainder of `p * X¹⁶` modulo polyGF2:
 
   `reduceByteTable_poly p = (p * X ^ 16) %ₘ polyGF2` -/
 noncomputable def reduceByteTable_poly (p : BinaryPoly) : BinaryPoly :=

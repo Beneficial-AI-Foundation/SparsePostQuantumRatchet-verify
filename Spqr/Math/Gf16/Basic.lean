@@ -11,9 +11,8 @@ import Mathlib.Algebra.Polynomial.Div
 
 /-! # The SPQR irreducible polynomial polyGF2
 
-Definition of `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`,
-its basic properties (monic, degree 16, ≠ 1), and the bridge lemma
-`natToBinaryPoly 0x1100b = polyGF2`.
+Definition of `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`, its basic properties (monic,
+degree 16, ≠ 1), and the bridge lemma `natToBinaryPoly 0x1100b = polyGF2`.
 -/
 
 open Polynomial
