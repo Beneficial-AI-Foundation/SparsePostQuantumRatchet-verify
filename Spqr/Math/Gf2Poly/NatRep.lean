@@ -17,13 +17,6 @@ irreducibility of specific binary polynomials: the `decide`-friendly
 functions operate on natural numbers, and the bridge lemmas connect
 their results back to the abstract polynomial ring `BinaryPoly =
 (ZMod 2)[X]`.
-
-The identifier names follow Mathlib's conventions for similar
-objects: `natBinaryPolyMod` for the `Nat`-level remainder,
-`natBinaryPoly_*` for lemmas about it, and `natToBinaryPoly_*` for
-lemmas about the bridge map.  This development is intended to be
-upstream-friendly so that it can be reused by other projects working
-with the same Galois field.
 -/
 
 open Polynomial

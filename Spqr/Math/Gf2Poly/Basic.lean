@@ -7,6 +7,7 @@ import Mathlib.Algebra.Field.ZMod
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Data.Nat.BitIndices
 import Mathlib.Data.Nat.Bits
+import Mathlib.Algebra.CharP.Two
 
 /-! # The binary polynomial ring `(ZMod 2)[X]`
 
@@ -19,15 +20,6 @@ coefficient vector of a polynomial over the binary field `ZMod 2`. It
 also collects a couple of elementary characteristic-2 facts about
 `BinaryPoly := (ZMod 2)[X]` that are convenient throughout the rest of
 the library.
-
-The identifier names follow Mathlib's conventions for similar objects:
-`BinaryPoly` for the type abbreviation `(ZMod 2)[X]`, `natToBinaryPoly`
-for the canonical map from `ℕ`, and `BinaryPoly.neg_eq` /
-`BinaryPoly.sub_eq_add` for the basic algebraic facts in
-characteristic 2.
-
-Note: this development is intended to be upstream-friendly so that it
-can be reused by other projects working with the same Galois field.
 
 ## Main definitions
 
@@ -96,11 +88,11 @@ lemma natToBinaryPoly_coeff (n m : ℕ) :
   rw [hdist, List.map_map]
   simp only [Function.comp_def, coeff_X_pow]
   by_cases hm : n.testBit m = true
-  · simp only [hm, ↓reduceIte]
+  · simp only [hm]
     rw [List.sum_map_eq_nsmul_single _ _ fun _ ha _ => if_neg ha.symm]
     simp [mem_bitIndices_iff_testBit.mpr hm]
   · push_neg at hm
-    simp only [hm, ↓reduceIte, Bool.false_eq_true]
+    simp only [hm, Bool.false_eq_true]
     exact List.sum_eq_zero (fun x hx => by
       simp only [List.mem_map] at hx
       obtain ⟨i, hi, rfl⟩ := hx
@@ -146,10 +138,10 @@ theorem natToBinaryPoly_split (v n : ℕ) :
   simp only [natToBinaryPoly_coeff, coeff_add, coeff_mul_X_pow',
              Nat.testBit_mod_two_pow, Nat.testBit_shiftRight]
   by_cases hm : n ≤ m
-  · simp only [hm, ↓reduceIte, show ¬ m < n from by omega]
+  · simp only [hm, show ¬ m < n from by omega]
     grind
   · push_neg at hm
-    simp only [show ¬ n ≤ m from by omega, ↓reduceIte, hm, ↓reduceIte, add_zero]
+    simp only [show ¬ n ≤ m from by omega, hm, ↓reduceIte, add_zero]
     congr 1
 
 /-- **Injectivity of `natToBinaryPoly` on naturals.**
@@ -193,16 +185,8 @@ namespace under the `BinaryPoly` prefix so that dot notation is
 available on elements of `BinaryPoly`. -/
 
 /-- In characteristic `2`, negation is the identity on `BinaryPoly`. -/
-lemma BinaryPoly.neg_eq (a : BinaryPoly) : -a = a := by
-  have h : a + a = 0 := by
-    ext n; simp only [coeff_add, coeff_zero]
-    have h2 : (2 : ZMod 2) = 0 := by decide
-    calc (a.coeff n) + (a.coeff n) = 2 * (a.coeff n) := by ring
-      _ = 0 * (a.coeff n) := by rw [h2]
-      _ = 0 := by ring
-  exact neg_eq_of_add_eq_zero_left h
+lemma BinaryPoly.neg_eq (a : BinaryPoly) : -a = a := CharTwo.neg_eq a
 
 /-- In characteristic `2`, subtraction in `BinaryPoly` agrees with
 addition. -/
-lemma BinaryPoly.sub_eq_add (a b : BinaryPoly) : a - b = a + b := by
-  rw [sub_eq_add_neg, BinaryPoly.neg_eq]
+lemma BinaryPoly.sub_eq_add (a b : BinaryPoly) : a - b = a + b := CharTwo.sub_eq_add a b
