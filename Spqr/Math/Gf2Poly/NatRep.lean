@@ -253,14 +253,14 @@ lemma exists_natToBinaryPoly_eq_of_one_le_natDegree (q : BinaryPoly)
 
 /-! ### No small divisors of `0x1100b` -/
 
-private lemma natBinaryPolyNoDivisorOfDeg_POLY (d : Nat) (hd : 1 ≤ d) (hd8 : d ≤ 8) :
+private lemma natBinaryPolyNoDivisorOfDeg_polyGF2 (d : Nat) (hd : 1 ≤ d) (hd8 : d ≤ 8) :
     natBinaryPolyNoDivisorOfDeg 0x1100b d = true := by
   interval_cases d <;> decide
 
 lemma natBinaryPolyMod_POLY_ne_zero (d : Nat) (hd : 1 ≤ d) (hd8 : d ≤ 8)
     (lower : Nat) (hlower : lower < 2 ^ d) :
     natBinaryPolyMod 0x1100b (2 ^ d + lower) ≠ 0 := by
-  have hstep := natBinaryPolyNoDivisorOfDeg_POLY d hd hd8
+  have hstep := natBinaryPolyNoDivisorOfDeg_polyGF2 d hd hd8
   simp only [natBinaryPolyNoDivisorOfDeg, List.all_eq_true, List.mem_range,
     bne_iff_ne, ne_eq] at hstep
   exact hstep lower hlower

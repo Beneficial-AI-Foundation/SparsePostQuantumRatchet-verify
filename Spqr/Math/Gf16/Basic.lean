@@ -54,7 +54,7 @@ theorem polyGF2_monic : polyGF2.Monic := by
 theorem polyGF2_natDegree : polyGF2.natDegree = 16 := by
   unfold polyGF2; compute_degree!
 
-/-- **`polyGF2 ≠ 1`** (its degree is 16, not 0). -/
+/-- **`polyGF2 ≠ 1`** (its degree is 16, not 1). -/
 theorem polyGF2_ne_one : polyGF2 ≠ 1 := by
   intro h; have := congr_arg Polynomial.natDegree h
   simp [polyGF2_natDegree] at this
