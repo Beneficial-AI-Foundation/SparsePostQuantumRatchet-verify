@@ -116,7 +116,7 @@ private lemma nat_xor_lt {a b n : Nat} (ha : a < 2 ^ n) (hb : b < 2 ^ n) :
     simp [Nat.testBit_xor, haj, hbj, ← Nat.one_shiftLeft, Nat.testBit_shiftLeft,
           Nat.testBit_eq_false_of_lt h1lt, show n ≤ j from by omega]
 
-/--**Spec theorem for `encoding.gf.reduce.reduce_from_byte_loop.body`**:
+/-- **Spec theorem for `encoding.gf.reduce.reduce_from_byte_loop.body`**:
 
 • The function always succeeds (returns `ok`) for all inputs with `i.val ≤ 8`, since:
     - `(1 : u8) <<< i1` is valid for `i1 ≤ 7` (left shift of a u8 by at most 7 bits never
@@ -133,7 +133,6 @@ private lemma nat_xor_lt {a b n : Nat} (ha : a < 2 ^ n) (hb : b < 2 ^ n) :
     `reduceFromByteLoopSpec (result_a).val (result_out).val (result_i).val
        = reduceFromByteLoopSpec a.val out.val i.val`
 -/
-
 @[step]
 theorem reduce_from_byte_loop_body_spec
     (a : Std.U8) (out : Std.U32) (i : Std.U32)
