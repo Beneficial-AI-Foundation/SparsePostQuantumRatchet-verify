@@ -8,11 +8,6 @@ import Spqr.Math.Gf16.Field
 
 /-! # Spec theorem for `spqr::encoding::gf::unaccelerated::poly_mul`
 
-Specification and proof for `encoding.gf.unaccelerated.poly_mul`,
-which implements carry-less (XOR-based) polynomial multiplication of two
-`u16` values, producing a `u32` result representing the unreduced
-GF(2) polynomial product.
-
 In GF(2¹⁶) — the Galois field with 65 536 elements — multiplication
 begins with carry-less polynomial multiplication: given two polynomials
 of degree < 16 (represented as 16-bit integers), their product is a
@@ -37,7 +32,9 @@ re-proving them.
 **Source**: spqr/src/encoding/gf.rs (lines 381:4-427:5)
 -/
 
-open Aeneas Aeneas.Std Result Polynomial  spqr.math.gf
+open Aeneas Aeneas.Std Result
+open Polynomial
+open spqr.math.gf
 namespace spqr.encoding.gf.unaccelerated
 
 /-- Spec-level carry-less (XOR-based) polynomial multiplication.
@@ -56,7 +53,7 @@ def clmul (a b : Nat) : (n : Nat) → Nat
 ## Algebraic (GF(2)[X]) formulation of carry-less multiplication
 
 The following definition expresses `clmul` in terms of the polynomial
-ring GF(2)[X] = (ZMod 2)[X], making the algebraic structure explicit:
+ring GF(2)[X] = BinaryPoly, making the algebraic structure explicit:
 - XOR (`^^^`) becomes polynomial addition (`+`) over GF(2)
 - Shift-left by n (`<<< n`) becomes multiplication by `X ^ n`
 - `Nat.testBit n` becomes checking if the n-th coefficient is nonzero
@@ -66,15 +63,15 @@ product modulo the irreducible polynomial
   POLY = X¹⁶ + X¹² + X³ + X + 1   (0x1100b).
 -/
 
-/-- Carry-less multiplication in the polynomial ring (ZMod 2)[X].
+/-- Carry-less multiplication in the polynomial ring BinaryPoly.
 
     This is the algebraic equivalent of `clmul` on `Nat`:
     - XOR becomes polynomial addition over GF(2)
     - Left-shift by `n` becomes multiplication by `X ^ n`
     - `testBit n` becomes checking if `coeff b n ≠ 0`
 
-    Morally, `clmul_poly a b n = a * (b mod X^n)` in (ZMod 2)[X]. -/
-noncomputable def clmul_poly (a b : (ZMod 2)[X]) : (n : Nat) → (ZMod 2)[X]
+    Morally, `clmul_poly a b n = a * (b mod X^n)` in BinaryPoly. -/
+noncomputable def clmul_poly (a b : BinaryPoly) : (n : Nat) → BinaryPoly
   | 0     => 0
   | n + 1 =>
     let acc := clmul_poly a b n
@@ -113,11 +110,11 @@ theorem clmul_eq_clmul_poly (a b n : Nat) :
       simp (config := { zeta := true }) [clmul_poly, hcoeff]
 
 
-private lemma clmul_poly_b_zero (a : (ZMod 2)[X]) : ∀ n, clmul_poly a 0 n = 0
+private lemma clmul_poly_b_zero (a : BinaryPoly) : ∀ n, clmul_poly a 0 n = 0
   | 0 => rfl
   | n + 1 => by dsimp [clmul_poly]; simp [clmul_poly_b_zero a n]
 
-private lemma clmul_poly_coeff_eq (a b c : (ZMod 2)[X]) :
+private lemma clmul_poly_coeff_eq (a b c : BinaryPoly) :
     ∀ n, (∀ i, i < n → b.coeff i = c.coeff i) → clmul_poly a b n = clmul_poly a c n
   | 0, _ => rfl
   | n + 1, h => by
@@ -133,7 +130,7 @@ private lemma clmul_poly_coeff_eq (a b c : (ZMod 2)[X]) :
 
     In particular, for 16-bit inputs (degree < 16):
       `clmul_poly a b 16 = a * b` -/
-theorem clmul_poly_eq_mul (a b : (ZMod 2)[X]) (n : Nat)
+theorem clmul_poly_eq_mul (a b : BinaryPoly) (n : Nat)
     (hb : b.natDegree < n) :
     clmul_poly a b n = a * b := by
   induction n generalizing b with
@@ -142,23 +139,19 @@ theorem clmul_poly_eq_mul (a b : (ZMod 2)[X]) (n : Nat)
     dsimp [clmul_poly]
     by_cases hcoeff : b.coeff n ≠ 0
     · rw [if_pos hcoeff]
-      -- In ZMod 2, nonzero means 1
       have hc1 : b.coeff n = 1 := by
         have hlt := (b.coeff n).isLt
         have hne : (b.coeff n).val ≠ 0 := fun h => hcoeff (Fin.ext h)
         have hval : (b.coeff n).val = 1 := by grind
         exact Fin.ext hval
-      -- clmul_poly a b n = clmul_poly a (b - X^n) n (coefficient independence)
       have hind : clmul_poly a b n = clmul_poly a (b - X ^ n) n :=
         clmul_poly_coeff_eq a b (b - X ^ n) n fun i hi => by
           have : i ≠ n := by omega
           simp [coeff_sub, coeff_X_pow, this]
       rw [hind]
       rcases eq_or_ne (b - X ^ n) 0 with hzero | hne
-      · -- b = X^n case
-        rw [hzero, clmul_poly_b_zero, zero_add, sub_eq_zero.mp hzero]
-      · -- General case: natDegree (b - X^n) < n
-        have hdeg : (b - X ^ n).natDegree < n := by
+      · rw [hzero, clmul_poly_b_zero, zero_add, sub_eq_zero.mp hzero]
+      · have hdeg : (b - X ^ n).natDegree < n := by
           by_contra hge; push_neg at hge
           have hlc := leadingCoeff_ne_zero.mpr hne
           unfold leadingCoeff at hlc
@@ -199,33 +192,6 @@ lemma poly_u16_eq_u32 (a : U16) (me : U32) (h : me = UScalar.cast UScalarTy.U32 
   congr 1
   subst h
   exact (UScalar.cast_val_mod_pow_greater_numBits_eq UScalarTy.U32 a (by simp)).symm
-
-/-
-natural language description:
-
-• Takes two `u16` values `a` and `b`, each representing a polynomial
-  of degree < 16 with GF(2) coefficients.
-• Casts `a` to `u32` (`me`) to accommodate the wider product.
-• Initialises an accumulator `acc = 0 : u32` and a shift counter
-  `shift = 0 : u32`.
-• Iterates `shift` from 0 to 15.  For each `shift`, if bit `shift`
-  of `b` is set, XOR `me << shift` into `acc`.
-• Returns the 32-bit accumulator, which holds the carry-less
-  polynomial product of `a` and `b`.
-
-natural language specs:
-
-• The function always succeeds (no panic) for any valid pair of
-  `u16` inputs, since the shifts and XOR operations are within the
-  bounds of `u32` (the maximum product of two degree-15 polynomials
-  has degree 30, which fits in 32 bits).
-• The result satisfies:
-    `poly_mul(a, b).val = clmul a.val b.val 16`
-  where `clmul` is the spec-level recursive carry-less multiplication.
-• The product polynomial has degree ≤ 30 (since deg(a) ≤ 15 and
-  deg(b) ≤ 15), so it always fits in a `u32`.
--/
-
 
 private theorem testBit_of_and_one_shiftLeft_ne_zero {n k : Nat}
     (h : n &&& (1 <<< k) ≠ 0) : n.testBit k = true := by
@@ -274,10 +240,6 @@ Given the loop invariant preconditions — `shift ≤ 16`,
 a `u16`) — the loop always succeeds and returns a `u32` whose value
 equals the full spec-level carry-less product `clmul me.val b.val 16`.
 
-The proof proceeds by `loop.spec_decr_nat` with measure `16 - shift`
-and invariant `shift ≤ 16 ∧ acc = clmul me b shift ∧ me < 2^16`.
-The continue case matches one step of `clmul`; the done case
-(shift = 16) directly yields the postcondition from the invariant.
 
 **Source**: spqr/src/encoding/gf.rs (lines 394:8-425:9)
 -/

@@ -7,15 +7,8 @@ import Spqr.Code.Funs
 import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
-/-! # Spec Theorem for `spqr::encoding::gf::reduce::reduce_from_byte` — loop body
+/-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_from_byte` — loop body
 
-Specification and proof for
-`encoding.gf.reduce.reduce_from_byte_loop.body`, which executes
-a single iteration of the `while i > 0 { … }` loop inside
-`reduce_from_byte`.  The full loop is specified in
-`ReduceFromByte.lean`; this file isolates the per-step behaviour
-so that `reduce_from_byte_loop_spec` can appeal to a clean step
-lemma via `loop.spec_decr_nat`.
 
 One call to the body with state `(a, out, i)` (where `i.val ≤ 8`)
 performs the following computation:
@@ -42,10 +35,6 @@ The central invariant maintained by every step:
 ```
 This is the one-step unfolding of `reduceFromByteLoopSpec`,
 which mirrors the Rust loop structure exactly.
-
-The shared polynomial-library facts (`natToBinaryPoly`, `polyGF2`,
-`polyGF2_monic`, `natToBinaryPoly_xor`, `natToBinaryPoly_shiftLeft`,
-`natToBinaryPoly_POLY`, etc.) are imported from `Spqr.Math.Gf`.
 
 **Source**: spqr/src/encoding/gf.rs (lines 505:8–513:9)
 -/
@@ -99,9 +88,6 @@ theorem reduce_from_byte_loop_body_spec1
       reduceFromByteLoopSpec a out n := by
   rfl
 
-/-- Connection between the U8 shift-and-AND bit test and `Nat.testBit`:
-    `(1 <<< n) % 256 &&& a = 0` iff bit `n` of `a` is not set.
-    Uses `Nat.two_pow_and` from Mathlib. -/
 private lemma and_shiftLeft_one_eq_zero_iff_testBit_false
     (a n : Nat) (hn : n ≤ 7) :
     (1 <<< n % 256 &&& a = 0) ↔ (a.testBit n = false) := by
@@ -118,9 +104,6 @@ private lemma and_shiftLeft_one_eq_zero_iff_testBit_false
     right
     simp [h]
 
-
-
-/-- XOR of two numbers below `2^n` stays below `2^n`. -/
 private lemma nat_xor_lt {a b n : Nat} (ha : a < 2 ^ n) (hb : b < 2 ^ n) :
     a ^^^ b < 2 ^ n := by
   apply Nat.lt_of_testBit n
@@ -134,29 +117,7 @@ private lemma nat_xor_lt {a b n : Nat} (ha : a < 2 ^ n) (hb : b < 2 ^ n) :
     simp [Nat.testBit_xor, haj, hbj, ← Nat.one_shiftLeft, Nat.testBit_shiftLeft,
           Nat.testBit_eq_false_of_lt h1lt, show n ≤ j from by omega]
 
-/-
-natural language description:
-
-• Receives the current loop state:
-    - `a   : u8`  — the byte being reduced, with carry feedback.
-    - `out : u32` — the 32-bit XOR accumulator for the result.
-    - `i   : u32` — the decrement counter (starts at 8, counts down to 0).
-• If `i = 0`: the loop is exhausted; return `done out`.
-• If `i > 0`:
-    - Decrement: `i1 = i − 1`.
-    - Compute bitmask: `i2 = (1 : u8) << i1`.
-    - Test bit: `i3 = i2 & a`.
-    - If `i3 ≠ 0` (bit `i1` of `a` is set):
-        • Shift the irreducible polynomial: `i4 = POLY << i1`.
-        • Accumulate into output:  `out1 = out ^ i4`.
-        • Extract carry (high bits): `i5 = i4 >> 16`.
-        • Truncate carry to 8 bits: `i6 = (u8) i5`.
-        • Feed carry back into `a`:  `a1 = a ^ i6`.
-        • Return `cont (a1, out1, i1)`.
-    - If `i3 = 0` (bit `i1` of `a` is not set):
-        • Return `cont (a, out, i1)`.
-
-natural language specs:
+/--**Spec theorem for `encoding.gf.reduce.reduce_from_byte_loop.body`**:
 
 • The function always succeeds (returns `ok`) for all inputs with
   `i.val ≤ 8`, since:
@@ -194,8 +155,7 @@ theorem reduce_from_byte_loop_body_spec
   by_cases hgt : i > 0#u32
   · simp only [hgt, ↓reduceIte]
     step*
-    · -- Bit set branch
-      constructor
+    · constructor
       · scalar_tac
       · constructor
         · scalar_tac
@@ -206,7 +166,6 @@ theorem reduce_from_byte_loop_body_spec
           have : (i.val - 1) + 1 = i.val := by omega
           conv_rhs =>
             rw [← this, reduce_from_byte_loop_body_spec1]
-          -- The bit IS set: the context contains ¬(mask &&& a.val = 0)
           have h_bound : i.val - 1 ≤ 7 := by omega
           have h_tb : (a.val).testBit (i.val - 1) = true := by
             by_contra h_neg
@@ -218,13 +177,11 @@ theorem reduce_from_byte_loop_body_spec
             show (256 : Nat) = U8.size from by simp [U8.size, U8.numBits]] at this
             exact absurd this ‹_›
           simp only [h_tb, ↓reduceIte]
-          -- Simplify % U32.size (69643 <<< n < 2^32 for n ≤ 7)
           have h_poly_lt : 69643 <<< (i.val - 1) < U32.size := by
             interval_cases i.val <;> simp_all [U32.size, U32.numBits]
           have h_mod_u32 : 69643 <<< (i.val - 1) % U32.size = 69643 <<< (i.val - 1) :=
             Nat.mod_eq_of_lt h_poly_lt
           rw [h_mod_u32]
-          -- Simplify UScalar.cast value
           have h_shr_lt : 69643 <<< (i.val - 1) >>> 16 < 256 := by
             interval_cases i.val <;> simp_all
           have h_cast : (UScalar.cast UScalarTy.U8 i5).val =
@@ -234,7 +191,6 @@ theorem reduce_from_byte_loop_body_spec
               simp only [UScalarTy.numBits, Nat.reducePow];
               exact h_shr_lt)
           rw [h_cast]
-          -- Show % 256 = identity (XOR of two values < 256 is < 256)
           congr 1
           symm
           apply Nat.mod_eq_of_lt
@@ -242,8 +198,7 @@ theorem reduce_from_byte_loop_body_spec
           apply nat_xor_lt
           · grind
           · grind
-    · -- Bit not set branch
-      constructor
+    · constructor
       · scalar_tac
       · simp_all only [gt_iff_lt, UScalar.lt_equiv, UScalar.ofNatCore_val_eq,
         UScalarTy.U8_numBits_eq, Bvify.U8.UScalar_bv, U8.ofNat_bv, UScalar.val_and,
@@ -264,12 +219,7 @@ theorem reduce_from_byte_loop_body_spec
     · rfl
 
 
-/-! # Spec Theorem for `spqr::encoding::gf::reduce::reduce_from_byte`
-
-Specification and proof for `encoding.gf.reduce.reduce_from_byte`,
-which computes the 32-bit XOR mask associated with a byte value `a`
-(interpreted as a degree-< 8 polynomial over GF(2)) against the
-irreducible polynomial POLY = x¹⁶ + x¹² + x³ + x + 1 (0x1100b = 69643).
+/-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_from_byte`
 
 The function iterates over the 8 bits of `a` from bit 7 down to bit 0
 (high to low).  For each set bit `i`, it:
@@ -327,20 +277,7 @@ noncomputable def reduceByteTable_poly (p : BinaryPoly) : BinaryPoly :=
   (p * X ^ 16) %ₘ polyGF2
 
 
-/-
-natural language description:
-
-• Takes a mutable `u8` value `a`, initialises `out : u32 = 0`, `i : u32 = 8`.
-• Loops while `i > 0`:
-    - Decrements `i` (so `i` takes values 7, 6, 5, 4, 3, 2, 1, 0 in that order).
-    - Computes `(1_u8 << i) & a` to test bit `i` of `a`.
-    - If the bit is set:
-        • `out ^= POLY << i`              (accumulate reduction contribution).
-        • `a   ^= ((POLY << i) >> 16) as u8` (8-bit carry feedback into `a`).
-• Returns `out : u32`.
-• The constant `REDUCE_BYTES[k]` is defined as `reduce_from_byte(k as u8) as u16`.
-
-natural language specs:
+/-- **Spec theorem for `encoding.gf.reduce.reduce_from_byte`**:
 
 • The function always succeeds (no panic) for any `u8` input.
 • The full 32-bit result satisfies:
@@ -348,7 +285,6 @@ natural language specs:
 • The low 16 bits equal the precomputed table entry:
     `(reduce_from_byte a).val % 2^16  =  reduceByteTable a.val`
 -/
-
 @[step]
 theorem reduce_from_byte_loop_spec
     (a : Std.U8) (out : Std.U32) (i : Std.U32)

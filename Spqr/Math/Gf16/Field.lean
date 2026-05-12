@@ -66,7 +66,10 @@ noncomputable def _root_.Nat.toGF216 (n : Nat) : GF216 :=
 
 end spqr.math.gf
 
+namespace spqr.encoding.gf.GF16
 open spqr.encoding.gf in
 /-- Interpret a `GF16` field element as an element of `GF216 = GF(2¹⁶)`,
 using the canonical chain `GF16.value.val → BinaryPoly → GF216`. -/
-noncomputable def GF16toGF216 (g : GF16) : GF216 := g.value.val.toGF216
+noncomputable def toGF216 (g : GF16) : GF216 := g.value.val.toGF216
+
+end spqr.encoding.gf.GF16

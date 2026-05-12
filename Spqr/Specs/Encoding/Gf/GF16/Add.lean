@@ -65,7 +65,7 @@ already-registered `add_assign_spec`.
 @[step]
 theorem add_spec (self other : GF16) :
     add self other ⦃ (result : GF16) =>
-      GF16toGF216 result = GF16toGF216 self + GF16toGF216 other ⦄ := by
+      result.toGF216 = self.toGF216 + other.toGF216 ⦄ := by
   unfold add
   step*
 
@@ -129,7 +129,7 @@ already-registered `add_assign_spec`.
 @[step]
 theorem add_spec (self other : GF16) :
     add self other ⦃ (result : GF16) =>
-      GF16toGF216 result = GF16toGF216 self + GF16toGF216 other ⦄ := by
+      result.toGF216 = self.toGF216 + other.toGF216 ⦄ := by
   unfold add
   step*
 
