@@ -1,7 +1,7 @@
 # Confirm Aeneas extraction succeeds 
 
 name: Aeneas extraction
-on: [push]
+on: [push, pull_request]
 
 jobs:
   extract:
