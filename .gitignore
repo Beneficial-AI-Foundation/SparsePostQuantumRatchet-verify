@@ -17,5 +17,15 @@ TypesExternal_Template.lean
 node_modules/
 dist/
 
+# Local / generated
+.vscode/
+data/
+functions.json
+signal-spqr-hax/
+issues/
+docs/*.pdf
+sorry-manifest.txt
+docs/STATE_INVARIANT_PROOFS.md
+
 # MacOS
 .DS_Store
