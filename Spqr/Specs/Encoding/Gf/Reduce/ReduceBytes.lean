@@ -217,7 +217,7 @@ GF(2)[X] polynomial correctness: for every index `j < 256`, the table entry sati
 `natToBinaryPoly result[j].val = (natToBinaryPoly j * X^16) %ₘ polyGF2`.
 -/
 @[step]
-theorem reduce_byte_poly_spec :
+theorem reduce_byte_spec_poly :
     reduce_bytes ⦃ (result : Std.Array U16 256#usize) =>
       ∀ j : Usize, j.val < 256 →
         ∃ v : U16,
