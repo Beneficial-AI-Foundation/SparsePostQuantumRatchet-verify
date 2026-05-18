@@ -17,18 +17,15 @@ namespace spqr.encoding.gf.reduce
 theorem reduce_bytes_loop_spec
     (out : Array U16 256#usize) (i : Usize)
     (hi : i.val ≤ 256)
-    (h_inv : ∀ (j : Usize) (_ : j.val < i.val),
-        (out[j]!).val = reduceByteTable j.val) :
+    (h_inv : ∀ (j : Usize) (_ : j.val < i.val), out[j]! = reduceByteTable j) :
     reduce_bytes_loop out i ⦃ (result : Array U16 256#usize) =>
-      ∀ (j : Usize) (_: j.val < 256),
-        (result[j]!).val = reduceByteTable j.val ⦄ := by
+      ∀ (j : Usize) (_ : j.val < 256), result[j]! = reduceByteTable j ⦄ := by
   unfold reduce_bytes_loop
   apply loop.spec_decr_nat
     (measure := fun (p : (Array U16 256#usize) × Usize) => 256 - p.2.val)
     (inv := fun (p : (Array U16 256#usize) × Usize) =>
       p.2.val ≤ 256 ∧
-      ∀ (j : Usize) (_:j.val < p.2.val),
-        (p.1[j]!).val = reduceByteTable j.val)
+      ∀ (j : Usize) (_ : j.val < p.2.val), p.1[j]! = reduceByteTable j)
   · intro ⟨out', i'⟩ ⟨hi'_bound, h_inv'⟩
     simp only []
     unfold reduce_bytes_loop.body
@@ -60,9 +57,8 @@ reduceByteTable j`.
 -/
 @[step]
 theorem reduce_bytes_spec_nat :
-    reduce_bytes ⦃ (result : Std.Array U16 256#usize) =>
-      ∀ (j : Usize) (_:j.val < 256),
-      (result[j]!).val = reduceByteTable j.val ⦄ := by
+    reduce_bytes ⦃ (result : Array U16 256#usize) =>
+      ∀ (j : Usize) (_ :j.val < 256), result[j]! = reduceByteTable j ⦄ := by
   unfold reduce_bytes
   apply WP.spec_mono (reduce_bytes_loop_spec _ 0#usize (by scalar_tac)
     (fun j hj => by scalar_tac))
@@ -187,10 +183,9 @@ GF(2)[X] polynomial correctness: for every index `j < 256`, the table entry sati
 -/
 @[step]
 theorem reduce_bytes_spec :
-    reduce_bytes ⦃ (result : Std.Array U16 256#usize) =>
+    reduce_bytes ⦃ (result : Array U16 256#usize) =>
       ∀ (j : Usize) (_: j.val < 256),
-            natToBinaryPoly (result[j]!).val =
-              (natToBinaryPoly j.val * X ^ 16) %ₘ polyGF2 ⦄ := by
+        natToBinaryPoly result[j]! = (natToBinaryPoly j * X ^ 16) %ₘ polyGF2 ⦄ := by
   apply WP.spec_mono reduce_bytes_spec_nat
   intro result hres j hj
   have := reduceByteTable_eq_poly_full j.val hj
