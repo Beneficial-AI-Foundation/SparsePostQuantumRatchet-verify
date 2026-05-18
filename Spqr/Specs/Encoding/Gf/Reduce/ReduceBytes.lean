@@ -5,9 +5,6 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
-/-!
-# Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes`
--/
 
 open Aeneas Aeneas.Std Result Polynomial spqr.math.gf
 
@@ -17,7 +14,7 @@ namespace spqr.encoding.gf.reduce
 theorem reduce_bytes_loop_spec
     (out : Array U16 256#usize) (i : Usize)
     (hi : i.val ≤ 256)
-    (h_inv : ∀ (j : Usize) (_ : j.val < i.val), out[j]! = reduceByteTable j) :
+    (h_inv : ∀ (j : Usize) (_ : j < i), out[j]! = reduceByteTable j) :
     reduce_bytes_loop out i ⦃ (result : Array U16 256#usize) =>
       ∀ (j : Usize) (_ : j.val < 256), result[j]! = reduceByteTable j ⦄ := by
   unfold reduce_bytes_loop
@@ -25,7 +22,7 @@ theorem reduce_bytes_loop_spec
     (measure := fun (p : (Array U16 256#usize) × Usize) => 256 - p.2.val)
     (inv := fun (p : (Array U16 256#usize) × Usize) =>
       p.2.val ≤ 256 ∧
-      ∀ (j : Usize) (_ : j.val < p.2.val), p.1[j]! = reduceByteTable j)
+      ∀ (j : Usize) (_ : j < p.2), p.1[j]! = reduceByteTable j)
   · intro ⟨out', i'⟩ ⟨hi'_bound, h_inv'⟩
     simp only []
     unfold reduce_bytes_loop.body
@@ -33,7 +30,7 @@ theorem reduce_bytes_loop_spec
     · simp only [hLt]
       step*
       refine ⟨by scalar_tac, fun j hj => ?_, by scalar_tac⟩
-      by_cases hjne : j.val = i'.val
+      by_cases hjne : j = i'
       · simp [hjne, a_post]
         simp_all [UScalar.cast_val_eq]
       · simp_all
@@ -97,7 +94,7 @@ private lemma xor_lt_256 (a b : Nat) (ha : a < 256) (hb : b < 256) : a ^^^ b < 2
         calc (256 : Nat) = 2 ^ 8 := by norm_num
           _ < 2 ^ j := Nat.pow_lt_pow_right (by norm_num) (by omega))]
 
-private lemma reduceByteLoopFull_inv (a out : Nat) (n : Nat) (ha : a < 256) :
+private lemma reduceByteLoopFull_inv (a out n : Nat) (ha : a < 256) :
     (natToBinaryPoly ((reduceByteLoopFull a out n).2 % 2 ^ 16) +
      natToBinaryPoly (reduceByteLoopFull a out n).1 * X ^ 16) %ₘ polyGF2 =
     (natToBinaryPoly (out % 2 ^ 16) + natToBinaryPoly a * X ^ 16) %ₘ polyGF2 := by
@@ -188,7 +185,7 @@ theorem reduce_bytes_spec :
         natToBinaryPoly result[j]! = (natToBinaryPoly j * X ^ 16) %ₘ polyGF2 ⦄ := by
   apply WP.spec_mono reduce_bytes_spec_nat
   intro result hres j hj
-  have := reduceByteTable_eq_poly_full j.val hj
+  have := reduceByteTable_eq_poly_full j hj
   rw[← this]
   have := hres j hj
   rw[this]
