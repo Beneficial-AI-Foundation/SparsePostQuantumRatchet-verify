@@ -21,29 +21,16 @@ theorem reduce_bytes_loop_spec
   apply loop.spec_decr_nat
     (measure := fun (p : (Array U16 256#usize) × Usize) => 256 - p.2.val)
     (inv := fun (p : (Array U16 256#usize) × Usize) =>
-      p.2.val ≤ 256 ∧
-      ∀ (j : Usize) (_ : j < p.2), p.1[j]! = reduceByteTable j)
+      p.2.val ≤ 256 ∧ ∀ (j : Usize) (_ : j < p.2), p.1[j]! = reduceByteTable j)
   · intro ⟨out', i'⟩ ⟨hi'_bound, h_inv'⟩
-    simp only []
     unfold reduce_bytes_loop.body
     by_cases hLt : i' < 256#usize
-    · simp only [hLt]
-      step*
+    · step*
       refine ⟨by scalar_tac, fun j hj => ?_, by scalar_tac⟩
       by_cases hjne : j = i'
-      · simp [hjne, a_post]
-        simp_all [UScalar.cast_val_eq]
-      · simp_all
-        grind
-    · simp only [hLt, ↓reduceIte, Array.getElem!_Usize_eq, List.getElem!_eq_getElem?_getD,
-      and_assoc, WP.spec_ok]
-      simp_all only [Array.getElem!_Usize_eq, List.getElem!_eq_getElem?_getD, UScalar.lt_equiv,
-        UScalar.ofNatCore_val_eq, not_lt, List.Vector.length_val, getElem?_pos, Option.getD_some]
-      have : i'.val= 256 := by grind
-      intro j hj
-      rw [← this] at hj
-      have := h_inv' j hj
-      grind
+      · simp_all [UScalar.cast_val_eq]
+      · grind
+    · grind
   · exact ⟨hi, h_inv⟩
 
 /--
@@ -57,9 +44,7 @@ theorem reduce_bytes_spec_nat :
     reduce_bytes ⦃ (result : Array U16 256#usize) =>
       ∀ (j : Usize) (_ :j.val < 256), result[j]! = reduceByteTable j ⦄ := by
   unfold reduce_bytes
-  apply WP.spec_mono (reduce_bytes_loop_spec _ 0#usize (by scalar_tac)
-    (fun j hj => by scalar_tac))
-  exact fun _ h => h
+  step*
 
 /-! ## Full-range polynomial correctness of the reduction table -/
 
