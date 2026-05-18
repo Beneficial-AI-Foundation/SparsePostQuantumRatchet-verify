@@ -71,7 +71,7 @@ private lemma xor_lt_256 (a b : Nat) (ha : a < 256) (hb : b < 256) : a ^^^ b < 2
       _ = 2 ^ 8 := by norm_num
       _ ≤ 2 ^ j := Nat.pow_le_pow_right (by norm_num) hj)
   apply Nat.lt_of_testBit 8
-  · simp [Nat.testBit_xor, tb a ha 8 le_rfl, tb b hb 8 le_rfl]
+  · grind
   · decide
   · intro j hj
     simp [Nat.testBit_xor, tb a ha j (by omega), tb b hb j (by omega),
