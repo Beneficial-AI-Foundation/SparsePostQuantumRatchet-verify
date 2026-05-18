@@ -13,66 +13,43 @@ open Aeneas Aeneas.Std Result Polynomial spqr.math.gf
 
 namespace spqr.encoding.gf.reduce
 
-private lemma index_usize_set_ne
-    {α : Type} {n : Usize}
-    (v : Array α n) (i j : Usize) (x : α)
-    (hne : Nat.not_eq i.val j.val) :
-    Array.index_usize (v.set i x) j = Array.index_usize v j := by
-  unfold Array.index_usize
-  simp only [Array.getElem?_Usize_eq, Array.set_val_eq]
-  congr 1; exact List.getElem?_set_ne (Nat.not_eq_imp_not_eq hne)
-
-private lemma index_usize_set_eq_of_val_eq
-    {α : Type} {n : Usize}
-    (v : Array α n) (i j : Usize) (x : α)
-    (hji : j.val = i.val) (hi : i.val < n.val) :
-    Array.index_usize (v.set i x) j = ok x := by
-  unfold Array.index_usize
-  simp only [Array.getElem?_Usize_eq, Array.set_val_eq]
-  rw [show i.val = j.val from hji.symm,
-      List.getElem?_set_self (by have := Array.length_eq v; omega)]
-
-/--
-**Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes` (loop)**
-
-The loop maintains the invariant that all entries `out[j]` for `j < i` equal `reduceByteTable j`,
-and upon completion (`i = 256`) the entire output array is correctly populated.
--/
 @[step]
 theorem reduce_bytes_loop_spec
     (out : Array U16 256#usize) (i : Usize)
     (hi : i.val ≤ 256)
-    (h_inv : ∀ j : Usize, j.val < i.val →
-      ∃ v : U16,
-        Array.index_usize out j = ok v ∧
-          v.val = reduceByteTable j.val) :
-    reduce_bytes_loop out i ⦃ (result : Std.Array U16 256#usize) =>
-      ∀ j : Usize, j.val < 256 →
-        ∃ v : U16,
-          Array.index_usize result j = ok v ∧
-            v.val = reduceByteTable j.val ⦄ := by
+    (h_inv : ∀ (j : Usize) (_ : j.val < i.val),
+        (out[j]!).val = reduceByteTable j.val) :
+    reduce_bytes_loop out i ⦃ (result : Array U16 256#usize) =>
+      ∀ (j : Usize) (_: j.val < 256),
+        (result[j]!).val = reduceByteTable j.val ⦄ := by
   unfold reduce_bytes_loop
   apply loop.spec_decr_nat
     (measure := fun (p : (Array U16 256#usize) × Usize) => 256 - p.2.val)
     (inv := fun (p : (Array U16 256#usize) × Usize) =>
       p.2.val ≤ 256 ∧
-      ∀ j : Usize, j.val < p.2.val →
-        ∃ v : U16, Array.index_usize p.1 j = ok v ∧ v.val = reduceByteTable j.val)
+      ∀ (j : Usize) (_:j.val < p.2.val),
+        (p.1[j]!).val = reduceByteTable j.val)
   · intro ⟨out', i'⟩ ⟨hi'_bound, h_inv'⟩
     simp only []
     unfold reduce_bytes_loop.body
     by_cases hLt : i' < 256#usize
-    · simp only [hLt]; step*
+    · simp only [hLt]
+      step*
       refine ⟨by scalar_tac, fun j hj => ?_, by scalar_tac⟩
       by_cases hjne : j.val = i'.val
-      · exact ⟨i3,
-          by rw [a_post]; exact index_usize_set_eq_of_val_eq out' i' j _ hjne (by scalar_tac),
-          by simp_all [UScalar.cast_val_eq]⟩
-      · obtain ⟨v, hv_idx, hv_val⟩ := h_inv' j (by scalar_tac)
-        exact ⟨v,
-          by rw [a_post]; rw [index_usize_set_ne out' i' j _ (by scalar_tac)]; exact hv_idx,
-          hv_val⟩
-    · simp only [hLt]; exact fun j hj => h_inv' j (by scalar_tac)
+      · simp [hjne, a_post]
+        simp_all [UScalar.cast_val_eq]
+      · simp_all
+        grind
+    · simp only [hLt, ↓reduceIte, Array.getElem!_Usize_eq, List.getElem!_eq_getElem?_getD,
+      and_assoc, WP.spec_ok]
+      simp_all only [Array.getElem!_Usize_eq, List.getElem!_eq_getElem?_getD, UScalar.lt_equiv,
+        UScalar.ofNatCore_val_eq, not_lt, List.Vector.length_val, getElem?_pos, Option.getD_some]
+      have : i'.val= 256 := by grind
+      intro j hj
+      rw [← this] at hj
+      have := h_inv' j hj
+      grind
   · exact ⟨hi, h_inv⟩
 
 /--
@@ -82,12 +59,10 @@ Builds the 256-entry reduction lookup table: for every index `j < 256`, `result[
 reduceByteTable j`.
 -/
 @[step]
-theorem reduce_bytes_spec :
+theorem reduce_bytes_spec_nat :
     reduce_bytes ⦃ (result : Std.Array U16 256#usize) =>
-      ∀ j : Usize, j.val < 256 →
-        ∃ v : U16,
-          Array.index_usize result j = ok v ∧
-            v.val = reduceByteTable j.val ⦄ := by
+      ∀ (j : Usize) (_:j.val < 256),
+      (result[j]!).val = reduceByteTable j.val ⦄ := by
   unfold reduce_bytes
   apply WP.spec_mono (reduce_bytes_loop_spec _ 0#usize (by scalar_tac)
     (fun j hj => by scalar_tac))
@@ -95,7 +70,6 @@ theorem reduce_bytes_spec :
 
 /-! ## Full-range polynomial correctness of the reduction table -/
 
-/-- Combined high-to-low loop function tracking both `a` (byte) and `out` (accumulator). -/
 private def reduceByteLoopFull (a out : Nat) : (n : Nat) → Nat × Nat
   | 0     => (a, out)
   | n + 1 =>
@@ -169,12 +143,6 @@ private lemma reduceByteLoopFull_carry_zero (k : Nat) (hk : k < 256) :
   have h : ∀ k' : Fin 256, (reduceByteLoopFull k'.val 0 8).1 = 0 := by decide
   exact h ⟨k, hk⟩
 
-/--
-**(a) Full-range table polynomial correctness (spec-level).**
-
-For any byte value `k < 256`:
-  `natToBinaryPoly (reduceByteTable k) = (natToBinaryPoly k * X ^ 16) %ₘ polyGF2`
--/
 theorem reduceByteTable_eq_poly_full (k : Nat) (hk : k < 256) :
     natToBinaryPoly (reduceByteTable k) =
       (natToBinaryPoly k * X ^ 16) %ₘ polyGF2 := by
@@ -211,22 +179,22 @@ theorem reduceByteTable_eq_poly_full (k : Nat) (hk : k < 256) :
   rwa [hA_self] at hinv
 
 /--
-**Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes` (polynomial)**
+**Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes`**
 
 GF(2)[X] polynomial correctness: for every index `j < 256`, the table entry satisfies
 `natToBinaryPoly result[j].val = (natToBinaryPoly j * X^16) %ₘ polyGF2`.
 -/
 @[step]
-theorem reduce_byte_spec_poly :
+theorem reduce_bytes_spec :
     reduce_bytes ⦃ (result : Std.Array U16 256#usize) =>
-      ∀ j : Usize, j.val < 256 →
-        ∃ v : U16,
-          Array.index_usize result j = ok v ∧
-            natToBinaryPoly v.val =
+      ∀ (j : Usize) (_: j.val < 256),
+            natToBinaryPoly (result[j]!).val =
               (natToBinaryPoly j.val * X ^ 16) %ₘ polyGF2 ⦄ := by
-  apply WP.spec_mono reduce_bytes_spec
+  apply WP.spec_mono reduce_bytes_spec_nat
   intro result hres j hj
-  obtain ⟨v, hv_idx, hv_val⟩ := hres j hj
-  exact ⟨v, hv_idx, by rw [hv_val]; exact reduceByteTable_eq_poly_full j.val hj⟩
+  have := reduceByteTable_eq_poly_full j.val hj
+  rw[← this]
+  have := hres j hj
+  rw[this]
 
 end spqr.encoding.gf.reduce
