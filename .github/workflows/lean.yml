@@ -31,35 +31,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install elan (Lean version manager)
-        run: |
-          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
-
-      - name: Verify elan installation
-        run: |
-          elan --version
-          lean --version
-
-      - name: Cache Lean build
-        uses: actions/cache@v4
-        with:
-          path: .lake
-          key: ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-${{ hashFiles('Spqr/**/*.lean', 'scripts/**/*.lean') }}
-          restore-keys: |
-            ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-
-            ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-
-            ${{ runner.os }}-lean-
-
-      - name: Download dependency caches
-        run: lake exe cache get
-
       - name: Build Lean project
-        run: lake build
-
-      - name: Verify build success
-        run: |
-          echo "✓ Build successful!"
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          test: false
+          lint: false
+          use-mathlib-cache: true
 
       - name: Restore base sorry manifest
         if: github.event_name == 'pull_request'
