@@ -61,9 +61,6 @@ jobs:
         run: |
           echo "✓ Build successful!"
 
-      - name: Axiom audit
-        run: lake env lean scripts/PrintAxioms.lean
-
       - name: Restore base sorry manifest
         if: github.event_name == 'pull_request'
         uses: actions/cache/restore@v4
@@ -76,8 +73,8 @@ jobs:
         run: |
           [ -f sorry-manifest.txt ] && mv sorry-manifest.txt sorry-manifest-base.txt || true
 
-      - name: Generate sorry manifest
-        run: lake env lean scripts/SorryLister.lean
+      - name: Axiom audit and sorry manifest
+        run: lake env lean scripts/Audit.lean
 
       - name: Save sorry manifest to cache
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

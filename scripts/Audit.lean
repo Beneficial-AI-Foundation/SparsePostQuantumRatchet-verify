@@ -1,8 +1,8 @@
 /-
-Automatically print all axioms used by every declaration in this project.
+Axiom audit and sorry-manifest generator.
 
 Usage:
-  lake env lean scripts/PrintAxioms.lean
+  lake env lean scripts/Audit.lean
 
 Scans all `Spqr.*` modules reachable via `import Spqr` (i.e. those
 already part of the build), then for each theorem/def/opaque/axiom it
@@ -14,6 +14,9 @@ scanned.  Ensure new modules are re-exported from `Spqr.lean`.
 Section 1 focuses on `Spqr.Specs.*` (hand-written proofs).
 Section 2 traces how `sorry` reaches specs theorems.
 Section 3 gives a full project summary.
+Section 4 writes `sorry-manifest.txt` (machine-readable, one line per
+  sorry-tainted declaration) consumed by `scripts/sorry-diff.py` for
+  CI delta reporting.
 
 Reference: https://lean-lang.org/doc/reference/latest/ValidatingProofs/
 -/
@@ -233,3 +236,22 @@ run_cmd liftTermElabM do
   if projTrust then logInfo m!"⚠  `Lean.trustCompiler` found in project."
   else logInfo m!"✓  No `Lean.trustCompiler` in project."
   logInfo m!"\nTotal custom axioms: {projAllCustom.size}"
+
+  -- ── SECTION 4: Machine-readable sorry manifest ──────────────────────────
+
+  logInfo m!"\n╔══════════════════════════════════════════════════════╗"
+  logInfo m!"║  SECTION 4: Sorry manifest (sorry-manifest.txt)     ║"
+  logInfo m!"╚══════════════════════════════════════════════════════╝"
+
+  let mut manifestLines : Array String := #[]
+  for h : i in [:allProjectDecls.size] do
+    let nm := allProjectDecls[i]
+    let usedAxioms := axiomCache[nm]?.getD #[]
+    if usedAxioms.any (· == ``sorryAx) then
+      let modName := moduleLookup[nm]?.map toString |>.getD "(unknown)"
+      let kind := if directSorrySet.contains nm then "direct" else "transitive"
+      manifestLines := manifestLines.push s!"{modName} {nm} {kind}"
+  let sorted := manifestLines.qsort (· < ·)
+  let content := String.join (sorted.toList.map (· ++ "\n"))
+  IO.FS.writeFile "sorry-manifest.txt" content
+  logInfo m!"sorry-manifest.txt written ({sorted.size} sorry-tainted declarations)"
