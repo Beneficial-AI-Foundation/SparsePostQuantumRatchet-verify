@@ -54,7 +54,7 @@ at the polynomial level.
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
 theorem mul_spec_nat (a b : U16) :
-    mul a b ⦃ result =>
+    mul a b ⦃ ( result : U16) =>
       natToBinaryPoly result.val =
         (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2 ⦄ := by
   unfold mul
