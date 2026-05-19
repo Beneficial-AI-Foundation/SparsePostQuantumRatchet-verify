@@ -6,6 +6,87 @@ Authors: Hoang Le Truong
 import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
 
+/-!
+**Spec theorem for `spqr::encoding::gf::reduce::poly_reduce`**:
+
+Given a natural number `v` (representing a polynomial in GF(2)[X] via its binary expansion),
+reduces it modulo `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` (0x1100b) using the precomputed
+`REDUCE_BYTES` table, yielding the canonical degree-< 16 representative in GF(2¹⁶).
+
+The reduction processes the input byte-by-byte from high to low:
+  1. Extract bits 24–31 (`v >>> 24`), look up `reduceByteTable`, XOR the shifted result back:
+     `v₁ := v ⊕ (reduceByteTable(v >> 24) << 8)`.
+  2. Extract bits 16–23 (`(v₁ >>> 16) &&& 0xFF`), look up `reduceByteTable`, XOR result back:
+     `result := (v₁ ⊕ reduceByteTable((v₁ >> 16) & 0xFF)) mod 2¹⁶`.
+  3. Return the remaining 16 bits.
+
+Each table lookup replaces a degree-≥ 16 contribution with its residue modulo `polyGF2`:
+  `reduceByteTable(k)` satisfies
+    `natToBinaryPoly (reduceByteTable k) = (natToBinaryPoly k * X¹⁶) %ₘ polyGF2`
+so XOR-ing the table entry effectively subtracts the high byte's contribution modulo `polyGF2`.
+
+### Algebraic context
+
+This definition is the **optimised (table-based)** counterpart of the iterative bit-by-bit
+reduction `polyMod_poly`, which processes one coefficient at a time:
+
+  `polyMod_poly p 0     = p`
+  `polyMod_poly p (n+1) = if (polyMod_poly p n).coeff (n+16) ≠ 0`
+  `                        then polyMod_poly p n + polyGF2 * X^n`
+  `                        else polyMod_poly p n`
+
+The key algebraic properties of `polyMod_poly` that justify this reduction are:
+
+  1. **Nat ↔ Poly correspondence** (`polyMod_eq_polyMod_poly`):
+     `natToBinaryPoly (polyMod v n) = polyMod_poly (natToBinaryPoly v) n`
+     — the XOR/shift implementation on `Nat` agrees with the algebraic formulation on GF(2)[X].
+
+  2. **Congruence preservation** (`polyMod_poly_dvd_sub`):
+     `polyGF2 ∣ (p − polyMod_poly p n)`
+     — each step adds a multiple of `polyGF2`, so the result is always congruent to `p`.
+
+  3. **Modular equivalence** (`polyMod_poly_eq_modByMonic`):
+     `(polyMod_poly p n) %ₘ polyGF2 = p %ₘ polyGF2`
+     — the partially-reduced polynomial has the same residue as `p` modulo `polyGF2`.
+
+Note: because `polyGF2` has a sub-leading term `X¹²` (degree gap of only 4), reducing a
+coefficient at position `k + 16` (for `k ≥ 4`) re-introduces a coefficient at position
+`k + 12 ≥ 16` that has already been processed. Hence the iterative `polyMod_poly` may not be
+fully reduced after a single pass. The table-based `polyReduce` handles this by processing full
+bytes (8 bits at a time) through the precomputed table, which accounts for all carry
+propagation within each byte.
+
+### `polyReduce_eq`
+
+The main theorem `polyReduce_eq` establishes:
+  `natToBinaryPoly (polyReduce v) = (natToBinaryPoly v) %ₘ polyGF2`
+for all `v < 2³²`, confirming that the table-lookup implementation computes the canonical
+degree-< 16 representative modulo `polyGF2`.
+
+### Connection to GF(2¹⁶) multiplication
+
+The combined specification for `mul(a, b) = poly_reduce(poly_mul(a, b))` follows from:
+
+  1. `poly_mul_spec`:
+     `natToBinaryPoly (poly_mul a b).val = natToBinaryPoly a.val * natToBinaryPoly b.val`
+
+  2. `poly_reduce_spec` (proved via `polyReduce_eq`):
+     `natToBinaryPoly (poly_reduce v).val = (natToBinaryPoly v.val) %ₘ polyGF2`
+
+Together (`poly_reduce_spec_poly_mul`):
+  `natToBinaryPoly (mul a b).val
+     = (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2`
+
+This is exactly multiplication in the quotient ring `GF(2¹⁶) ≅ GF(2)[X] / (polyGF2)`.
+
+The remaining bridge to `GaloisField 2 16` (Mathlib's abstract construction) requires
+an explicit isomorphism `GaloisField 2 16 ≅ (ZMod 2)[X] / (polyGF2)`, showing that `polyGF2`
+is irreducible over GF(2), and connecting the natural-number ↔ polynomial ↔ quotient-ring chain.
+This algebraic bridge is developed in `Spqr.Math.Gf16.Field` and used by `Mul.lean`.
+
+**Source**: spqr/src/encoding/gf.rs (lines 489:4-498:5)
+-/
+
 open Aeneas Aeneas.Std Result Polynomial spqr.encoding.gf.unaccelerated spqr.math.gf
 
 namespace spqr.encoding.gf.reduce
@@ -164,8 +245,7 @@ theorem polyReduce_eq (v : Nat) (hv : v < 2 ^ 32)
     (Polynomial.modByMonic_eq_self_iff polyGF2_monic).mpr ha_deg
   rw [hmod_eq, ha_self]
 
-/--
-**Spec theorem for `spqr::encoding::gf::reduce::poly_reduce`**:
+/-- **Spec theorem for `spqr::encoding::gf::reduce::poly_reduce`**
 
 Table-based polynomial reduction of a 32-bit carry-less product modulo the irreducible polynomial
 POLY = 0x1100b, yielding a 16-bit GF(2¹⁶) element.
@@ -181,10 +261,7 @@ The result satisfies the algebraic specification:
 
 This connects the bitwise table-lookup implementation to polynomial reduction in GF(2)[X],
 confirming that `poly_reduce` computes the canonical degree-< 16 representative of `v` modulo
-polyGF2 = X¹⁶ + X¹² + X³ + X + 1.
-
-**Source**: spqr/src/encoding/gf.rs (lines 489:4-498:5)
--/
+polyGF2 = X¹⁶ + X¹² + X³ + X + 1. -/
 @[step]
 theorem poly_reduce_spec (v : U32) :
     poly_reduce v ⦃ (result : U16) =>

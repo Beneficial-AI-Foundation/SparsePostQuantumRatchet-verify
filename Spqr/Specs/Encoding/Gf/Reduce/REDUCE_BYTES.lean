@@ -33,9 +33,15 @@ open Aeneas Aeneas.Std  Polynomial  spqr.math.gf
 
 namespace spqr.encoding.gf.reduce
 
+/-- **Spec theorem for `spqr::encoding::gf::reduce::REDUCE_BYTES`**
+
+The compile-time lookup table `REDUCE_BYTES` is exactly the table produced by `reduce_bytes`:
+for every byte index `j < 256`, the entry `REDUCE_BYTES[j]`, read as a GF(2)-polynomial, equals
+`(j · X¹⁶) mod polyGF2`, the canonical reduction of the shifted byte polynomial modulo the
+irreducible `polyGF2 = X¹⁶ + X¹² + X³ + X + 1`. -/
 @[step]
 theorem REDUCE_BYTES_spec :
-    REDUCE_BYTES ⦃ result =>
+    REDUCE_BYTES ⦃ (result : Array U16 256#usize) =>
       ∀ (j : Usize) (_ :j.val < 256),
           natToBinaryPoly result[j]! = (natToBinaryPoly j * X ^ 16) %ₘ polyGF2 ⦄ := by
   simp only [REDUCE_BYTES]
