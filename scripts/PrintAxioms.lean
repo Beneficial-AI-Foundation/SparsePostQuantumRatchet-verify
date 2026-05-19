@@ -12,7 +12,7 @@ Any `Spqr.*` module not imported by the root `Spqr` module will not be
 scanned.  Ensure new modules are re-exported from `Spqr.lean`.
 
 Section 1 focuses on `Spqr.Specs.*` (hand-written proofs).
-Section 2 traces how `sorryAx` reaches specs theorems.
+Section 2 traces how `sorry` reaches specs theorems.
 Section 3 gives a full project summary.
 
 Reference: https://lean-lang.org/doc/reference/latest/ValidatingProofs/
@@ -112,8 +112,8 @@ run_cmd liftTermElabM do
     for h2 : j in [:nonBuiltin.size] do
       specsAllCustom := specsAllCustom.insert nonBuiltin[j]
 
-  if specsSorry then logInfo m!"⚠  `sorryAx` found in specs!"
-  else logInfo m!"✓  No `sorryAx` in specs."
+  if specsSorry then logInfo m!"⚠  `sorry` found in specs!"
+  else logInfo m!"✓  No `sorry` in specs."
   if specsTrust then logInfo m!"⚠  `Lean.trustCompiler` found in specs."
   else logInfo m!"✓  No `Lean.trustCompiler` in specs."
   logInfo m!"\nSpecs with non-builtin axioms: {specsResults.size} / {specsThms.size}"
@@ -132,7 +132,7 @@ run_cmd liftTermElabM do
   -- ── SECTION 2: Where does `sorryAx` come from? ────────────────────────
 
   logInfo m!"\n╔══════════════════════════════════════════════════════╗"
-  logInfo m!"║  SECTION 2: Where does `sorryAx` come from?          ║"
+  logInfo m!"║  SECTION 2: Where does `sorry` come from?             ║"
   logInfo m!"╚══════════════════════════════════════════════════════╝"
 
   let mut directSorrySet : Std.HashSet Name := {}
@@ -147,7 +147,7 @@ run_cmd liftTermElabM do
   for h : i in [:directSorryList.size] do
     logInfo m!"  [{modOf directSorryList[i]}] {directSorryList[i]}"
 
-  logInfo m!"\n--- How `sorryAx` reaches each specs theorem ---"
+  logInfo m!"\n--- How `sorry` reaches each specs theorem ---"
   logInfo m!"(For each sorry-tainted spec, which direct-sorry decl does it call?)\n"
 
   let mut sorrySpecCount : Nat := 0
@@ -228,8 +228,8 @@ run_cmd liftTermElabM do
 
   logInfo m!"Total project declarations: {allProjectDecls.size}"
   logInfo m!"With non-builtin axioms: {projNonBuiltinCount} / {allProjectDecls.size}"
-  if projSorry then logInfo m!"⚠  `sorryAx` found in project."
-  else logInfo m!"✓  No `sorryAx` in project."
+  if projSorry then logInfo m!"⚠  `sorry` found in project."
+  else logInfo m!"✓  No `sorry` in project."
   if projTrust then logInfo m!"⚠  `Lean.trustCompiler` found in project."
   else logInfo m!"✓  No `Lean.trustCompiler` in project."
   logInfo m!"\nTotal custom axioms: {projAllCustom.size}"
