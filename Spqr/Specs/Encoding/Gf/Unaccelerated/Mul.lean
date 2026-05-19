@@ -26,7 +26,7 @@ The function proceeds in two stages:
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
 
-open Aeneas Aeneas.Std Result Polynomial spqr.encoding.gf.reduce spqr.math.gf
+open Aeneas Aeneas.Std Result spqr.math.gf
 
 namespace spqr.encoding.gf.unaccelerated
 
@@ -74,8 +74,6 @@ theorem mul_spec
     (a b : U16) :
     mul a b ⦃ (result : U16) =>
       result.val.toGF216 = a.val.toGF216 * b.val.toGF216 ⦄ := by
-  have hMonic : polyGF2.Monic := polyGF2_monic
-  have h := mul_spec_nat a b
   unfold mul
   step*
   simp only [Nat.toGF216]
@@ -83,12 +81,8 @@ theorem mul_spec
       BinaryPoly.toGF216 (natToBinaryPoly result.val) =
         BinaryPoly.toGF216
           ((natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2) := by
-    have hPoly :
-        natToBinaryPoly result.val =
-          (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2 := by
-      simp_all
-    rw [hPoly]
+    grind
   rw [key, ringHom_modByMonic BinaryPoly.toGF216 polyGF2
-    hMonic BinaryPoly.toGF216_polyGF2, map_mul]
+    polyGF2_monic BinaryPoly.toGF216_polyGF2, map_mul]
 
 end spqr.encoding.gf.unaccelerated
