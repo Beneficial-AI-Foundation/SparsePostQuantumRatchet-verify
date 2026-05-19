@@ -30,8 +30,7 @@ open Aeneas Aeneas.Std Result Polynomial spqr.encoding.gf.reduce spqr.math.gf
 
 namespace spqr.encoding.gf.unaccelerated
 
-/--
-**Polynomial-level postcondition for `encoding.gf.unaccelerated.mul`**:
+/-- **Spec theorem for `encoding.gf.unaccelerated.mul`**:
 
 Carry-less polynomial multiplication of two `u16` values in GF(2¹⁶), followed by reduction modulo
 the irreducible polynomial POLY = 0x1100b.
@@ -54,7 +53,7 @@ at the polynomial level.
 
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
-theorem mul_spec' (a b : U16) :
+theorem mul_spec_nat (a b : U16) :
     mul a b ⦃ result =>
       natToBinaryPoly result.val =
         (natToBinaryPoly a.val * natToBinaryPoly b.val) %ₘ polyGF2 ⦄ := by
@@ -62,8 +61,6 @@ theorem mul_spec' (a b : U16) :
   step*
 
 /--
-**GF216-level postcondition (provable, parametric)**:
-
 For any ring-homomorphism `BinaryPoly.toGF216 : BinaryPoly →+* GF216` that vanishes on `polyGF2`,
 the result of `mul a b` corresponds — via `BinaryPoly.toGF216 ∘ natToBinaryPoly` — to the product of
 `a` and `b` in `GF216`.
@@ -78,7 +75,7 @@ theorem mul_spec
     mul a b ⦃ (result : U16) =>
       result.val.toGF216 = a.val.toGF216 * b.val.toGF216 ⦄ := by
   have hMonic : polyGF2.Monic := polyGF2_monic
-  have h := mul_spec' a b
+  have h := mul_spec_nat a b
   unfold mul
   step*
   simp only [Nat.toGF216]
