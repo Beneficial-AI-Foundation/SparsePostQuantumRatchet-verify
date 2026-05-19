@@ -7,7 +7,6 @@ on:
     branches: [ '**' ]
     paths:
       - 'Spqr/**'
-      - 'scripts/**'
       - 'lakefile.toml'
       - 'lean-toolchain'
       - '.github/workflows/lean.yml'
