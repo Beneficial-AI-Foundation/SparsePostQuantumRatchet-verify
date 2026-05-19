@@ -8,12 +8,12 @@
   },
   "source": {
     "repo": "https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify.git",
-    "commit": "0f786b66071ba4800067dd85a12e0ecf70a3f9ad",
+    "commit": "7e66039479555ba25f28c231a85266fa59f55a31",
     "language": "rust",
     "package": "spqr",
     "package-version": "1.5.0"
   },
-  "timestamp": "2026-05-05T14:10:22Z",
+  "timestamp": "2026-05-19T08:06:25Z",
   "data": {
     "probe:alloc/https://github.com/rust-lang/rust/library/alloc/collections/btree/map/entry/impl#[`Entry<'a,/K,/V,/A>`]and_modify()": {
       "display-name": "and_modify",
@@ -3270,7 +3270,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::{spqr::authenticator::Authenticator}::mac_ct",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/&Authenticator#impl<Epoch>#[Authenticator]mac_hdr()": {
       "display-name": "Authenticator::mac_hdr",
@@ -3290,7 +3291,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::{spqr::authenticator::Authenticator}::mac_hdr",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/&Authenticator#impl<Epoch>#[Authenticator]update()": {
       "display-name": "Authenticator::update",
@@ -3313,7 +3315,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::{spqr::authenticator::Authenticator}::update",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/&Authenticator#impl<Epoch>#[Authenticator]verify_ct()": {
       "display-name": "Authenticator::verify_ct",
@@ -3332,7 +3335,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::{spqr::authenticator::Authenticator}::verify_ct",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/&Authenticator#impl<Epoch>#[Authenticator]verify_hdr()": {
       "display-name": "Authenticator::verify_hdr",
@@ -3351,7 +3355,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::{spqr::authenticator::Authenticator}::verify_hdr",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/impl<Epoch>#[Authenticator]new()": {
       "display-name": "Authenticator::new",
@@ -3368,7 +3373,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::{spqr::authenticator::Authenticator}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/serialize/Authenticator#impl<proto::pq_ratchet::Authenticator>#[Authenticator]into_pb()": {
       "display-name": "Authenticator::into_pb",
@@ -3383,7 +3389,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::serialize::{spqr::authenticator::Authenticator}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/serialize/impl<&proto::pq_ratchet::Authenticator>#[Authenticator]from_pb()": {
       "display-name": "Authenticator::from_pb",
@@ -3400,7 +3407,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::serialize::{spqr::authenticator::Authenticator}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/authenticator/serialize/test/round_trip()": {
       "display-name": "round_trip",
@@ -3420,7 +3428,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::authenticator::serialize::test::round_trip",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&Chain#impl<Epoch>#[Chain]epoch_idx()": {
       "display-name": "Chain::epoch_idx",
@@ -3441,7 +3450,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::epoch_idx",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&Chain#impl<Epoch>#[Chain]recv_key()": {
       "display-name": "Chain::recv_key",
@@ -3461,7 +3471,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::recv_key",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&Chain#impl<Epoch>#[Chain]send_key()": {
       "display-name": "Chain::send_key",
@@ -3487,7 +3498,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::send_key",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&Chain#impl<EpochSecret>#[Chain]add_epoch()": {
       "display-name": "Chain::add_epoch",
@@ -3510,7 +3522,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::add_epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&ChainEpochDirection#impl#[ChainEpochDirection]clear_next()": {
       "display-name": "ChainEpochDirection::clear_next",
@@ -3527,7 +3540,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::clear_next",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&ChainEpochDirection#impl<(u32,/Vec<u8>)>#[ChainEpochDirection]next_key()": {
       "display-name": "ChainEpochDirection::next_key",
@@ -3545,7 +3559,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::next_key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&ChainEpochDirection#impl<u32>#[ChainEpochDirection]key()": {
       "display-name": "ChainEpochDirection::key",
@@ -3574,7 +3589,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&ChainParams#impl<u32>#[ChainParamsPB]max_jump_or_default()": {
       "display-name": "ChainParamsPB::max_jump_or_default",
@@ -3591,7 +3607,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::max_jump_or_default",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&ChainParams#impl<u32>#[ChainParamsPB]max_ooo_keys_or_default()": {
       "display-name": "ChainParamsPB::max_ooo_keys_or_default",
@@ -3608,7 +3625,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::max_ooo_keys_or_default",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&ChainParams#impl<usize>#[ChainParamsPB]trim_size()": {
       "display-name": "ChainParamsPB::trim_size",
@@ -3628,7 +3646,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::trim_size",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&KeyHistory#impl#[KeyHistory]clear()": {
       "display-name": "KeyHistory::clear",
@@ -3645,7 +3664,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::KeyHistory}::clear",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&KeyHistory#impl<(u32>#[KeyHistory]add()": {
       "display-name": "KeyHistory::add",
@@ -3665,7 +3685,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::KeyHistory}::add",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&KeyHistory#impl<u32>#[KeyHistory]gc()": {
       "display-name": "KeyHistory::gc",
@@ -3695,7 +3716,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::KeyHistory}::gc",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&KeyHistory#impl<u32>#[KeyHistory]get()": {
       "display-name": "KeyHistory::get",
@@ -3723,7 +3745,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::KeyHistory}::get",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/&KeyHistory#impl<usize>#[KeyHistory]remove()": {
       "display-name": "KeyHistory::remove",
@@ -3745,7 +3768,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::KeyHistory}::remove",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/Chain#impl<pqrpb::Chain>#[Chain]into_pb()": {
       "display-name": "Chain::into_pb",
@@ -3766,7 +3790,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::into_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/ChainEpochDirection#impl<pqrpb::chain::epoch::EpochDirection>#[ChainEpochDirection]into_pb()": {
       "display-name": "ChainEpochDirection::into_pb",
@@ -3781,7 +3806,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::into_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/ChainParams#impl<ChainParamsPB>#[ChainParams]into_pb()": {
       "display-name": "ChainParams::into_pb",
@@ -3798,7 +3824,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainParams}::into_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/ChainParams#impl<ChainParamsPB>#[ChainParams]into_pb_test()": {
       "display-name": "ChainParams::into_pb_test",
@@ -3815,7 +3842,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::ChainParams::into_pb_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl#[ChainParams][Default]default()": {
       "display-name": "ChainParams::default",
@@ -3830,7 +3858,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{core::default::Default for spqr::chain::ChainParams}::default",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl#[KeyHistory]new()": {
       "display-name": "KeyHistory::new",
@@ -3848,7 +3877,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::KeyHistory}::new",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl<&Direction>#[Chain]ced_for_direction()": {
       "display-name": "Chain::ced_for_direction",
@@ -3866,7 +3896,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::ced_for_direction",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl<&[u8]>#[ChainEpochDirection]new()": {
       "display-name": "ChainEpochDirection::new",
@@ -3884,7 +3915,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::new",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl<&u32>#[ChainEpochDirection]next_key_internal()": {
       "display-name": "ChainEpochDirection::next_key_internal",
@@ -3911,7 +3943,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::next_key_internal",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl<Direction>#[Chain]new()": {
       "display-name": "Chain::new",
@@ -3933,7 +3966,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl<Result<Self,/Error>>#[Chain]from_pb()": {
       "display-name": "Chain::from_pb",
@@ -3957,7 +3991,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::Chain}::from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/impl<pqrpb::chain::epoch::EpochDirection>#[ChainEpochDirection]from_pb()": {
       "display-name": "ChainEpochDirection::from_pb",
@@ -3972,7 +4007,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::{spqr::chain::ChainEpochDirection}::from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/ced_prop_test()": {
       "display-name": "ced_prop_test",
@@ -4011,7 +4047,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::ced_prop_test",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/clear_old_send_keys()": {
       "display-name": "clear_old_send_keys",
@@ -4034,7 +4071,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::clear_old_send_keys",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/directions_match()": {
       "display-name": "directions_match",
@@ -4057,7 +4095,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::directions_match",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/impl<impl/Strategy<Value/=/Self>>#[CEDAction]strategy()": {
       "display-name": "CEDAction::strategy",
@@ -4075,7 +4114,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::CEDAction::strategy",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/impl<impl/Strategy<Value/=/Self>>#[KeyHistoryAction]strategy()": {
       "display-name": "KeyHistoryAction::strategy",
@@ -4093,7 +4133,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::KeyHistoryAction::strategy",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/key_history_prop_test()": {
       "display-name": "key_history_prop_test",
@@ -4131,7 +4172,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::key_history_prop_test",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/out_of_order_keys()": {
       "display-name": "out_of_order_keys",
@@ -4157,7 +4199,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::out_of_order_keys",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/previously_returned_key()": {
       "display-name": "previously_returned_key",
@@ -4179,7 +4222,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::previously_returned_key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain/test/very_old_keys_are_trimmed()": {
       "display-name": "very_old_keys_are_trimmed",
@@ -4200,7 +4244,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain::test::very_old_keys_are_trimmed",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain_from()": {
       "display-name": "chain_from",
@@ -4219,7 +4264,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain_from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/chain_from_version_negotiation()": {
       "display-name": "chain_from_version_negotiation",
@@ -4240,7 +4286,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::chain_from_version_negotiation",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/current_version()": {
       "display-name": "current_version",
@@ -4260,7 +4307,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::current_version",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/decode_state()": {
       "display-name": "decode_state",
@@ -4280,7 +4328,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::decode_state",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/empty_state()": {
       "display-name": "empty_state",
@@ -4297,7 +4346,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::empty_state",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/encoding/&Option<T>#impl<&Chunk>#[`Option<T>`][Decoder]add_chunk()": {
       "display-name": "Option<T>::add_chunk",
@@ -4317,7 +4367,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::{spqr::encoding::Decoder for core::option::Option}::add_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/&Option<T>#impl<Chunk>#[`Option<T>`][Encoder]next_chunk()": {
       "display-name": "Option<T>::next_chunk",
@@ -4337,7 +4388,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::{spqr::encoding::Encoder for core::option::Option}::next_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/&Option<T>#impl<Option<Vec<u8>>>#[`Option<T>`][Decoder]decoded_message()": {
       "display-name": "Option<T>::decoded_message",
@@ -4356,7 +4408,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::{spqr::encoding::Decoder for core::option::Option}::decoded_message",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/Decoder#add_chunk()": {
       "display-name": "add_chunk",
@@ -4397,7 +4450,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::Decoder::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/Encoder#next_chunk()": {
       "display-name": "next_chunk",
@@ -4425,7 +4479,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::Encoder::encode_bytes",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16][`AddAssign<&GF16>`]add_assign()": {
       "display-name": "GF16::add_assign",
@@ -4442,7 +4497,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::AddAssign<&'0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::add_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16][`DivAssign<&GF16>`]div_assign()": {
       "display-name": "GF16::div_assign",
@@ -4460,7 +4516,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::DivAssign<&'0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::div_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16][`MulAssign<&GF16>`]mul_assign()": {
       "display-name": "GF16::mul_assign",
@@ -4479,7 +4536,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::MulAssign<&'0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::mul_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16][`SubAssign<&GF16>`]sub_assign()": {
       "display-name": "GF16::sub_assign",
@@ -4497,7 +4555,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::SubAssign<&'0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::sub_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16]const_div()": {
       "display-name": "GF16::const_div",
@@ -4517,7 +4576,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16]const_mul()": {
       "display-name": "GF16::const_mul",
@@ -4534,7 +4594,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_mul",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16]const_sub()": {
       "display-name": "GF16::const_sub",
@@ -4551,7 +4612,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_sub",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<&Self>#[GF16]div_impl()": {
       "display-name": "GF16::div_impl",
@@ -4570,7 +4632,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<Self>#[GF16][`AddAssign<Self>`]add_assign()": {
       "display-name": "GF16::add_assign",
@@ -4587,7 +4650,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::AddAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::add_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<Self>#[GF16][`DivAssign<Self>`]div_assign()": {
       "display-name": "GF16::div_assign",
@@ -4605,7 +4669,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::DivAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<Self>#[GF16][`MulAssign<Self>`]mul_assign()": {
       "display-name": "GF16::mul_assign",
@@ -4622,7 +4687,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::MulAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/&GF16#impl<Self>#[GF16][`SubAssign<Self>`]sub_assign()": {
       "display-name": "GF16::sub_assign",
@@ -4639,7 +4705,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::SubAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::sub_assign",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<&Self>#[GF16][`Add<&GF16>`]add()": {
       "display-name": "GF16::add",
@@ -4656,7 +4723,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Add<&'0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::add",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<&Self>#[GF16][`Div<&GF16>`]div()": {
       "display-name": "GF16::div",
@@ -4673,7 +4741,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Div<&'0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<&Self>#[GF16][`Mul<&GF16>`]mul()": {
       "display-name": "GF16::mul",
@@ -4690,7 +4759,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Mul<&'0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<&Self>#[GF16][`Sub<&GF16>`]sub()": {
       "display-name": "GF16::sub",
@@ -4707,7 +4777,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Sub<&'0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::sub",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<Self>#[GF16][`Add<Self>`]add()": {
       "display-name": "GF16::add",
@@ -4724,7 +4795,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Add<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::add",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<Self>#[GF16][`Div<Self>`]div()": {
       "display-name": "GF16::div",
@@ -4741,7 +4813,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Div<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<Self>#[GF16][`Mul<Self>`]mul()": {
       "display-name": "GF16::mul",
@@ -4758,7 +4831,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Mul<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/GF16#impl<Self>#[GF16][`Sub<Self>`]sub()": {
       "display-name": "GF16::sub",
@@ -4775,7 +4849,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{core::ops::arith::Sub<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::sub",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/accelerated/mul()": {
       "display-name": "mul",
@@ -4792,7 +4867,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::accelerated::mul",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/accelerated/mul2()": {
       "display-name": "mul2",
@@ -4812,7 +4888,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::accelerated::mul2",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/accelerated/mul2_unreduced()": {
       "display-name": "mul2_unreduced",
@@ -4834,7 +4911,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::accelerated::mul2_unreduced",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/check_accelerated/use_accelerated/impl#[InitToken]get()": {
       "display-name": "get",
@@ -4888,7 +4966,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/mul2_u16()": {
       "display-name": "mul2_u16",
@@ -4907,7 +4986,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::mul2_u16",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/parallel_mult()": {
       "display-name": "parallel_mult",
@@ -4932,7 +5012,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::parallel_mult",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/reduce/poly_reduce()": {
       "display-name": "poly_reduce",
@@ -4953,7 +5034,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::reduce::poly_reduce",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/reduce/reduce_bytes()": {
       "display-name": "reduce_bytes",
@@ -4973,7 +5055,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::reduce::reduce_bytes",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/reduce/reduce_from_byte()": {
       "display-name": "reduce_from_byte",
@@ -4998,7 +5081,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::reduce::reduce_from_byte",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/test/add()": {
       "display-name": "add",
@@ -5019,7 +5103,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::test::add",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/test/div()": {
       "display-name": "div",
@@ -5041,7 +5126,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::test::div",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/test/mul()": {
       "display-name": "mul",
@@ -5062,7 +5148,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::test::mul",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/test/x86_barrett_reduction()": {
       "display-name": "x86_barrett_reduction",
@@ -5085,7 +5172,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::test::x86_barrett_reduction",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/unaccelerated/mul()": {
       "display-name": "mul",
@@ -5103,7 +5191,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::unaccelerated::mul",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/unaccelerated/mul2()": {
       "display-name": "mul2",
@@ -5120,7 +5209,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::unaccelerated::mul2",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/gf/unaccelerated/poly_mul()": {
       "display-name": "poly_mul",
@@ -5143,7 +5233,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::gf::unaccelerated::poly_mul",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/impl<&[u8]>#[`Option<T>`][Encoder]encode_bytes()": {
       "display-name": "Option<T>::encode_bytes",
@@ -5161,7 +5252,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::{spqr::encoding::Encoder for core::option::Option}::encode_bytes",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/impl<polynomial::PolynomialError>#[EncodingError][`From<crate::PolynomialError>`]from()": {
       "display-name": "EncodingError::from",
@@ -5176,7 +5268,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::{core::convert::From<spqr::encoding::polynomial::PolynomialError> for spqr::encoding::EncodingError}::from",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/impl<usize>#[`Option<T>`][Decoder]new()": {
       "display-name": "Option<T>::new",
@@ -5194,7 +5287,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::{spqr::encoding::Decoder for core::option::Option}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Poly#impl<&Self>#[Poly]add_assign()": {
       "display-name": "Poly::add_assign",
@@ -5218,7 +5312,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::add_assign",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Poly#impl<&[Pt]>#[Poly]lagrange_interpolate_complete()": {
       "display-name": "Poly::lagrange_interpolate_complete",
@@ -5245,7 +5340,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate_complete",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Poly#impl<GF16>#[Poly]compute_at()": {
       "display-name": "Poly::compute_at",
@@ -5270,7 +5366,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::compute_at",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Poly#impl<GF16>#[Poly]mult_assign()": {
       "display-name": "Poly::mult_assign",
@@ -5287,7 +5384,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::mult_assign",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Poly#impl<Vec<u8>>#[Poly]serialize()": {
       "display-name": "Poly::serialize",
@@ -5310,7 +5408,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::serialize",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Poly#impl<usize>#[Poly]mult_xdiff_assign_trailing()": {
       "display-name": "Poly::mult_xdiff_assign_trailing",
@@ -5332,7 +5431,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::mult_xdiff_assign_trailing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyConst<N>#impl<GF16>#[`PolyConst<N>`]mult()": {
       "display-name": "PolyConst<N>::mult",
@@ -5353,7 +5453,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst}::mult",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyConst<N>#impl<GF16>#[`PolyConst<N>`]mult_xdiff()": {
       "display-name": "PolyConst<N>::mult_xdiff",
@@ -5378,7 +5479,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst}::mult_xdiff",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyConst<N>#impl<Poly>#[`PolyConst<N>`]to_poly()": {
       "display-name": "PolyConst<N>::to_poly",
@@ -5395,7 +5497,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst}::to_poly",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyDecoder#impl<&Chunk>#[PolyDecoder][Decoder]add_chunk()": {
       "display-name": "PolyDecoder::add_chunk",
@@ -5424,7 +5527,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::add_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyDecoder#impl<Option<Vec<u8>>>#[PolyDecoder][Decoder]decoded_message()": {
       "display-name": "PolyDecoder::decoded_message",
@@ -5462,7 +5566,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyDecoder#impl<usize>#[PolyDecoder]get_pts_needed()": {
       "display-name": "PolyDecoder::get_pts_needed",
@@ -5477,7 +5582,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::get_pts_needed",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyDecoder#impl<usize>#[PolyDecoder]necessary_points()": {
       "display-name": "PolyDecoder::necessary_points",
@@ -5497,7 +5603,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::necessary_points",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyEncoder#impl<Chunk>#[PolyEncoder][Encoder]next_chunk()": {
       "display-name": "PolyEncoder::next_chunk",
@@ -5515,7 +5622,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::Encoder for spqr::encoding::polynomial::PolyEncoder}::next_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyEncoder#impl<EncoderState>#[PolyEncoder]get_encoder_state()": {
       "display-name": "PolyEncoder::get_encoder_state",
@@ -5530,7 +5638,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::get_encoder_state",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyEncoder#impl<u16>#[PolyEncoder]chunk_at()": {
       "display-name": "PolyEncoder::chunk_at",
@@ -5557,7 +5666,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::chunk_at",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&PolyEncoder#impl<usize>#[PolyEncoder]point_at()": {
       "display-name": "PolyEncoder::point_at",
@@ -5589,7 +5699,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Pt#impl<&Self>#[Pt][Ord]cmp()": {
       "display-name": "Pt::cmp",
@@ -5607,7 +5718,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{core::cmp::Ord for spqr::encoding::polynomial::Pt}::cmp",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Pt#impl<&Self>#[Pt][`PartialEq<Self>`]eq()": {
       "display-name": "Pt::eq",
@@ -5624,7 +5736,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{core::cmp::PartialEq<spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::Pt}::eq",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Pt#impl<&Self>#[Pt][`PartialOrd<Self>`]partial_cmp()": {
       "display-name": "Pt::partial_cmp",
@@ -5641,7 +5754,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{core::cmp::PartialOrd<spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::Pt}::partial_cmp",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/&Pt#impl<[u8;/{const}]>#[Pt]serialize()": {
       "display-name": "Pt::serialize",
@@ -5661,7 +5775,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Pt}::serialize",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/PolyDecoder#impl<proto::pq_ratchet::PolynomialDecoder>#[PolyDecoder]into_pb()": {
       "display-name": "PolyDecoder::into_pb",
@@ -5687,7 +5802,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::into_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/PolyDecoder#impl<proto::pq_ratchet::PolynomialDecoder>#[PolyDecoder]into_pb_test()": {
       "display-name": "PolyDecoder::into_pb_test",
@@ -5704,7 +5820,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::PolyDecoder::into_pb_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/PolyEncoder#impl<proto::pq_ratchet::PolynomialEncoder>#[PolyEncoder]into_pb()": {
       "display-name": "PolyEncoder::into_pb",
@@ -5730,7 +5847,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/PolyEncoder#impl<proto::pq_ratchet::PolynomialEncoder>#[PolyEncoder]into_pb_test()": {
       "display-name": "PolyEncoder::into_pb_test",
@@ -5747,7 +5865,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::PolyEncoder::into_pb_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/const_polys_to_polys()": {
       "display-name": "const_polys_to_polys",
@@ -5767,7 +5886,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::const_polys_to_polys",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl#[Poly][Clone]clone()": {
       "display-name": "clone",
@@ -5802,7 +5922,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_sum",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<&[Pt]>#[Poly]from_complete_points()": {
       "display-name": "Poly::from_complete_points",
@@ -5828,7 +5949,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<&[Pt]>#[Poly]lagrange_interpolate()": {
       "display-name": "Poly::lagrange_interpolate",
@@ -5857,7 +5979,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<&[Pt]>#[Poly]lagrange_interpolate_prepare()": {
       "display-name": "Poly::lagrange_interpolate_prepare",
@@ -5882,7 +6005,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate_prepare",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<&[u8]>#[PolyEncoder][Encoder]encode_bytes()": {
       "display-name": "PolyEncoder::encode_bytes",
@@ -5899,7 +6023,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::Encoder for spqr::encoding::polynomial::PolyEncoder}::encode_bytes",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<&[u8]>#[PolyEncoder]encode_bytes_base()": {
       "display-name": "PolyEncoder::encode_bytes_base",
@@ -5933,7 +6058,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<&[u8]>#[Poly]deserialize()": {
       "display-name": "Poly::deserialize",
@@ -5961,7 +6087,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::deserialize",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<Result<Self,/PolynomialError>>#[PolyDecoder]from_pb()": {
       "display-name": "PolyDecoder::from_pb",
@@ -5991,7 +6118,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<Result<Self,/PolynomialError>>#[PolyEncoder]from_pb()": {
       "display-name": "PolyEncoder::from_pb",
@@ -6027,7 +6155,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<[u8;/{const}]>#[Pt]deserialize()": {
       "display-name": "Pt::deserialize",
@@ -6048,7 +6177,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Pt}::deserialize",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<proto::pq_ratchet::PolynomialDecoder>#[PolyDecoder]from_pb_test()": {
       "display-name": "PolyDecoder::from_pb_test",
@@ -6065,7 +6195,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::PolyDecoder::from_pb_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<proto::pq_ratchet::PolynomialEncoder>#[PolyEncoder]from_pb_test()": {
       "display-name": "PolyEncoder::from_pb_test",
@@ -6082,7 +6213,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::PolyEncoder::from_pb_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<usize>#[PolyDecoder][Decoder]new()": {
       "display-name": "PolyDecoder::new",
@@ -6099,7 +6231,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<usize>#[PolyDecoder]new_with_poly_count()": {
       "display-name": "PolyDecoder::new_with_poly_count",
@@ -6121,7 +6254,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<usize>#[Poly]lagrange_interpolate_pt()": {
       "display-name": "Poly::lagrange_interpolate_pt",
@@ -6140,7 +6274,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate_pt",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<usize>#[Poly]zero()": {
       "display-name": "Poly::zero",
@@ -6157,7 +6292,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::zero",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/impl<usize>#[`PolyConst<N>`]lagrange_interpolate_pt()": {
       "display-name": "PolyConst<N>::lagrange_interpolate_pt",
@@ -6183,7 +6319,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst}::lagrange_interpolate_pt",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/lagrange_polys_for_complete_points()": {
       "display-name": "lagrange_polys_for_complete_points",
@@ -6204,7 +6341,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::lagrange_polys_for_complete_points",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/test/const_polys()": {
       "display-name": "const_polys",
@@ -6221,7 +6359,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::test::const_polys",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/test/encode_and_decode_large()": {
       "display-name": "encode_and_decode_large",
@@ -6248,7 +6387,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::test::encode_and_decode_large",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/test/encode_and_decode_small()": {
       "display-name": "encode_and_decode_small",
@@ -6271,7 +6411,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::test::encode_and_decode_small",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/test/point_serialize_deserialize()": {
       "display-name": "point_serialize_deserialize",
@@ -6290,7 +6431,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::test::point_serialize_deserialize",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/test/poly_lagrange_interpolate()": {
       "display-name": "poly_lagrange_interpolate",
@@ -6315,7 +6457,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::test::poly_lagrange_interpolate",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/polynomial/test/to_and_from_pb()": {
       "display-name": "to_and_from_pb",
@@ -6345,7 +6488,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::polynomial::test::to_and_from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/&RoundRobinDecoder#impl<&Chunk>#[RoundRobinDecoder][Decoder]add_chunk()": {
       "display-name": "RoundRobinDecoder::add_chunk",
@@ -6365,7 +6509,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinDecoder::add_chunk",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/&RoundRobinDecoder#impl<Option<Vec<u8>>>#[RoundRobinDecoder][Decoder]decoded_message()": {
       "display-name": "RoundRobinDecoder::decoded_message",
@@ -6388,7 +6533,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinDecoder::decoded_message",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/&RoundRobinDecoder#impl<bool>#[RoundRobinDecoder]can_reconstruct()": {
       "display-name": "RoundRobinDecoder::can_reconstruct",
@@ -6407,7 +6553,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinDecoder::can_reconstruct",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/&RoundRobinEncoder#impl<Chunk>#[RoundRobinEncoder][Encoder]next_chunk()": {
       "display-name": "RoundRobinEncoder::next_chunk",
@@ -6425,7 +6572,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinEncoder::next_chunk",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/&RoundRobinEncoder#impl<u16>#[RoundRobinEncoder]chunk_at()": {
       "display-name": "RoundRobinEncoder::chunk_at",
@@ -6449,7 +6597,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinEncoder::chunk_at",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/&RoundRobinEncoder#impl<usize>#[RoundRobinEncoder]num_chunks()": {
       "display-name": "RoundRobinEncoder::num_chunks",
@@ -6470,7 +6619,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinEncoder::num_chunks",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/impl<&[u8]>#[RoundRobinEncoder][Encoder]encode_bytes()": {
       "display-name": "RoundRobinEncoder::encode_bytes",
@@ -6487,7 +6637,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinEncoder::encode_bytes",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/encoding/round_robin/impl<usize>#[RoundRobinDecoder][Decoder]new()": {
       "display-name": "RoundRobinDecoder::new",
@@ -6507,7 +6658,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::encoding::round_robin::RoundRobinDecoder::new",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/impl#[Direction]switch()": {
       "display-name": "Direction::switch",
@@ -6522,7 +6674,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::{spqr::proto::pq_ratchet::Direction}::switch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/impl<Option<&Secret>>#[SecretOutput]recv_secret()": {
       "display-name": "SecretOutput::recv_secret",
@@ -6537,7 +6690,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::SecretOutput::recv_secret",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<Option<&Secret>>#[SecretOutput]secret()": {
       "display-name": "SecretOutput::secret",
@@ -6552,7 +6706,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::SecretOutput::secret",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<Option<&Secret>>#[SecretOutput]send_secret()": {
       "display-name": "SecretOutput::send_secret",
@@ -6567,7 +6722,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::SecretOutput::send_secret",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<Version>#[u8][`From<Version>`]from()": {
       "display-name": "u8::from",
@@ -6582,7 +6738,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::{impl core::convert::From}::from",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/impl<authenticator::Error>#[Error][`From<AuthenticatorError>`]from()": {
       "display-name": "Error::from",
@@ -6597,7 +6754,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::{core::convert::From<spqr::authenticator::Error> for spqr::Error}::from",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<bool>#[SecretOutput]has_secret()": {
       "display-name": "SecretOutput::has_secret",
@@ -6614,7 +6772,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::SecretOutput::has_secret",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<encoding::EncodingError>#[Error][`From<EncodingError>`]from()": {
       "display-name": "Error::from",
@@ -6629,7 +6788,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::Error::from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<serialize::Error>#[Error][`From<SerializationError>`]from()": {
       "display-name": "Error::from",
@@ -6644,7 +6804,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::Error::from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/impl<u8>#[Version][`TryFrom<u8>`]try_from()": {
       "display-name": "Version::try_from",
@@ -6661,7 +6822,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::Version::try_from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/incremental_mlkem768/decaps()": {
       "display-name": "decaps",
@@ -6682,7 +6844,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::decaps",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/ek_matches_header()": {
       "display-name": "ek_matches_header",
@@ -6700,7 +6863,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::ek_matches_header",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/encaps1()": {
       "display-name": "encaps1",
@@ -6722,7 +6886,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::encaps1",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/encaps2()": {
       "display-name": "encaps2",
@@ -6746,7 +6911,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::encaps2",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/flip_endianness_of_encapsulation_state()": {
       "display-name": "flip_endianness_of_encapsulation_state",
@@ -6771,7 +6937,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/generate()": {
       "display-name": "generate",
@@ -6793,7 +6960,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::generate",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275()": {
       "display-name": "potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275",
@@ -6816,7 +6984,8 @@
       "kind": "exec",
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275",
-      "is-disabled": false
+      "is-disabled": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/incremental_mlkem768/test/incremental_mlkem768_round_trip()": {
       "display-name": "incremental_mlkem768_round_trip",
@@ -6837,7 +7006,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::incremental_mlkem768::test::incremental_mlkem768_round_trip",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/init_inner()": {
       "display-name": "init_inner",
@@ -6856,7 +7026,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::init_inner",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/initial_state()": {
       "display-name": "initial_state",
@@ -6878,7 +7049,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::initial_state",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/kdf/hkdf_to_slice()": {
       "display-name": "hkdf_to_slice",
@@ -6897,7 +7069,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::kdf::hkdf_to_slice",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/kdf/hkdf_to_vec()": {
       "display-name": "hkdf_to_vec",
@@ -6914,7 +7087,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::kdf::hkdf_to_vec",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/empty_constructor_for_state()": {
       "display-name": "empty_constructor_for_state",
@@ -6932,7 +7106,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::empty_constructor_for_state",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/empty_key_until_version_negotiation()": {
       "display-name": "empty_key_until_version_negotiation",
@@ -6955,7 +7130,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::empty_key_until_version_negotiation",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/lockstep_run_with_logging()": {
       "display-name": "lockstep_run_with_logging",
@@ -6981,7 +7157,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::lockstep_run_with_logging",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/min_version_v1_always_creates_keys_a2b()": {
       "display-name": "min_version_v1_always_creates_keys_a2b",
@@ -7005,7 +7182,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::min_version_v1_always_creates_keys_a2b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/min_version_v1_always_creates_keys_b2a()": {
       "display-name": "min_version_v1_always_creates_keys_b2a",
@@ -7029,7 +7207,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::min_version_v1_always_creates_keys_b2a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/negotiate_to_v0_a2b()": {
       "display-name": "negotiate_to_v0_a2b",
@@ -7052,7 +7231,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::negotiate_to_v0_a2b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/negotiate_to_v0_b2a()": {
       "display-name": "negotiate_to_v0_b2a",
@@ -7075,7 +7255,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::negotiate_to_v0_b2a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/negotiation_refused_a2b()": {
       "display-name": "negotiation_refused_a2b",
@@ -7098,7 +7279,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::negotiation_refused_a2b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/negotiation_refused_b2a()": {
       "display-name": "negotiation_refused_b2a",
@@ -7121,7 +7303,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::negotiation_refused_b2a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/ratchet()": {
       "display-name": "ratchet",
@@ -7147,7 +7330,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::ratchet",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/ratchet_v0_empty_states()": {
       "display-name": "ratchet_v0_empty_states",
@@ -7169,7 +7353,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::ratchet_v0_empty_states",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/lib_test/regression_test_libcrux_issue_1275_from_generated_states()": {
       "display-name": "regression_test_libcrux_issue_1275_from_generated_states",
@@ -7193,7 +7378,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::lib_test::regression_test_libcrux_issue_1275_from_generated_states",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/main()": {
       "display-name": "main",
@@ -7217,7 +7403,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::main",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/msg_version()": {
       "display-name": "msg_version",
@@ -7237,7 +7424,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::msg_version",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/recv()": {
       "display-name": "recv",
@@ -7277,7 +7465,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::recv",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/send()": {
       "display-name": "send",
@@ -7313,7 +7502,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::send",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": true
     },
     "probe:spqr/1.5.0/serialize/impl<encoding::polynomial::PolynomialError>#[Error][`From<crate::PolynomialError>`]from()": {
       "display-name": "Error::from",
@@ -7328,7 +7518,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::serialize::{core::convert::From<spqr::encoding::polynomial::PolynomialError> for spqr::serialize::Error}::from",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/state_version()": {
       "display-name": "state_version",
@@ -7343,7 +7534,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::state_version",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/basic_messaging_behavior/&BasicMessagingBehavior#impl<&R>#[BasicMessagingBehavior][MessagingBehavior]next_commands()": {
       "display-name": "BasicMessagingBehavior::next_commands",
@@ -7362,7 +7554,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::basic_messaging_behavior::BasicMessagingBehavior::next_commands",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/basic_messaging_behavior/impl<f64>#[BasicMessagingBehavior]new()": {
       "display-name": "BasicMessagingBehavior::new",
@@ -7377,7 +7570,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::basic_messaging_behavior::BasicMessagingBehavior::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/generic_dr/dr_recv()": {
       "display-name": "dr_recv",
@@ -7405,7 +7599,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::generic_dr::dr_recv",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/generic_dr/dr_send()": {
       "display-name": "dr_send",
@@ -7428,7 +7623,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::generic_dr::dr_send",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/generic_dr/test/hybrid_ratchet()": {
       "display-name": "hybrid_ratchet",
@@ -7455,7 +7651,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::generic_dr::test::hybrid_ratchet",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/generic_dr/test/receive_hybrid_message()": {
       "display-name": "receive_hybrid_message",
@@ -7479,7 +7676,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::generic_dr::test::receive_hybrid_message",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/generic_dr/test/send_hybrid_message()": {
       "display-name": "send_hybrid_message",
@@ -7504,7 +7702,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::generic_dr::test::send_hybrid_message",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_behavior/MessagingBehavior#next_commands()": {
       "display-name": "next_commands",
@@ -7547,7 +7746,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::GenericMessagingScka<SCKA>::messaging_scka_send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/&GenericMessagingScka<SCKA>#impl<&Self::Message>#[`GenericMessagingScka<SCKA>`][MessagingScka]messaging_scka_recv()": {
       "display-name": "GenericMessagingScka<SCKA>::messaging_scka_recv",
@@ -7577,7 +7777,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::GenericMessagingScka<SCKA>::messaging_scka_recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/&GenericMessagingScka<SCKA>#impl<Epoch>#[`GenericMessagingScka<SCKA>`][MessagingCkaVulnerability]last_emitted_epoch()": {
       "display-name": "GenericMessagingScka<SCKA>::last_emitted_epoch",
@@ -7592,7 +7793,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::GenericMessagingScka<SCKA>::last_emitted_epoch",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/&GenericMessagingScka<SCKA>#impl<Vec<Epoch>>#[`GenericMessagingScka<SCKA>`][MessagingCkaVulnerability]vulnerable_epochs()": {
       "display-name": "GenericMessagingScka<SCKA>::vulnerable_epochs",
@@ -7612,7 +7814,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::GenericMessagingScka<SCKA>::vulnerable_epochs",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/MessagingCkaVulnerability#last_emitted_epoch()": {
       "display-name": "last_emitted_epoch",
@@ -7679,7 +7882,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::MessagingScka::init_a",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/MessagingScka<&R>#init_b()": {
       "display-name": "MessagingScka::init_b",
@@ -7694,7 +7898,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::MessagingScka::init_b",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/impl<&R>#[`GenericMessagingScka<SCKA>`][MessagingScka]init_a()": {
       "display-name": "GenericMessagingScka<SCKA>::init_a",
@@ -7713,7 +7918,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::GenericMessagingScka<SCKA>::init_a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/impl<&R>#[`GenericMessagingScka<SCKA>`][MessagingScka]init_b()": {
       "display-name": "GenericMessagingScka<SCKA>::init_b",
@@ -7732,7 +7938,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::GenericMessagingScka<SCKA>::init_b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/test/onlineoffline_healing()": {
       "display-name": "onlineoffline_healing",
@@ -7756,7 +7963,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::test::onlineoffline_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/test/pingpong_healing()": {
       "display-name": "pingpong_healing",
@@ -7777,7 +7985,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::test::pingpong_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/test/random_balanced()": {
       "display-name": "random_balanced",
@@ -7796,7 +8005,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::test::random_balanced",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/test/random_balanced_healing()": {
       "display-name": "random_balanced_healing",
@@ -7815,7 +8025,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::test::random_balanced_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/messaging_scka/test/random_balanced_out_of_order()": {
       "display-name": "random_balanced_out_of_order",
@@ -7834,7 +8045,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::messaging_scka::test::random_balanced_out_of_order",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/onlineoffline/&OnlineOfflineMessagingBehavior#impl<&R>#[OnlineOfflineMessagingBehavior][MessagingBehavior]next_commands()": {
       "display-name": "OnlineOfflineMessagingBehavior::next_commands",
@@ -7858,7 +8070,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::onlineoffline::OnlineOfflineMessagingBehavior::next_commands",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/onlineoffline/&State#impl<bool>#[State]is_online()": {
       "display-name": "State::is_online",
@@ -7873,7 +8086,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::onlineoffline::State::is_online",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/onlineoffline/State#impl<f64>#[State]transition()": {
       "display-name": "State::transition",
@@ -7891,7 +8105,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::onlineoffline::State::transition",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/onlineoffline/impl#[State][Clone]clone()": {
       "display-name": "clone",
@@ -7919,7 +8134,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::onlineoffline::OnlineOfflineMessagingBehavior::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl#[`OrchestratorBase<K>`]key_history_is_consistent()": {
       "display-name": "OrchestratorBase<K>::key_history_is_consistent",
@@ -7937,7 +8153,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::key_history_is_consistent",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl#[`OrchestratorBase<K>`]print_key_history_lengths()": {
       "display-name": "OrchestratorBase<K>::print_key_history_lengths",
@@ -7954,7 +8171,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::print_key_history_lengths",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl#[`OrchestratorBase<K>`]print_msg_queue_lengths()": {
       "display-name": "OrchestratorBase<K>::print_msg_queue_lengths",
@@ -7971,7 +8189,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::print_msg_queue_lengths",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<Epoch>#[`OrchestratorBase<K>`]last_vulnerable_epoch_a()": {
       "display-name": "OrchestratorBase<K>::last_vulnerable_epoch_a",
@@ -7992,7 +8211,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::last_vulnerable_epoch_a",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<Epoch>#[`OrchestratorBase<K>`]last_vulnerable_epoch_b()": {
       "display-name": "OrchestratorBase<K>::last_vulnerable_epoch_b",
@@ -8013,7 +8233,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::last_vulnerable_epoch_b",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]data_for_agent()": {
       "display-name": "OrchestratorBase<K>::data_for_agent",
@@ -8028,7 +8249,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::data_for_agent",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]drop_message_at()": {
       "display-name": "OrchestratorBase<K>::drop_message_at",
@@ -8046,7 +8268,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::drop_message_at",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]incoming_queue_size()": {
       "display-name": "OrchestratorBase<K>::incoming_queue_size",
@@ -8063,7 +8286,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::incoming_queue_size",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]qlen()": {
       "display-name": "OrchestratorBase<K>::qlen",
@@ -8080,7 +8304,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::qlen",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]receive_all()": {
       "display-name": "OrchestratorBase<K>::receive_all",
@@ -8105,7 +8330,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::receive_all",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]receive_at()": {
       "display-name": "OrchestratorBase<K>::receive_at",
@@ -8128,7 +8354,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::receive_at",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]receive_in_order()": {
       "display-name": "OrchestratorBase<K>::receive_in_order",
@@ -8151,7 +8378,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::receive_in_order",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/&OrchestratorBase<K>#impl<bool>#[`OrchestratorBase<K>`]send()": {
       "display-name": "OrchestratorBase<K>::send",
@@ -8174,7 +8402,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::send",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/chaos()": {
       "display-name": "chaos",
@@ -8205,7 +8434,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::chaos",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/controlled_messaging_healing_test()": {
       "display-name": "controlled_messaging_healing_test",
@@ -8262,7 +8492,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::controlled_messaging_healing_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/impl<&R>#[`OrchestratorBase<K>`]new()": {
       "display-name": "OrchestratorBase<K>::new",
@@ -8283,7 +8514,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::OrchestratorBase<K>::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/print_healing_stats()": {
       "display-name": "print_healing_stats",
@@ -8300,7 +8532,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::print_healing_stats",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/print_histogram()": {
       "display-name": "print_histogram",
@@ -8315,7 +8548,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::print_histogram",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/random_balanced()": {
       "display-name": "random_balanced",
@@ -8342,7 +8576,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::random_balanced",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/random_balanced_out_of_order()": {
       "display-name": "random_balanced_out_of_order",
@@ -8375,7 +8610,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::random_balanced_out_of_order",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/random_healing_test()": {
       "display-name": "random_healing_test",
@@ -8400,7 +8636,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::random_healing_test",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/orchestrator/stats_from_histogram()": {
       "display-name": "stats_from_histogram",
@@ -8429,7 +8666,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::orchestrator::stats_from_histogram",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/pingpong_messaging_behavior/&PingPongMessagingBehavior#impl#[PingPongMessagingBehavior]switch_agent()": {
       "display-name": "PingPongMessagingBehavior::switch_agent",
@@ -8444,7 +8682,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::pingpong_messaging_behavior::PingPongMessagingBehavior::switch_agent",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/pingpong_messaging_behavior/&PingPongMessagingBehavior#impl<&R>#[PingPongMessagingBehavior][MessagingBehavior]next_commands()": {
       "display-name": "PingPongMessagingBehavior::next_commands",
@@ -8469,7 +8708,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::pingpong_messaging_behavior::PingPongMessagingBehavior::next_commands",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/pingpong_messaging_behavior/impl<u64>#[PingPongMessagingBehavior]new()": {
       "display-name": "PingPongMessagingBehavior::new",
@@ -8484,7 +8724,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::pingpong_messaging_behavior::PingPongMessagingBehavior::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/scka/Scka#scka_recv()": {
       "display-name": "scka_recv",
@@ -8525,7 +8766,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::scka::SckaInitializer::init_a",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/scka/SckaInitializer<&R>#init_b()": {
       "display-name": "SckaInitializer::init_b",
@@ -8540,7 +8782,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::scka::SckaInitializer::init_b",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/scka/SckaMessage#epoch()": {
       "display-name": "epoch",
@@ -8581,7 +8824,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::v1_impls::states::Message::epoch",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/v1_impls/&States#impl<Vec<Epoch>>#[`states::States`][SckaVulnerability]vulnerable_epochs()": {
       "display-name": "states::States::vulnerable_epochs",
@@ -8598,7 +8842,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::v1_impls::states::States::vulnerable_epochs",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/v1_impls/States#impl<&R>#[`states::States`][Scka]scka_send()": {
       "display-name": "states::States::scka_send",
@@ -8618,7 +8863,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::v1_impls::states::States::scka_send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/v1_impls/States#impl<&states::Message>#[`states::States`][Scka]scka_recv()": {
       "display-name": "states::States::scka_recv",
@@ -8638,7 +8884,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::v1_impls::states::States::scka_recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/v1_impls/impl<&R>#[`states::States`][SckaInitializer]init_a()": {
       "display-name": "states::States::init_a",
@@ -8655,7 +8902,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::v1_impls::states::States::init_a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/v1_impls/impl<&R>#[`states::States`][SckaInitializer]init_b()": {
       "display-name": "states::States::init_b",
@@ -8672,7 +8920,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::v1_impls::states::States::init_b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/&Message#impl<Epoch>#[Message][SckaMessage]epoch()": {
       "display-name": "Message::epoch",
@@ -8687,7 +8936,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::Message::epoch",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/&States#impl<Epoch>#[States]epoch()": {
       "display-name": "States::epoch",
@@ -8702,7 +8952,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/&States#impl<Epoch>#[States]receiving_epoch()": {
       "display-name": "States::receiving_epoch",
@@ -8719,7 +8970,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::receiving_epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/&States#impl<Epoch>#[States]sending_epoch()": {
       "display-name": "States::sending_epoch",
@@ -8736,7 +8988,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::sending_epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/&States#impl<Vec<Epoch>>#[States][SckaVulnerability]vulnerable_epochs()": {
       "display-name": "States::vulnerable_epochs",
@@ -8753,7 +9006,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::vulnerable_epochs",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/Recv#impl<&Message>#[Recv]recv()": {
       "display-name": "Recv::recv",
@@ -8785,7 +9039,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::Recv::recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/Recv#impl<&R>#[Recv]send()": {
       "display-name": "Recv::send",
@@ -8803,7 +9058,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::Recv::send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/Send#impl<&Message>#[Send]recv()": {
       "display-name": "Send::recv",
@@ -8820,7 +9076,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::Send::recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/Send#impl<&R>#[Send]send()": {
       "display-name": "Send::send",
@@ -8848,7 +9105,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::Send::send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/States#impl<&R>#[States][Scka]scka_send()": {
       "display-name": "States::scka_send",
@@ -8869,7 +9127,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::scka_send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/States#impl<&Self::Message>#[States][Scka]scka_recv()": {
       "display-name": "States::scka_recv",
@@ -8890,7 +9149,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::scka_recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/UninitRecv#impl<&Message>#[UninitRecv]recv()": {
       "display-name": "UninitRecv::recv",
@@ -8916,7 +9176,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::UninitRecv::recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/UninitRecv#impl<&R>#[UninitRecv]send()": {
       "display-name": "UninitRecv::send",
@@ -8935,7 +9196,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::UninitRecv::send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/UninitSend#impl<&Message>#[UninitSend]recv()": {
       "display-name": "UninitSend::recv",
@@ -8952,7 +9214,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::UninitSend::recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/UninitSend#impl<&R>#[UninitSend]send()": {
       "display-name": "UninitSend::send",
@@ -8973,7 +9236,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::UninitSend::send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl#[States]init_a()": {
       "display-name": "States::init_a",
@@ -8988,7 +9252,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::init_a",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl#[States]init_b()": {
       "display-name": "States::init_b",
@@ -9003,7 +9268,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::init_b",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl<&R>#[States][SckaInitializer]init_a()": {
       "display-name": "States::init_a",
@@ -9020,7 +9286,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::init_a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl<&R>#[States][SckaInitializer]init_b()": {
       "display-name": "States::init_b",
@@ -9037,7 +9304,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::init_b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl<Recv>#[States][`From<Recv>`]from()": {
       "display-name": "States::from",
@@ -9052,7 +9320,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl<Send>#[States][`From<Send>`]from()": {
       "display-name": "States::from",
@@ -9067,7 +9336,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl<UninitRecv>#[States][`From<UninitRecv>`]from()": {
       "display-name": "States::from",
@@ -9082,7 +9352,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/impl<UninitSend>#[States][`From<UninitSend>`]from()": {
       "display-name": "States::from",
@@ -9097,7 +9368,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::States::from",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/serialize_public_key()": {
       "display-name": "serialize_public_key",
@@ -9117,7 +9389,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::serialize_public_key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/test/balanced_healing()": {
       "display-name": "balanced_healing",
@@ -9135,7 +9408,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::test::balanced_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/test/chaos()": {
       "display-name": "chaos",
@@ -9153,7 +9427,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::test::chaos",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/test/onlineoffline_healing()": {
       "display-name": "onlineoffline_healing",
@@ -9177,7 +9452,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::test::onlineoffline_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/test/random_balanced()": {
       "display-name": "random_balanced",
@@ -9195,7 +9471,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::test::random_balanced",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/test/random_balanced_out_of_order()": {
       "display-name": "random_balanced_out_of_order",
@@ -9213,7 +9490,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::test::random_balanced_out_of_order",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/test/x25519_scka/states/test/random_slow_alex_healing()": {
       "display-name": "random_slow_alex_healing",
@@ -9231,7 +9509,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::test::x25519_scka::states::test::random_slow_alex_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/add()": {
       "display-name": "add",
@@ -9250,7 +9529,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::add",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/add_epoch()": {
       "display-name": "add_epoch",
@@ -9274,7 +9554,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::add_epoch",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/chunk_at_encode()": {
       "display-name": "chunk_at_encode",
@@ -9297,7 +9578,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::chunk_at_encode",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/decode_all_chunks()": {
       "display-name": "decode_all_chunks",
@@ -9326,7 +9608,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::decode_all_chunks",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/decode_one_chunk()": {
       "display-name": "decode_one_chunk",
@@ -9355,7 +9638,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::decode_one_chunk",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/decoder_to_from_pb()": {
       "display-name": "decoder_to_from_pb",
@@ -9385,7 +9669,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::decoder_to_from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/div()": {
       "display-name": "div",
@@ -9404,7 +9689,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::div",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/encode_bytes()": {
       "display-name": "encode_bytes",
@@ -9424,7 +9710,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::encode_bytes",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/encoder_from_pb()": {
       "display-name": "encoder_from_pb",
@@ -9450,7 +9737,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::encoder_from_pb",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/init_a()": {
       "display-name": "init_a",
@@ -9469,7 +9757,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::init_a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/init_b()": {
       "display-name": "init_b",
@@ -9488,7 +9777,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::init_b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/long_chain_send()": {
       "display-name": "long_chain_send",
@@ -9512,7 +9802,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::long_chain_send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/mul()": {
       "display-name": "mul",
@@ -9531,7 +9822,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::mul",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/parallel_mult_16()": {
       "display-name": "parallel_mult_16",
@@ -9550,7 +9842,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::parallel_mult_16",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/parallel_mult_2()": {
       "display-name": "parallel_mult_2",
@@ -9569,7 +9862,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::parallel_mult_2",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/recv_key()": {
       "display-name": "recv_key",
@@ -9594,7 +9888,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::recv_key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/recv_skip_key()": {
       "display-name": "recv_skip_key",
@@ -9620,7 +9915,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::recv_skip_key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/recv_with_truncate()": {
       "display-name": "recv_with_truncate",
@@ -9645,7 +9941,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::recv_with_truncate",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/send_key()": {
       "display-name": "send_key",
@@ -9669,7 +9966,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::send_key",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/send_recv()": {
       "display-name": "send_recv",
@@ -9698,7 +9996,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::send_recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/state()": {
       "display-name": "state",
@@ -9717,7 +10016,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::state",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/tests/sub()": {
       "display-name": "sub",
@@ -9736,7 +10036,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::tests::sub",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/util/compare()": {
       "display-name": "compare",
@@ -9757,7 +10058,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::util::compare",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/util/inz()": {
       "display-name": "inz",
@@ -9778,7 +10080,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::util::inz",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/util/is_non_zero()": {
       "display-name": "is_non_zero",
@@ -9796,7 +10099,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::util::is_non_zero",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/&Ct1Acknowledged#impl<Epoch>#[Ct1Acknowledged]epoch()": {
       "display-name": "Ct1Acknowledged::epoch",
@@ -9811,7 +10115,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/&Ct1Sampled#impl<Epoch>#[Ct1Sampled]epoch()": {
       "display-name": "Ct1Sampled::epoch",
@@ -9826,7 +10131,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/&Ct2Sampled#impl<Epoch>#[Ct2Sampled]epoch()": {
       "display-name": "Ct2Sampled::epoch",
@@ -9841,7 +10147,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/&EkReceivedCt1Sampled#impl<Epoch>#[EkReceivedCt1Sampled]epoch()": {
       "display-name": "EkReceivedCt1Sampled::epoch",
@@ -9856,7 +10163,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/&HeaderReceived#impl<Epoch>#[HeaderReceived]epoch()": {
       "display-name": "HeaderReceived::epoch",
@@ -9871,7 +10179,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::HeaderReceived}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/&NoHeaderReceived#impl<Epoch>#[NoHeaderReceived]epoch()": {
       "display-name": "NoHeaderReceived::epoch",
@@ -9886,7 +10195,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/Ct1Acknowledged#impl<Epoch>#[Ct1Acknowledged]recv_ek_chunk()": {
       "display-name": "Ct1Acknowledged::recv_ek_chunk",
@@ -9908,7 +10218,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::recv_ek_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/Ct1Sampled#impl<(Ct1Sampled,/Chunk)>#[Ct1Sampled]send_ct1_chunk()": {
       "display-name": "Ct1Sampled::send_ct1_chunk",
@@ -9925,7 +10236,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::send_ct1_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/Ct1Sampled#impl<Epoch>#[Ct1Sampled]recv_ek_chunk()": {
       "display-name": "Ct1Sampled::recv_ek_chunk",
@@ -9947,7 +10259,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::recv_ek_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/Ct2Sampled#impl<(Ct2Sampled,/Chunk)>#[Ct2Sampled]send_ct2_chunk()": {
       "display-name": "Ct2Sampled::send_ct2_chunk",
@@ -9964,7 +10277,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::send_ct2_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/Ct2Sampled#impl<Epoch>#[Ct2Sampled]recv_next_epoch()": {
       "display-name": "Ct2Sampled::recv_next_epoch",
@@ -9981,7 +10295,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::recv_next_epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/EkReceivedCt1Sampled#impl<(EkReceivedCt1Sampled,/Chunk)>#[EkReceivedCt1Sampled]send_ct1_chunk()": {
       "display-name": "EkReceivedCt1Sampled::send_ct1_chunk",
@@ -9998,7 +10313,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::send_ct1_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/EkReceivedCt1Sampled#impl<Epoch>#[EkReceivedCt1Sampled]recv_ct1_ack()": {
       "display-name": "EkReceivedCt1Sampled::recv_ct1_ack",
@@ -10016,7 +10332,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::recv_ct1_ack",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/HeaderReceived#impl<&R>#[HeaderReceived]send_ct1_chunk()": {
       "display-name": "HeaderReceived::send_ct1_chunk",
@@ -10036,7 +10353,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::HeaderReceived}::send_ct1_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/NoHeaderReceived#impl<Epoch>#[NoHeaderReceived]recv_hdr_chunk()": {
       "display-name": "NoHeaderReceived::recv_hdr_chunk",
@@ -10059,7 +10377,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::recv_hdr_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/impl<&[u8]>#[NoHeaderReceived]new()": {
       "display-name": "NoHeaderReceived::new",
@@ -10079,7 +10398,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/send_ct2_encoder()": {
       "display-name": "send_ct2_encoder",
@@ -10099,7 +10419,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::send_ct2_encoder",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/Ct1Acknowledged#impl<pqrpb::v1_state::chunked::Ct1Acknowledged>#[Ct1Acknowledged]into_pb()": {
       "display-name": "Ct1Acknowledged::into_pb",
@@ -10117,7 +10438,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/Ct1Sampled#impl<pqrpb::v1_state::chunked::Ct1Sampled>#[Ct1Sampled]into_pb()": {
       "display-name": "Ct1Sampled::into_pb",
@@ -10136,7 +10458,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/Ct2Sampled#impl<pqrpb::v1_state::chunked::Ct2Sampled>#[Ct2Sampled]into_pb()": {
       "display-name": "Ct2Sampled::into_pb",
@@ -10154,7 +10477,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/EkReceivedCt1Sampled#impl<pqrpb::v1_state::chunked::EkReceivedCt1Sampled>#[EkReceivedCt1Sampled]into_pb()": {
       "display-name": "EkReceivedCt1Sampled::into_pb",
@@ -10172,7 +10496,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/HeaderReceived#impl<pqrpb::v1_state::chunked::HeaderReceived>#[HeaderReceived]into_pb()": {
       "display-name": "HeaderReceived::into_pb",
@@ -10190,7 +10515,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/NoHeaderReceived#impl<pqrpb::v1_state::chunked::NoHeaderReceived>#[NoHeaderReceived]into_pb()": {
       "display-name": "NoHeaderReceived::into_pb",
@@ -10208,7 +10534,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/impl<pqrpb::v1_state::chunked::Ct1Acknowledged>#[Ct1Acknowledged]from_pb()": {
       "display-name": "Ct1Acknowledged::from_pb",
@@ -10231,7 +10558,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/impl<pqrpb::v1_state::chunked::Ct1Sampled>#[Ct1Sampled]from_pb()": {
       "display-name": "Ct1Sampled::from_pb",
@@ -10255,7 +10583,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/impl<pqrpb::v1_state::chunked::Ct2Sampled>#[Ct2Sampled]from_pb()": {
       "display-name": "Ct2Sampled::from_pb",
@@ -10276,7 +10605,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/impl<pqrpb::v1_state::chunked::EkReceivedCt1Sampled>#[EkReceivedCt1Sampled]from_pb()": {
       "display-name": "EkReceivedCt1Sampled::from_pb",
@@ -10297,7 +10627,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/impl<pqrpb::v1_state::chunked::HeaderReceived>#[HeaderReceived]from_pb()": {
       "display-name": "HeaderReceived::from_pb",
@@ -10320,7 +10651,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ct/serialize/impl<pqrpb::v1_state::chunked::NoHeaderReceived>#[NoHeaderReceived]from_pb()": {
       "display-name": "NoHeaderReceived::from_pb",
@@ -10344,7 +10676,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/&Ct1Received#impl<Epoch>#[Ct1Received]epoch()": {
       "display-name": "Ct1Received::epoch",
@@ -10359,7 +10692,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/&EkSentCt1Received#impl<Epoch>#[EkSentCt1Received]epoch()": {
       "display-name": "EkSentCt1Received::epoch",
@@ -10374,7 +10708,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/&HeaderSent#impl<Epoch>#[HeaderSent]epoch()": {
       "display-name": "HeaderSent::epoch",
@@ -10389,7 +10724,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/&KeysSampled#impl<Epoch>#[KeysSampled]epoch()": {
       "display-name": "KeysSampled::epoch",
@@ -10404,7 +10740,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/&KeysUnsampled#impl<Epoch>#[KeysUnsampled]epoch()": {
       "display-name": "KeysUnsampled::epoch",
@@ -10419,7 +10756,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/Ct1Received#impl<(Ct1Received,/Chunk)>#[Ct1Received]send_ek_chunk()": {
       "display-name": "Ct1Received::send_ek_chunk",
@@ -10436,7 +10774,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::send_ek_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/Ct1Received#impl<Epoch>#[Ct1Received]recv_ct2_chunk()": {
       "display-name": "Ct1Received::recv_ct2_chunk",
@@ -10457,7 +10796,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::recv_ct2_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/EkSentCt1Received#impl<Epoch>#[EkSentCt1Received]recv_ct2_chunk()": {
       "display-name": "EkSentCt1Received::recv_ct2_chunk",
@@ -10481,7 +10821,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::recv_ct2_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/HeaderSent#impl<(HeaderSent,/Chunk)>#[HeaderSent]send_ek_chunk()": {
       "display-name": "HeaderSent::send_ek_chunk",
@@ -10498,7 +10839,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::send_ek_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/HeaderSent#impl<Epoch>#[HeaderSent]recv_ct1_chunk()": {
       "display-name": "HeaderSent::recv_ct1_chunk",
@@ -10517,7 +10859,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::recv_ct1_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/KeysSampled#impl<(KeysSampled,/Chunk)>#[KeysSampled]send_hdr_chunk()": {
       "display-name": "KeysSampled::send_hdr_chunk",
@@ -10534,7 +10877,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::send_hdr_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/KeysSampled#impl<Epoch>#[KeysSampled]recv_ct1_chunk()": {
       "display-name": "KeysSampled::recv_ct1_chunk",
@@ -10555,7 +10899,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::recv_ct1_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/KeysUnsampled#impl<&R>#[KeysUnsampled]send_hdr_chunk()": {
       "display-name": "KeysUnsampled::send_hdr_chunk",
@@ -10576,7 +10921,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::send_hdr_chunk",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/impl<&[u8]>#[KeysUnsampled]new()": {
       "display-name": "KeysUnsampled::new",
@@ -10593,7 +10939,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/Ct1Received#impl<pqrpb::v1_state::chunked::Ct1Received>#[Ct1Received]into_pb()": {
       "display-name": "Ct1Received::into_pb",
@@ -10611,7 +10958,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/EkSentCt1Received#impl<pqrpb::v1_state::chunked::EkSentCt1Received>#[EkSentCt1Received]into_pb()": {
       "display-name": "EkSentCt1Received::into_pb",
@@ -10629,7 +10977,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/HeaderSent#impl<pqrpb::v1_state::chunked::HeaderSent>#[HeaderSent]into_pb()": {
       "display-name": "HeaderSent::into_pb",
@@ -10648,7 +10997,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/KeysSampled#impl<pqrpb::v1_state::chunked::KeysSampled>#[KeysSampled]into_pb()": {
       "display-name": "KeysSampled::into_pb",
@@ -10666,7 +11016,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/KeysUnsampled#impl<pqrpb::v1_state::chunked::KeysUnsampled>#[KeysUnsampled]into_pb()": {
       "display-name": "KeysUnsampled::into_pb",
@@ -10683,7 +11034,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/impl<pqrpb::v1_state::chunked::Ct1Received>#[Ct1Received]from_pb()": {
       "display-name": "Ct1Received::from_pb",
@@ -10704,7 +11056,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/impl<pqrpb::v1_state::chunked::EkSentCt1Received>#[EkSentCt1Received]from_pb()": {
       "display-name": "EkSentCt1Received::from_pb",
@@ -10728,7 +11081,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/impl<pqrpb::v1_state::chunked::HeaderSent>#[HeaderSent]from_pb()": {
       "display-name": "HeaderSent::from_pb",
@@ -10752,7 +11106,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/impl<pqrpb::v1_state::chunked::KeysSampled>#[KeysSampled]from_pb()": {
       "display-name": "KeysSampled::from_pb",
@@ -10773,7 +11128,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/send_ek/serialize/impl<pqrpb::v1_state::chunked::KeysUnsampled>#[KeysUnsampled]from_pb()": {
       "display-name": "KeysUnsampled::from_pb",
@@ -10792,7 +11148,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/&States#impl<Epoch>#[States]last_emitted_epoch()": {
       "display-name": "States::last_emitted_epoch",
@@ -10820,7 +11177,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::States::last_emitted_epoch",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/&States#impl<Vec<Epoch>>#[States]vulnerable_epochs()": {
       "display-name": "States::vulnerable_epochs",
@@ -10844,7 +11202,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::States::vulnerable_epochs",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/States#impl<Result<Recv,/Error>>#[States]recv()": {
       "display-name": "States::recv",
@@ -10884,7 +11243,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::recv",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/States#impl<Result<Send,/Error>\nwhere\n////R:/Rng/+/CryptoRng,>#[States]send()": {
       "display-name": "States::send",
@@ -10919,7 +11279,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::send",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/impl#[States]init_a()": {
       "display-name": "States::init_a",
@@ -10936,7 +11297,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::init_a",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/impl#[States]init_b()": {
       "display-name": "States::init_b",
@@ -10953,7 +11315,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::init_b",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/&Message#impl<u32>#[Message]serialize()": {
       "display-name": "Message::serialize",
@@ -10975,7 +11338,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/States#impl<pqrpb::V1State>#[States]into_pb()": {
       "display-name": "States::into_pb",
@@ -11002,7 +11366,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/decode_chunk()": {
       "display-name": "decode_chunk",
@@ -11028,7 +11393,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::decode_chunk",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/decode_varint()": {
       "display-name": "decode_varint",
@@ -11060,7 +11426,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::decode_varint",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/encode_chunk()": {
       "display-name": "encode_chunk",
@@ -11079,7 +11446,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::encode_chunk",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/encode_varint()": {
       "display-name": "encode_varint",
@@ -11100,7 +11468,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::encode_varint",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/impl<&MessagePayload>#[MessageType]from_payload()": {
       "display-name": "MessageType::from_payload",
@@ -11115,7 +11484,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::serialize::MessageType}::from_payload",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/impl<&SerializedMessage>#[Message]deserialize()": {
       "display-name": "Message::deserialize",
@@ -11146,7 +11516,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/impl<pqrpb::V1State>#[States]from_pb()": {
       "display-name": "States::from_pb",
@@ -11174,7 +11545,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/impl<u8>#[MessageType][`TryFrom<u8>`]try_from()": {
       "display-name": "MessageType::try_from",
@@ -11191,7 +11563,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::{core::convert::TryFrom<alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}::try_from",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/test/decoding_varint()": {
       "display-name": "decoding_varint",
@@ -11209,7 +11582,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::test::decoding_varint",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/test/decoding_varint_zero()": {
       "display-name": "decoding_varint_zero",
@@ -11227,7 +11601,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::test::decoding_varint_zero",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/test/encoding_varint()": {
       "display-name": "encoding_varint",
@@ -11245,7 +11620,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::test::encoding_varint",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/chunked/states/serialize/test/roundtrip_varint()": {
       "display-name": "roundtrip_varint",
@@ -11267,7 +11643,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::chunked::states::serialize::test::roundtrip_varint",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/test/balanced_healing()": {
       "display-name": "balanced_healing",
@@ -11285,7 +11662,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::test::balanced_healing",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/test/chaos()": {
       "display-name": "chaos",
@@ -11303,7 +11681,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::test::chaos",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/test/onlineoffline_healing_unidir()": {
       "display-name": "onlineoffline_healing_unidir",
@@ -11323,7 +11702,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::test::onlineoffline_healing_unidir",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/test/random_balanced()": {
       "display-name": "random_balanced",
@@ -11341,7 +11721,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::test::random_balanced",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/test/random_balanced_out_of_order()": {
       "display-name": "random_balanced_out_of_order",
@@ -11359,7 +11740,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::test::random_balanced_out_of_order",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/test/random_slow_alex_healing_auth_bidir()": {
       "display-name": "random_slow_alex_healing_auth_bidir",
@@ -11377,7 +11759,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::test::random_slow_alex_healing_auth_bidir",
       "is-disabled": false,
-      "is-public": false
+      "is-public": false,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/Ct1Sent#impl<Epoch>#[Ct1Sent]recv_ek()": {
       "display-name": "Ct1Sent::recv_ek",
@@ -11394,7 +11777,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1Sent}::recv_ek",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/Ct1SentEkReceived#impl<(Ct2Sent,/incremental_mlkem768::Ciphertext2,/authenticator::Mac)>#[Ct1SentEkReceived]send_ct2()": {
       "display-name": "Ct1SentEkReceived::send_ct2",
@@ -11413,7 +11797,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::send_ct2",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/Ct2Sent#impl<Epoch>#[Ct2Sent]recv_next_epoch()": {
       "display-name": "Ct2Sent::recv_next_epoch",
@@ -11430,7 +11815,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct2Sent}::recv_next_epoch",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/HeaderReceived#impl<&R>#[HeaderReceived]send_ct1()": {
       "display-name": "HeaderReceived::send_ct1",
@@ -11452,7 +11838,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::HeaderReceived}::send_ct1",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/NoHeaderReceived#impl<Epoch>#[NoHeaderReceived]recv_header()": {
       "display-name": "NoHeaderReceived::recv_header",
@@ -11470,7 +11857,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::recv_header",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/impl<&[u8]>#[NoHeaderReceived]new()": {
       "display-name": "NoHeaderReceived::new",
@@ -11488,7 +11876,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/Ct1Sent#impl<pqrpb::v1_state::unchunked::Ct1Sent>#[Ct1Sent]into_pb()": {
       "display-name": "Ct1Sent::into_pb",
@@ -11506,7 +11895,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/Ct1SentEkReceived#impl<pqrpb::v1_state::unchunked::Ct1SentEkReceived>#[Ct1SentEkReceived]into_pb()": {
       "display-name": "Ct1SentEkReceived::into_pb",
@@ -11524,7 +11914,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/Ct2Sent#impl<pqrpb::v1_state::unchunked::Ct2Sent>#[Ct2Sent]into_pb()": {
       "display-name": "Ct2Sent::into_pb",
@@ -11541,7 +11932,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/HeaderReceived#impl<pqrpb::v1_state::unchunked::HeaderReceived>#[HeaderReceived]into_pb()": {
       "display-name": "HeaderReceived::into_pb",
@@ -11558,7 +11950,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/NoHeaderReceived#impl<pqrpb::v1_state::unchunked::NoHeaderReceived>#[NoHeaderReceived]into_pb()": {
       "display-name": "NoHeaderReceived::into_pb",
@@ -11575,7 +11968,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/impl<pqrpb::v1_state::unchunked::Ct1Sent>#[Ct1Sent]from_pb()": {
       "display-name": "Ct1Sent::from_pb",
@@ -11597,7 +11991,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/impl<pqrpb::v1_state::unchunked::Ct1SentEkReceived>#[Ct1SentEkReceived]from_pb()": {
       "display-name": "Ct1SentEkReceived::from_pb",
@@ -11619,7 +12014,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/impl<pqrpb::v1_state::unchunked::Ct2Sent>#[Ct2Sent]from_pb()": {
       "display-name": "Ct2Sent::from_pb",
@@ -11639,7 +12035,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/impl<pqrpb::v1_state::unchunked::HeaderReceived>#[HeaderReceived]from_pb()": {
       "display-name": "HeaderReceived::from_pb",
@@ -11661,7 +12058,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ct/serialize/impl<pqrpb::v1_state::unchunked::NoHeaderReceived>#[NoHeaderReceived]from_pb()": {
       "display-name": "NoHeaderReceived::from_pb",
@@ -11681,7 +12079,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/EkSent#impl<Epoch>#[EkSent]recv_ct1()": {
       "display-name": "EkSent::recv_ct1",
@@ -11696,7 +12095,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSent}::recv_ct1",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/EkSentCt1Received#impl<incremental_mlkem768::Ciphertext2>#[EkSentCt1Received]recv_ct2()": {
       "display-name": "EkSentCt1Received::recv_ct2",
@@ -11722,7 +12122,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::recv_ct2",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/HeaderSent#impl<(EkSent,/incremental_mlkem768::EncapsulationKey)>#[HeaderSent]send_ek()": {
       "display-name": "HeaderSent::send_ek",
@@ -11737,7 +12138,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::HeaderSent}::send_ek",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/KeysUnsampled#impl<&R>#[KeysUnsampled]send_header()": {
       "display-name": "KeysUnsampled::send_header",
@@ -11755,7 +12157,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::send_header",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/impl<&[u8]>#[KeysUnsampled]new()": {
       "display-name": "KeysUnsampled::new",
@@ -11773,7 +12176,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::new",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/EkSent#impl<pqrpb::v1_state::unchunked::EkSent>#[EkSent]into_pb()": {
       "display-name": "EkSent::into_pb",
@@ -11790,7 +12194,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/EkSentCt1Received#impl<pqrpb::v1_state::unchunked::EkSentCt1Received>#[EkSentCt1Received]into_pb()": {
       "display-name": "EkSentCt1Received::into_pb",
@@ -11807,7 +12212,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/HeaderSent#impl<pqrpb::v1_state::unchunked::HeaderSent>#[HeaderSent]into_pb()": {
       "display-name": "HeaderSent::into_pb",
@@ -11824,7 +12230,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/KeysUnsampled#impl<pqrpb::v1_state::unchunked::KeysUnsampled>#[KeysUnsampled]into_pb()": {
       "display-name": "KeysUnsampled::into_pb",
@@ -11841,7 +12248,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::into_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/impl<pqrpb::v1_state::unchunked::EkSent>#[EkSent]from_pb()": {
       "display-name": "EkSent::from_pb",
@@ -11863,7 +12271,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/impl<pqrpb::v1_state::unchunked::EkSentCt1Received>#[EkSentCt1Received]from_pb()": {
       "display-name": "EkSentCt1Received::from_pb",
@@ -11885,7 +12294,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/impl<pqrpb::v1_state::unchunked::HeaderSent>#[HeaderSent]from_pb()": {
       "display-name": "HeaderSent::from_pb",
@@ -11907,7 +12317,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:spqr/1.5.0/v1/unchunked/send_ek/serialize/impl<pqrpb::v1_state::unchunked::KeysUnsampled>#[KeysUnsampled]from_pb()": {
       "display-name": "KeysUnsampled::from_pb",
@@ -11927,7 +12338,8 @@
       "language": "rust",
       "rust-qualified-name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::from_pb",
       "is-disabled": false,
-      "is-public": true
+      "is-public": true,
+      "is-public-api": false
     },
     "probe:std/https://github.com/rust-lang/rust/library/std/collections/hash/map/impl#[`Entry<'a,/K,/V>`]or_default()": {
       "display-name": "or_default",
