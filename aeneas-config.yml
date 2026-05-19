@@ -98,3 +98,11 @@ tweaks:
     # Sorry merge function bodies (broken Result.map with mistyped closures)
     - regex: "(def proto\\.pq_ratchet\\.(?:pq_ratchet_state\\.Inner|v1_msg\\.InnerMsg|v1_state\\.InnerState)\\.merge\\n[\\s\\S]*?):= do[\\s\\S]*?(?=\\n/-- )"
       replace: "$1:= sorry"
+
+    # Fix ok_or none type inference
+    - find: "core.option.Option.ok_or none Error.StateDecode"
+      replace: "core.option.Option.ok_or (none : Option _) Error.StateDecode"
+    - regex: "(\\| core\\.ops\\.control_flow\\.ControlFlow\\.Continue) val2 (=>\\n\\s+let \\S+ ← encoding\\.polynomial\\.PolyDecoder\\.from_pb val2)"
+      replace: "$1 (val2 : proto.pq_ratchet.PolynomialDecoder) $2"
+    - regex: "(\\| core\\.ops\\.control_flow\\.ControlFlow\\.Continue) val4 (=>\\n\\s+let \\S+ ← encoding\\.polynomial\\.PolyDecoder\\.from_pb val4)"
+      replace: "$1 (val4 : proto.pq_ratchet.PolynomialDecoder) $2"
