@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
 import Spqr.Math.Gf16.Field
+
 /-!
 # Spec theorem for `spqr::encoding::gf::GF16::ZERO`
 
@@ -28,9 +29,7 @@ natToBinaryPoly`) to the additive identity `0 : GF216`.  This follows because:
 open Aeneas Aeneas.Std Result spqr.math.gf
 
 namespace spqr.encoding.gf.GF16
-
-/--
-**Spec theorem for `encoding.gf.GF16.ZERO`**:
+/-- **Spec theorem for `encoding.gf.GF16.ZERO`**:
 
 • The underlying `u16` value of `ZERO` is `0`:
     `ZERO.value = 0#u16`
@@ -43,10 +42,7 @@ namespace spqr.encoding.gf.GF16
 • `ZERO` is a left- and right-identity for `GF16` addition (which is
   bitwise XOR): for every `a : GF16`,
     `(a + ZERO).value.val.toGF216 = a.value.val.toGF216`,
-  which follows from the GF(2¹⁶) identity `x + 0 = x`.
-
-**The underlying `u16` of `ZERO` is `0_u16`**.
--/
+  which follows from the GF(2¹⁶) identity `x + 0 = x`. -/
 @[simp]
 theorem ZERO_value : (ZERO).value = 0#u16 := by
   simp [ZERO]
