@@ -32,11 +32,9 @@ namespace spqr.encoding.gf.GF16
 theorem ONE_value : (ONE).value = 1#u16 := by
   simp [ONE]
 
-/-- **The underlying natural-number value of `ONE` is `1`**. -/
 @[simp]
 theorem ONE_value_val : (ONE).value.val = 1 := by
   simp [ONE]
-
 
 @[simp]
 theorem ONE_toGF216 : ONE.toGF216 = 1 := by
