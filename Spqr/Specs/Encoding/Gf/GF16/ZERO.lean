@@ -60,7 +60,7 @@ theorem ZERO_toGF216 : (ZERO.toGF216 : GF216) = 0 := by
   simp [GF16.toGF216, Nat.toGF216, natToBinaryPoly_zero]
 
 @[step]
-theorem zero_spec :
+theorem ZERO_spec :
     ok ZERO ⦃ (result : GF16) =>
       (result.toGF216 : GF216) = 0 ⦄ := by
   simp [GF16.toGF216, Nat.toGF216, natToBinaryPoly_zero]
