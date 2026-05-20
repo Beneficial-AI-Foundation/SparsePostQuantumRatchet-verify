@@ -95,10 +95,12 @@ tweaks:
       replace: "$1:= sorry"
 
     # Sorry merge closure FnOnce call_once assignments (Aeneas types them wrong)
+    # https://github.com/AeneasVerif/aeneas/issues/1046
     - regex: "call_once :=\\n    proto\\.pq_ratchet\\.\\S+\\.merge\\.closure\\S*\\.Insts\\.CoreOpsFunctionFnOnceTupleTupleTuple\\.call_once\\n    bytesbufbuf_implBufInst\\n}"
       replace: "call_once := sorry\n}"
 
     # Sorry merge function bodies (broken Result.map with mistyped closures)
+    # https://github.com/AeneasVerif/aeneas/issues/1046
     - regex: "(def proto\\.pq_ratchet\\.(?:pq_ratchet_state\\.Inner|v1_msg\\.InnerMsg|v1_state\\.InnerState)\\.merge\\n[\\s\\S]*?):= do[\\s\\S]*?(?=\\n/-- )"
       replace: "$1:= sorry"
 
