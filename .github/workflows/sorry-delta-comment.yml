@@ -50,10 +50,11 @@ jobs:
           number: ${{ steps.pr.outputs.number }}
           path: .sorry-delta-comment.md
 
-      - name: Delete stale PR comment
+      - name: Hide stale PR comment
         if: steps.delta.outputs.post_comment != 'true'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: sorry-delta
           number: ${{ steps.pr.outputs.number }}
-          delete: true
+          hide: true
+          hide_classify: OUTDATED
