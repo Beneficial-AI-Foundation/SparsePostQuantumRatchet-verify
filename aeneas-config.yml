@@ -17,16 +17,7 @@ charon:
   preset: "aeneas"
   hide_marker_traits: true
   cargo_args: ["--features", "extraction"]
-  start_from:
-    - "spqr::util"
-    - "spqr::encoding"
-    - "spqr::serialize"
-    - "spqr::incremental_mlkem768"
-    - "spqr::proto"
-    - "spqr::kdf"
-    - "spqr::chain"
-    - "spqr::authenticator"
-    - "spqr::v1"
+  start_from_pub: true
   exclude:
     - "spqr::encoding::gf::check_accelerated" # cpufeatures macro: arrow types unsupported by Aeneas
     - "spqr::encoding::gf::accelerated" # platform-specific SIMD intrinsics
@@ -44,8 +35,15 @@ charon:
     - "spqr::proto::_::_::_::{impl core::cmp::Eq for _}"
     - "spqr::proto::_::_::{impl core::marker::StructuralPartialEq for _}"
     - "spqr::proto::_::_::_::{impl core::marker::StructuralPartialEq for _}"
+    - "spqr::{impl core::fmt::Debug for spqr::Error}" # Aeneas assertion failure
+    - "spqr::{impl core::fmt::Display for spqr::Error}" # Aeneas assertion failure
+    - "spqr::{impl core::fmt::Debug for spqr::CurrentVersion}" # Debug for Version (proto) is excluded, so this cascades
+    - "spqr::{impl core::convert::From<spqr::serialize::Error> for spqr::Error}" # name clash: both serialize::Error and authenticator::Error map to the same Lean name
   opaque:
     - "spqr::kdf::hkdf_to_slice"
+    - "spqr::initial_state" # uses log macros internally
+    - "spqr::recv" # uses log macros internally
+    - "spqr::send" # local variable `chain` shadows namespace chain.Chain, causing Lean field-projection errors
     - "spqr::incremental_mlkem768::encaps2" # uses log macros internally
     - "spqr::encoding::gf::check_accelerated"
     - "spqr::encoding::gf::accelerated"
@@ -78,6 +76,32 @@ tweaks:
         set_option linter.style.longLine false
         set_option linter.style.setOption false
         set_option linter.style.whitespace false
+
+    # Add `nonrec` to all @[reducible] trait instance defs so that method references like
+    # `X.Insts.Foo.f` in the body of `def X.Insts.Foo` resolve to axioms, not recursive projections.
+    # This is needed when new fields are added to trait structures (e.g. prost Message.decode).
+    # Uses (?:[^\]]*|\](?!\n))* to skip ] that appear inside attribute strings (e.g. [u8]).
+    # Uses (?= |\n) lookahead to also handle wrapped `def\n  name` format.
+    - regex: "(@\\[reducible(?:[^\\]]*|\\](?!\\n))*\\]\\n)def(?= |\\n)"
+      replace: "$1nonrec def"
+
+    # Sorry BytesBufBuf_implBuf instance body: method names (remaining/chunk/advance) are fields
+    # of bytes.buf.buf_impl.Buf, so nonrec def + struct literal causes "Unknown identifier".
+    - regex: "(nonrec def Shared0SliceU8\\.Insts\\.BytesBufBuf_implBuf[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Sorry all prost Message instance bodies: method names are fields of prost.message.Message,
+    # so nonrec def + struct literal causes "Unknown constant" for the axiom references.
+    - regex: "(nonrec def\\s+[\\w.]+\\.Insts\\.ProstMessageMessage[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Fix duplicate field name in ZeroablePrimitive: both Copy clauses get named markerCopyInst
+    # https://github.com/AeneasVerif/aeneas/issues/1051
+    - find: "(parentClauses := [\"markerCopyInst\", \"privateSealedInst\", \"markerCopyInst\"])"
+      replace: "(parentClauses := [\"markerCopyInst\", \"privateSealedInst\", \"markerCopyNonZeroInnerInst\"])"
+    # https://github.com/AeneasVerif/aeneas/issues/1051
+    - regex: "(privateSealedInst : core\\.num\\.nonzero\\.private\\.Sealed Self\\n)  markerCopyInst : core\\.marker\\.Copy Self_NonZeroInner"
+      replace: "$1  markerCopyNonZeroInnerInst : core.marker.Copy Self_NonZeroInner"
 
     # Strip map field from Iterator instances (Aeneas generates it but Lean backend doesn't have it)
     # https://github.com/AeneasVerif/aeneas/issues/1043
