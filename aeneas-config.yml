@@ -113,7 +113,9 @@ tweaks:
     - regex: "(\\| core\\.ops\\.control_flow\\.ControlFlow\\.Continue) val4 (=>\\n\\s+let \\S+ ← encoding\\.polynomial\\.PolyDecoder\\.from_pb val4)"
       replace: "$1 (val4 : proto.pq_ratchet.PolynomialDecoder) $2"
 
-        # Insert concrete MulAssign body before Mul::mul (opaque because Rust dispatches to SIMD)
+    # The goal is to later replace the mul_assign axiom with a definition. This is currently blocked
+    # because it depends on unaccelerated::mul, which is generated after related functions due to function ordering.
+    # Reordering the Rust functions should resolve the issue.
     - find: |
         /-- [spqr::encoding::gf::{core::ops::arith::Mul<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
       replace: |
