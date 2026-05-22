@@ -6925,7 +6925,7 @@ def encoding.gf.GF16.new (value : Std.U16) : Result encoding.gf.GF16 := do
   ok { value }
 
 /-- [spqr::encoding::gf::{core::ops::arith::MulAssign<&0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::mul_assign]:
-    Source: 'src/encoding/gf.rs', lines 127:4-137:5 -/
+    Source: 'src/encoding/gf.rs', lines 490:4-503:5 -/
 def encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
   Result encoding.gf.GF16
