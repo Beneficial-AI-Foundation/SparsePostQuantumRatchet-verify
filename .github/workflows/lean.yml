@@ -12,7 +12,7 @@ on:
       - '.github/workflows/lean.yml'
   # since it is required for merging, it must run on each PR even if the files affected aren't in paths
   # see https://docs.github.com/en/enterprise-cloud@latest/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
-  pull_request: 
+  pull_request:
     branches: [ '**' ]
   workflow_dispatch:
 
@@ -37,6 +37,7 @@ jobs:
           build: true
           test: false
           lint: false
+          build-args: "--wfail -- -Dwarn.sorry=false"
           use-mathlib-cache: true
 
       - name: Restore base sorry manifest
