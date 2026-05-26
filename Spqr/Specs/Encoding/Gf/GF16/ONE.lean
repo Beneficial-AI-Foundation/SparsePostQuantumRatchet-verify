@@ -57,4 +57,9 @@ theorem ONE_spec :
       result.toGF216 = 1 ⦄ := by
   simp [GF16.toGF216, Nat.toGF216, natToBinaryPoly_one]
 
+-- CI TEST 4b: unused variable warning in ONE.lean
+def _testMultiWarning2 : Nat :=
+  let unused2 := 99
+  0
+
 end spqr.encoding.gf.GF16

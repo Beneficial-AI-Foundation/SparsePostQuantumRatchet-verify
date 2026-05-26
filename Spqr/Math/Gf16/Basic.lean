@@ -74,4 +74,9 @@ lemma polyGF2_modByMonic_idem (p : BinaryPoly) :
   Polynomial.modByMonic_eq_of_dvd_sub polyGF2_monic
     (polyGF2_dvd_modByMonic_sub p)
 
+-- CI TEST 4c: unused variable warning in Math/Gf16/Basic.lean
+def _testMultiWarning3 : Nat :=
+  let unused3 := 7
+  0
+
 end spqr.math.gf
