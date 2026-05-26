@@ -45,9 +45,7 @@ jobs:
         run: npm ci
 
       - name: Setup Rust
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Cache OCaml environment
         uses: actions/cache@v5
