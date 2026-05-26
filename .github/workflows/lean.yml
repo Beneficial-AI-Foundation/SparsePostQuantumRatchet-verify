@@ -4,14 +4,17 @@ name: Lean Verification
 
 on:
   push:
-    branches: [ '**' ]
+    branches: [ 'main' ]
     paths:
       - 'Spqr/**'
       - 'lakefile.toml'
       - 'lean-toolchain'
       - '.github/workflows/lean.yml'
-  # since it is required for merging, it must run on each PR even if the files affected aren't in paths
-  # see https://docs.github.com/en/enterprise-cloud@latest/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+  # Since the check is required for merging, it must run on every PR even
+  # when no Lean-related files changed (GitHub treats a skipped required
+  # check as "not passed").  Restricting `push` to main avoids duplicate
+  # runs on PR branches while keeping the sorry-manifest cache working.
+  # See https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
   pull_request: 
     branches: [ '**' ]
   workflow_dispatch:
@@ -23,39 +26,74 @@ jobs:
   build:
     name: Build Lean Project
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install elan (Lean version manager)
-        run: |
-          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
-
-      - name: Verify elan installation
-        run: |
-          elan --version
-          lean --version
-
-      - name: Cache Lean build
-        uses: actions/cache@v4
+      - name: Setup Lean
+        uses: leanprover/lean-action@v1
         with:
-          path: |
-            .lake
-            build
-          key: ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-${{ hashFiles('Curve25519Dalek/**/*.lean', 'Utils/**/*.lean') }}
-          restore-keys: |
-            ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lakefile.toml') }}-${{ hashFiles('lake-manifest.json') }}-
-            ${{ runner.os }}-lean-${{ hashFiles('lean-toolchain') }}-
-            ${{ runner.os }}-lean-
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
 
-      - name: Download dependency caches
-        run: lake exe cache get
-
-      - name: Build Lean project
-        run: lake build
-
-      - name: Verify build success
+      - name: Build and check for non-sorry warnings
         run: |
-          echo "✓ Build successful!"
+          lake build --no-ansi 2>&1 | tee /tmp/lake-build.log
+          if grep 'warning:' /tmp/lake-build.log | grep -qv 'declaration uses .sorry'; then
+            echo "::error::Build produced warnings (other than sorry). Please fix them."
+            grep 'warning:' /tmp/lake-build.log | grep -v 'declaration uses .sorry'
+            exit 1
+          fi
+
+      - name: Lint hand-written code
+        run: |
+          lake exe runLinter Spqr 2>&1 | tee /tmp/lake-lint.log || true
+          if grep 'error:' /tmp/lake-lint.log | grep -qv 'Spqr/Code/'; then
+            echo "::error::Lint errors in hand-written code. Please fix them."
+            grep 'error:' /tmp/lake-lint.log | grep -v 'Spqr/Code/'
+            exit 1
+          fi
+
+      - name: Restore base sorry manifest
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
+        with:
+          key: sorry-manifest-${{ github.event.pull_request.base.ref }}-${{ github.event.pull_request.base.sha }}
+          path: sorry-manifest.txt
+
+      - name: Prepare base manifest
+        if: github.event_name == 'pull_request'
+        run: |
+          [ -f sorry-manifest.txt ] && mv sorry-manifest.txt sorry-manifest-base.txt || true
+
+      - name: Axiom audit and sorry manifest
+        run: lake env lean scripts/Audit.lean
+
+      - name: Save sorry manifest to cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v4
+        with:
+          key: sorry-manifest-main-${{ github.sha }}
+          path: sorry-manifest.txt
+
+      - name: Save PR number
+        if: github.event_name == 'pull_request'
+        run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
+
+      - name: Upload sorry manifests
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sorry-manifests
+          path: |
+            sorry-manifest.txt
+            sorry-manifest-base.txt
+            pr-number.txt
+          if-no-files-found: ignore
+          retention-days: 1
