@@ -1298,4 +1298,10 @@ structure v1.chunked.states.Recv where
   key : Option EpochSecret
   state : v1.chunked.states.States
 
+-- CI TEST: intentional warning in generated code to verify warning gate behavior
+set_option linter.unusedVariables true in
+def _testGenCodeWarning : Nat :=
+  let unusedInGenCode := 42
+  0
+
 end spqr

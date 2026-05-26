@@ -60,9 +60,4 @@ theorem ZERO_spec :
       (result.toGF216 : GF216) = 0 ⦄ := by
   simp [GF16.toGF216, Nat.toGF216, natToBinaryPoly_zero]
 
--- Intentional unused-variable warning to test CI lint gate (remove after test)
-def _testCILintGate : Nat :=
-  let unusedBinding := 42
-  0
-
 end spqr.encoding.gf.GF16
