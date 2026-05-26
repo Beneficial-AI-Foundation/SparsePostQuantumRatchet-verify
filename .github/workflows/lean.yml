@@ -65,6 +65,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           key: sorry-manifest-${{ github.event.pull_request.base.ref }}-${{ github.event.pull_request.base.sha }}
+          restore-keys: |
+            sorry-manifest-${{ github.event.pull_request.base.ref }}-
           path: sorry-manifest.txt
 
       - name: Prepare base manifest
@@ -76,7 +78,9 @@ jobs:
         run: lake env lean scripts/Audit.lean
 
       - name: Save sorry manifest to cache
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: >-
+          github.ref == 'refs/heads/main' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/cache/save@v4
         with:
           key: sorry-manifest-main-${{ github.sha }}
