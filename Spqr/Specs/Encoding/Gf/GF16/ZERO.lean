@@ -60,4 +60,7 @@ theorem ZERO_spec :
       (result.toGF216 : GF216) = 0 ⦄ := by
   simp [GF16.toGF216, Nat.toGF216, natToBinaryPoly_zero]
 
+-- CI TEST 3: sorry warning should be allowed through the warning gate
+theorem _testSorryAllowed : (1 : Nat) = 1 := by sorry
+
 end spqr.encoding.gf.GF16
