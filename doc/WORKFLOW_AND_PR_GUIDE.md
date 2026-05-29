@@ -30,7 +30,7 @@ In general it is best to open an issue or discuss with the others working on the
 
 PRs are reviewed when marked as ready (i.e., not a draft) and all checks have passed.
 After the PR is created (or marked as ready) the author should hold off on meaningful changes until after the review process, to avoid reviewers looking at outdated code.
-After review the author is solely responsible for merging in the accepted PR, and is expected to do so in a timely manner.
+After review the author is solely responsible for merging in the accepted PR, and is expected to do so in a timely manner (ideally within 3 days).
 
 The expected format for PR title, body, and footer is:
 
