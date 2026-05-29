@@ -177,11 +177,19 @@ axiom I32.Insts.CoreIterRangeStep.backward_checked
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::forward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 319:16-319:73
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::forward_checked] -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::forward_checked]
+
+    Concrete model of Rust's `Step::forward_checked` for `i32`:
+    given `start : i32` and `count : usize`, compute the integer sum
+    `start + count` and return `Some(result)` if it fits in `i32`,
+    `None` otherwise.  The outer `Result` is always `ok` (the call
+    never panics). -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::forward_checked"]
-axiom I32.Insts.CoreIterRangeStep.forward_checked
-  : Std.I32 → Std.Usize → Result (Option Std.I32)
+def I32.Insts.CoreIterRangeStep.forward_checked
+  : Std.I32 → Std.Usize → Result (Option Std.I32) :=
+  fun start n => ok (IScalar.tryMkOpt .I32 (start.val + ↑n.val))
+
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::steps_between]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 304:16-304:84
