@@ -17,7 +17,8 @@ charon:
   preset: "aeneas"
   hide_marker_traits: true
   cargo_args: ["--features", "extraction"]
-  start_from_pub: true
+  # trait issue (add link after issue has been created means that we can't use start_from_pub)
+  # start_from_pub: true
   exclude:
     - "spqr::encoding::gf::check_accelerated" # cpufeatures macro: arrow types unsupported by Aeneas
     - "spqr::encoding::gf::accelerated" # platform-specific SIMD intrinsics
@@ -36,6 +37,7 @@ charon:
     - "spqr::proto::_::_::_::{impl core::marker::StructuralPartialEq for _}"
     - "spqr::{impl core::fmt::Debug for spqr::Error}" # Aeneas assertion failure
     - "spqr::{impl core::fmt::Display for spqr::Error}" # Aeneas assertion failure
+    - "spqr::{impl core::error::Error for spqr::Error}"
     - "spqr::{impl core::fmt::Debug for spqr::CurrentVersion}" # Debug for Version (proto) is excluded, so this cascades
     - "spqr::{impl core::convert::From<spqr::serialize::Error> for spqr::Error}" # name clash
   opaque:
