@@ -111,6 +111,17 @@ def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type) :
   end_bound := core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
 }
 
+/-- Trait implementation: [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<A, E>> for core::result::Result<V, E>}]
+    Source: '/rustc/library/core/src/result.rs', lines 2111:0-2111:74
+    Name pattern: [core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>] -/
+@[reducible, rust_trait_impl
+  "core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>"]
+def core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult {A : Type}
+  (E : Type) {V : Type} (itertraitscollectFromIteratorInst :
+  core.iter.traits.collect.FromIterator V A) :
+  core.iter.traits.collect.FromIterator (core.result.Result V E)
+  (core.result.Result A E) := sorry
+
 /-- Trait implementation: [core::slice::index::private_slice_index::{core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFull}]
     Source: '/rustc/library/core/src/slice/index.rs', lines 120:4-120:34
     Name pattern: [core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFull>] -/
@@ -143,6 +154,26 @@ def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice (T :
     core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_mut
 }
 
+/-- Trait implementation: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}]
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
+    Name pattern: [core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>] -/
+@[reducible, rust_trait_impl
+  "core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>"]
+def
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
+  (T : Type) (A : Type) : core.iter.traits.iterator.Iterator
+  (alloc.collections.vec_deque.into_iter.IntoIter T A) T := sorry
+
+/-- Trait implementation: [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}]
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3640:0-3640:39
+    Name pattern: [core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>] -/
+@[reducible, rust_trait_impl
+  "core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>"]
+def
+  alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator
+  (T : Type) : core.iter.traits.collect.FromIterator
+  (alloc.collections.vec_deque.VecDeque T Global) T := sorry
+
 /-- Trait implementation: [alloc::slice::{alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}]
     Source: '/rustc/library/alloc/src/slice.rs', lines 727:0-727:48
     Name pattern: [alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>] -/
@@ -160,11 +191,7 @@ def Slice.Insts.AllocSliceConcatTVec {T : Type} {V : Type} (corecloneCloneInst
     Name pattern: [bytes::buf::buf_impl::Buf<&'0 [u8]>] -/
 @[reducible, rust_trait_impl "bytes::buf::buf_impl::Buf<&'0 [u8]>"]
 def Shared0SliceU8.Insts.BytesBufBuf_implBuf : bytes.buf.buf_impl.Buf (Slice
-  Std.U8) := {
-  remaining := Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
-  chunk := Shared0SliceU8.Insts.BytesBufBuf_implBuf.chunk
-  advance := Shared0SliceU8.Insts.BytesBufBuf_implBuf.advance
-}
+  Std.U8) := sorry
 
 /-- Trait implementation: [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
@@ -2267,23 +2294,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
 @[reducible]
 def proto.pq_ratchet.V1State.Insts.ProstMessageMessage : prost.message.Message
-  proto.pq_ratchet.V1State := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.V1State.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.V1State.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len := proto.pq_ratchet.V1State.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultV1StateInst :
-    core.default.Default proto.pq_ratchet.V1State) (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.V1State.Insts.ProstMessageMessage.decode
-    coredefaultDefaultV1StateInst bytesbufbuf_implBufInst
-  clear := proto.pq_ratchet.V1State.Insts.ProstMessageMessage.clear
-}
+  proto.pq_ratchet.V1State := sorry
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encode]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55
@@ -2369,22 +2380,7 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpEq.assert_receiver_is_total_eq
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53 -/
 @[reducible]
 def proto.pq_ratchet.Chunk.Insts.ProstMessageMessage : prost.message.Message
-  proto.pq_ratchet.Chunk := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len := proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultChunkInst : core.default.Default
-    proto.pq_ratchet.Chunk) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf
-    T1) => proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.decode
-    coredefaultDefaultChunkInst bytesbufbuf_implBufInst
-  clear := proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.clear
-}
+  proto.pq_ratchet.Chunk := sorry
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Chunk}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53
@@ -2989,25 +2985,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreDefaultDefault.default
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysUnsampled := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultKeysUnsampledInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.KeysUnsampled)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.decode
-    coredefaultDefaultKeysUnsampledInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.clear
-}
+  prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysUnsampled := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61
@@ -3024,25 +3002,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysSampled := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultKeysSampledInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.KeysSampled)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.decode
-    coredefaultDefaultKeysSampledInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.clear
-}
+  prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysSampled := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61
@@ -3062,25 +3022,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderSent := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultHeaderSentInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.HeaderSent)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.decode
-    coredefaultDefaultHeaderSentInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.clear
-}
+  prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderSent := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61
@@ -3103,25 +3045,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Received := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultCt1ReceivedInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.Ct1Received)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.decode
-    coredefaultDefaultCt1ReceivedInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.clear
-}
+  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Received := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61
@@ -3143,25 +3067,7 @@ def
 def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
-  := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultEkSentCt1ReceivedInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.EkSentCt1Received)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.decode
-    coredefaultDefaultEkSentCt1ReceivedInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.clear
-}
+  := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61
@@ -3183,25 +3089,7 @@ def
 def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
-  := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultNoHeaderReceivedInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.NoHeaderReceived)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.decode
-    coredefaultDefaultNoHeaderReceivedInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.clear
-}
+  := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61
@@ -3221,25 +3109,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderReceived := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultHeaderReceivedInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.HeaderReceived)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.decode
-    coredefaultDefaultHeaderReceivedInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.clear
-}
+  : prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderReceived := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61
@@ -3259,25 +3129,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Sampled := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultCt1SampledInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.Ct1Sampled)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.decode
-    coredefaultDefaultCt1SampledInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.clear
-}
+  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Sampled := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61
@@ -3302,26 +3154,7 @@ def
 def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage
   : prost.message.Message
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultEkReceivedCt1SampledInst :
-    core.default.Default
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.decode
-    coredefaultDefaultEkReceivedCt1SampledInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.clear
-}
+  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61
@@ -3342,25 +3175,7 @@ def
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
-  := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultCt1AcknowledgedInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.decode
-    coredefaultDefaultCt1AcknowledgedInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.clear
-}
+  := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61
@@ -3380,25 +3195,7 @@ def
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61 -/
 @[reducible]
 def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct2Sampled := {
-  encode_raw := fun {T0 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.encode_raw
-    bytesbufbuf_mutBufMutInst
-  merge_field := fun {T0 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T0) =>
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.merge_field
-    bytesbufbuf_implBufInst
-  encoded_len :=
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.encoded_len
-  decode := fun {T1 : Type} (coredefaultDefaultCt2SampledInst :
-    core.default.Default proto.pq_ratchet.v1_state.chunked.Ct2Sampled)
-    (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) =>
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.decode
-    coredefaultDefaultCt2SampledInst bytesbufbuf_implBufInst
-  clear :=
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.clear
-}
+  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct2Sampled := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::default]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61
@@ -3983,6 +3780,32 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp
   let other1 := read_discriminant other
   ok (core.cmp.impls.OrdI32.cmp self1 other1)
 
+/-- [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}::from]:
+    Source: 'target/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87
+    Visibility: public -/
+def I32.Insts.CoreConvertFromDirection.from
+  (value : proto.pq_ratchet.Direction) : Result Std.I32 := do
+  let value1 := read_discriminant value
+  ok (IScalar.cast .I32 value1)
+
+/-- Trait implementation: [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}]
+    Source: 'target/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
+@[reducible]
+def I32.Insts.CoreConvertFromDirection : core.convert.From Std.I32
+  proto.pq_ratchet.Direction := {
+  from_ := I32.Insts.CoreConvertFromDirection.from
+}
+
+/-- Trait implementation: [spqr::proto::pq_ratchet::{core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Direction}]
+    Source: 'target/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
+@[reducible]
+def proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue :
+  core.convert.TryFrom proto.pq_ratchet.Direction Std.I32
+  prost.error.UnknownEnumValue := {
+  try_from :=
+    proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
+}
+
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::is_valid]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87
     Visibility: public -/
@@ -4001,14 +3824,6 @@ def proto.pq_ratchet.Direction.from_i32
   | 0#iscalar => ok (some proto.pq_ratchet.Direction.A2B)
   | 1#iscalar => ok (some proto.pq_ratchet.Direction.B2A)
   | _ => ok none
-
-/-- [spqr::proto::pq_ratchet::{core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}::from]:
-    Source: 'target/out/signal.proto.pq_ratchet.rs', lines 402:67-402:87
-    Visibility: public -/
-def I32.Insts.CoreConvertFromDirection.from
-  (value : proto.pq_ratchet.Direction) : Result Std.I32 := do
-  let value1 := read_discriminant value
-  ok (IScalar.cast .I32 value1)
 
 /-- [spqr::authenticator::serialize::{spqr::authenticator::Authenticator}::into_pb]:
     Source: 'src/authenticator/serialize.rs', lines 9:4-14:5
@@ -4693,6 +4508,23 @@ def chain.ChainEpochDirection.key
       let v2 := deref_mut_back s1
       ok (core.result.Result.Ok v1, { ctr := i5, next := v2, prev := kh2 })
 
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::into_pb]:
+    Source: 'src/chain.rs', lines 298:4-304:5 -/
+def chain.ChainEpochDirection.into_pb
+  (self : chain.ChainEpochDirection) :
+  Result proto.pq_ratchet.chain.epoch.EpochDirection
+  := do
+  ok { ctr := self.ctr, next := self.next, prev := self.prev.data }
+
+/-- [spqr::chain::{spqr::chain::ChainEpochDirection}::from_pb]:
+    Source: 'src/chain.rs', lines 306:4-312:5 -/
+def chain.ChainEpochDirection.from_pb
+  (pb : proto.pq_ratchet.chain.epoch.EpochDirection) :
+  Result (core.result.Result chain.ChainEpochDirection Error)
+  := do
+  ok (core.result.Result.Ok
+    { ctr := pb.ctr, next := pb.next, prev := { data := pb.prev } })
+
 /-- [spqr::chain::{spqr::chain::ChainEpochDirection}::clear_next]:
     Source: 'src/chain.rs', lines 314:4-316:5 -/
 def chain.ChainEpochDirection.clear_next
@@ -4969,6 +4801,249 @@ def chain.Chain.recv_key
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
         (alloc.vec.Vec Std.U8) (core.convert.FromSame Error) residual
     ok (r1, self1)
+
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnMut<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}::call_mut]:
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+def
+  chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
+  (c : chain.Chain.into_pb.closure) (tupled_args : chain.ChainEpoch) :
+  Result (proto.pq_ratchet.chain.Epoch × chain.Chain.into_pb.closure)
+  := do
+  let ed ← chain.ChainEpochDirection.into_pb tupled_args.send
+  let ed1 ← chain.ChainEpochDirection.into_pb tupled_args.recv
+  ok ({ send := (some ed), recv := (some ed1) }, c)
+
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnOnce<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}::call_once]:
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+def
+  chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once
+  (c : chain.Chain.into_pb.closure) (ce : chain.ChainEpoch) :
+  Result proto.pq_ratchet.chain.Epoch
+  := do
+  let (e, _) ←
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
+      c ce
+  ok e
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnOnce<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}]
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+@[reducible]
+def chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
+  : core.ops.function.FnOnce chain.Chain.into_pb.closure chain.ChainEpoch
+  proto.pq_ratchet.chain.Epoch := {
+  call_once :=
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once
+}
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::into_pb::{core::ops::function::FnMut<(spqr::chain::ChainEpoch), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::closure}]
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+@[reducible]
+def chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
+  : core.ops.function.FnMut chain.Chain.into_pb.closure chain.ChainEpoch
+  proto.pq_ratchet.chain.Epoch := {
+  FnOnceInst :=
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
+  call_mut :=
+    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
+}
+
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb]:
+    Source: 'src/chain.rs', lines 415:4-431:5 -/
+def chain.Chain.into_pb
+  (self : chain.Chain) : Result proto.pq_ratchet.Chain := do
+  let i ←
+    core.convert.IntoFrom.into I32.Insts.CoreConvertFromDirection self.dir
+  let ii ←
+    alloc.collections.vec_deque.VecDeque.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter
+      self.links
+  let m ←
+    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
+      chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
+      ii ()
+  let v ←
+    core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
+      (alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
+      chain.ChainEpoch Global)
+      chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
+      (core.iter.traits.collect.FromIteratorVec proto.pq_ratchet.chain.Epoch) m
+  ok
+    {
+      direction := i,
+      current_epoch := self.current_epoch,
+      links := v,
+      next_root := self.next_root,
+      send_epoch := self.send_epoch,
+      params := (some self.params)
+    }
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}::call_mut]:
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
+  (c : chain.Chain.from_pb.closure_1)
+  (tupled_args : proto.pq_ratchet.chain.Epoch) :
+  Result ((core.result.Result chain.ChainEpoch Error) ×
+    chain.Chain.from_pb.closure_1)
+  := do
+  let r ← core.option.Option.ok_or tupled_args.send Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← chain.ChainEpochDirection.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or tupled_args.recv Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← chain.ChainEpochDirection.from_pb val2
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r3
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { send := val1, recv := val3 }, c)
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          let r4 ←
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              chain.ChainEpoch (core.convert.FromSame Error) residual
+          ok (r4, c)
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        let r3 ←
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            chain.ChainEpoch (core.convert.FromSame Error) residual
+        ok (r3, c)
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r2 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          chain.ChainEpoch (core.convert.FromSame Error) residual
+      ok (r2, c)
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    let r1 ←
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        chain.ChainEpoch (core.convert.FromSame Error) residual
+    ok (r1, c)
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}::call_once]:
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once
+  (c : chain.Chain.from_pb.closure_1) (e : proto.pq_ratchet.chain.Epoch) :
+  Result (core.result.Result chain.ChainEpoch Error)
+  := do
+  let (r, _) ←
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
+      c e
+  ok r
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}]
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+@[reducible]
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+  : core.ops.function.FnOnce chain.Chain.from_pb.closure_1
+  proto.pq_ratchet.chain.Epoch (core.result.Result chain.ChainEpoch Error) := {
+  call_once :=
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once
+}
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::closure#1}]
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+@[reducible]
+def
+  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
+  : core.ops.function.FnMut chain.Chain.from_pb.closure_1
+  proto.pq_ratchet.chain.Epoch (core.result.Result chain.ChainEpoch Error) := {
+  FnOnceInst :=
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+  call_mut :=
+    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
+}
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::closure}::call_once]:
+    Source: 'src/chain.rs', lines 436:49-436:71 -/
+def
+  chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
+  (c : chain.Chain.from_pb.closure)
+  (tupled_args : prost.error.UnknownEnumValue) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::closure}]
+    Source: 'src/chain.rs', lines 436:49-436:71 -/
+@[reducible]
+def
+  chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
+  : core.ops.function.FnOnce chain.Chain.from_pb.closure
+  prost.error.UnknownEnumValue Error := {
+  call_once :=
+    chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
+}
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb]:
+    Source: 'src/chain.rs', lines 434:4-452:5 -/
+def chain.Chain.from_pb
+  (pb : proto.pq_ratchet.Chain) :
+  Result (core.result.Result chain.Chain Error)
+  := do
+  let r ←
+    proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
+      pb.direction
+  let r1 ←
+    core.result.Result.map_err
+      chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
+      r ()
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let ii ← alloc.vec.IntoIteratorVec.into_iter pb.links
+    let m ←
+      alloc.vec.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
+        chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
+        ii ()
+    let r2 ←
+      core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
+        (core.iter.traits.iterator.IteratorVecIntoIter
+        proto.pq_ratchet.chain.Epoch)
+        chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
+        (core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult Error
+        (alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator
+        chain.ChainEpoch)) m
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r2
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r3 ← core.option.Option.ok_or pb.params Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r3
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        ok (core.result.Result.Ok
+          {
+            dir := val,
+            current_epoch := pb.current_epoch,
+            send_epoch := pb.send_epoch,
+            links := val1,
+            next_root := pb.next_root,
+            params := val2
+          })
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          chain.Chain (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        chain.Chain (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      chain.Chain (core.convert.FromSame Error) residual
 
 /-- [spqr::encoding::gf::POLY]
     Source: 'src/encoding/gf.rs', lines 7:0-7:30
@@ -8742,1156 +8817,188 @@ def current_version
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
       CurrentVersion (core.convert.FromSame Error) residual
 
-/-- [spqr::serialize::{core::fmt::Debug for spqr::serialize::Error}::fmt]:
-    Source: 'src/serialize.rs', lines 6:9-6:14
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 225:4-227:5
     Visibility: public -/
-def serialize.Error.Insts.CoreFmtDebug.fmt
-  (self : serialize.Error) (f : core.fmt.Formatter) :
-  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+def v1.chunked.send_ek.EkSentCt1Received.epoch
+  (self : v1.chunked.send_ek.EkSentCt1Received) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 181:4-183:5
+    Visibility: public -/
+def v1.chunked.send_ek.Ct1Received.epoch
+  (self : v1.chunked.send_ek.Ct1Received) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::send_ek_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 157:4-161:5
+    Visibility: public -/
+def v1.chunked.send_ek.Ct1Received.send_ek_chunk
+  (self : v1.chunked.send_ek.Ct1Received) :
+  Result (v1.chunked.send_ek.Ct1Received × encoding.Chunk)
   := do
-  match self with
-  | serialize.Error.Deserialization =>
-    core.fmt.Formatter.write_str f (toStr "Deserialization")
-  | serialize.Error.EncodingDecoding =>
-    core.fmt.Formatter.write_str f (toStr "EncodingDecoding")
+  let (chunk, sending_ek) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ek
+  ok ({ self with sending_ek }, chunk)
 
-/-- [spqr::serialize::{core::fmt::Display for spqr::serialize::Error}::fmt]:
-    Source: 'src/serialize.rs', lines 6:16-6:32
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 150:4-152:5
     Visibility: public -/
-def serialize.Error.Insts.CoreFmtDisplay.fmt
-  (self : serialize.Error) (__formatter : core.fmt.Formatter) :
-  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+def v1.chunked.send_ek.HeaderSent.epoch
+  (self : v1.chunked.send_ek.HeaderSent) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::send_ek_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 112:4-127:5
+    Visibility: public -/
+def v1.chunked.send_ek.HeaderSent.send_ek_chunk
+  (self : v1.chunked.send_ek.HeaderSent) :
+  Result (v1.chunked.send_ek.HeaderSent × encoding.Chunk)
   := do
-  match self with
-  | serialize.Error.Deserialization =>
-    core.fmt.Formatter.write_str __formatter (toStr
-      "General deserialization error")
-  | serialize.Error.EncodingDecoding =>
-    core.fmt.Formatter.write_str __formatter (toStr
-      "Error with encoder/decoder serialization")
+  let (chunk, sending_ek) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ek
+  ok ({ self with sending_ek }, chunk)
 
-/-- [spqr::serialize::{core::clone::Clone for spqr::serialize::Error}::clone]:
-    Source: 'src/serialize.rs', lines 6:40-6:45
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 99:4-101:5
     Visibility: public -/
-def serialize.Error.Insts.CoreCloneClone.clone
-  (self : serialize.Error) : Result serialize.Error := do
-  ok self
+def v1.chunked.send_ek.KeysSampled.epoch
+  (self : v1.chunked.send_ek.KeysSampled) : Result Std.U64 := do
+  ok self.uc.epoch
 
-/-- [spqr::serialize::{core::cmp::PartialEq<spqr::serialize::Error> for spqr::serialize::Error}::eq]:
-    Source: 'src/serialize.rs', lines 6:47-6:56
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::send_hdr_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 74:4-81:5
     Visibility: public -/
-def serialize.Error.Insts.CoreCmpPartialEqError.eq
-  (self : serialize.Error) (other : serialize.Error) : Result Bool := do
-  let self1 := read_discriminant self
-  let other1 := read_discriminant other
-  ok (self1 = other1)
-
-/-- [spqr::serialize::{core::convert::From<spqr::encoding::polynomial::PolynomialError> for spqr::serialize::Error}::from]:
-    Source: 'src/serialize.rs', lines 15:4-17:5
-    Visibility: public -/
-def serialize.Error.Insts.CoreConvertFromPolynomialError.from
-  (_e : encoding.polynomial.PolynomialError) : Result serialize.Error := do
-  ok serialize.Error.EncodingDecoding
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::into_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 10:4-15:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb
-  (self : v1.unchunked.send_ct.NoHeaderReceived) :
-  Result proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
+def v1.chunked.send_ek.KeysSampled.send_hdr_chunk
+  (self : v1.chunked.send_ek.KeysSampled) :
+  Result (v1.chunked.send_ek.KeysSampled × encoding.Chunk)
   := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a) }
+  let (chunk, sending_hdr) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_hdr
+  ok ({ self with sending_hdr }, chunk)
 
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 11:4-16:5
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::epoch]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 67:4-69:5
     Visibility: public -/
-def v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb
-  (self : v1.chunked.send_ct.NoHeaderReceived) :
-  Result proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
-  := do
-  let nhr ← v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb self.uc
-  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_hdr
-  ok { uc := (some nhr), receiving_hdr := (some pd) }
+def v1.chunked.send_ek.KeysUnsampled.epoch
+  (self : v1.chunked.send_ek.KeysUnsampled) : Result Std.U64 := do
+  ok self.uc.epoch
 
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::from_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 17:4-22:5
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::send_header]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 84:4-100:5
     Visibility: public -/
-def v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived) :
-  Result (core.result.Result v1.unchunked.send_ct.NoHeaderReceived Error)
+def v1.unchunked.send_ek.KeysUnsampled.send_header
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.unchunked.send_ek.KeysUnsampled) 
+  (rng : R) :
+  Result ((v1.unchunked.send_ek.HeaderSent × (alloc.vec.Vec Std.U8) ×
+    (alloc.vec.Vec Std.U8)) × R)
   := do
-  let o ← core.option.Option.as_ref pb.auth
-  let r ← core.option.Option.ok_or o Error.StateDecode
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let a ← authenticator.serialize.Authenticator.from_pb val
-    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.unchunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-      residual
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
-def
-  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
-  := do
-  ok Error.StateDecode
-
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 18:4-35:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) :
-  Result (core.result.Result v1.chunked.send_ct.NoHeaderReceived Error)
-  := do
-  match pb.receiving_hdr with
-  | none =>
-    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
-      let cf1 ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-          r1
-      match cf1 with
-      | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
-        let cf2 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r2
-        match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
-          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-          let r4 ←
-            core.result.Result.map_err
-              v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-              r3 ()
-          let cf3 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r4
-          match cf3 with
-          | core.ops.control_flow.ControlFlow.Continue val3 =>
-            ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-          residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-        residual
-  | some rhdr =>
-    let i ← incremental_mlkem768.HEADER_SIZE
-    let i1 ← i + authenticator.Authenticator.MACSIZE
-    let i2 ← i1 / 2#usize
-    let i3 ← lift (UScalar.cast .U32 i2)
-    if rhdr.pts_needed != i3
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
-        let cf1 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ←
-            core.option.Option.ok_or pb.receiving_hdr Error.StateDecode
-          let cf2 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ←
-              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame
-                Error) residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-          residual
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::into_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 26:4-32:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.HeaderReceived.into_pb
-  (self : v1.unchunked.send_ct.HeaderReceived) :
-  Result proto.pq_ratchet.v1_state.unchunked.HeaderReceived
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a), hdr := self.hdr }
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 39:4-44:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.HeaderReceived.into_pb
-  (self : v1.chunked.send_ct.HeaderReceived) :
-  Result proto.pq_ratchet.v1_state.chunked.HeaderReceived
-  := do
-  let hr ← v1.unchunked.send_ct.serialize.HeaderReceived.into_pb self.uc
-  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
-  ok { uc := (some hr), receiving_ek := (some pd) }
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::from_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 34:4-44:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.HeaderReceived.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
-  Result (core.result.Result v1.unchunked.send_ct.HeaderReceived Error)
-  := do
-  let i := alloc.vec.Vec.len pb.hdr
-  if i = 64#usize
-  then
-    let o ← core.option.Option.as_ref pb.auth
-    let r ← core.option.Option.ok_or o Error.StateDecode
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let a ← authenticator.serialize.Authenticator.from_pb val
-      ok (core.result.Result.Ok
-        { epoch := pb.epoch, auth := a, hdr := pb.hdr })
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.unchunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-        residual
-  else ok (core.result.Result.Err Error.StateDecode)
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
-def
-  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
-  := do
-  ok Error.StateDecode
-
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 46:4-59:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.HeaderReceived.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.HeaderReceived) :
-  Result (core.result.Result v1.chunked.send_ct.HeaderReceived Error)
-  := do
-  match pb.receiving_ek with
-  | none =>
-    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
-      let cf1 ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-          r1
-      match cf1 with
-      | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
-        let cf2 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r2
-        match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
-          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-          let r4 ←
-            core.result.Result.map_err
-              v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-              r3 ()
-          let cf3 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r4
-          match cf3 with
-          | core.ops.control_flow.ControlFlow.Continue val3 =>
-            ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-          residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-        residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
-        let cf1 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
-          let cf2 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ←
-              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-                residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-          residual
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::into_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 48:4-56:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.Ct1Sent.into_pb
-  (self : v1.unchunked.send_ct.Ct1Sent) :
-  Result proto.pq_ratchet.v1_state.unchunked.Ct1Sent
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  let s := alloc.vec.Vec.deref self.ct1
-  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s
+  let (keys, rng1) ←
+    incremental_mlkem768.generate randrngRngInst rand_coreCryptoRngInst rng
+  let s := alloc.vec.Vec.deref keys.hdr
+  let mac ← authenticator.Authenticator.mac_hdr self.auth self.epoch s
   ok
-    {
-      epoch := self.epoch,
-      auth := (some a),
-      hdr := self.hdr,
-      es := self.es,
-      ct1 := v
-    }
+    (({ epoch := self.epoch, auth := self.auth, ek := keys.ek, dk := keys.dk },
+    keys.hdr, mac), rng1)
 
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 63:4-69:5
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::send_hdr_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 58:4-65:5
     Visibility: public -/
-def v1.chunked.send_ct.serialize.Ct1Sampled.into_pb
-  (self : v1.chunked.send_ct.Ct1Sampled) :
-  Result proto.pq_ratchet.v1_state.chunked.Ct1Sampled
+def v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) (rng : R) :
+  Result ((v1.chunked.send_ek.KeysSampled × encoding.Chunk) × R)
   := do
-  let cs ← v1.unchunked.send_ct.serialize.Ct1Sent.into_pb self.uc
-  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct1
-  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
-  ok { uc := (some cs), sending_ct1 := (some pe), receiving_ek := (some pd) }
+  let (t, rng1) ←
+    v1.unchunked.send_ek.KeysUnsampled.send_header randrngRngInst
+      rand_coreCryptoRngInst self.uc rng
+  let (uc, to_send, mac) := t
+  let (to_send1, _) ← alloc.vec.Vec.append Global to_send mac
+  let s := alloc.vec.Vec.deref to_send1
+  let encoder ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+  let sending_hdr ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug encoder
+      (toStr "should be able to encode header size")
+  let (chunk, sending_hdr1) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      sending_hdr
+  ok (({ uc, sending_hdr := sending_hdr1 }, chunk), rng1)
 
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::from_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 58:4-70:5
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 300:4-302:5
     Visibility: public -/
-def v1.unchunked.send_ct.serialize.Ct1Sent.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.Ct1Sent) :
-  Result (core.result.Result v1.unchunked.send_ct.Ct1Sent Error)
-  := do
-  let i := alloc.vec.Vec.len pb.hdr
-  if i = 64#usize
-  then
-    let i1 := alloc.vec.Vec.len pb.es
-    if i1 = 2080#usize
-    then
-      let i2 := alloc.vec.Vec.len pb.ct1
-      if i2 = 960#usize
-      then
-        let o ← core.option.Option.as_ref pb.auth
-        let r ← core.option.Option.ok_or o Error.StateDecode
-        let cf ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r
-        match cf with
-        | core.ops.control_flow.ControlFlow.Continue val =>
-          let a ← authenticator.serialize.Authenticator.from_pb val
-          ok (core.result.Result.Ok
-            {
-              epoch := pb.epoch,
-              auth := a,
-              hdr := pb.hdr,
-              es := pb.es,
-              ct1 := pb.ct1
-            })
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.unchunked.send_ct.Ct1Sent (core.convert.FromSame Error) residual
-      else ok (core.result.Result.Err Error.StateDecode)
-    else ok (core.result.Result.Err Error.StateDecode)
-  else ok (core.result.Result.Err Error.StateDecode)
+def v1.chunked.send_ct.Ct2Sampled.epoch
+  (self : v1.chunked.send_ct.Ct2Sampled) : Result Std.U64 := do
+  ok self.uc.epoch
 
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
-def
-  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
-  := do
-  ok Error.StateDecode
-
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
-def
-  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
-  := do
-  ok Error.StateDecode
-
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 71:4-88:5
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::send_ct2_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 285:4-292:5
     Visibility: public -/
-def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Sampled) :
-  Result (core.result.Result v1.chunked.send_ct.Ct1Sampled Error)
-  := do
-  match pb.receiving_ek with
-  | none =>
-    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
-      let cf1 ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-          r1
-      match cf1 with
-      | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
-        let cf2 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r2
-        match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue val2 =>
-          let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
-          let r4 ←
-            core.result.Result.map_err
-              v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-              r3 ()
-          let cf3 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r4
-          match cf3 with
-          | core.ops.control_flow.ControlFlow.Continue val3 =>
-            let r5 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
-            let cf4 ←
-              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                r5
-            match cf4 with
-            | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) =>
-              let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
-              let r7 ←
-                core.result.Result.map_err
-                  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                  r6 ()
-              let cf5 ←
-                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                  r7
-              match cf5 with
-              | core.ops.control_flow.ControlFlow.Continue val5 =>
-                ok (core.result.Result.Ok
-                  { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
-              | core.ops.control_flow.ControlFlow.Break residual =>
-                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                  residual
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
-        let cf1 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
-          let cf2 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue val2 =>
-            let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ←
-              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              let r5 ←
-                core.option.Option.ok_or pb.receiving_ek Error.StateDecode
-              let cf4 ←
-                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                  r5
-              match cf4 with
-              | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) =>
-                let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
-                let r7 ←
-                  core.result.Result.map_err
-                    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                    r6 ()
-                let cf5 ←
-                  core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                    r7
-                match cf5 with
-                | core.ops.control_flow.ControlFlow.Continue val5 =>
-                  ok (core.result.Result.Ok
-                    { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
-                | core.ops.control_flow.ControlFlow.Break residual =>
-                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                    v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                    residual
-              | core.ops.control_flow.ControlFlow.Break residual =>
-                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                  residual
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::into_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 74:4-82:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb
-  (self : v1.unchunked.send_ct.Ct1SentEkReceived) :
-  Result proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  let s := alloc.vec.Vec.deref self.ct1
-  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s
-  ok
-    {
-      epoch := self.epoch,
-      auth := (some a),
-      es := self.es,
-      ek := self.ek,
-      ct1 := v
-    }
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 92:4-97:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb
-  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
-  Result proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
-  := do
-  let cser ← v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb self.uc
-  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct1
-  ok { uc := (some cser), sending_ct1 := (some pe) }
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::from_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 84:4-96:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived) :
-  Result (core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error)
-  := do
-  let i := alloc.vec.Vec.len pb.es
-  if i = 2080#usize
-  then
-    let i1 := alloc.vec.Vec.len pb.ct1
-    if i1 = 960#usize
-    then
-      let i2 := alloc.vec.Vec.len pb.ek
-      if i2 = 1152#usize
-      then
-        let o ← core.option.Option.as_ref pb.auth
-        let r ← core.option.Option.ok_or o Error.StateDecode
-        let cf ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r
-        match cf with
-        | core.ops.control_flow.ControlFlow.Continue val =>
-          let a ← authenticator.serialize.Authenticator.from_pb val
-          ok (core.result.Result.Ok
-            {
-              epoch := pb.epoch,
-              auth := a,
-              es := pb.es,
-              ek := pb.ek,
-              ct1 := pb.ct1
-            })
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.unchunked.send_ct.Ct1SentEkReceived (core.convert.FromSame
-            Error) residual
-      else ok (core.result.Result.Err Error.StateDecode)
-    else ok (core.result.Result.Err Error.StateDecode)
-  else ok (core.result.Result.Err Error.StateDecode)
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
-def
-  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
-  := do
-  ok Error.StateDecode
-
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 99:4-107:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled) :
-  Result (core.result.Result v1.chunked.send_ct.EkReceivedCt1Sampled Error)
-  := do
-  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let r1 ← v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb val
-    let cf1 ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
-    match cf1 with
-    | core.ops.control_flow.ControlFlow.Continue val1 =>
-      let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
-      let cf2 ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-          r2
-      match cf2 with
-      | core.ops.control_flow.ControlFlow.Continue val2 =>
-        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
-        let r4 ←
-          core.result.Result.map_err
-            v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-            r3 ()
-        let cf3 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r4
-        match cf3 with
-        | core.ops.control_flow.ControlFlow.Continue val3 =>
-          ok (core.result.Result.Ok { uc := val1, sending_ct1 := val3 })
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame
-            Error) residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
-          residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
-        residual
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
-      residual
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 111:4-116:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb
-  (self : v1.chunked.send_ct.Ct1Acknowledged) :
-  Result proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
-  := do
-  let cs ← v1.unchunked.send_ct.serialize.Ct1Sent.into_pb self.uc
-  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
-  ok { uc := (some cs), receiving_ek := (some pd) }
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
-def
-  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
-  := do
-  ok Error.StateDecode
-
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 118:4-131:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) :
-  Result (core.result.Result v1.chunked.send_ct.Ct1Acknowledged Error)
-  := do
-  match pb.receiving_ek with
-  | none =>
-    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
-      let cf1 ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-          r1
-      match cf1 with
-      | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
-        let cf2 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r2
-        match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
-          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-          let r4 ←
-            core.result.Result.map_err
-              v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-              r3 ()
-          let cf3 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r4
-          match cf3 with
-          | core.ops.control_flow.ControlFlow.Continue val3 =>
-            ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-          residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-        residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
-        let cf1 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
-          let cf2 ←
-            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-              r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ←
-              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-                r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame
-                Error) residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-          residual
-
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::into_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 100:4-105:5
-    Visibility: public -/
-def v1.unchunked.send_ct.serialize.Ct2Sent.into_pb
-  (self : v1.unchunked.send_ct.Ct2Sent) :
-  Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a) }
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:4-140:5
-    Visibility: public -/
-def v1.chunked.send_ct.serialize.Ct2Sampled.into_pb
+def v1.chunked.send_ct.Ct2Sampled.send_ct2_chunk
   (self : v1.chunked.send_ct.Ct2Sampled) :
-  Result proto.pq_ratchet.v1_state.chunked.Ct2Sampled
+  Result (v1.chunked.send_ct.Ct2Sampled × encoding.Chunk)
   := do
-  let cs ← v1.unchunked.send_ct.serialize.Ct2Sent.into_pb self.uc
-  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct2
-  ok { uc := (some cs), sending_ct2 := (some pe) }
+  let (chunk, sending_ct2) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ct2
+  ok ({ self with sending_ct2 }, chunk)
 
-/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::from_pb]:
-    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 107:4-112:5
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 278:4-280:5
     Visibility: public -/
-def v1.unchunked.send_ct.serialize.Ct2Sent.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) :
-  Result (core.result.Result v1.unchunked.send_ct.Ct2Sent Error)
+def v1.chunked.send_ct.Ct1Acknowledged.epoch
+  (self : v1.chunked.send_ct.Ct1Acknowledged) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 242:4-244:5
+    Visibility: public -/
+def v1.chunked.send_ct.EkReceivedCt1Sampled.epoch
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::send_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 223:4-230:5
+    Visibility: public -/
+def v1.chunked.send_ct.EkReceivedCt1Sampled.send_ct1_chunk
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
+  Result (v1.chunked.send_ct.EkReceivedCt1Sampled × encoding.Chunk)
   := do
-  let o ← core.option.Option.as_ref pb.auth
-  let r ← core.option.Option.ok_or o Error.StateDecode
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let a ← authenticator.serialize.Authenticator.from_pb val
-    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.unchunked.send_ct.Ct2Sent (core.convert.FromSame Error) residual
+  let (chunk, sending_ct1) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ct1
+  ok ({ self with sending_ct1 }, chunk)
 
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
-def
-  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure)
-  (tupled_args : encoding.polynomial.PolynomialError) :
-  Result Error
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 216:4-218:5
+    Visibility: public -/
+def v1.chunked.send_ct.Ct1Sampled.epoch
+  (self : v1.chunked.send_ct.Ct1Sampled) : Result Std.U64 := do
+  ok self.uc.epoch
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::send_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 199:4-214:5
+    Visibility: public -/
+def v1.chunked.send_ct.Ct1Sampled.send_ct1_chunk
+  (self : v1.chunked.send_ct.Ct1Sampled) :
+  Result (v1.chunked.send_ct.Ct1Sampled × encoding.Chunk)
   := do
-  ok Error.StateDecode
+  let (chunk, sending_ct1) ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
+      self.sending_ct1
+  ok ({ self with sending_ct1 }, chunk)
 
-/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
-@[reducible]
-def
-  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-  : core.ops.function.FnOnce
-  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure
-  encoding.polynomial.PolynomialError Error := {
-  call_once :=
-    v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-}
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 142:4-150:5
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::HeaderReceived}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 141:4-143:5
     Visibility: public -/
-def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.Ct2Sampled) :
-  Result (core.result.Result v1.chunked.send_ct.Ct2Sampled Error)
-  := do
-  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let r1 ← v1.unchunked.send_ct.serialize.Ct2Sent.from_pb val
-    let cf1 ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
-    match cf1 with
-    | core.ops.control_flow.ControlFlow.Continue val1 =>
-      let r2 ← core.option.Option.ok_or pb.sending_ct2 Error.StateDecode
-      let cf2 ←
-        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-          r2
-      match cf2 with
-      | core.ops.control_flow.ControlFlow.Continue val2 =>
-        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
-        let r4 ←
-          core.result.Result.map_err
-            v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-            r3 ()
-        let cf3 ←
-          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
-            r4
-        match cf3 with
-        | core.ops.control_flow.ControlFlow.Continue val3 =>
-          ok (core.result.Result.Ok { uc := val1, sending_ct2 := val3 })
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
-
-/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::new]:
-    Source: 'src/v1/unchunked/send_ct.rs', lines 92:4-97:5
-    Visibility: public -/
-def v1.unchunked.send_ct.NoHeaderReceived.new
-  (auth_key : Slice Std.U8) :
-  Result v1.unchunked.send_ct.NoHeaderReceived
-  := do
-  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 auth_key
-  let a ← authenticator.Authenticator.new v 1#u64
-  ok { epoch := 1#u64, auth := a }
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::new]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 71:4-79:5
-    Visibility: public -/
-def v1.chunked.send_ct.NoHeaderReceived.new
-  (auth_key : Slice Std.U8) : Result v1.chunked.send_ct.NoHeaderReceived := do
-  let i ← incremental_mlkem768.HEADER_SIZE
-  let i1 ← i + authenticator.Authenticator.MACSIZE
-  let decoder ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
-  let nhr ← v1.unchunked.send_ct.NoHeaderReceived.new auth_key
-  let pd ←
-    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
-      (toStr "should be able to decode header size")
-  ok { uc := nhr, receiving_hdr := pd }
-
-/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::recv_header]:
-    Source: 'src/v1/unchunked/send_ct.rs', lines 100:4-113:5
-    Visibility: public -/
-def v1.unchunked.send_ct.NoHeaderReceived.recv_header
-  (self : v1.unchunked.send_ct.NoHeaderReceived) (epoch : Std.U64)
-  (hdr : alloc.vec.Vec Std.U8) (mac : alloc.vec.Vec Std.U8) :
-  Result (core.result.Result v1.unchunked.send_ct.HeaderReceived Error)
-  := do
-  massert (epoch = self.epoch)
-  let s := alloc.vec.Vec.deref hdr
-  let s1 := alloc.vec.Vec.deref mac
-  let r ← authenticator.Authenticator.verify_hdr self.auth self.epoch s s1
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue _ =>
-    ok (core.result.Result.Ok { epoch := self.epoch, auth := self.auth, hdr })
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.unchunked.send_ct.HeaderReceived Error.Insts.CoreConvertFromError
-      residual
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::recv_hdr_chunk]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 82:4-107:5
-    Visibility: public -/
-def v1.chunked.send_ct.NoHeaderReceived.recv_hdr_chunk
-  (self : v1.chunked.send_ct.NoHeaderReceived) (epoch : Std.U64)
-  (chunk : encoding.Chunk) :
-  Result (core.result.Result v1.chunked.send_ct.NoHeaderReceivedRecvChunk
-    Error)
-  := do
-  massert (epoch = self.uc.epoch)
-  let receiving_hdr ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      self.receiving_hdr chunk
-  let o ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-      receiving_hdr
-  match o with
-  | none =>
-    ok (core.result.Result.Ok
-      (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.StillReceiving
-      { self with receiving_hdr }))
-  | some hdr =>
-    let i ← incremental_mlkem768.HEADER_SIZE
-    let (mac, hdr1) ←
-      alloc.vec.Vec.split_off core.core.clone.CloneGlobal hdr i
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let receiving_ek ←
-      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
-    let r ←
-      v1.unchunked.send_ct.NoHeaderReceived.recv_header self.uc epoch hdr1 mac
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let pd ←
-        core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
-          receiving_ek (toStr "should be able to decode EncapsulationKey size")
-      ok (core.result.Result.Ok
-        (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.Done
-        { uc := val, receiving_ek := pd }))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.NoHeaderReceivedRecvChunk (core.convert.FromSame
-        Error) residual
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 109:4-111:5
-    Visibility: public -/
-def v1.chunked.send_ct.NoHeaderReceived.epoch
-  (self : v1.chunked.send_ct.NoHeaderReceived) : Result Std.U64 := do
+def v1.chunked.send_ct.HeaderReceived.epoch
+  (self : v1.chunked.send_ct.HeaderReceived) : Result Std.U64 := do
   ok self.uc.epoch
 
 /-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::HeaderReceived}::send_ct1]:
@@ -9958,348 +9065,287 @@ def v1.chunked.send_ct.HeaderReceived.send_ct1_chunk
   ok (({ uc, sending_ct1 := sending_ct11, receiving_ek := self.receiving_ek },
     chunk, epoch_secret), rng1)
 
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::HeaderReceived}::epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 141:4-143:5
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 109:4-111:5
     Visibility: public -/
-def v1.chunked.send_ct.HeaderReceived.epoch
-  (self : v1.chunked.send_ct.HeaderReceived) : Result Std.U64 := do
+def v1.chunked.send_ct.NoHeaderReceived.epoch
+  (self : v1.chunked.send_ct.NoHeaderReceived) : Result Std.U64 := do
   ok self.uc.epoch
 
-/-- [spqr::v1::chunked::send_ct::send_ct2_encoder]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 156:0-160:1 -/
-def v1.chunked.send_ct.send_ct2_encoder
-  (ct2 : Slice Std.U8) (mac : Slice Std.U8) :
-  Result encoding.polynomial.PolyEncoder
+/-- [spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::send]:
+    Source: 'src/v1/chunked/states.rs', lines 115:4-273:5 -/
+def v1.chunked.states.States.send
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (self : v1.chunked.states.States) (rng : R) :
+  Result ((core.result.Result v1.chunked.states.Send Error) × R)
   := do
-  let msg ← alloc.slice.Slice.to_vec core.clone.CloneU8 ct2
-  let msg1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 msg mac
-  let s := alloc.vec.Vec.deref msg1
-  let r ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
-  core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug r (toStr
-    "should be able to send ct2")
-
-/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::send_ct2]:
-    Source: 'src/v1/unchunked/send_ct.rs', lines 177:4-195:5
-    Visibility: public -/
-def v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2
-  (self : v1.unchunked.send_ct.Ct1SentEkReceived) :
-  Result (v1.unchunked.send_ct.Ct2Sent × (alloc.vec.Vec Std.U8) ×
-    (alloc.vec.Vec Std.U8))
-  := do
-  let ct2 ← incremental_mlkem768.encaps2 self.ek self.es
-  let s := alloc.vec.Vec.deref ct2
-  let ct1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 self.ct1 s
-  let s1 := alloc.vec.Vec.deref ct1
-  let mac ← authenticator.Authenticator.mac_ct self.auth self.epoch s1
-  ok ({ epoch := self.epoch, auth := self.auth }, ct2, mac)
-
-/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1Sent}::recv_ek]:
-    Source: 'src/v1/unchunked/send_ct.rs', lines 154:4-171:5
-    Visibility: public -/
-def v1.unchunked.send_ct.Ct1Sent.recv_ek
-  (self : v1.unchunked.send_ct.Ct1Sent) (epoch : Std.U64)
-  (ek : alloc.vec.Vec Std.U8) :
-  Result (core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error)
-  := do
-  massert (epoch = self.epoch)
-  let b ← incremental_mlkem768.ek_matches_header ek self.hdr
-  if b
-  then
+  match self with
+  | v1.chunked.states.States.KeysUnsampled state =>
+    let epoch ← v1.chunked.send_ek.KeysUnsampled.epoch state
+    let (p, rng1) ←
+      v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk randrngRngInst
+        rand_coreCryptoRngInst state rng
+    let (state1, chunk) := p
     ok (core.result.Result.Ok
       {
-        epoch := self.epoch,
-        auth := self.auth,
-        es := self.es,
-        ek,
-        ct1 := self.ct1
-      })
-  else ok (core.result.Result.Err Error.ErroneousDataReceived)
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::recv_ek_chunk]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 165:4-197:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct1Sampled.recv_ek_chunk
-  (self : v1.chunked.send_ct.Ct1Sampled) (epoch : Std.U64)
-  (chunk : encoding.Chunk) (ct1_ack : Bool) :
-  Result (core.result.Result v1.chunked.send_ct.Ct1SampledRecvChunk Error)
-  := do
-  let receiving_ek ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      self.receiving_ek chunk
-  let o ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-      receiving_ek
-  match o with
-  | none =>
-    if ct1_ack
-    then
-      ok (core.result.Result.Ok
-        (v1.chunked.send_ct.Ct1SampledRecvChunk.StillReceiving
-        { uc := self.uc, receiving_ek }))
-    else
-      ok (core.result.Result.Ok
-        (v1.chunked.send_ct.Ct1SampledRecvChunk.StillReceivingStillSending
-        { self with receiving_ek }))
-  | some decoded =>
-    let r ← v1.unchunked.send_ct.Ct1Sent.recv_ek self.uc epoch decoded
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      if ct1_ack
-      then
-        let (uc, ct2, mac) ←
-          v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 val
-        let s := alloc.vec.Vec.deref ct2
-        let s1 := alloc.vec.Vec.deref mac
-        let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
-        ok (core.result.Result.Ok (v1.chunked.send_ct.Ct1SampledRecvChunk.Done
-          { uc, sending_ct2 := pe }))
-      else
-        ok (core.result.Result.Ok
-          (v1.chunked.send_ct.Ct1SampledRecvChunk.StillSending
-          { uc := val, sending_ct1 := self.sending_ct1 }))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.Ct1SampledRecvChunk (core.convert.FromSame Error)
-        residual
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::send_ct1_chunk]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 199:4-214:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct1Sampled.send_ct1_chunk
-  (self : v1.chunked.send_ct.Ct1Sampled) :
-  Result (v1.chunked.send_ct.Ct1Sampled × encoding.Chunk)
-  := do
-  let (chunk, sending_ct1) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      self.sending_ct1
-  ok ({ self with sending_ct1 }, chunk)
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 216:4-218:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct1Sampled.epoch
-  (self : v1.chunked.send_ct.Ct1Sampled) : Result Std.U64 := do
-  ok self.uc.epoch
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::send_ct1_chunk]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 223:4-230:5
-    Visibility: public -/
-def v1.chunked.send_ct.EkReceivedCt1Sampled.send_ct1_chunk
-  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
-  Result (v1.chunked.send_ct.EkReceivedCt1Sampled × encoding.Chunk)
-  := do
-  let (chunk, sending_ct1) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      self.sending_ct1
-  ok ({ self with sending_ct1 }, chunk)
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::recv_ct1_ack]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 233:4-240:5
-    Visibility: public -/
-def v1.chunked.send_ct.EkReceivedCt1Sampled.recv_ct1_ack
-  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) (epoch : Std.U64) :
-  Result v1.chunked.send_ct.Ct2Sampled
-  := do
-  massert (epoch = self.uc.epoch)
-  let (uc, ct2, mac) ←
-    v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 self.uc
-  let s := alloc.vec.Vec.deref ct2
-  let s1 := alloc.vec.Vec.deref mac
-  let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
-  ok { uc, sending_ct2 := pe }
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 242:4-244:5
-    Visibility: public -/
-def v1.chunked.send_ct.EkReceivedCt1Sampled.epoch
-  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) : Result Std.U64 := do
-  ok self.uc.epoch
-
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::recv_ek_chunk]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 256:4-276:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct1Acknowledged.recv_ek_chunk
-  (self : v1.chunked.send_ct.Ct1Acknowledged) (epoch : Std.U64)
-  (chunk : encoding.Chunk) :
-  Result (core.result.Result v1.chunked.send_ct.Ct1AcknowledgedRecvChunk Error)
-  := do
-  let receiving_ek ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      self.receiving_ek chunk
-  let o ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-      receiving_ek
-  match o with
-  | none =>
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Hdr chunk) },
+        key := none,
+        state := (v1.chunked.states.States.KeysSampled state1)
+      }, rng1)
+  | v1.chunked.states.States.KeysSampled state =>
+    let epoch ← v1.chunked.send_ek.KeysSampled.epoch state
+    let (state1, chunk) ← v1.chunked.send_ek.KeysSampled.send_hdr_chunk state
     ok (core.result.Result.Ok
-      (v1.chunked.send_ct.Ct1AcknowledgedRecvChunk.StillReceiving
-      { self with receiving_ek }))
-  | some decoded =>
-    let r ← v1.unchunked.send_ct.Ct1Sent.recv_ek self.uc epoch decoded
-    let cf ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let (uc, ct2, mac) ←
-        v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 val
-      let s := alloc.vec.Vec.deref ct2
-      let s1 := alloc.vec.Vec.deref mac
-      let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
-      ok (core.result.Result.Ok
-        (v1.chunked.send_ct.Ct1AcknowledgedRecvChunk.Done
-        { uc, sending_ct2 := pe }))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ct.Ct1AcknowledgedRecvChunk (core.convert.FromSame
-        Error) residual
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Hdr chunk) },
+        key := none,
+        state := (v1.chunked.states.States.KeysSampled state1)
+      }, rng)
+  | v1.chunked.states.States.HeaderSent state =>
+    let epoch ← v1.chunked.send_ek.HeaderSent.epoch state
+    let (state1, chunk) ← v1.chunked.send_ek.HeaderSent.send_ek_chunk state
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Ek chunk) },
+        key := none,
+        state := (v1.chunked.states.States.HeaderSent state1)
+      }, rng)
+  | v1.chunked.states.States.Ct1Received state =>
+    let epoch ← v1.chunked.send_ek.Ct1Received.epoch state
+    let (state1, chunk) ← v1.chunked.send_ek.Ct1Received.send_ek_chunk state
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.EkCt1Ack chunk)
+          },
+        key := none,
+        state := (v1.chunked.states.States.Ct1Received state1)
+      }, rng)
+  | v1.chunked.states.States.EkSentCt1Received state =>
+    let epoch ← v1.chunked.send_ek.EkSentCt1Received.epoch state
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Ct1Ack true) },
+        key := none,
+        state := self
+      }, rng)
+  | v1.chunked.states.States.NoHeaderReceived state =>
+    let epoch ← v1.chunked.send_ct.NoHeaderReceived.epoch state
+    ok (core.result.Result.Ok
+      {
+        msg := { epoch, payload := v1.chunked.states.MessagePayload.None },
+        key := none,
+        state := self
+      }, rng)
+  | v1.chunked.states.States.HeaderReceived state =>
+    let epoch ← v1.chunked.send_ct.HeaderReceived.epoch state
+    let (t, rng1) ←
+      v1.chunked.send_ct.HeaderReceived.send_ct1_chunk randrngRngInst
+        rand_coreCryptoRngInst state rng
+    let (state1, chunk, epoch_secret) := t
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Ct1 chunk) },
+        key := (some epoch_secret),
+        state := (v1.chunked.states.States.Ct1Sampled state1)
+      }, rng1)
+  | v1.chunked.states.States.Ct1Sampled state =>
+    let epoch ← v1.chunked.send_ct.Ct1Sampled.epoch state
+    let (state1, chunk) ← v1.chunked.send_ct.Ct1Sampled.send_ct1_chunk state
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Ct1 chunk) },
+        key := none,
+        state := (v1.chunked.states.States.Ct1Sampled state1)
+      }, rng)
+  | v1.chunked.states.States.EkReceivedCt1Sampled state =>
+    let epoch ← v1.chunked.send_ct.EkReceivedCt1Sampled.epoch state
+    let (state1, chunk) ←
+      v1.chunked.send_ct.EkReceivedCt1Sampled.send_ct1_chunk state
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Ct1 chunk) },
+        key := none,
+        state := (v1.chunked.states.States.EkReceivedCt1Sampled state1)
+      }, rng)
+  | v1.chunked.states.States.Ct1Acknowledged state =>
+    let epoch ← v1.chunked.send_ct.Ct1Acknowledged.epoch state
+    ok (core.result.Result.Ok
+      {
+        msg := { epoch, payload := v1.chunked.states.MessagePayload.None },
+        key := none,
+        state := self
+      }, rng)
+  | v1.chunked.states.States.Ct2Sampled state =>
+    let epoch ← v1.chunked.send_ct.Ct2Sampled.epoch state
+    let (state1, chunk) ← v1.chunked.send_ct.Ct2Sampled.send_ct2_chunk state
+    ok (core.result.Result.Ok
+      {
+        msg :=
+          { epoch, payload := (v1.chunked.states.MessagePayload.Ct2 chunk) },
+        key := none,
+        state := (v1.chunked.states.States.Ct2Sampled state1)
+      }, rng)
 
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 278:4-280:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct1Acknowledged.epoch
-  (self : v1.chunked.send_ct.Ct1Acknowledged) : Result Std.U64 := do
-  ok self.uc.epoch
+/-- [spqr::v1::chunked::states::serialize::MAX_VARINT_BYTES_LEN]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 137:0-137:39 -/
+@[global_simps, irreducible]
+def v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN : Std.Usize := 10#usize
 
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::send_ct2_chunk]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 285:4-292:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct2Sampled.send_ct2_chunk
-  (self : v1.chunked.send_ct.Ct2Sampled) :
-  Result (v1.chunked.send_ct.Ct2Sampled × encoding.Chunk)
+/-- [spqr::v1::chunked::states::serialize::encode_varint]: loop body 0:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 140:4-149:1 -/
+@[rust_loop_body]
+def v1.chunked.states.serialize.encode_varint_loop.body
+  (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
+  (into : alloc.vec.Vec Std.U8) :
+  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U64 ×
+    (alloc.vec.Vec Std.U8)) (alloc.vec.Vec Std.U8))
   := do
-  let (chunk, sending_ct2) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      self.sending_ct2
-  ok ({ self with sending_ct2 }, chunk)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok (done into)
+  | some _ =>
+    let i ← lift (a &&& 127#u64)
+    let byte ← lift (UScalar.cast .U8 i)
+    if a < 128#u64
+    then let into1 ← alloc.vec.Vec.push into byte
+         ok (done into1)
+    else
+      let i1 ← lift (128#u8 ||| byte)
+      let into1 ← alloc.vec.Vec.push into i1
+      let a1 ← a >>> 7#i32
+      ok (cont (iter1, a1, into1))
 
-/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct2Sent}::recv_next_epoch]:
-    Source: 'src/v1/unchunked/send_ct.rs', lines 201:4-208:5
-    Visibility: public -/
-def v1.unchunked.send_ct.Ct2Sent.recv_next_epoch
-  (self : v1.unchunked.send_ct.Ct2Sent) (next_epoch : Std.U64) :
-  Result v1.unchunked.send_ek.KeysUnsampled
+/-- [spqr::v1::chunked::states::serialize::encode_varint]: loop 0:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 140:4-149:1 -/
+@[rust_loop]
+def v1.chunked.states.serialize.encode_varint_loop
+  (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
+  (into : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
   := do
-  let left_val ← self.epoch + 1#u64
-  massert (left_val = next_epoch)
-  ok { epoch := left_val, auth := self.auth }
+  loop
+    (fun (iter1, a1, into1) =>
+      v1.chunked.states.serialize.encode_varint_loop.body iter1 a1 into1)
+    (iter, a, into)
 
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::recv_next_epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 295:4-298:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct2Sampled.recv_next_epoch
-  (self : v1.chunked.send_ct.Ct2Sampled) (epoch : Std.U64) :
-  Result v1.chunked.send_ek.KeysUnsampled
+/-- [spqr::v1::chunked::states::serialize::encode_varint]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 139:0-149:1 -/
+@[reducible]
+def v1.chunked.states.serialize.encode_varint
+  (a : Std.U64) (into : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
   := do
-  let uc ← v1.unchunked.send_ct.Ct2Sent.recv_next_epoch self.uc epoch
-  ok { uc }
+  v1.chunked.states.serialize.encode_varint_loop
+    {
+      start := 0#usize,
+      «end» := v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN
+    } a into
 
-/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::epoch]:
-    Source: 'src/v1/chunked/send_ct.rs', lines 300:4-302:5
-    Visibility: public -/
-def v1.chunked.send_ct.Ct2Sampled.epoch
-  (self : v1.chunked.send_ct.Ct2Sampled) : Result Std.U64 := do
-  ok self.uc.epoch
-
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::into_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 10:4-15:5
-    Visibility: public -/
-def v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb
-  (self : v1.unchunked.send_ek.KeysUnsampled) :
-  Result proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
+/-- [spqr::v1::chunked::states::serialize::encode_chunk]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 184:0-188:1 -/
+def v1.chunked.states.serialize.encode_chunk
+  (c : encoding.Chunk) (into : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
   := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a) }
+  let i ← lift (UScalar.cast .U64 c.index)
+  let into1 ← v1.chunked.states.serialize.encode_varint i into
+  let s ←
+    core.array.Array.index (core.ops.index.IndexSlice
+      (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
+      Std.U8)) c.data ()
+  alloc.vec.Vec.extend_from_slice core.clone.CloneU8 into1 s
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 10:4-14:5
-    Visibility: public -/
-def v1.chunked.send_ek.serialize.KeysUnsampled.into_pb
-  (self : v1.chunked.send_ek.KeysUnsampled) :
-  Result proto.pq_ratchet.v1_state.chunked.KeysUnsampled
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::serialize::MessageType}::from_payload]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 124:4-134:5 -/
+def v1.chunked.states.serialize.MessageType.from_payload
+  (mp : v1.chunked.states.MessagePayload) :
+  Result v1.chunked.states.serialize.MessageType
   := do
-  let ku ← v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb self.uc
-  ok { uc := (some ku) }
+  match mp with
+  | v1.chunked.states.MessagePayload.None =>
+    ok v1.chunked.states.serialize.MessageType.None
+  | v1.chunked.states.MessagePayload.Hdr _ =>
+    ok v1.chunked.states.serialize.MessageType.Hdr
+  | v1.chunked.states.MessagePayload.Ek _ =>
+    ok v1.chunked.states.serialize.MessageType.Ek
+  | v1.chunked.states.MessagePayload.EkCt1Ack _ =>
+    ok v1.chunked.states.serialize.MessageType.EkCt1Ack
+  | v1.chunked.states.MessagePayload.Ct1Ack _ =>
+    ok v1.chunked.states.serialize.MessageType.Ct1Ack
+  | v1.chunked.states.MessagePayload.Ct1 _ =>
+    ok v1.chunked.states.serialize.MessageType.Ct1
+  | v1.chunked.states.MessagePayload.Ct2 _ =>
+    ok v1.chunked.states.serialize.MessageType.Ct2
 
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::from_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 17:4-22:5
+/-- [spqr::v1::chunked::states::serialize::{core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}::from]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 95:9-95:22
     Visibility: public -/
-def v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
-  Result (core.result.Result v1.unchunked.send_ek.KeysUnsampled Error)
+def U8.Insts.CoreConvertFromMessageType.from
+  (enum_value : v1.chunked.states.serialize.MessageType) : Result Std.U8 := do
+  let enum_value1 := read_discriminant enum_value
+  ok (UScalar.cast .U8 enum_value1)
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 95:9-95:22 -/
+@[reducible]
+def U8.Insts.CoreConvertFromMessageType : core.convert.From Std.U8
+  v1.chunked.states.serialize.MessageType := {
+  from_ := U8.Insts.CoreConvertFromMessageType.from
+}
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 221:4-245:5
+    Visibility: public -/
+def v1.chunked.states.serialize.Message.serialize
+  (self : v1.chunked.states.Message) (index : Std.U32) :
+  Result (alloc.vec.Vec Std.U8)
   := do
-  let o ← core.option.Option.as_ref pb.auth
-  let r ← core.option.Option.ok_or o Error.StateDecode
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let a ← authenticator.serialize.Authenticator.from_pb val
-    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.unchunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
+  let into := alloc.vec.Vec.with_capacity Std.U8 40#usize
+  let i ←
+    core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
+      proto.pq_ratchet.Version.V1
+  let into1 ← alloc.vec.Vec.push into i
+  let into2 ← v1.chunked.states.serialize.encode_varint self.epoch into1
+  let i1 ← lift (UScalar.cast .U64 index)
+  let into3 ← v1.chunked.states.serialize.encode_varint i1 into2
+  let mt ← v1.chunked.states.serialize.MessageType.from_payload self.payload
+  let i2 ← core.convert.IntoFrom.into U8.Insts.CoreConvertFromMessageType mt
+  let into4 ← alloc.vec.Vec.push into3 i2
+  match self.payload with
+  | v1.chunked.states.MessagePayload.None => ok into4
+  | v1.chunked.states.MessagePayload.Hdr chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.Ek chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.EkCt1Ack chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.Ct1Ack _ => ok into4
+  | v1.chunked.states.MessagePayload.Ct1 chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
+  | v1.chunked.states.MessagePayload.Ct2 chunk =>
+    v1.chunked.states.serialize.encode_chunk chunk into4
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 16:4-20:5
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 81:4-92:5
     Visibility: public -/
-def v1.chunked.send_ek.serialize.KeysUnsampled.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.KeysUnsampled) :
-  Result (core.result.Result v1.chunked.send_ek.KeysUnsampled Error)
-  := do
-  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-  let cf ←
-    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let r1 ← v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb val
-    let cf1 ←
-      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
-    match cf1 with
-    | core.ops.control_flow.ControlFlow.Continue val1 =>
-      ok (core.result.Result.Ok { uc := val1 })
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.chunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
-
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::into_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 26:4-33:5
-    Visibility: public -/
-def v1.unchunked.send_ek.serialize.HeaderSent.into_pb
-  (self : v1.unchunked.send_ek.HeaderSent) :
-  Result proto.pq_ratchet.v1_state.unchunked.HeaderSent
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a), ek := self.ek, dk := self.dk }
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 24:4-29:5
-    Visibility: public -/
-def v1.chunked.send_ek.serialize.KeysSampled.into_pb
-  (self : v1.chunked.send_ek.KeysSampled) :
-  Result proto.pq_ratchet.v1_state.chunked.KeysSampled
-  := do
-  let hs ← v1.unchunked.send_ek.serialize.HeaderSent.into_pb self.uc
-  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_hdr
-  ok { uc := (some hs), sending_hdr := (some pe) }
-
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::from_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 35:4-46:5
-    Visibility: public -/
-def v1.unchunked.send_ek.serialize.HeaderSent.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.HeaderSent) :
-  Result (core.result.Result v1.unchunked.send_ek.HeaderSent Error)
+def v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received) :
+  Result (core.result.Result v1.unchunked.send_ek.EkSentCt1Received Error)
   := do
   let i := alloc.vec.Vec.len pb.dk
   if i = 2400#usize
   then
-    let i1 := alloc.vec.Vec.len pb.ek
-    if i1 = 1152#usize
+    let i1 := alloc.vec.Vec.len pb.ct1
+    if i1 = 960#usize
     then
       let o ← core.option.Option.as_ref pb.auth
       let r ← core.option.Option.ok_or o Error.StateDecode
@@ -10309,54 +9355,183 @@ def v1.unchunked.send_ek.serialize.HeaderSent.from_pb
       | core.ops.control_flow.ControlFlow.Continue val =>
         let a ← authenticator.serialize.Authenticator.from_pb val
         ok (core.result.Result.Ok
-          { epoch := pb.epoch, auth := a, ek := pb.ek, dk := pb.dk })
+          { epoch := pb.epoch, auth := a, dk := pb.dk, ct1 := pb.ct1 })
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.unchunked.send_ek.HeaderSent (core.convert.FromSame Error)
+          v1.unchunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
           residual
     else ok (core.result.Result.Err Error.StateDecode)
   else ok (core.result.Result.Err Error.StateDecode)
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
 def
-  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure)
+  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure)
   (tupled_args : encoding.polynomial.PolynomialError) :
   Result Error
   := do
   ok Error.StateDecode
 
-/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
 @[reducible]
 def
-  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
-  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure
+  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure
   encoding.polynomial.PolynomialError Error := {
   call_once :=
-    v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+    v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
 }
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 31:4-39:5
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 95:4-111:5
     Visibility: public -/
-def v1.chunked.send_ek.serialize.KeysSampled.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
-  Result (core.result.Result v1.chunked.send_ek.KeysSampled Error)
+def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) :
+  Result (core.result.Result v1.chunked.send_ek.EkSentCt1Received Error)
+  := do
+  match pb.receiving_ct2 with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+              Error) residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+        residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.CIPHERTEXT2_SIZE
+    let i2 ← i1 + authenticator.Authenticator.MACSIZE
+    let i3 ← i2 / 2#usize
+    if i != i3
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ←
+            core.option.Option.ok_or pb.receiving_ct2 Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+                Error) residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+              Error) residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          residual
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+def
+  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+@[reducible]
+def
+  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 78:4-84:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.Ct1Received.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Received) :
+  Result (core.result.Result v1.chunked.send_ek.Ct1Received Error)
   := do
   let r ← core.option.Option.ok_or pb.uc Error.StateDecode
   let cf ←
     core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
   match cf with
   | core.ops.control_flow.ControlFlow.Continue val =>
-    let r1 ← v1.unchunked.send_ek.serialize.HeaderSent.from_pb val
+    let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
     let cf1 ←
       core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
     match cf1 with
     | core.ops.control_flow.ControlFlow.Continue val1 =>
-      let r2 ← core.option.Option.ok_or pb.sending_hdr Error.StateDecode
+      let r2 ← core.option.Option.ok_or pb.sending_ek Error.StateDecode
       let cf2 ←
         core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
           r2
@@ -10365,49 +9540,27 @@ def v1.chunked.send_ek.serialize.KeysSampled.from_pb
         let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
         let r4 ←
           core.result.Result.map_err
-            v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
             r3 ()
         let cf3 ←
           core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
             r4
         match cf3 with
         | core.ops.control_flow.ControlFlow.Continue val3 =>
-          ok (core.result.Result.Ok { uc := val1, sending_hdr := val3 })
+          ok (core.result.Result.Ok { uc := val1, sending_ek := val3 })
         | core.ops.control_flow.ControlFlow.Break residual =>
           core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error)
+            v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error)
             residual
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
+          v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
     | core.ops.control_flow.ControlFlow.Break residual =>
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
+        v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
   | core.ops.control_flow.ControlFlow.Break residual =>
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
-
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::into_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 50:4-56:5
-    Visibility: public -/
-def v1.unchunked.send_ek.serialize.EkSent.into_pb
-  (self : v1.unchunked.send_ek.EkSent) :
-  Result proto.pq_ratchet.v1_state.unchunked.EkSent
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a), dk := self.dk }
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 44:4-50:5
-    Visibility: public -/
-def v1.chunked.send_ek.serialize.HeaderSent.into_pb
-  (self : v1.chunked.send_ek.HeaderSent) :
-  Result proto.pq_ratchet.v1_state.chunked.HeaderSent
-  := do
-  let es ← v1.unchunked.send_ek.serialize.EkSent.into_pb self.uc
-  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ek
-  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ct1
-  ok { uc := (some es), sending_ek := (some pe), receiving_ct1 := (some pd) }
+      v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
 
 /-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::from_pb]:
     Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 58:4-68:5
@@ -10629,39 +9782,18 @@ def v1.chunked.send_ek.serialize.HeaderSent.from_pb
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
           v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error) residual
 
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::into_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 72:4-79:5
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 35:4-46:5
     Visibility: public -/
-def v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb
-  (self : v1.unchunked.send_ek.EkSentCt1Received) :
-  Result proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
-  := do
-  let a ← authenticator.serialize.Authenticator.into_pb self.auth
-  ok { epoch := self.epoch, auth := (some a), dk := self.dk, ct1 := self.ct1 }
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 71:4-76:5
-    Visibility: public -/
-def v1.chunked.send_ek.serialize.Ct1Received.into_pb
-  (self : v1.chunked.send_ek.Ct1Received) :
-  Result proto.pq_ratchet.v1_state.chunked.Ct1Received
-  := do
-  let escr ← v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb self.uc
-  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ek
-  ok { uc := (some escr), sending_ek := (some pe) }
-
-/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::from_pb]:
-    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 81:4-92:5
-    Visibility: public -/
-def v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb
-  (pb : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received) :
-  Result (core.result.Result v1.unchunked.send_ek.EkSentCt1Received Error)
+def v1.unchunked.send_ek.serialize.HeaderSent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.HeaderSent) :
+  Result (core.result.Result v1.unchunked.send_ek.HeaderSent Error)
   := do
   let i := alloc.vec.Vec.len pb.dk
   if i = 2400#usize
   then
-    let i1 := alloc.vec.Vec.len pb.ct1
-    if i1 = 960#usize
+    let i1 := alloc.vec.Vec.len pb.ek
+    if i1 = 1152#usize
     then
       let o ← core.option.Option.as_ref pb.auth
       let r ← core.option.Option.ok_or o Error.StateDecode
@@ -10671,54 +9803,54 @@ def v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb
       | core.ops.control_flow.ControlFlow.Continue val =>
         let a ← authenticator.serialize.Authenticator.from_pb val
         ok (core.result.Result.Ok
-          { epoch := pb.epoch, auth := a, dk := pb.dk, ct1 := pb.ct1 })
+          { epoch := pb.epoch, auth := a, ek := pb.ek, dk := pb.dk })
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.unchunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          v1.unchunked.send_ek.HeaderSent (core.convert.FromSame Error)
           residual
     else ok (core.result.Result.Err Error.StateDecode)
   else ok (core.result.Result.Err Error.StateDecode)
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
 def
-  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure)
+  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure)
   (tupled_args : encoding.polynomial.PolynomialError) :
   Result Error
   := do
   ok Error.StateDecode
 
-/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
 @[reducible]
 def
-  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
-  v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure
+  v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure
   encoding.polynomial.PolynomialError Error := {
   call_once :=
-    v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+    v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
 }
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 78:4-84:5
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 31:4-39:5
     Visibility: public -/
-def v1.chunked.send_ek.serialize.Ct1Received.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Received) :
-  Result (core.result.Result v1.chunked.send_ek.Ct1Received Error)
+def v1.chunked.send_ek.serialize.KeysSampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
+  Result (core.result.Result v1.chunked.send_ek.KeysSampled Error)
   := do
   let r ← core.option.Option.ok_or pb.uc Error.StateDecode
   let cf ←
     core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
   match cf with
   | core.ops.control_flow.ControlFlow.Continue val =>
-    let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+    let r1 ← v1.unchunked.send_ek.serialize.HeaderSent.from_pb val
     let cf1 ←
       core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
     match cf1 with
     | core.ops.control_flow.ControlFlow.Continue val1 =>
-      let r2 ← core.option.Option.ok_or pb.sending_ek Error.StateDecode
+      let r2 ← core.option.Option.ok_or pb.sending_hdr Error.StateDecode
       let cf2 ←
         core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
           r2
@@ -10727,76 +9859,237 @@ def v1.chunked.send_ek.serialize.Ct1Received.from_pb
         let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
         let r4 ←
           core.result.Result.map_err
-            v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
             r3 ()
         let cf3 ←
           core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
             r4
         match cf3 with
         | core.ops.control_flow.ControlFlow.Continue val3 =>
-          ok (core.result.Result.Ok { uc := val1, sending_ek := val3 })
+          ok (core.result.Result.Ok { uc := val1, sending_hdr := val3 })
         | core.ops.control_flow.ControlFlow.Break residual =>
           core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error)
+            v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error)
             residual
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
+          v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
     | core.ops.control_flow.ControlFlow.Break residual =>
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
+        v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
   | core.ops.control_flow.ControlFlow.Break residual =>
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      v1.chunked.send_ek.Ct1Received (core.convert.FromSame Error) residual
+      v1.chunked.send_ek.KeysSampled (core.convert.FromSame Error) residual
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 88:4-93:5
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::from_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 17:4-22:5
     Visibility: public -/
-def v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb
-  (self : v1.chunked.send_ek.EkSentCt1Received) :
-  Result proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
+def v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
+  Result (core.result.Result v1.unchunked.send_ek.KeysUnsampled Error)
   := do
-  let escr ← v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb self.uc
-  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ct2
-  ok { uc := (some escr), receiving_ct2 := (some pd) }
+  let o ← core.option.Option.as_ref pb.auth
+  let r ← core.option.Option.ok_or o Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let a ← authenticator.serialize.Authenticator.from_pb val
+    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 16:4-20:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.KeysUnsampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.KeysUnsampled) :
+  Result (core.result.Result v1.chunked.send_ek.KeysUnsampled Error)
+  := do
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      ok (core.result.Result.Ok { uc := val1 })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ek.KeysUnsampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 107:4-112:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.Ct2Sent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct2Sent Error)
+  := do
+  let o ← core.option.Option.as_ref pb.auth
+  let r ← core.option.Option.ok_or o Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let a ← authenticator.serialize.Authenticator.from_pb val
+    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ct.Ct2Sent (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
 def
-  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
-  (c : v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure)
+  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure)
   (tupled_args : encoding.polynomial.PolynomialError) :
   Result Error
   := do
   ok Error.StateDecode
 
-/-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
 @[reducible]
 def
-  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
-  v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure
+  v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure
   encoding.polynomial.PolynomialError Error := {
   call_once :=
-    v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+    v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
 }
 
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 95:4-111:5
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 142:4-150:5
     Visibility: public -/
-def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
-  (pb : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) :
-  Result (core.result.Result v1.chunked.send_ek.EkSentCt1Received Error)
+def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct2Sampled) :
+  Result (core.result.Result v1.chunked.send_ct.Ct2Sampled Error)
   := do
-  match pb.receiving_ct2 with
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ct.serialize.Ct2Sent.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or pb.sending_ct2 Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+        let r4 ←
+          core.result.Result.map_err
+            v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            r3 ()
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r4
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { uc := val1, sending_ct2 := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.chunked.send_ct.Ct2Sampled (core.convert.FromSame Error) residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 58:4-70:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.Ct1Sent.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.Ct1Sent) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct1Sent Error)
+  := do
+  let i := alloc.vec.Vec.len pb.hdr
+  if i = 64#usize
+  then
+    let i1 := alloc.vec.Vec.len pb.es
+    if i1 = 2080#usize
+    then
+      let i2 := alloc.vec.Vec.len pb.ct1
+      if i2 = 960#usize
+      then
+        let o ← core.option.Option.as_ref pb.auth
+        let r ← core.option.Option.ok_or o Error.StateDecode
+        let cf ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let a ← authenticator.serialize.Authenticator.from_pb val
+          ok (core.result.Result.Ok
+            {
+              epoch := pb.epoch,
+              auth := a,
+              hdr := pb.hdr,
+              es := pb.es,
+              ct1 := pb.ct1
+            })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.unchunked.send_ct.Ct1Sent (core.convert.FromSame Error) residual
+      else ok (core.result.Result.Err Error.StateDecode)
+    else ok (core.result.Result.Err Error.StateDecode)
+  else ok (core.result.Result.Err Error.StateDecode)
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 118:4-131:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1Acknowledged Error)
+  := do
+  match pb.receiving_ek with
   | none =>
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ←
       core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
     match cf with
     | core.ops.control_flow.ControlFlow.Continue val =>
-      let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+      let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
       let cf1 ←
         core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
           r1
@@ -10811,36 +10104,35 @@ def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
           let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
           let r4 ←
             core.result.Result.map_err
-              v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
               r3 ()
           let cf3 ←
             core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
               r4
           match cf3 with
           | core.ops.control_flow.ControlFlow.Continue val3 =>
-            ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
+            ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
           | core.ops.control_flow.ControlFlow.Break residual =>
             core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
-              Error) residual
+              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+              residual
         | core.ops.control_flow.ControlFlow.Break residual =>
           core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
             residual
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
           residual
     | core.ops.control_flow.ControlFlow.Break residual =>
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+        v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
         residual
   | some d =>
     let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.CIPHERTEXT2_SIZE
-    let i2 ← i1 + authenticator.Authenticator.MACSIZE
-    let i3 ← i2 / 2#usize
-    if i != i3
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
     then ok (core.result.Result.Err Error.MsgDecode)
     else
       let r ← core.option.Option.ok_or pb.uc Error.StateDecode
@@ -10848,14 +10140,13 @@ def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
         core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
       match cf with
       | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
+        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
         let cf1 ←
           core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
             r1
         match cf1 with
         | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ←
-            core.option.Option.ok_or pb.receiving_ct2 Error.StateDecode
+          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
           let cf2 ←
             core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
               r2
@@ -10864,438 +10155,641 @@ def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
             let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
             let r4 ←
               core.result.Result.map_err
-                v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
                 r3 ()
             let cf3 ←
               core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
                 r4
             match cf3 with
             | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
+              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
             | core.ops.control_flow.ControlFlow.Break residual =>
               core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-                v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
+                v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame
                 Error) residual
           | core.ops.control_flow.ControlFlow.Break residual =>
             core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
-              Error) residual
+              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
+              residual
         | core.ops.control_flow.ControlFlow.Break residual =>
           core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
             residual
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
+          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
           residual
 
-/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::new]:
-    Source: 'src/v1/unchunked/send_ek.rs', lines 76:4-81:5
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 84:4-96:5
     Visibility: public -/
-def v1.unchunked.send_ek.KeysUnsampled.new
-  (auth_key : Slice Std.U8) : Result v1.unchunked.send_ek.KeysUnsampled := do
-  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 auth_key
-  let a ← authenticator.Authenticator.new v 1#u64
-  ok { epoch := 1#u64, auth := a }
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::new]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 52:4-56:5
-    Visibility: public -/
-def v1.chunked.send_ek.KeysUnsampled.new
-  (auth_key : Slice Std.U8) : Result v1.chunked.send_ek.KeysUnsampled := do
-  let ku ← v1.unchunked.send_ek.KeysUnsampled.new auth_key
-  ok { uc := ku }
-
-/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::send_header]:
-    Source: 'src/v1/unchunked/send_ek.rs', lines 84:4-100:5
-    Visibility: public -/
-def v1.unchunked.send_ek.KeysUnsampled.send_header
-  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
-  rand_core.CryptoRng R) (self : v1.unchunked.send_ek.KeysUnsampled) 
-  (rng : R) :
-  Result ((v1.unchunked.send_ek.HeaderSent × (alloc.vec.Vec Std.U8) ×
-    (alloc.vec.Vec Std.U8)) × R)
+def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error)
   := do
-  let (keys, rng1) ←
-    incremental_mlkem768.generate randrngRngInst rand_coreCryptoRngInst rng
-  let s := alloc.vec.Vec.deref keys.hdr
-  let mac ← authenticator.Authenticator.mac_hdr self.auth self.epoch s
-  ok
-    (({ epoch := self.epoch, auth := self.auth, ek := keys.ek, dk := keys.dk },
-    keys.hdr, mac), rng1)
+  let i := alloc.vec.Vec.len pb.es
+  if i = 2080#usize
+  then
+    let i1 := alloc.vec.Vec.len pb.ct1
+    if i1 = 960#usize
+    then
+      let i2 := alloc.vec.Vec.len pb.ek
+      if i2 = 1152#usize
+      then
+        let o ← core.option.Option.as_ref pb.auth
+        let r ← core.option.Option.ok_or o Error.StateDecode
+        let cf ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let a ← authenticator.serialize.Authenticator.from_pb val
+          ok (core.result.Result.Ok
+            {
+              epoch := pb.epoch,
+              auth := a,
+              es := pb.es,
+              ek := pb.ek,
+              ct1 := pb.ct1
+            })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.unchunked.send_ct.Ct1SentEkReceived (core.convert.FromSame
+            Error) residual
+      else ok (core.result.Result.Err Error.StateDecode)
+    else ok (core.result.Result.Err Error.StateDecode)
+  else ok (core.result.Result.Err Error.StateDecode)
 
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::send_hdr_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 58:4-65:5
-    Visibility: public -/
-def v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk
-  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
-  rand_core.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) (rng : R) :
-  Result ((v1.chunked.send_ek.KeysSampled × encoding.Chunk) × R)
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+def
+  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
   := do
-  let (t, rng1) ←
-    v1.unchunked.send_ek.KeysUnsampled.send_header randrngRngInst
-      rand_coreCryptoRngInst self.uc rng
-  let (uc, to_send, mac) := t
-  let (to_send1, _) ← alloc.vec.Vec.append Global to_send mac
-  let s := alloc.vec.Vec.deref to_send1
-  let encoder ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
-  let sending_hdr ←
-    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug encoder
-      (toStr "should be able to encode header size")
-  let (chunk, sending_hdr1) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      sending_hdr
-  ok (({ uc, sending_hdr := sending_hdr1 }, chunk), rng1)
+  ok Error.StateDecode
 
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::epoch]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 67:4-69:5
-    Visibility: public -/
-def v1.chunked.send_ek.KeysUnsampled.epoch
-  (self : v1.chunked.send_ek.KeysUnsampled) : Result Std.U64 := do
-  ok self.uc.epoch
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
 
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::send_hdr_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 74:4-81:5
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 99:4-107:5
     Visibility: public -/
-def v1.chunked.send_ek.KeysSampled.send_hdr_chunk
-  (self : v1.chunked.send_ek.KeysSampled) :
-  Result (v1.chunked.send_ek.KeysSampled × encoding.Chunk)
+def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled) :
+  Result (core.result.Result v1.chunked.send_ct.EkReceivedCt1Sampled Error)
   := do
-  let (chunk, sending_hdr) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      self.sending_hdr
-  ok ({ self with sending_hdr }, chunk)
-
-/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::HeaderSent}::send_ek]:
-    Source: 'src/v1/unchunked/send_ek.rs', lines 106:4-115:5
-    Visibility: public -/
-def v1.unchunked.send_ek.HeaderSent.send_ek
-  (self : v1.unchunked.send_ek.HeaderSent) :
-  Result (v1.unchunked.send_ek.EkSent × (alloc.vec.Vec Std.U8))
-  := do
-  ok ({ epoch := self.epoch, auth := self.auth, dk := self.dk }, self.ek)
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::recv_ct1_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 84:4-97:5
-    Visibility: public -/
-def v1.chunked.send_ek.KeysSampled.recv_ct1_chunk
-  (self : v1.chunked.send_ek.KeysSampled) (epoch : Std.U64)
-  (chunk : encoding.Chunk) :
-  Result v1.chunked.send_ek.HeaderSent
-  := do
-  massert (epoch = self.uc.epoch)
-  let i ← incremental_mlkem768.CIPHERTEXT1_SIZE
-  let decoder ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i
-  let receiving_ct1 ←
-    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
-      (toStr "should be able to decode header size")
-  let receiving_ct11 ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      receiving_ct1 chunk
-  let (uc, ek) ← v1.unchunked.send_ek.HeaderSent.send_ek self.uc
-  let s := alloc.vec.Vec.deref ek
-  let encoder ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
-  let sending_ek ←
-    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug encoder
-      (toStr "should be able to send ek")
-  ok { uc, sending_ek, receiving_ct1 := receiving_ct11 }
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::epoch]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 99:4-101:5
-    Visibility: public -/
-def v1.chunked.send_ek.KeysSampled.epoch
-  (self : v1.chunked.send_ek.KeysSampled) : Result Std.U64 := do
-  ok self.uc.epoch
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::send_ek_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 112:4-127:5
-    Visibility: public -/
-def v1.chunked.send_ek.HeaderSent.send_ek_chunk
-  (self : v1.chunked.send_ek.HeaderSent) :
-  Result (v1.chunked.send_ek.HeaderSent × encoding.Chunk)
-  := do
-  let (chunk, sending_ek) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      self.sending_ek
-  ok ({ self with sending_ek }, chunk)
-
-/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSent}::recv_ct1]:
-    Source: 'src/v1/unchunked/send_ek.rs', lines 121:4-133:5
-    Visibility: public -/
-def v1.unchunked.send_ek.EkSent.recv_ct1
-  (self : v1.unchunked.send_ek.EkSent) (epoch : Std.U64)
-  (ct1 : alloc.vec.Vec Std.U8) :
-  Result v1.unchunked.send_ek.EkSentCt1Received
-  := do
-  massert (epoch = self.epoch)
-  ok { epoch := self.epoch, auth := self.auth, dk := self.dk, ct1 }
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::recv_ct1_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 130:4-148:5
-    Visibility: public -/
-def v1.chunked.send_ek.HeaderSent.recv_ct1_chunk
-  (self : v1.chunked.send_ek.HeaderSent) (epoch : Std.U64)
-  (chunk : encoding.Chunk) :
-  Result v1.chunked.send_ek.HeaderSentRecvChunk
-  := do
-  massert (epoch = self.uc.epoch)
-  let receiving_ct1 ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      self.receiving_ct1 chunk
-  let o ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-      receiving_ct1
-  match o with
-  | none =>
-    ok (v1.chunked.send_ek.HeaderSentRecvChunk.StillReceiving
-      { self with receiving_ct1 })
-  | some decoded =>
-    let uc ← v1.unchunked.send_ek.EkSent.recv_ct1 self.uc epoch decoded
-    ok (v1.chunked.send_ek.HeaderSentRecvChunk.Done
-      { uc, sending_ek := self.sending_ek })
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::epoch]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 150:4-152:5
-    Visibility: public -/
-def v1.chunked.send_ek.HeaderSent.epoch
-  (self : v1.chunked.send_ek.HeaderSent) : Result Std.U64 := do
-  ok self.uc.epoch
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::send_ek_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 157:4-161:5
-    Visibility: public -/
-def v1.chunked.send_ek.Ct1Received.send_ek_chunk
-  (self : v1.chunked.send_ek.Ct1Received) :
-  Result (v1.chunked.send_ek.Ct1Received × encoding.Chunk)
-  := do
-  let (chunk, sending_ek) ←
-    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
-      self.sending_ek
-  ok ({ self with sending_ek }, chunk)
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::recv_ct2_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 164:4-179:5
-    Visibility: public -/
-def v1.chunked.send_ek.Ct1Received.recv_ct2_chunk
-  (self : v1.chunked.send_ek.Ct1Received) (epoch : Std.U64)
-  (chunk : encoding.Chunk) :
-  Result v1.chunked.send_ek.EkSentCt1Received
-  := do
-  massert (epoch = self.uc.epoch)
-  let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
-  let i1 ← i + authenticator.Authenticator.MACSIZE
-  let i2 ← i1 % 2#usize
-  massert (i2 = 0#usize)
-  let i3 ← i + authenticator.Authenticator.MACSIZE
-  let decoder ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i3
-  let receiving_ct2 ←
-    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
-      (toStr "should be able to decode ct2+mac size")
-  let receiving_ct21 ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      receiving_ct2 chunk
-  ok { uc := self.uc, receiving_ct2 := receiving_ct21 }
-
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::epoch]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 181:4-183:5
-    Visibility: public -/
-def v1.chunked.send_ek.Ct1Received.epoch
-  (self : v1.chunked.send_ek.Ct1Received) : Result Std.U64 := do
-  ok self.uc.epoch
-
-/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::recv_ct2]:
-    Source: 'src/v1/unchunked/send_ek.rs', lines 139:4-172:5
-    Visibility: public -/
-def v1.unchunked.send_ek.EkSentCt1Received.recv_ct2
-  (self : v1.unchunked.send_ek.EkSentCt1Received) (ct2 : alloc.vec.Vec Std.U8)
-  (mac : alloc.vec.Vec Std.U8) :
-  Result (core.result.Result (v1.unchunked.send_ct.NoHeaderReceived ×
-    EpochSecret) Error)
-  := do
-  let ss ← incremental_mlkem768.decaps self.dk self.ct1 ct2
-  let s ←
-    lift (Array.to_slice
-      (Array.make 33#usize [
-        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
-        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
-        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 83#u8, 67#u8, 75#u8, 65#u8,
-        32#u8, 75#u8, 101#u8, 121#u8
-        ]))
-  let a ← lift (core.num.U64.to_be_bytes self.epoch)
-  let s1 ← core.array.Array.as_slice a
-  let s2 ← lift (Array.to_slice (Array.make 2#usize [ s, s1 ]))
-  let info ←
-    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
-      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s2
-  let a1 := Array.repeat 32#usize 0#u8
-  let s3 ← lift (Array.to_slice a1)
-  let s4 := alloc.vec.Vec.deref ss
-  let s5 := alloc.vec.Vec.deref info
-  let ss1 ← kdf.hkdf_to_vec s3 s4 s5 32#usize
-  let s6 := alloc.vec.Vec.deref ss1
-  let auth ← authenticator.Authenticator.update self.auth self.epoch s6
-  let s7 := alloc.vec.Vec.deref ct2
-  let ct1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 self.ct1 s7
-  let s8 := alloc.vec.Vec.deref ct1
-  let s9 := alloc.vec.Vec.deref mac
-  let r ← authenticator.Authenticator.verify_ct auth self.epoch s8 s9
+  let r ← core.option.Option.ok_or pb.uc Error.StateDecode
   let cf ←
     core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
   match cf with
-  | core.ops.control_flow.ControlFlow.Continue _ =>
-    let i ← self.epoch + 1#u64
-    let s10 := alloc.vec.Vec.deref ss1
-    let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s10
-    ok (core.result.Result.Ok ({ epoch := i, auth },
-      { epoch := self.epoch, secret := v }))
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb val
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
+      let cf2 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+        let r4 ←
+          core.result.Result.map_err
+            v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+            r3 ()
+        let cf3 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r4
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { uc := val1, sending_ct1 := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame
+            Error) residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
+        residual
   | core.ops.control_flow.ControlFlow.Break residual =>
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      (v1.unchunked.send_ct.NoHeaderReceived × EpochSecret)
-      Error.Insts.CoreConvertFromError residual
+      v1.chunked.send_ct.EkReceivedCt1Sampled (core.convert.FromSame Error)
+      residual
 
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::recv_ct2_chunk]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 194:4-223:5
-    Visibility: public -/
-def v1.chunked.send_ek.EkSentCt1Received.recv_ct2_chunk
-  (self : v1.chunked.send_ek.EkSentCt1Received) (epoch : Std.U64)
-  (chunk : encoding.Chunk) :
-  Result (core.result.Result v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk
-    Error)
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
   := do
-  massert (epoch = self.uc.epoch)
-  let receiving_ct2 ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
-      self.receiving_ct2 chunk
-  let o ←
-    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-      receiving_ct2
-  match o with
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 71:4-88:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.Ct1Sampled) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1Sampled Error)
+  := do
+  match pb.receiving_ek with
   | none =>
-    ok (core.result.Result.Ok
-      (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.StillReceiving
-      { self with receiving_ct2 }))
-  | some ct2 =>
-    let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
-    let (mac, ct21) ←
-      alloc.vec.Vec.split_off core.core.clone.CloneGlobal ct2 i
-    let r ← v1.unchunked.send_ek.EkSentCt1Received.recv_ct2 self.uc ct21 mac
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ←
       core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
     match cf with
     | core.ops.control_flow.ControlFlow.Continue val =>
-      let (uc, sec) := val
-      let i1 ← incremental_mlkem768.HEADER_SIZE
-      let i2 ← i1 + authenticator.Authenticator.MACSIZE
-      let decoder ←
-        encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i2
-      let pd ←
-        core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
-          decoder (toStr "should be able to decode header size")
-      ok (core.result.Result.Ok
-        (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.Done
-        ({ uc, receiving_hdr := pd }, sec)))
+      let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            let r5 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
+            let cf4 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r5
+            match cf4 with
+            | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) =>
+              let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
+              let r7 ←
+                core.result.Result.map_err
+                  v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                  r6 ()
+              let cf5 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r7
+              match cf5 with
+              | core.ops.control_flow.ControlFlow.Continue val5 =>
+                ok (core.result.Result.Ok
+                  { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                  residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
     | core.ops.control_flow.ControlFlow.Break residual =>
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-        v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk (core.convert.FromSame
-        Error) residual
+        v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue val2 =>
+            let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              let r5 ←
+                core.option.Option.ok_or pb.receiving_ek Error.StateDecode
+              let cf4 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r5
+              match cf4 with
+              | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) =>
+                let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
+                let r7 ←
+                  core.result.Result.map_err
+                    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                    r6 ()
+                let cf5 ←
+                  core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                    r7
+                match cf5 with
+                | core.ops.control_flow.ControlFlow.Continue val5 =>
+                  ok (core.result.Result.Ok
+                    { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
+                | core.ops.control_flow.ControlFlow.Break residual =>
+                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                    v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                    residual
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                  residual
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
 
-/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::epoch]:
-    Source: 'src/v1/chunked/send_ek.rs', lines 225:4-227:5
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 34:4-44:5
     Visibility: public -/
-def v1.chunked.send_ek.EkSentCt1Received.epoch
-  (self : v1.chunked.send_ek.EkSentCt1Received) : Result Std.U64 := do
-  ok self.uc.epoch
+def v1.unchunked.send_ct.serialize.HeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
+  Result (core.result.Result v1.unchunked.send_ct.HeaderReceived Error)
+  := do
+  let i := alloc.vec.Vec.len pb.hdr
+  if i = 64#usize
+  then
+    let o ← core.option.Option.as_ref pb.auth
+    let r ← core.option.Option.ok_or o Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let a ← authenticator.serialize.Authenticator.from_pb val
+      ok (core.result.Result.Ok
+        { epoch := pb.epoch, auth := a, hdr := pb.hdr })
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.unchunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+        residual
+  else ok (core.result.Result.Err Error.StateDecode)
 
-/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::into_pb]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 12:4-47:5
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+def
+  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 46:4-59:5
     Visibility: public -/
-def v1.chunked.states.serialize.States.into_pb
-  (self : v1.chunked.states.States) : Result proto.pq_ratchet.V1State := do
-  match self with
-  | v1.chunked.states.States.KeysUnsampled state =>
-    let ku ← v1.chunked.send_ek.serialize.KeysUnsampled.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku))
-      }
-  | v1.chunked.states.States.KeysSampled state =>
-    let ks ← v1.chunked.send_ek.serialize.KeysSampled.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.KeysSampled ks))
-      }
-  | v1.chunked.states.States.HeaderSent state =>
-    let hs ← v1.chunked.send_ek.serialize.HeaderSent.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.HeaderSent hs))
-      }
-  | v1.chunked.states.States.Ct1Received state =>
-    let cr ← v1.chunked.send_ek.serialize.Ct1Received.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Received cr))
-      }
-  | v1.chunked.states.States.EkSentCt1Received state =>
-    let escr ← v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received escr))
-      }
-  | v1.chunked.states.States.NoHeaderReceived state =>
-    let nhr ← v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr))
-      }
-  | v1.chunked.states.States.HeaderReceived state =>
-    let hr ← v1.chunked.send_ct.serialize.HeaderReceived.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.HeaderReceived hr))
-      }
-  | v1.chunked.states.States.Ct1Sampled state =>
-    let cs ← v1.chunked.send_ct.serialize.Ct1Sampled.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Sampled cs))
-      }
-  | v1.chunked.states.States.EkReceivedCt1Sampled state =>
-    let ercs ←
-      v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb state
-    ok
-      {
-        inner_state :=
-          (some
-            (proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled
-            ercs))
-      }
-  | v1.chunked.states.States.Ct1Acknowledged state =>
-    let ca ← v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged ca))
-      }
-  | v1.chunked.states.States.Ct2Sampled state =>
-    let cs ← v1.chunked.send_ct.serialize.Ct2Sampled.into_pb state
-    ok
-      {
-        inner_state :=
-          (some (proto.pq_ratchet.v1_state.InnerState.Ct2Sampled cs))
-      }
+def v1.chunked.send_ct.serialize.HeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.HeaderReceived) :
+  Result (core.result.Result v1.chunked.send_ct.HeaderReceived Error)
+  := do
+  match pb.receiving_ek with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+        residual
+  | some d =>
+    let i ← lift (UScalar.cast .Usize d.pts_needed)
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let i2 ← i1 / 2#usize
+    if i != i2
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+                residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
+          residual
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::from_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 17:4-22:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived) :
+  Result (core.result.Result v1.unchunked.send_ct.NoHeaderReceived Error)
+  := do
+  let o ← core.option.Option.as_ref pb.auth
+  let r ← core.option.Option.ok_or o Error.StateDecode
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let a ← authenticator.serialize.Authenticator.from_pb val
+    ok (core.result.Result.Ok { epoch := pb.epoch, auth := a })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+      residual
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}::call_once]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
+def
+  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+  (c : v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure)
+  (tupled_args : encoding.polynomial.PolynomialError) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
+@[reducible]
+def
+  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+  : core.ops.function.FnOnce
+  v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure
+  encoding.polynomial.PolynomialError Error := {
+  call_once :=
+    v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
+}
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 18:4-35:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb
+  (pb : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) :
+  Result (core.result.Result v1.chunked.send_ct.NoHeaderReceived Error)
+  := do
+  match pb.receiving_hdr with
+  | none =>
+    let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let r2 ← core.option.Option.ok_or (none : Option _) Error.StateDecode
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
+          let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+          let r4 ←
+            core.result.Result.map_err
+              v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+              r3 ()
+          let cf3 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r4
+          match cf3 with
+          | core.ops.control_flow.ControlFlow.Continue val3 =>
+            ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+          residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+        residual
+  | some rhdr =>
+    let i ← incremental_mlkem768.HEADER_SIZE
+    let i1 ← i + authenticator.Authenticator.MACSIZE
+    let i2 ← i1 / 2#usize
+    let i3 ← lift (UScalar.cast .U32 i2)
+    if rhdr.pts_needed != i3
+    then ok (core.result.Result.Err Error.MsgDecode)
+    else
+      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
+      let cf ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
+        let cf1 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r1
+        match cf1 with
+        | core.ops.control_flow.ControlFlow.Continue val1 =>
+          let r2 ←
+            core.option.Option.ok_or pb.receiving_hdr Error.StateDecode
+          let cf2 ←
+            core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+              r2
+          match cf2 with
+          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) =>
+            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
+            let r4 ←
+              core.result.Result.map_err
+                v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
+                r3 ()
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r4
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame
+                Error) residual
+          | core.ops.control_flow.ControlFlow.Break residual =>
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+              residual
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+            residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
+          residual
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::from_pb]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 49:4-92:5
@@ -11424,21 +10918,1126 @@ def v1.chunked.states.serialize.States.from_pb
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
           v1.chunked.states.States (core.convert.FromSame Error) residual
 
-/-- [spqr::v1::chunked::states::serialize::{core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}::from]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 95:9-95:22
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 72:4-79:5
     Visibility: public -/
-def U8.Insts.CoreConvertFromMessageType.from
-  (enum_value : v1.chunked.states.serialize.MessageType) : Result Std.U8 := do
-  let enum_value1 := read_discriminant enum_value
-  ok (UScalar.cast .U8 enum_value1)
+def v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb
+  (self : v1.unchunked.send_ek.EkSentCt1Received) :
+  Result proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), dk := self.dk, ct1 := self.ct1 }
 
-/-- Trait implementation: [spqr::v1::chunked::states::serialize::{core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 95:9-95:22 -/
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 88:4-93:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb
+  (self : v1.chunked.send_ek.EkSentCt1Received) :
+  Result proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
+  := do
+  let escr ← v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ct2
+  ok { uc := (some escr), receiving_ct2 := (some pd) }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 71:4-76:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.Ct1Received.into_pb
+  (self : v1.chunked.send_ek.Ct1Received) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct1Received
+  := do
+  let escr ← v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ek
+  ok { uc := (some escr), sending_ek := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 50:4-56:5
+    Visibility: public -/
+def v1.unchunked.send_ek.serialize.EkSent.into_pb
+  (self : v1.unchunked.send_ek.EkSent) :
+  Result proto.pq_ratchet.v1_state.unchunked.EkSent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), dk := self.dk }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 44:4-50:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.HeaderSent.into_pb
+  (self : v1.chunked.send_ek.HeaderSent) :
+  Result proto.pq_ratchet.v1_state.chunked.HeaderSent
+  := do
+  let es ← v1.unchunked.send_ek.serialize.EkSent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ek
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ct1
+  ok { uc := (some es), sending_ek := (some pe), receiving_ct1 := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 26:4-33:5
+    Visibility: public -/
+def v1.unchunked.send_ek.serialize.HeaderSent.into_pb
+  (self : v1.unchunked.send_ek.HeaderSent) :
+  Result proto.pq_ratchet.v1_state.unchunked.HeaderSent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), ek := self.ek, dk := self.dk }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 24:4-29:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.KeysSampled.into_pb
+  (self : v1.chunked.send_ek.KeysSampled) :
+  Result proto.pq_ratchet.v1_state.chunked.KeysSampled
+  := do
+  let hs ← v1.unchunked.send_ek.serialize.HeaderSent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_hdr
+  ok { uc := (some hs), sending_hdr := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::into_pb]:
+    Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 10:4-15:5
+    Visibility: public -/
+def v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb
+  (self : v1.unchunked.send_ek.KeysUnsampled) :
+  Result proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a) }
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysUnsampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 10:4-14:5
+    Visibility: public -/
+def v1.chunked.send_ek.serialize.KeysUnsampled.into_pb
+  (self : v1.chunked.send_ek.KeysUnsampled) :
+  Result proto.pq_ratchet.v1_state.chunked.KeysUnsampled
+  := do
+  let ku ← v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb self.uc
+  ok { uc := (some ku) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 100:4-105:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.Ct2Sent.into_pb
+  (self : v1.unchunked.send_ct.Ct2Sent) :
+  Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a) }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:4-140:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.Ct2Sampled.into_pb
+  (self : v1.chunked.send_ct.Ct2Sampled) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct2Sampled
+  := do
+  let cs ← v1.unchunked.send_ct.serialize.Ct2Sent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct2
+  ok { uc := (some cs), sending_ct2 := (some pe) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 48:4-56:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.Ct1Sent.into_pb
+  (self : v1.unchunked.send_ct.Ct1Sent) :
+  Result proto.pq_ratchet.v1_state.unchunked.Ct1Sent
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  let s := alloc.vec.Vec.deref self.ct1
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s
+  ok
+    {
+      epoch := self.epoch,
+      auth := (some a),
+      hdr := self.hdr,
+      es := self.es,
+      ct1 := v
+    }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 111:4-116:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb
+  (self : v1.chunked.send_ct.Ct1Acknowledged) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
+  := do
+  let cs ← v1.unchunked.send_ct.serialize.Ct1Sent.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
+  ok { uc := (some cs), receiving_ek := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 74:4-82:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb
+  (self : v1.unchunked.send_ct.Ct1SentEkReceived) :
+  Result proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  let s := alloc.vec.Vec.deref self.ct1
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s
+  ok
+    {
+      epoch := self.epoch,
+      auth := (some a),
+      es := self.es,
+      ek := self.ek,
+      ct1 := v
+    }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 92:4-97:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
+  Result proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
+  := do
+  let cser ← v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct1
+  ok { uc := (some cser), sending_ct1 := (some pe) }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 63:4-69:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.Ct1Sampled.into_pb
+  (self : v1.chunked.send_ct.Ct1Sampled) :
+  Result proto.pq_ratchet.v1_state.chunked.Ct1Sampled
+  := do
+  let cs ← v1.unchunked.send_ct.serialize.Ct1Sent.into_pb self.uc
+  let pe ← encoding.polynomial.PolyEncoder.into_pb self.sending_ct1
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
+  ok { uc := (some cs), sending_ct1 := (some pe), receiving_ek := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 26:4-32:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.HeaderReceived.into_pb
+  (self : v1.unchunked.send_ct.HeaderReceived) :
+  Result proto.pq_ratchet.v1_state.unchunked.HeaderReceived
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a), hdr := self.hdr }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 39:4-44:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.HeaderReceived.into_pb
+  (self : v1.chunked.send_ct.HeaderReceived) :
+  Result proto.pq_ratchet.v1_state.chunked.HeaderReceived
+  := do
+  let hr ← v1.unchunked.send_ct.serialize.HeaderReceived.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_ek
+  ok { uc := (some hr), receiving_ek := (some pd) }
+
+/-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::into_pb]:
+    Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 10:4-15:5
+    Visibility: public -/
+def v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb
+  (self : v1.unchunked.send_ct.NoHeaderReceived) :
+  Result proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
+  := do
+  let a ← authenticator.serialize.Authenticator.into_pb self.auth
+  ok { epoch := self.epoch, auth := (some a) }
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::into_pb]:
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 11:4-16:5
+    Visibility: public -/
+def v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb
+  (self : v1.chunked.send_ct.NoHeaderReceived) :
+  Result proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
+  := do
+  let nhr ← v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb self.uc
+  let pd ← encoding.polynomial.PolyDecoder.into_pb self.receiving_hdr
+  ok { uc := (some nhr), receiving_hdr := (some pd) }
+
+/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::into_pb]:
+    Source: 'src/v1/chunked/states/serialize.rs', lines 12:4-47:5
+    Visibility: public -/
+def v1.chunked.states.serialize.States.into_pb
+  (self : v1.chunked.states.States) : Result proto.pq_ratchet.V1State := do
+  match self with
+  | v1.chunked.states.States.KeysUnsampled state =>
+    let ku ← v1.chunked.send_ek.serialize.KeysUnsampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku))
+      }
+  | v1.chunked.states.States.KeysSampled state =>
+    let ks ← v1.chunked.send_ek.serialize.KeysSampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.KeysSampled ks))
+      }
+  | v1.chunked.states.States.HeaderSent state =>
+    let hs ← v1.chunked.send_ek.serialize.HeaderSent.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.HeaderSent hs))
+      }
+  | v1.chunked.states.States.Ct1Received state =>
+    let cr ← v1.chunked.send_ek.serialize.Ct1Received.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Received cr))
+      }
+  | v1.chunked.states.States.EkSentCt1Received state =>
+    let escr ← v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received escr))
+      }
+  | v1.chunked.states.States.NoHeaderReceived state =>
+    let nhr ← v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr))
+      }
+  | v1.chunked.states.States.HeaderReceived state =>
+    let hr ← v1.chunked.send_ct.serialize.HeaderReceived.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.HeaderReceived hr))
+      }
+  | v1.chunked.states.States.Ct1Sampled state =>
+    let cs ← v1.chunked.send_ct.serialize.Ct1Sampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Sampled cs))
+      }
+  | v1.chunked.states.States.EkReceivedCt1Sampled state =>
+    let ercs ←
+      v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some
+            (proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled
+            ercs))
+      }
+  | v1.chunked.states.States.Ct1Acknowledged state =>
+    let ca ← v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged ca))
+      }
+  | v1.chunked.states.States.Ct2Sampled state =>
+    let cs ← v1.chunked.send_ct.serialize.Ct2Sampled.into_pb state
+    ok
+      {
+        inner_state :=
+          (some (proto.pq_ratchet.v1_state.InnerState.Ct2Sampled cs))
+      }
+
+/-- [spqr::chain_from_version_negotiation::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::chain_from_version_negotiation::closure}::call_once]:
+    Source: 'src/lib.rs', lines 338:40-338:62 -/
+def
+  chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
+  (c : chain_from_version_negotiation.closure)
+  (tupled_args : prost.error.UnknownEnumValue) :
+  Result Error
+  := do
+  ok Error.StateDecode
+
+/-- Trait implementation: [spqr::chain_from_version_negotiation::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::chain_from_version_negotiation::closure}]
+    Source: 'src/lib.rs', lines 338:40-338:62 -/
 @[reducible]
-def U8.Insts.CoreConvertFromMessageType : core.convert.From Std.U8
-  v1.chunked.states.serialize.MessageType := {
-  from_ := U8.Insts.CoreConvertFromMessageType.from
+def
+  chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
+  : core.ops.function.FnOnce chain_from_version_negotiation.closure
+  prost.error.UnknownEnumValue Error := {
+  call_once :=
+    chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
 }
+
+/-- [spqr::chain_from_version_negotiation]:
+    Source: 'src/lib.rs', lines 333:0-341:1 -/
+def chain_from_version_negotiation
+  (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
+  Result (core.result.Result chain.Chain Error)
+  := do
+  let s := alloc.vec.Vec.deref vn.auth_key
+  let r ←
+    proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
+      vn.direction
+  let r1 ←
+    core.result.Result.map_err
+      chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
+      r ()
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r1
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r2 ← core.option.Option.ok_or vn.chain_params Error.ChainNotAvailable
+    let cf1 ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r2
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      chain.Chain.new s val val1
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        chain.Chain (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      chain.Chain (core.convert.FromSame Error) residual
+
+/-- [spqr::send]:
+    Source: 'src/lib.rs', lines 265:0-326:1
+    Visibility: public -/
+def send
+  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
+  rand_core.CryptoRng R) (state : alloc.vec.Vec Std.U8) (rng : R) :
+  Result ((core.result.Result Send Error) × R)
+  := do
+  let r ← decode_state state
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    match val.inner with
+    | none =>
+      ok (core.result.Result.Ok
+        {
+          state := (alloc.vec.Vec.new Std.U8),
+          msg := (alloc.vec.Vec.new Std.U8),
+          key := none
+        }, rng)
+    | some i =>
+      let ⟨ pb ⟩ := i
+      let r1 ← v1.chunked.states.serialize.States.from_pb pb
+      let cf1 ←
+        core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+          r1
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
+        let (r2, rng1) ←
+          v1.chunked.states.States.send randrngRngInst rand_coreCryptoRngInst
+            val1 rng
+        let cf2 ←
+          core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+            r2
+        match cf2 with
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
+          match val.chain with
+          | none =>
+            let o ← core.option.Option.as_ref val.version_negotiation
+            match o with
+            | none => ok (core.result.Result.Err Error.ChainNotAvailable, rng1)
+            | some vn =>
+              let i1 ← 0#i32 + 0#i32
+              let i2 ← lift (IScalar.cast .I32 i1)
+              if vn.min_version > i2
+              then
+                let r3 ← chain_from_version_negotiation vn
+                let cf3 ←
+                  core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                    r3
+                match cf3 with
+                | core.ops.control_flow.ControlFlow.Continue val3 =>
+                  let chain' ←
+                    match val2.key with
+                    | none => ok val3
+                    | some epoch_secret =>
+                      chain.Chain.add_epoch val3 epoch_secret
+                  let i3 ← val2.msg.epoch - 1#u64
+                  let (r4, chain1) ← chain.Chain.send_key chain' i3
+                  let cf4 ←
+                    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                      r4
+                  match cf4 with
+                  | core.ops.control_flow.ControlFlow.Continue val4 =>
+                    let (index, msg_key) := val4
+                    let c ← chain.Chain.into_pb chain1
+                    let msg ←
+                      v1.chunked.states.serialize.Message.serialize val2.msg
+                        index
+                    let b ← alloc.vec.Vec.is_empty Global msg
+                    massert (¬ b)
+                    let left_val ←
+                      alloc.vec.Vec.index
+                        (core.slice.index.SliceIndexUsizeSlice Std.U8) msg
+                        0#usize
+                    let right_val ←
+                      core.convert.IntoFrom.into
+                        U8.Insts.CoreConvertFromVersion
+                        proto.pq_ratchet.Version.V1
+                    massert (left_val = right_val)
+                    let vs ←
+                      v1.chunked.states.serialize.States.into_pb val2.state
+                    let v ←
+                      proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec
+                        {
+                          val
+                            with
+                            chain := (some c),
+                            inner :=
+                              (some
+                                (proto.pq_ratchet.pq_ratchet_state.Inner.V1
+                                vs))
+                        }
+                    let b1 ← alloc.vec.Vec.is_empty Global msg_key
+                    if b1
+                    then
+                      ok (core.result.Result.Ok
+                        { state := v, msg, key := none }, rng1)
+                    else
+                      ok (core.result.Result.Ok
+                        { state := v, msg, key := (some msg_key) }, rng1)
+                  | core.ops.control_flow.ControlFlow.Break residual =>
+                    let r5 ←
+                      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                        Send (core.convert.FromSame Error) residual
+                    ok (r5, rng1)
+                | core.ops.control_flow.ControlFlow.Break residual =>
+                  let r4 ←
+                    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                      Send (core.convert.FromSame Error) residual
+                  ok (r4, rng1)
+              else
+                let b := core.option.Option.is_none val2.key
+                massert b
+                let msg ←
+                  v1.chunked.states.serialize.Message.serialize val2.msg 0#u32
+                let b1 ← alloc.vec.Vec.is_empty Global msg
+                massert (¬ b1)
+                let left_val ←
+                  alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
+                    Std.U8) msg 0#usize
+                let right_val ←
+                  core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
+                    proto.pq_ratchet.Version.V1
+                massert (left_val = right_val)
+                let vs ←
+                  v1.chunked.states.serialize.States.into_pb val2.state
+                let v ←
+                  proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec
+                    {
+                      val
+                        with
+                        inner :=
+                          (some
+                            (proto.pq_ratchet.pq_ratchet_state.Inner.V1
+                            vs))
+                    }
+                let b2 ←
+                  alloc.vec.Vec.is_empty Global (alloc.vec.Vec.new Std.U8)
+                if b2
+                then
+                  ok (core.result.Result.Ok { state := v, msg, key := none },
+                    rng1)
+                else
+                  ok (core.result.Result.Ok
+                    { state := v, msg, key := (some (alloc.vec.Vec.new Std.U8))
+                    }, rng1)
+          | some pb1 =>
+            let r3 ← chain.Chain.from_pb pb1
+            let cf3 ←
+              core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                r3
+            match cf3 with
+            | core.ops.control_flow.ControlFlow.Continue val3 =>
+              let chain' ←
+                match val2.key with
+                | none => ok val3
+                | some epoch_secret => chain.Chain.add_epoch val3 epoch_secret
+              let i1 ← val2.msg.epoch - 1#u64
+              let (r4, chain1) ← chain.Chain.send_key chain' i1
+              let cf4 ←
+                core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
+                  r4
+              match cf4 with
+              | core.ops.control_flow.ControlFlow.Continue val4 =>
+                let (index, msg_key) := val4
+                let c ← chain.Chain.into_pb chain1
+                let msg ←
+                  v1.chunked.states.serialize.Message.serialize val2.msg index
+                let b ← alloc.vec.Vec.is_empty Global msg
+                massert (¬ b)
+                let left_val ←
+                  alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
+                    Std.U8) msg 0#usize
+                let right_val ←
+                  core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
+                    proto.pq_ratchet.Version.V1
+                massert (left_val = right_val)
+                let vs ←
+                  v1.chunked.states.serialize.States.into_pb val2.state
+                let v ←
+                  proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec
+                    {
+                      val
+                        with
+                        chain := (some c),
+                        inner :=
+                          (some
+                            (proto.pq_ratchet.pq_ratchet_state.Inner.V1
+                            vs))
+                    }
+                let b1 ← alloc.vec.Vec.is_empty Global msg_key
+                if b1
+                then
+                  ok (core.result.Result.Ok { state := v, msg, key := none },
+                    rng1)
+                else
+                  ok (core.result.Result.Ok
+                    { state := v, msg, key := (some msg_key) }, rng1)
+              | core.ops.control_flow.ControlFlow.Break residual =>
+                let r5 ←
+                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                    Send (core.convert.FromSame Error) residual
+                ok (r5, rng1)
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              let r4 ←
+                core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+                  Send (core.convert.FromSame Error) residual
+              ok (r4, rng1)
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          let r3 ←
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+              Send (core.convert.FromSame Error) residual
+          ok (r3, rng1)
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        let r2 ←
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+            Send (core.convert.FromSame Error) residual
+        ok (r2, rng)
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    let r1 ←
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        Send (core.convert.FromSame Error) residual
+    ok (r1, rng)
+
+/-- [spqr::serialize::{core::fmt::Debug for spqr::serialize::Error}::fmt]:
+    Source: 'src/serialize.rs', lines 6:9-6:14
+    Visibility: public -/
+def serialize.Error.Insts.CoreFmtDebug.fmt
+  (self : serialize.Error) (f : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  match self with
+  | serialize.Error.Deserialization =>
+    core.fmt.Formatter.write_str f (toStr "Deserialization")
+  | serialize.Error.EncodingDecoding =>
+    core.fmt.Formatter.write_str f (toStr "EncodingDecoding")
+
+/-- [spqr::serialize::{core::fmt::Display for spqr::serialize::Error}::fmt]:
+    Source: 'src/serialize.rs', lines 6:16-6:32
+    Visibility: public -/
+def serialize.Error.Insts.CoreFmtDisplay.fmt
+  (self : serialize.Error) (__formatter : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  match self with
+  | serialize.Error.Deserialization =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "General deserialization error")
+  | serialize.Error.EncodingDecoding =>
+    core.fmt.Formatter.write_str __formatter (toStr
+      "Error with encoder/decoder serialization")
+
+/-- [spqr::serialize::{core::clone::Clone for spqr::serialize::Error}::clone]:
+    Source: 'src/serialize.rs', lines 6:40-6:45
+    Visibility: public -/
+def serialize.Error.Insts.CoreCloneClone.clone
+  (self : serialize.Error) : Result serialize.Error := do
+  ok self
+
+/-- [spqr::serialize::{core::cmp::PartialEq<spqr::serialize::Error> for spqr::serialize::Error}::eq]:
+    Source: 'src/serialize.rs', lines 6:47-6:56
+    Visibility: public -/
+def serialize.Error.Insts.CoreCmpPartialEqError.eq
+  (self : serialize.Error) (other : serialize.Error) : Result Bool := do
+  let self1 := read_discriminant self
+  let other1 := read_discriminant other
+  ok (self1 = other1)
+
+/-- [spqr::serialize::{core::convert::From<spqr::encoding::polynomial::PolynomialError> for spqr::serialize::Error}::from]:
+    Source: 'src/serialize.rs', lines 15:4-17:5
+    Visibility: public -/
+def serialize.Error.Insts.CoreConvertFromPolynomialError.from
+  (_e : encoding.polynomial.PolynomialError) : Result serialize.Error := do
+  ok serialize.Error.EncodingDecoding
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::new]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 92:4-97:5
+    Visibility: public -/
+def v1.unchunked.send_ct.NoHeaderReceived.new
+  (auth_key : Slice Std.U8) :
+  Result v1.unchunked.send_ct.NoHeaderReceived
+  := do
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 auth_key
+  let a ← authenticator.Authenticator.new v 1#u64
+  ok { epoch := 1#u64, auth := a }
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::new]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 71:4-79:5
+    Visibility: public -/
+def v1.chunked.send_ct.NoHeaderReceived.new
+  (auth_key : Slice Std.U8) : Result v1.chunked.send_ct.NoHeaderReceived := do
+  let i ← incremental_mlkem768.HEADER_SIZE
+  let i1 ← i + authenticator.Authenticator.MACSIZE
+  let decoder ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
+  let nhr ← v1.unchunked.send_ct.NoHeaderReceived.new auth_key
+  let pd ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
+      (toStr "should be able to decode header size")
+  ok { uc := nhr, receiving_hdr := pd }
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::recv_header]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 100:4-113:5
+    Visibility: public -/
+def v1.unchunked.send_ct.NoHeaderReceived.recv_header
+  (self : v1.unchunked.send_ct.NoHeaderReceived) (epoch : Std.U64)
+  (hdr : alloc.vec.Vec Std.U8) (mac : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result v1.unchunked.send_ct.HeaderReceived Error)
+  := do
+  massert (epoch = self.epoch)
+  let s := alloc.vec.Vec.deref hdr
+  let s1 := alloc.vec.Vec.deref mac
+  let r ← authenticator.Authenticator.verify_hdr self.auth self.epoch s s1
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue _ =>
+    ok (core.result.Result.Ok { epoch := self.epoch, auth := self.auth, hdr })
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      v1.unchunked.send_ct.HeaderReceived Error.Insts.CoreConvertFromError
+      residual
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::NoHeaderReceived}::recv_hdr_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 82:4-107:5
+    Visibility: public -/
+def v1.chunked.send_ct.NoHeaderReceived.recv_hdr_chunk
+  (self : v1.chunked.send_ct.NoHeaderReceived) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result (core.result.Result v1.chunked.send_ct.NoHeaderReceivedRecvChunk
+    Error)
+  := do
+  massert (epoch = self.uc.epoch)
+  let receiving_hdr ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_hdr chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_hdr
+  match o with
+  | none =>
+    ok (core.result.Result.Ok
+      (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.StillReceiving
+      { self with receiving_hdr }))
+  | some hdr =>
+    let i ← incremental_mlkem768.HEADER_SIZE
+    let (mac, hdr1) ←
+      alloc.vec.Vec.split_off core.core.clone.CloneGlobal hdr i
+    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+    let receiving_ek ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
+    let r ←
+      v1.unchunked.send_ct.NoHeaderReceived.recv_header self.uc epoch hdr1 mac
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let pd ←
+        core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+          receiving_ek (toStr "should be able to decode EncapsulationKey size")
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.Done
+        { uc := val, receiving_ek := pd }))
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.NoHeaderReceivedRecvChunk (core.convert.FromSame
+        Error) residual
+
+/-- [spqr::v1::chunked::send_ct::send_ct2_encoder]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 156:0-160:1 -/
+def v1.chunked.send_ct.send_ct2_encoder
+  (ct2 : Slice Std.U8) (mac : Slice Std.U8) :
+  Result encoding.polynomial.PolyEncoder
+  := do
+  let msg ← alloc.slice.Slice.to_vec core.clone.CloneU8 ct2
+  let msg1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 msg mac
+  let s := alloc.vec.Vec.deref msg1
+  let r ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+  core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug r (toStr
+    "should be able to send ct2")
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::send_ct2]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 177:4-195:5
+    Visibility: public -/
+def v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2
+  (self : v1.unchunked.send_ct.Ct1SentEkReceived) :
+  Result (v1.unchunked.send_ct.Ct2Sent × (alloc.vec.Vec Std.U8) ×
+    (alloc.vec.Vec Std.U8))
+  := do
+  let ct2 ← incremental_mlkem768.encaps2 self.ek self.es
+  let s := alloc.vec.Vec.deref ct2
+  let ct1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 self.ct1 s
+  let s1 := alloc.vec.Vec.deref ct1
+  let mac ← authenticator.Authenticator.mac_ct self.auth self.epoch s1
+  ok ({ epoch := self.epoch, auth := self.auth }, ct2, mac)
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1Sent}::recv_ek]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 154:4-171:5
+    Visibility: public -/
+def v1.unchunked.send_ct.Ct1Sent.recv_ek
+  (self : v1.unchunked.send_ct.Ct1Sent) (epoch : Std.U64)
+  (ek : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error)
+  := do
+  massert (epoch = self.epoch)
+  let b ← incremental_mlkem768.ek_matches_header ek self.hdr
+  if b
+  then
+    ok (core.result.Result.Ok
+      {
+        epoch := self.epoch,
+        auth := self.auth,
+        es := self.es,
+        ek,
+        ct1 := self.ct1
+      })
+  else ok (core.result.Result.Err Error.ErroneousDataReceived)
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Sampled}::recv_ek_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 165:4-197:5
+    Visibility: public -/
+def v1.chunked.send_ct.Ct1Sampled.recv_ek_chunk
+  (self : v1.chunked.send_ct.Ct1Sampled) (epoch : Std.U64)
+  (chunk : encoding.Chunk) (ct1_ack : Bool) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1SampledRecvChunk Error)
+  := do
+  let receiving_ek ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_ek chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_ek
+  match o with
+  | none =>
+    if ct1_ack
+    then
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.Ct1SampledRecvChunk.StillReceiving
+        { uc := self.uc, receiving_ek }))
+    else
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.Ct1SampledRecvChunk.StillReceivingStillSending
+        { self with receiving_ek }))
+  | some decoded =>
+    let r ← v1.unchunked.send_ct.Ct1Sent.recv_ek self.uc epoch decoded
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      if ct1_ack
+      then
+        let (uc, ct2, mac) ←
+          v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 val
+        let s := alloc.vec.Vec.deref ct2
+        let s1 := alloc.vec.Vec.deref mac
+        let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
+        ok (core.result.Result.Ok (v1.chunked.send_ct.Ct1SampledRecvChunk.Done
+          { uc, sending_ct2 := pe }))
+      else
+        ok (core.result.Result.Ok
+          (v1.chunked.send_ct.Ct1SampledRecvChunk.StillSending
+          { uc := val, sending_ct1 := self.sending_ct1 }))
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct1SampledRecvChunk (core.convert.FromSame Error)
+        residual
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::recv_ct1_ack]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 233:4-240:5
+    Visibility: public -/
+def v1.chunked.send_ct.EkReceivedCt1Sampled.recv_ct1_ack
+  (self : v1.chunked.send_ct.EkReceivedCt1Sampled) (epoch : Std.U64) :
+  Result v1.chunked.send_ct.Ct2Sampled
+  := do
+  massert (epoch = self.uc.epoch)
+  let (uc, ct2, mac) ←
+    v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 self.uc
+  let s := alloc.vec.Vec.deref ct2
+  let s1 := alloc.vec.Vec.deref mac
+  let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
+  ok { uc, sending_ct2 := pe }
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::recv_ek_chunk]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 256:4-276:5
+    Visibility: public -/
+def v1.chunked.send_ct.Ct1Acknowledged.recv_ek_chunk
+  (self : v1.chunked.send_ct.Ct1Acknowledged) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result (core.result.Result v1.chunked.send_ct.Ct1AcknowledgedRecvChunk Error)
+  := do
+  let receiving_ek ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_ek chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_ek
+  match o with
+  | none =>
+    ok (core.result.Result.Ok
+      (v1.chunked.send_ct.Ct1AcknowledgedRecvChunk.StillReceiving
+      { self with receiving_ek }))
+  | some decoded =>
+    let r ← v1.unchunked.send_ct.Ct1Sent.recv_ek self.uc epoch decoded
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let (uc, ct2, mac) ←
+        v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2 val
+      let s := alloc.vec.Vec.deref ct2
+      let s1 := alloc.vec.Vec.deref mac
+      let pe ← v1.chunked.send_ct.send_ct2_encoder s s1
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ct.Ct1AcknowledgedRecvChunk.Done
+        { uc, sending_ct2 := pe }))
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ct.Ct1AcknowledgedRecvChunk (core.convert.FromSame
+        Error) residual
+
+/-- [spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct2Sent}::recv_next_epoch]:
+    Source: 'src/v1/unchunked/send_ct.rs', lines 201:4-208:5
+    Visibility: public -/
+def v1.unchunked.send_ct.Ct2Sent.recv_next_epoch
+  (self : v1.unchunked.send_ct.Ct2Sent) (next_epoch : Std.U64) :
+  Result v1.unchunked.send_ek.KeysUnsampled
+  := do
+  let left_val ← self.epoch + 1#u64
+  massert (left_val = next_epoch)
+  ok { epoch := left_val, auth := self.auth }
+
+/-- [spqr::v1::chunked::send_ct::{spqr::v1::chunked::send_ct::Ct2Sampled}::recv_next_epoch]:
+    Source: 'src/v1/chunked/send_ct.rs', lines 295:4-298:5
+    Visibility: public -/
+def v1.chunked.send_ct.Ct2Sampled.recv_next_epoch
+  (self : v1.chunked.send_ct.Ct2Sampled) (epoch : Std.U64) :
+  Result v1.chunked.send_ek.KeysUnsampled
+  := do
+  let uc ← v1.unchunked.send_ct.Ct2Sent.recv_next_epoch self.uc epoch
+  ok { uc }
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::new]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 76:4-81:5
+    Visibility: public -/
+def v1.unchunked.send_ek.KeysUnsampled.new
+  (auth_key : Slice Std.U8) : Result v1.unchunked.send_ek.KeysUnsampled := do
+  let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 auth_key
+  let a ← authenticator.Authenticator.new v 1#u64
+  ok { epoch := 1#u64, auth := a }
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysUnsampled}::new]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 52:4-56:5
+    Visibility: public -/
+def v1.chunked.send_ek.KeysUnsampled.new
+  (auth_key : Slice Std.U8) : Result v1.chunked.send_ek.KeysUnsampled := do
+  let ku ← v1.unchunked.send_ek.KeysUnsampled.new auth_key
+  ok { uc := ku }
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::HeaderSent}::send_ek]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 106:4-115:5
+    Visibility: public -/
+def v1.unchunked.send_ek.HeaderSent.send_ek
+  (self : v1.unchunked.send_ek.HeaderSent) :
+  Result (v1.unchunked.send_ek.EkSent × (alloc.vec.Vec Std.U8))
+  := do
+  ok ({ epoch := self.epoch, auth := self.auth, dk := self.dk }, self.ek)
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::recv_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 84:4-97:5
+    Visibility: public -/
+def v1.chunked.send_ek.KeysSampled.recv_ct1_chunk
+  (self : v1.chunked.send_ek.KeysSampled) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result v1.chunked.send_ek.HeaderSent
+  := do
+  massert (epoch = self.uc.epoch)
+  let i ← incremental_mlkem768.CIPHERTEXT1_SIZE
+  let decoder ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i
+  let receiving_ct1 ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
+      (toStr "should be able to decode header size")
+  let receiving_ct11 ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      receiving_ct1 chunk
+  let (uc, ek) ← v1.unchunked.send_ek.HeaderSent.send_ek self.uc
+  let s := alloc.vec.Vec.deref ek
+  let encoder ←
+    encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
+  let sending_ek ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug encoder
+      (toStr "should be able to send ek")
+  ok { uc, sending_ek, receiving_ct1 := receiving_ct11 }
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSent}::recv_ct1]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 121:4-133:5
+    Visibility: public -/
+def v1.unchunked.send_ek.EkSent.recv_ct1
+  (self : v1.unchunked.send_ek.EkSent) (epoch : Std.U64)
+  (ct1 : alloc.vec.Vec Std.U8) :
+  Result v1.unchunked.send_ek.EkSentCt1Received
+  := do
+  massert (epoch = self.epoch)
+  ok { epoch := self.epoch, auth := self.auth, dk := self.dk, ct1 }
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::HeaderSent}::recv_ct1_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 130:4-148:5
+    Visibility: public -/
+def v1.chunked.send_ek.HeaderSent.recv_ct1_chunk
+  (self : v1.chunked.send_ek.HeaderSent) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result v1.chunked.send_ek.HeaderSentRecvChunk
+  := do
+  massert (epoch = self.uc.epoch)
+  let receiving_ct1 ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_ct1 chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_ct1
+  match o with
+  | none =>
+    ok (v1.chunked.send_ek.HeaderSentRecvChunk.StillReceiving
+      { self with receiving_ct1 })
+  | some decoded =>
+    let uc ← v1.unchunked.send_ek.EkSent.recv_ct1 self.uc epoch decoded
+    ok (v1.chunked.send_ek.HeaderSentRecvChunk.Done
+      { uc, sending_ek := self.sending_ek })
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::Ct1Received}::recv_ct2_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 164:4-179:5
+    Visibility: public -/
+def v1.chunked.send_ek.Ct1Received.recv_ct2_chunk
+  (self : v1.chunked.send_ek.Ct1Received) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result v1.chunked.send_ek.EkSentCt1Received
+  := do
+  massert (epoch = self.uc.epoch)
+  let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
+  let i1 ← i + authenticator.Authenticator.MACSIZE
+  let i2 ← i1 % 2#usize
+  massert (i2 = 0#usize)
+  let i3 ← i + authenticator.Authenticator.MACSIZE
+  let decoder ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i3
+  let receiving_ct2 ←
+    core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug decoder
+      (toStr "should be able to decode ct2+mac size")
+  let receiving_ct21 ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      receiving_ct2 chunk
+  ok { uc := self.uc, receiving_ct2 := receiving_ct21 }
+
+/-- [spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::recv_ct2]:
+    Source: 'src/v1/unchunked/send_ek.rs', lines 139:4-172:5
+    Visibility: public -/
+def v1.unchunked.send_ek.EkSentCt1Received.recv_ct2
+  (self : v1.unchunked.send_ek.EkSentCt1Received) (ct2 : alloc.vec.Vec Std.U8)
+  (mac : alloc.vec.Vec Std.U8) :
+  Result (core.result.Result (v1.unchunked.send_ct.NoHeaderReceived ×
+    EpochSecret) Error)
+  := do
+  let ss ← incremental_mlkem768.decaps self.dk self.ct1 ct2
+  let s ←
+    lift (Array.to_slice
+      (Array.make 33#usize [
+        83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
+        67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
+        69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 83#u8, 67#u8, 75#u8, 65#u8,
+        32#u8, 75#u8, 101#u8, 121#u8
+        ]))
+  let a ← lift (core.num.U64.to_be_bytes self.epoch)
+  let s1 ← core.array.Array.as_slice a
+  let s2 ← lift (Array.to_slice (Array.make 2#usize [ s, s1 ]))
+  let info ←
+    alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
+      core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s2
+  let a1 := Array.repeat 32#usize 0#u8
+  let s3 ← lift (Array.to_slice a1)
+  let s4 := alloc.vec.Vec.deref ss
+  let s5 := alloc.vec.Vec.deref info
+  let ss1 ← kdf.hkdf_to_vec s3 s4 s5 32#usize
+  let s6 := alloc.vec.Vec.deref ss1
+  let auth ← authenticator.Authenticator.update self.auth self.epoch s6
+  let s7 := alloc.vec.Vec.deref ct2
+  let ct1 ← alloc.vec.Vec.extend_from_slice core.clone.CloneU8 self.ct1 s7
+  let s8 := alloc.vec.Vec.deref ct1
+  let s9 := alloc.vec.Vec.deref mac
+  let r ← authenticator.Authenticator.verify_ct auth self.epoch s8 s9
+  let cf ←
+    core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue _ =>
+    let i ← self.epoch + 1#u64
+    let s10 := alloc.vec.Vec.deref ss1
+    let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s10
+    ok (core.result.Result.Ok ({ epoch := i, auth },
+      { epoch := self.epoch, secret := v }))
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      (v1.unchunked.send_ct.NoHeaderReceived × EpochSecret)
+      Error.Insts.CoreConvertFromError residual
+
+/-- [spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::EkSentCt1Received}::recv_ct2_chunk]:
+    Source: 'src/v1/chunked/send_ek.rs', lines 194:4-223:5
+    Visibility: public -/
+def v1.chunked.send_ek.EkSentCt1Received.recv_ct2_chunk
+  (self : v1.chunked.send_ek.EkSentCt1Received) (epoch : Std.U64)
+  (chunk : encoding.Chunk) :
+  Result (core.result.Result v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk
+    Error)
+  := do
+  massert (epoch = self.uc.epoch)
+  let receiving_ct2 ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
+      self.receiving_ct2 chunk
+  let o ←
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+      receiving_ct2
+  match o with
+  | none =>
+    ok (core.result.Result.Ok
+      (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.StillReceiving
+      { self with receiving_ct2 }))
+  | some ct2 =>
+    let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
+    let (mac, ct21) ←
+      alloc.vec.Vec.split_off core.core.clone.CloneGlobal ct2 i
+    let r ← v1.unchunked.send_ek.EkSentCt1Received.recv_ct2 self.uc ct21 mac
+    let cf ←
+      core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let (uc, sec) := val
+      let i1 ← incremental_mlkem768.HEADER_SIZE
+      let i2 ← i1 + authenticator.Authenticator.MACSIZE
+      let decoder ←
+        encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i2
+      let pd ←
+        core.result.Result.expect encoding.EncodingError.Insts.CoreFmtDebug
+          decoder (toStr "should be able to decode header size")
+      ok (core.result.Result.Ok
+        (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.Done
+        ({ uc, receiving_hdr := pd }, sec)))
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+        v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk (core.convert.FromSame
+        Error) residual
 
 /-- [spqr::v1::chunked::states::serialize::{core::convert::TryFrom<u8, alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}::try_from]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 109:4-120:5
@@ -11468,84 +12067,6 @@ def
       Str.Insts.AllocBorrowToOwnedString.to_owned (toStr
         "Expected a number between 0 and 6")
     ok (core.result.Result.Err s)
-
-/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::serialize::MessageType}::from_payload]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 124:4-134:5 -/
-def v1.chunked.states.serialize.MessageType.from_payload
-  (mp : v1.chunked.states.MessagePayload) :
-  Result v1.chunked.states.serialize.MessageType
-  := do
-  match mp with
-  | v1.chunked.states.MessagePayload.None =>
-    ok v1.chunked.states.serialize.MessageType.None
-  | v1.chunked.states.MessagePayload.Hdr _ =>
-    ok v1.chunked.states.serialize.MessageType.Hdr
-  | v1.chunked.states.MessagePayload.Ek _ =>
-    ok v1.chunked.states.serialize.MessageType.Ek
-  | v1.chunked.states.MessagePayload.EkCt1Ack _ =>
-    ok v1.chunked.states.serialize.MessageType.EkCt1Ack
-  | v1.chunked.states.MessagePayload.Ct1Ack _ =>
-    ok v1.chunked.states.serialize.MessageType.Ct1Ack
-  | v1.chunked.states.MessagePayload.Ct1 _ =>
-    ok v1.chunked.states.serialize.MessageType.Ct1
-  | v1.chunked.states.MessagePayload.Ct2 _ =>
-    ok v1.chunked.states.serialize.MessageType.Ct2
-
-/-- [spqr::v1::chunked::states::serialize::MAX_VARINT_BYTES_LEN]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 137:0-137:39 -/
-@[global_simps, irreducible]
-def v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN : Std.Usize := 10#usize
-
-/-- [spqr::v1::chunked::states::serialize::encode_varint]: loop body 0:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 140:4-149:1 -/
-@[rust_loop_body]
-def v1.chunked.states.serialize.encode_varint_loop.body
-  (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
-  (into : alloc.vec.Vec Std.U8) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U64 ×
-    (alloc.vec.Vec Std.U8)) (alloc.vec.Vec Std.U8))
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
-  match o with
-  | none => ok (done into)
-  | some _ =>
-    let i ← lift (a &&& 127#u64)
-    let byte ← lift (UScalar.cast .U8 i)
-    if a < 128#u64
-    then let into1 ← alloc.vec.Vec.push into byte
-         ok (done into1)
-    else
-      let i1 ← lift (128#u8 ||| byte)
-      let into1 ← alloc.vec.Vec.push into i1
-      let a1 ← a >>> 7#i32
-      ok (cont (iter1, a1, into1))
-
-/-- [spqr::v1::chunked::states::serialize::encode_varint]: loop 0:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 140:4-149:1 -/
-@[rust_loop]
-def v1.chunked.states.serialize.encode_varint_loop
-  (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
-  (into : alloc.vec.Vec Std.U8) :
-  Result (alloc.vec.Vec Std.U8)
-  := do
-  loop
-    (fun (iter1, a1, into1) =>
-      v1.chunked.states.serialize.encode_varint_loop.body iter1 a1 into1)
-    (iter, a, into)
-
-/-- [spqr::v1::chunked::states::serialize::encode_varint]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 139:0-149:1 -/
-@[reducible]
-def v1.chunked.states.serialize.encode_varint
-  (a : Std.U64) (into : alloc.vec.Vec Std.U8) :
-  Result (alloc.vec.Vec Std.U8)
-  := do
-  v1.chunked.states.serialize.encode_varint_loop
-    {
-      start := 0#usize,
-      «end» := v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN
-    } a into
 
 /-- [spqr::v1::chunked::states::serialize::decode_varint]: loop body 0:
     Source: 'src/v1/chunked/states/serialize.rs', lines 165:4-174:5 -/
@@ -11613,20 +12134,6 @@ def v1.chunked.states.serialize.decode_varint
          ok (core.result.Result.Ok out, at2)
     else ok (core.result.Result.Err Error.MsgDecode, at1)
 
-/-- [spqr::v1::chunked::states::serialize::encode_chunk]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 184:0-188:1 -/
-def v1.chunked.states.serialize.encode_chunk
-  (c : encoding.Chunk) (into : alloc.vec.Vec Std.U8) :
-  Result (alloc.vec.Vec Std.U8)
-  := do
-  let i ← lift (UScalar.cast .U64 c.index)
-  let into1 ← v1.chunked.states.serialize.encode_varint i into
-  let s ←
-    core.array.Array.index (core.ops.index.IndexSlice
-      (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
-      Std.U8)) c.data ()
-  alloc.vec.Vec.extend_from_slice core.clone.CloneU8 into1 s
-
 /-- [spqr::v1::chunked::states::serialize::decode_chunk]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 190:0-202:1 -/
 def v1.chunked.states.serialize.decode_chunk
@@ -11662,38 +12169,6 @@ def v1.chunked.states.serialize.decode_chunk
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
         encoding.Chunk (core.convert.FromSame Error) residual
     ok (r1, at2)
-
-/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize]:
-    Source: 'src/v1/chunked/states/serialize.rs', lines 221:4-245:5
-    Visibility: public -/
-def v1.chunked.states.serialize.Message.serialize
-  (self : v1.chunked.states.Message) (index : Std.U32) :
-  Result (alloc.vec.Vec Std.U8)
-  := do
-  let into := alloc.vec.Vec.with_capacity Std.U8 40#usize
-  let i ←
-    core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
-      proto.pq_ratchet.Version.V1
-  let into1 ← alloc.vec.Vec.push into i
-  let into2 ← v1.chunked.states.serialize.encode_varint self.epoch into1
-  let i1 ← lift (UScalar.cast .U64 index)
-  let into3 ← v1.chunked.states.serialize.encode_varint i1 into2
-  let mt ← v1.chunked.states.serialize.MessageType.from_payload self.payload
-  let i2 ← core.convert.IntoFrom.into U8.Insts.CoreConvertFromMessageType mt
-  let into4 ← alloc.vec.Vec.push into3 i2
-  match self.payload with
-  | v1.chunked.states.MessagePayload.None => ok into4
-  | v1.chunked.states.MessagePayload.Hdr chunk =>
-    v1.chunked.states.serialize.encode_chunk chunk into4
-  | v1.chunked.states.MessagePayload.Ek chunk =>
-    v1.chunked.states.serialize.encode_chunk chunk into4
-  | v1.chunked.states.MessagePayload.EkCt1Ack chunk =>
-    v1.chunked.states.serialize.encode_chunk chunk into4
-  | v1.chunked.states.MessagePayload.Ct1Ack _ => ok into4
-  | v1.chunked.states.MessagePayload.Ct1 chunk =>
-    v1.chunked.states.serialize.encode_chunk chunk into4
-  | v1.chunked.states.MessagePayload.Ct2 chunk =>
-    v1.chunked.states.serialize.encode_chunk chunk into4
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(alloc::string::String), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1}::call_once]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/

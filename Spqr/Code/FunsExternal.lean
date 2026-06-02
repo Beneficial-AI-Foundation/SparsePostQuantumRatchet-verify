@@ -2029,6 +2029,92 @@ axiom recv
   alloc.vec.Vec Std.U8 → alloc.vec.Vec Std.U8 → Result (core.result.Result
     Recv spqr.Error)
 
+-- Axioms required by chain.Chain.into_pb / send (VecDeque iteration)
+/-- [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<A, E>> for core::result::Result<V, E>}::from_iter]:
+    Source: '/rustc/library/core/src/result.rs', lines 2155:4-2155:79
+    Name pattern: [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>}::from_iter] -/
+@[rust_fun
+  "core::result::{core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>}::from_iter"]
+axiom
+  core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult.from_iter
+  {A : Type} {E : Type} {V : Type} {I : Type} {Clause1_IntoIter : Type}
+  (itertraitscollectFromIteratorInst : core.iter.traits.collect.FromIterator V
+  A) (itertraitscollectIntoIteratorIResultClause1_IntoIterInst :
+  core.iter.traits.collect.IntoIterator I (core.result.Result A E)
+  Clause1_IntoIter) :
+  I → Result (core.result.Result V E)
+
+/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::next]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 47:4-47:35
+    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next] -/
+@[rust_fun
+  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next"]
+axiom
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
+  {T : Type} {A : Type} :
+  alloc.collections.vec_deque.into_iter.IntoIter T A → Result ((Option T) ×
+    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+
+/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::enumerate]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
+    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate] -/
+@[rust_fun
+  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate"]
+axiom
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.enumerate
+  {T : Type} {A : Type} :
+  alloc.collections.vec_deque.into_iter.IntoIter T A → Result
+    (core.iter.adapters.enumerate.Enumerate
+    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+
+/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
+    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map] -/
+@[rust_fun
+  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map"]
+axiom
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
+  {T : Type} {A : Type} {B : Type} {F : Type} (coreopsfunctionFnMutFTupleTBInst
+  : core.ops.function.FnMut F T B) :
+  alloc.collections.vec_deque.into_iter.IntoIter T A → F → Result
+    (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter
+    T A) F)
+
+/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::step_by]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
+    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by] -/
+@[rust_fun
+  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by"]
+axiom
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.step_by
+  {T : Type} {A : Type} :
+  alloc.collections.vec_deque.into_iter.IntoIter T A → Std.Usize → Result
+    (core.iter.adapters.step_by.StepBy
+    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+
+/-- [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from_iter]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3641:4-3641:67
+    Name pattern: [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>}::from_iter] -/
+@[rust_fun
+  "alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>}::from_iter"]
+axiom
+  alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator.from_iter
+  {T : Type} {I : Type} {Clause0_IntoIter : Type}
+  (coreitertraitscollectIntoIteratorInst :
+  core.iter.traits.collect.IntoIterator I T Clause0_IntoIter) :
+  I → Result (alloc.collections.vec_deque.VecDeque T Global)
+
+/-- [alloc::collections::vec_deque::{core::iter::traits::collect::IntoIterator<T, alloc::collections::vec_deque::into_iter::IntoIter<T, A>> for alloc::collections::vec_deque::VecDeque<T, A>}::into_iter]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3653:4-3653:40
+    Name pattern: [alloc::collections::vec_deque::{core::iter::traits::collect::IntoIterator<alloc::collections::vec_deque::VecDeque<@T, @A>, @T, alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>>}::into_iter] -/
+@[rust_fun
+  "alloc::collections::vec_deque::{core::iter::traits::collect::IntoIterator<alloc::collections::vec_deque::VecDeque<@T, @A>, @T, alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>>}::into_iter"]
+axiom
+  alloc.collections.vec_deque.VecDeque.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter
+  {T : Type} {A : Type} :
+  alloc.collections.vec_deque.VecDeque T A → Result
+    (alloc.collections.vec_deque.into_iter.IntoIter T A)
+
 -- Missing instance def (not generated by Aeneas for this type): needed for decode_state
 namespace spqr
 @[reducible]

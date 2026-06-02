@@ -43,7 +43,6 @@ charon:
     - "spqr::kdf::hkdf_to_slice"
     - "spqr::initial_state" # uses log macros internally
     - "spqr::recv" # uses log macros internally
-    - "spqr::send" # local variable `chain` shadows namespace chain.Chain, causing Lean field-projection errors
     - "spqr::incremental_mlkem768::encaps2" # uses log macros internally
     - "spqr::encoding::gf::check_accelerated"
     - "spqr::encoding::gf::accelerated"
@@ -84,6 +83,37 @@ tweaks:
     # https://github.com/AeneasVerif/aeneas/issues/1051
     - regex: "(privateSealedInst : core\\.num\\.nonzero\\.private\\.Sealed Self\\n)  markerCopyInst : core\\.marker\\.Copy Self_NonZeroInner"
       replace: "$1  markerCopyNonZeroInnerInst : core.marker.Copy Self_NonZeroInner"
+
+    # Sorry BytesBufBuf instance body: remaining/chunk/advance are fields of Buf,
+    # so the self-referential struct literal causes termination errors.
+    - regex: "(def Shared0SliceU8\\.Insts\\.BytesBufBuf_implBuf[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Sorry all prost Message instance bodies: method names are fields of prost.message.Message,
+    # so the self-referential struct literal causes termination errors.
+    - regex: "(def\\s+[\\w.]+\\.Insts\\.ProstMessageMessage[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Sorry VecDeque IntoIter Iterator instance body: next/step_by/enumerate are fields of Iterator.
+    - regex: "(def\\s+alloc\\.collections\\.vec_deque\\.into_iter\\.IntoIter\\.Insts\\.CoreIterTraitsIteratorIterator[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Sorry VecDeque FromIterator instance body: from_iter is a field of FromIterator.
+    - regex: "(def\\s+alloc\\.collections\\.vec_deque\\.VecDequeTGlobal\\.Insts\\.CoreIterTraitsCollectFromIterator[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Sorry Result FromIterator instance body: from_iter is a field of FromIterator.
+    - regex: "(def\\s+core\\.result\\.Result\\.Insts\\.CoreIterTraitsCollectFromIteratorResult[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
+      replace: "$1:= sorry"
+
+    # Fix local variable `chain` shadowing module namespace `chain.Chain` in `send`.
+    # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101
+    - find: "let chain ←"
+      replace: "let chain' ←"
+    - find: "chain.Chain.send_key chain i3"
+      replace: "chain.Chain.send_key chain' i3"
+    - find: "chain.Chain.send_key chain i1"
+      replace: "chain.Chain.send_key chain' i1"
 
     # Strip map field from Iterator instances (Aeneas generates it but Lean backend doesn't have it)
     # https://github.com/AeneasVerif/aeneas/issues/1043

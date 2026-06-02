@@ -256,6 +256,7 @@ structure prost.message.Message (Self : Type) where
     → Result ((core.result.Result Unit prost.error.DecodeError) × Self ×
     T1)
   encoded_len : Self → Result Std.Usize
+  encode_to_vec : Self → Result (alloc.vec.Vec Std.U8)
   decode : forall {T1 : Type} (coredefaultDefaultInst : core.default.Default
     Self) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1), T1 → Result
     (core.result.Result Self prost.error.DecodeError)
@@ -949,6 +950,21 @@ structure EpochSecret where
   epoch : Std.U64
   secret : alloc.vec.Vec Std.U8
 
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb::closure]
+    Source: 'src/chain.rs', lines 423:21-426:17 -/
+@[reducible]
+def chain.Chain.into_pb.closure := Unit
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::closure#1]
+    Source: 'src/chain.rs', lines 443:21-448:17 -/
+@[reducible]
+def chain.Chain.from_pb.closure_1 := Unit
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::closure]
+    Source: 'src/chain.rs', lines 436:49-436:71 -/
+@[reducible]
+def chain.Chain.from_pb.closure := Unit
+
 /-- [spqr::encoding::gf::GF16]
     Source: 'src/encoding/gf.rs', lines 16:0-18:1
     Visibility: public -/
@@ -1107,51 +1123,107 @@ def decode_state.closure := Unit
 @[reducible]
 def current_version.closure := Unit
 
-/-- [spqr::Recv]
-    Source: 'src/lib.rs', lines 328:0-331:1
+/-- [spqr::v1::chunked::states::MessagePayload]
+    Source: 'src/v1/chunked/states.rs', lines 31:0-39:1
     Visibility: public -/
-structure Recv where
-  state : alloc.vec.Vec Std.U8
-  key : Option (alloc.vec.Vec Std.U8)
+@[discriminant isize]
+inductive v1.chunked.states.MessagePayload where
+| None : v1.chunked.states.MessagePayload
+| Hdr : encoding.Chunk → v1.chunked.states.MessagePayload
+| Ek : encoding.Chunk → v1.chunked.states.MessagePayload
+| EkCt1Ack : encoding.Chunk → v1.chunked.states.MessagePayload
+| Ct1Ack : Bool → v1.chunked.states.MessagePayload
+| Ct1 : encoding.Chunk → v1.chunked.states.MessagePayload
+| Ct2 : encoding.Chunk → v1.chunked.states.MessagePayload
 
-/-- [spqr::v1::unchunked::send_ct::NoHeaderReceived]
-    Source: 'src/v1/unchunked/send_ct.rs', lines 44:0-47:1
+/-- [spqr::v1::chunked::states::Message]
+    Source: 'src/v1/chunked/states.rs', lines 41:0-44:1
     Visibility: public -/
-structure v1.unchunked.send_ct.NoHeaderReceived where
+structure v1.chunked.states.Message where
+  epoch : Std.U64
+  payload : v1.chunked.states.MessagePayload
+
+/-- [spqr::v1::unchunked::send_ek::EkSentCt1Received]
+    Source: 'src/v1/unchunked/send_ek.rs', lines 65:0-72:1
+    Visibility: public -/
+structure v1.unchunked.send_ek.EkSentCt1Received where
+  epoch : Std.U64
+  auth : authenticator.Authenticator
+  dk : alloc.vec.Vec Std.U8
+  ct1 : alloc.vec.Vec Std.U8
+
+/-- [spqr::v1::chunked::send_ek::EkSentCt1Received]
+    Source: 'src/v1/chunked/send_ek.rs', lines 44:0-49:1
+    Visibility: public -/
+structure v1.chunked.send_ek.EkSentCt1Received where
+  uc : v1.unchunked.send_ek.EkSentCt1Received
+  receiving_ct2 : encoding.polynomial.PolyDecoder
+
+/-- [spqr::v1::chunked::send_ek::Ct1Received]
+    Source: 'src/v1/chunked/send_ek.rs', lines 37:0-40:1
+    Visibility: public -/
+structure v1.chunked.send_ek.Ct1Received where
+  uc : v1.unchunked.send_ek.EkSentCt1Received
+  sending_ek : encoding.polynomial.PolyEncoder
+
+/-- [spqr::v1::unchunked::send_ek::EkSent]
+    Source: 'src/v1/unchunked/send_ek.rs', lines 56:0-61:1
+    Visibility: public -/
+structure v1.unchunked.send_ek.EkSent where
+  epoch : Std.U64
+  auth : authenticator.Authenticator
+  dk : alloc.vec.Vec Std.U8
+
+/-- [spqr::v1::chunked::send_ek::HeaderSent]
+    Source: 'src/v1/chunked/send_ek.rs', lines 28:0-34:1
+    Visibility: public -/
+structure v1.chunked.send_ek.HeaderSent where
+  uc : v1.unchunked.send_ek.EkSent
+  sending_ek : encoding.polynomial.PolyEncoder
+  receiving_ct1 : encoding.polynomial.PolyDecoder
+
+/-- [spqr::v1::unchunked::send_ek::HeaderSent]
+    Source: 'src/v1/unchunked/send_ek.rs', lines 45:0-52:1
+    Visibility: public -/
+structure v1.unchunked.send_ek.HeaderSent where
+  epoch : Std.U64
+  auth : authenticator.Authenticator
+  ek : alloc.vec.Vec Std.U8
+  dk : alloc.vec.Vec Std.U8
+
+/-- [spqr::v1::chunked::send_ek::KeysSampled]
+    Source: 'src/v1/chunked/send_ek.rs', lines 21:0-24:1
+    Visibility: public -/
+structure v1.chunked.send_ek.KeysSampled where
+  uc : v1.unchunked.send_ek.HeaderSent
+  sending_hdr : encoding.polynomial.PolyEncoder
+
+/-- [spqr::v1::unchunked::send_ek::KeysUnsampled]
+    Source: 'src/v1/unchunked/send_ek.rs', lines 38:0-41:1
+    Visibility: public -/
+structure v1.unchunked.send_ek.KeysUnsampled where
   epoch : Std.U64
   auth : authenticator.Authenticator
 
-/-- [spqr::v1::chunked::send_ct::NoHeaderReceived]
-    Source: 'src/v1/chunked/send_ct.rs', lines 16:0-21:1
+/-- [spqr::v1::chunked::send_ek::KeysUnsampled]
+    Source: 'src/v1/chunked/send_ek.rs', lines 16:0-18:1
     Visibility: public -/
-structure v1.chunked.send_ct.NoHeaderReceived where
-  uc : v1.unchunked.send_ct.NoHeaderReceived
-  receiving_hdr : encoding.polynomial.PolyDecoder
+structure v1.chunked.send_ek.KeysUnsampled where
+  uc : v1.unchunked.send_ek.KeysUnsampled
 
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
-@[reducible]
-def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
-
-/-- [spqr::v1::unchunked::send_ct::HeaderReceived]
-    Source: 'src/v1/unchunked/send_ct.rs', lines 51:0-56:1
+/-- [spqr::v1::unchunked::send_ct::Ct2Sent]
+    Source: 'src/v1/unchunked/send_ct.rs', lines 85:0-88:1
     Visibility: public -/
-structure v1.unchunked.send_ct.HeaderReceived where
+structure v1.unchunked.send_ct.Ct2Sent where
   epoch : Std.U64
   auth : authenticator.Authenticator
-  hdr : alloc.vec.Vec Std.U8
 
-/-- [spqr::v1::chunked::send_ct::HeaderReceived]
-    Source: 'src/v1/chunked/send_ct.rs', lines 25:0-30:1
+/-- [spqr::v1::chunked::send_ct::Ct2Sampled]
+    Source: 'src/v1/chunked/send_ct.rs', lines 58:0-61:1
     Visibility: public -/
-structure v1.chunked.send_ct.HeaderReceived where
-  uc : v1.unchunked.send_ct.HeaderReceived
-  receiving_ek : encoding.polynomial.PolyDecoder
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
-@[reducible]
-def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
+structure v1.chunked.send_ct.Ct2Sampled where
+  uc : v1.unchunked.send_ct.Ct2Sent
+  sending_ct2 : encoding.polynomial.PolyEncoder
 
 /-- [spqr::v1::unchunked::send_ct::Ct1Sent]
     Source: 'src/v1/unchunked/send_ct.rs', lines 60:0-69:1
@@ -1163,23 +1235,12 @@ structure v1.unchunked.send_ct.Ct1Sent where
   es : alloc.vec.Vec Std.U8
   ct1 : alloc.vec.Vec Std.U8
 
-/-- [spqr::v1::chunked::send_ct::Ct1Sampled]
-    Source: 'src/v1/chunked/send_ct.rs', lines 34:0-40:1
+/-- [spqr::v1::chunked::send_ct::Ct1Acknowledged]
+    Source: 'src/v1/chunked/send_ct.rs', lines 50:0-55:1
     Visibility: public -/
-structure v1.chunked.send_ct.Ct1Sampled where
+structure v1.chunked.send_ct.Ct1Acknowledged where
   uc : v1.unchunked.send_ct.Ct1Sent
-  sending_ct1 : encoding.polynomial.PolyEncoder
   receiving_ek : encoding.polynomial.PolyDecoder
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
-@[reducible]
-def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1 := Unit
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
-@[reducible]
-def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ct::Ct1SentEkReceived]
     Source: 'src/v1/unchunked/send_ct.rs', lines 73:0-82:1
@@ -1198,41 +1259,161 @@ structure v1.chunked.send_ct.EkReceivedCt1Sampled where
   uc : v1.unchunked.send_ct.Ct1SentEkReceived
   sending_ct1 : encoding.polynomial.PolyEncoder
 
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
-@[reducible]
-def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure := Unit
-
-/-- [spqr::v1::chunked::send_ct::Ct1Acknowledged]
-    Source: 'src/v1/chunked/send_ct.rs', lines 50:0-55:1
+/-- [spqr::v1::chunked::send_ct::Ct1Sampled]
+    Source: 'src/v1/chunked/send_ct.rs', lines 34:0-40:1
     Visibility: public -/
-structure v1.chunked.send_ct.Ct1Acknowledged where
+structure v1.chunked.send_ct.Ct1Sampled where
   uc : v1.unchunked.send_ct.Ct1Sent
+  sending_ct1 : encoding.polynomial.PolyEncoder
   receiving_ek : encoding.polynomial.PolyDecoder
+
+/-- [spqr::v1::unchunked::send_ct::HeaderReceived]
+    Source: 'src/v1/unchunked/send_ct.rs', lines 51:0-56:1
+    Visibility: public -/
+structure v1.unchunked.send_ct.HeaderReceived where
+  epoch : Std.U64
+  auth : authenticator.Authenticator
+  hdr : alloc.vec.Vec Std.U8
+
+/-- [spqr::v1::chunked::send_ct::HeaderReceived]
+    Source: 'src/v1/chunked/send_ct.rs', lines 25:0-30:1
+    Visibility: public -/
+structure v1.chunked.send_ct.HeaderReceived where
+  uc : v1.unchunked.send_ct.HeaderReceived
+  receiving_ek : encoding.polynomial.PolyDecoder
+
+/-- [spqr::v1::unchunked::send_ct::NoHeaderReceived]
+    Source: 'src/v1/unchunked/send_ct.rs', lines 44:0-47:1
+    Visibility: public -/
+structure v1.unchunked.send_ct.NoHeaderReceived where
+  epoch : Std.U64
+  auth : authenticator.Authenticator
+
+/-- [spqr::v1::chunked::send_ct::NoHeaderReceived]
+    Source: 'src/v1/chunked/send_ct.rs', lines 16:0-21:1
+    Visibility: public -/
+structure v1.chunked.send_ct.NoHeaderReceived where
+  uc : v1.unchunked.send_ct.NoHeaderReceived
+  receiving_hdr : encoding.polynomial.PolyDecoder
+
+/-- [spqr::v1::chunked::states::States]
+    Source: 'src/v1/chunked/states.rs', lines 16:0-29:1
+    Visibility: public -/
+@[discriminant isize]
+inductive v1.chunked.states.States where
+| KeysUnsampled : v1.chunked.send_ek.KeysUnsampled → v1.chunked.states.States
+| KeysSampled : v1.chunked.send_ek.KeysSampled → v1.chunked.states.States
+| HeaderSent : v1.chunked.send_ek.HeaderSent → v1.chunked.states.States
+| Ct1Received : v1.chunked.send_ek.Ct1Received → v1.chunked.states.States
+| EkSentCt1Received :
+  v1.chunked.send_ek.EkSentCt1Received →
+  v1.chunked.states.States
+| NoHeaderReceived :
+  v1.chunked.send_ct.NoHeaderReceived →
+  v1.chunked.states.States
+| HeaderReceived :
+  v1.chunked.send_ct.HeaderReceived →
+  v1.chunked.states.States
+| Ct1Sampled : v1.chunked.send_ct.Ct1Sampled → v1.chunked.states.States
+| EkReceivedCt1Sampled :
+  v1.chunked.send_ct.EkReceivedCt1Sampled →
+  v1.chunked.states.States
+| Ct1Acknowledged :
+  v1.chunked.send_ct.Ct1Acknowledged →
+  v1.chunked.states.States
+| Ct2Sampled : v1.chunked.send_ct.Ct2Sampled → v1.chunked.states.States
+
+/-- [spqr::v1::chunked::states::Send]
+    Source: 'src/v1/chunked/states.rs', lines 46:0-50:1
+    Visibility: public -/
+structure v1.chunked.states.Send where
+  msg : v1.chunked.states.Message
+  key : Option EpochSecret
+  state : v1.chunked.states.States
+
+/-- [spqr::v1::chunked::states::serialize::MessageType]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 97:0-105:1 -/
+@[discriminant u8]
+inductive v1.chunked.states.serialize.MessageType where
+| None : v1.chunked.states.serialize.MessageType
+| Hdr : v1.chunked.states.serialize.MessageType
+| Ek : v1.chunked.states.serialize.MessageType
+| EkCt1Ack : v1.chunked.states.serialize.MessageType
+| Ct1Ack : v1.chunked.states.serialize.MessageType
+| Ct1 : v1.chunked.states.serialize.MessageType
+| Ct2 : v1.chunked.states.serialize.MessageType
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+@[reducible]
+def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+@[reducible]
+def v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure#1]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
+@[reducible]
+def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1 := Unit
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
+@[reducible]
+def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
+@[reducible]
+def v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+@[reducible]
+def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure := Unit
 
-/-- [spqr::v1::unchunked::send_ct::Ct2Sent]
-    Source: 'src/v1/unchunked/send_ct.rs', lines 85:0-88:1
-    Visibility: public -/
-structure v1.unchunked.send_ct.Ct2Sent where
-  epoch : Std.U64
-  auth : authenticator.Authenticator
-
-/-- [spqr::v1::chunked::send_ct::Ct2Sampled]
-    Source: 'src/v1/chunked/send_ct.rs', lines 58:0-61:1
-    Visibility: public -/
-structure v1.chunked.send_ct.Ct2Sampled where
-  uc : v1.unchunked.send_ct.Ct2Sent
-  sending_ct2 : encoding.polynomial.PolyEncoder
-
-/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
 @[reducible]
-def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+@[reducible]
+def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1 := Unit
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+@[reducible]
+def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+@[reducible]
+def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
+
+/-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure]
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
+@[reducible]
+def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
+
+/-- [spqr::chain_from_version_negotiation::closure]
+    Source: 'src/lib.rs', lines 338:40-338:62 -/
+@[reducible]
+def chain_from_version_negotiation.closure := Unit
+
+/-- [spqr::Recv]
+    Source: 'src/lib.rs', lines 328:0-331:1
+    Visibility: public -/
+structure Recv where
+  state : alloc.vec.Vec Std.U8
+  key : Option (alloc.vec.Vec Std.U8)
 
 /-- [spqr::v1::chunked::send_ct::NoHeaderReceivedRecvChunk]
     Source: 'src/v1/chunked/send_ct.rs', lines 64:0-67:1
@@ -1276,99 +1457,6 @@ inductive v1.chunked.send_ct.Ct1AcknowledgedRecvChunk where
   v1.chunked.send_ct.Ct2Sampled →
   v1.chunked.send_ct.Ct1AcknowledgedRecvChunk
 
-/-- [spqr::v1::unchunked::send_ek::KeysUnsampled]
-    Source: 'src/v1/unchunked/send_ek.rs', lines 38:0-41:1
-    Visibility: public -/
-structure v1.unchunked.send_ek.KeysUnsampled where
-  epoch : Std.U64
-  auth : authenticator.Authenticator
-
-/-- [spqr::v1::chunked::send_ek::KeysUnsampled]
-    Source: 'src/v1/chunked/send_ek.rs', lines 16:0-18:1
-    Visibility: public -/
-structure v1.chunked.send_ek.KeysUnsampled where
-  uc : v1.unchunked.send_ek.KeysUnsampled
-
-/-- [spqr::v1::unchunked::send_ek::HeaderSent]
-    Source: 'src/v1/unchunked/send_ek.rs', lines 45:0-52:1
-    Visibility: public -/
-structure v1.unchunked.send_ek.HeaderSent where
-  epoch : Std.U64
-  auth : authenticator.Authenticator
-  ek : alloc.vec.Vec Std.U8
-  dk : alloc.vec.Vec Std.U8
-
-/-- [spqr::v1::chunked::send_ek::KeysSampled]
-    Source: 'src/v1/chunked/send_ek.rs', lines 21:0-24:1
-    Visibility: public -/
-structure v1.chunked.send_ek.KeysSampled where
-  uc : v1.unchunked.send_ek.HeaderSent
-  sending_hdr : encoding.polynomial.PolyEncoder
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
-@[reducible]
-def v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure := Unit
-
-/-- [spqr::v1::unchunked::send_ek::EkSent]
-    Source: 'src/v1/unchunked/send_ek.rs', lines 56:0-61:1
-    Visibility: public -/
-structure v1.unchunked.send_ek.EkSent where
-  epoch : Std.U64
-  auth : authenticator.Authenticator
-  dk : alloc.vec.Vec Std.U8
-
-/-- [spqr::v1::chunked::send_ek::HeaderSent]
-    Source: 'src/v1/chunked/send_ek.rs', lines 28:0-34:1
-    Visibility: public -/
-structure v1.chunked.send_ek.HeaderSent where
-  uc : v1.unchunked.send_ek.EkSent
-  sending_ek : encoding.polynomial.PolyEncoder
-  receiving_ct1 : encoding.polynomial.PolyDecoder
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure#1]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
-@[reducible]
-def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1 := Unit
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
-@[reducible]
-def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure := Unit
-
-/-- [spqr::v1::unchunked::send_ek::EkSentCt1Received]
-    Source: 'src/v1/unchunked/send_ek.rs', lines 65:0-72:1
-    Visibility: public -/
-structure v1.unchunked.send_ek.EkSentCt1Received where
-  epoch : Std.U64
-  auth : authenticator.Authenticator
-  dk : alloc.vec.Vec Std.U8
-  ct1 : alloc.vec.Vec Std.U8
-
-/-- [spqr::v1::chunked::send_ek::Ct1Received]
-    Source: 'src/v1/chunked/send_ek.rs', lines 37:0-40:1
-    Visibility: public -/
-structure v1.chunked.send_ek.Ct1Received where
-  uc : v1.unchunked.send_ek.EkSentCt1Received
-  sending_ek : encoding.polynomial.PolyEncoder
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
-@[reducible]
-def v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure := Unit
-
-/-- [spqr::v1::chunked::send_ek::EkSentCt1Received]
-    Source: 'src/v1/chunked/send_ek.rs', lines 44:0-49:1
-    Visibility: public -/
-structure v1.chunked.send_ek.EkSentCt1Received where
-  uc : v1.unchunked.send_ek.EkSentCt1Received
-  receiving_ct2 : encoding.polynomial.PolyDecoder
-
-/-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
-@[reducible]
-def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure := Unit
-
 /-- [spqr::v1::chunked::send_ek::HeaderSentRecvChunk]
     Source: 'src/v1/chunked/send_ek.rs', lines 105:0-108:1
     Visibility: public -/
@@ -1393,65 +1481,6 @@ inductive v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk where
   (v1.chunked.send_ct.NoHeaderReceived × EpochSecret) →
   v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk
 
-/-- [spqr::v1::chunked::states::States]
-    Source: 'src/v1/chunked/states.rs', lines 16:0-29:1
-    Visibility: public -/
-@[discriminant isize]
-inductive v1.chunked.states.States where
-| KeysUnsampled : v1.chunked.send_ek.KeysUnsampled → v1.chunked.states.States
-| KeysSampled : v1.chunked.send_ek.KeysSampled → v1.chunked.states.States
-| HeaderSent : v1.chunked.send_ek.HeaderSent → v1.chunked.states.States
-| Ct1Received : v1.chunked.send_ek.Ct1Received → v1.chunked.states.States
-| EkSentCt1Received :
-  v1.chunked.send_ek.EkSentCt1Received →
-  v1.chunked.states.States
-| NoHeaderReceived :
-  v1.chunked.send_ct.NoHeaderReceived →
-  v1.chunked.states.States
-| HeaderReceived :
-  v1.chunked.send_ct.HeaderReceived →
-  v1.chunked.states.States
-| Ct1Sampled : v1.chunked.send_ct.Ct1Sampled → v1.chunked.states.States
-| EkReceivedCt1Sampled :
-  v1.chunked.send_ct.EkReceivedCt1Sampled →
-  v1.chunked.states.States
-| Ct1Acknowledged :
-  v1.chunked.send_ct.Ct1Acknowledged →
-  v1.chunked.states.States
-| Ct2Sampled : v1.chunked.send_ct.Ct2Sampled → v1.chunked.states.States
-
-/-- [spqr::v1::chunked::states::serialize::MessageType]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 97:0-105:1 -/
-@[discriminant u8]
-inductive v1.chunked.states.serialize.MessageType where
-| None : v1.chunked.states.serialize.MessageType
-| Hdr : v1.chunked.states.serialize.MessageType
-| Ek : v1.chunked.states.serialize.MessageType
-| EkCt1Ack : v1.chunked.states.serialize.MessageType
-| Ct1Ack : v1.chunked.states.serialize.MessageType
-| Ct1 : v1.chunked.states.serialize.MessageType
-| Ct2 : v1.chunked.states.serialize.MessageType
-
-/-- [spqr::v1::chunked::states::MessagePayload]
-    Source: 'src/v1/chunked/states.rs', lines 31:0-39:1
-    Visibility: public -/
-@[discriminant isize]
-inductive v1.chunked.states.MessagePayload where
-| None : v1.chunked.states.MessagePayload
-| Hdr : encoding.Chunk → v1.chunked.states.MessagePayload
-| Ek : encoding.Chunk → v1.chunked.states.MessagePayload
-| EkCt1Ack : encoding.Chunk → v1.chunked.states.MessagePayload
-| Ct1Ack : Bool → v1.chunked.states.MessagePayload
-| Ct1 : encoding.Chunk → v1.chunked.states.MessagePayload
-| Ct2 : encoding.Chunk → v1.chunked.states.MessagePayload
-
-/-- [spqr::v1::chunked::states::Message]
-    Source: 'src/v1/chunked/states.rs', lines 41:0-44:1
-    Visibility: public -/
-structure v1.chunked.states.Message where
-  epoch : Std.U64
-  payload : v1.chunked.states.MessagePayload
-
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1]
     Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
 @[reducible]
@@ -1461,14 +1490,6 @@ def v1.chunked.states.serialize.Message.deserialize.closure_1 := Unit
     Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
 @[reducible]
 def v1.chunked.states.serialize.Message.deserialize.closure := Unit
-
-/-- [spqr::v1::chunked::states::Send]
-    Source: 'src/v1/chunked/states.rs', lines 46:0-50:1
-    Visibility: public -/
-structure v1.chunked.states.Send where
-  msg : v1.chunked.states.Message
-  key : Option EpochSecret
-  state : v1.chunked.states.States
 
 /-- [spqr::v1::chunked::states::Recv]
     Source: 'src/v1/chunked/states.rs', lines 52:0-55:1
