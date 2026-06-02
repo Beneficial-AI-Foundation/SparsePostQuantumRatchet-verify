@@ -39,6 +39,7 @@ charon:
     - "spqr::{impl core::fmt::Debug for spqr::CurrentVersion}" # Debug for Version (proto) is excluded, so this cascades
     - "spqr::{impl core::convert::From<spqr::serialize::Error> for spqr::Error}" # name clash
   opaque:
+    # `hkdf_to_slice`: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/104
     - "spqr::kdf::hkdf_to_slice"
     - "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275" # has log calls; kept opaque so encaps2 can call it
     - "spqr::encoding::gf::mul2_u16" # dispatches to excluded accelerated code
