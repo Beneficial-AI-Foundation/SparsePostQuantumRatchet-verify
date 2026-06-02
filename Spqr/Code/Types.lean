@@ -118,7 +118,7 @@ structure core.ops.arith.DivAssign (Self : Type) (Rhs : Type) where
     Name pattern: [core::ops::range::RangeFull]
     Visibility: public -/
 @[reducible, rust_type "core::ops::range::RangeFull"]
-nonrec def core.ops.range.RangeFull := Unit
+def core.ops.range.RangeFull := Unit
 
 /-- [core::ops::range::Bound]
     Source: '/rustc/library/core/src/ops/range.rs', lines 692:0-692:17
@@ -266,7 +266,7 @@ structure prost.message.Message (Self : Type) where
     Name pattern: [prost::error::UnknownEnumValue]
     Visibility: public -/
 @[reducible, rust_type "prost::error::UnknownEnumValue"]
-nonrec def prost.error.UnknownEnumValue := Std.I32
+def prost.error.UnknownEnumValue := Std.I32
 
 /-- Trait declaration: [rand_core::RngCore]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand_core-0.9.3/src/lib.rs', lines 130:0-130:17
@@ -300,7 +300,7 @@ structure rand.distr.distribution.Distribution (Self : Type) (T : Type) where
     Name pattern: [rand::distr::StandardUniform]
     Visibility: public -/
 @[reducible, rust_type "rand::distr::StandardUniform"]
-nonrec def rand.distr.StandardUniform := Unit
+def rand.distr.StandardUniform := Unit
 
 /-- [rand::distr::uniform::Error]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand-0.9.1/src/distr/uniform.rs', lines 120:0-120:14
@@ -754,7 +754,7 @@ def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5 (T0 : Type) :=
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 106:4-106:27
     Visibility: public -/
 @[reducible]
-nonrec def proto.pq_ratchet.v1_state.Unchunked := Unit
+def proto.pq_ratchet.v1_state.Unchunked := Unit
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 166:8-175:9
@@ -769,7 +769,7 @@ structure proto.pq_ratchet.v1_state.unchunked.EkReceived where
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 211:4-211:25
     Visibility: public -/
 @[reducible]
-nonrec def proto.pq_ratchet.v1_state.Chunked := Unit
+def proto.pq_ratchet.v1_state.Chunked := Unit
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
@@ -974,7 +974,7 @@ structure encoding.polynomial.PolyConst (N : Std.Usize) where
 /-- [spqr::encoding::polynomial::const_polys_to_polys::closure]
     Source: 'src/encoding/polynomial.rs', lines 466:19-466:34 -/
 @[reducible]
-nonrec def encoding.polynomial.const_polys_to_polys.closure (N : Std.Usize) := Unit
+def encoding.polynomial.const_polys_to_polys.closure (N : Std.Usize) := Unit
 
 /-- [spqr::encoding::polynomial::Point]
     Source: 'src/encoding/polynomial.rs', lines 514:0-517:1
@@ -1003,17 +1003,17 @@ structure encoding.polynomial.PolyEncoder where
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure#1]
     Source: 'src/encoding/polynomial.rs', lines 641:25-644:21 -/
 @[reducible]
-nonrec def encoding.polynomial.PolyEncoder.point_at.closure_1 := Unit
+def encoding.polynomial.PolyEncoder.point_at.closure_1 := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure]
     Source: 'src/encoding/polynomial.rs', lines 635:68-635:85 -/
 @[reducible]
-nonrec def encoding.polynomial.PolyEncoder.point_at.closure := Unit
+def encoding.polynomial.PolyEncoder.point_at.closure := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::closure]
     Source: 'src/encoding/polynomial.rs', lines 676:63-678:9 -/
 @[reducible]
-nonrec def encoding.polynomial.PolyEncoder.encode_bytes_base.closure := Slice Std.U8
+def encoding.polynomial.PolyEncoder.encode_bytes_base.closure := Slice Std.U8
 
 /-- [spqr::encoding::Chunk]
     Source: 'src/encoding.rs', lines 25:0-28:1
@@ -1033,7 +1033,7 @@ structure encoding.polynomial.PolyDecoder where
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::closure]
     Source: 'src/encoding/polynomial.rs', lines 788:38-788:58 -/
 @[reducible]
-nonrec def encoding.polynomial.PolyDecoder.new_with_poly_count.closure := Unit
+def encoding.polynomial.PolyDecoder.new_with_poly_count.closure := Unit
 
 /-- Trait declaration: [spqr::encoding::Encoder]
     Source: 'src/encoding.rs', lines 31:0-37:1
@@ -1100,12 +1100,12 @@ structure Send where
 /-- [spqr::decode_state::closure]
     Source: 'src/lib.rs', lines 480:72-480:94 -/
 @[reducible]
-nonrec def decode_state.closure := Unit
+def decode_state.closure := Unit
 
 /-- [spqr::current_version::closure]
     Source: 'src/lib.rs', lines 259:59-259:81 -/
 @[reducible]
-nonrec def current_version.closure := Unit
+def current_version.closure := Unit
 
 /-- [spqr::Recv]
     Source: 'src/lib.rs', lines 328:0-331:1
@@ -1131,7 +1131,7 @@ structure v1.chunked.send_ct.NoHeaderReceived where
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ct::HeaderReceived]
     Source: 'src/v1/unchunked/send_ct.rs', lines 51:0-56:1
@@ -1151,7 +1151,7 @@ structure v1.chunked.send_ct.HeaderReceived where
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ct::Ct1Sent]
     Source: 'src/v1/unchunked/send_ct.rs', lines 60:0-69:1
@@ -1174,12 +1174,12 @@ structure v1.chunked.send_ct.Ct1Sampled where
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1 := Unit
+def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1 := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ct::Ct1SentEkReceived]
     Source: 'src/v1/unchunked/send_ct.rs', lines 73:0-82:1
@@ -1201,7 +1201,7 @@ structure v1.chunked.send_ct.EkReceivedCt1Sampled where
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::Ct1Acknowledged]
     Source: 'src/v1/chunked/send_ct.rs', lines 50:0-55:1
@@ -1213,7 +1213,7 @@ structure v1.chunked.send_ct.Ct1Acknowledged where
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ct::Ct2Sent]
     Source: 'src/v1/unchunked/send_ct.rs', lines 85:0-88:1
@@ -1232,7 +1232,7 @@ structure v1.chunked.send_ct.Ct2Sampled where
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure := Unit
+def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::NoHeaderReceivedRecvChunk]
     Source: 'src/v1/chunked/send_ct.rs', lines 64:0-67:1
@@ -1308,7 +1308,7 @@ structure v1.chunked.send_ek.KeysSampled where
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure := Unit
+def v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ek::EkSent]
     Source: 'src/v1/unchunked/send_ek.rs', lines 56:0-61:1
@@ -1329,12 +1329,12 @@ structure v1.chunked.send_ek.HeaderSent where
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure#1]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1 := Unit
+def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1 := Unit
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
 @[reducible]
-nonrec def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure := Unit
+def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure := Unit
 
 /-- [spqr::v1::unchunked::send_ek::EkSentCt1Received]
     Source: 'src/v1/unchunked/send_ek.rs', lines 65:0-72:1
@@ -1355,7 +1355,7 @@ structure v1.chunked.send_ek.Ct1Received where
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
 @[reducible]
-nonrec def v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure := Unit
+def v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ek::EkSentCt1Received]
     Source: 'src/v1/chunked/send_ek.rs', lines 44:0-49:1
@@ -1367,7 +1367,7 @@ structure v1.chunked.send_ek.EkSentCt1Received where
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
 @[reducible]
-nonrec def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure := Unit
+def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ek::HeaderSentRecvChunk]
     Source: 'src/v1/chunked/send_ek.rs', lines 105:0-108:1
@@ -1455,12 +1455,12 @@ structure v1.chunked.states.Message where
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1]
     Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
 @[reducible]
-nonrec def v1.chunked.states.serialize.Message.deserialize.closure_1 := Unit
+def v1.chunked.states.serialize.Message.deserialize.closure_1 := Unit
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure]
     Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
 @[reducible]
-nonrec def v1.chunked.states.serialize.Message.deserialize.closure := Unit
+def v1.chunked.states.serialize.Message.deserialize.closure := Unit
 
 /-- [spqr::v1::chunked::states::Send]
     Source: 'src/v1/chunked/states.rs', lines 46:0-50:1

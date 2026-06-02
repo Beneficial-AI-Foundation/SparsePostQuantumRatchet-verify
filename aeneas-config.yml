@@ -77,13 +77,13 @@ tweaks:
         set_option linter.style.setOption false
         set_option linter.style.whitespace false
 
-    # Add `nonrec` to all @[reducible] trait instance defs so that method references like
-    # `X.Insts.Foo.f` in the body of `def X.Insts.Foo` resolve to axioms, not recursive projections.
-    # This is needed when new fields are added to trait structures (e.g. prost Message.decode).
-    # Uses (?:[^\]]*|\](?!\n))* to skip ] that appear inside attribute strings (e.g. [u8]).
-    # Uses (?= |\n) lookahead to also handle wrapped `def\n  name` format.
-    - regex: "(@\\[reducible(?:[^\\]]*|\\](?!\\n))*\\]\\n)def(?= |\\n)"
-      replace: "$1nonrec def"
+    # # Add `nonrec` to all @[reducible] trait instance defs so that method references like
+    # # `X.Insts.Foo.f` in the body of `def X.Insts.Foo` resolve to axioms, not recursive projections.
+    # # This is needed when new fields are added to trait structures (e.g. prost Message.decode).
+    # # Uses (?:[^\]]*|\](?!\n))* to skip ] that appear inside attribute strings (e.g. [u8]).
+    # # Uses (?= |\n) lookahead to also handle wrapped `def\n  name` format.
+    # - regex: "(@\\[reducible(?:[^\\]]*|\\](?!\\n))*\\]\\n)def(?= |\\n)"
+    #   replace: "$1nonrec def"
 
     # Sorry BytesBufBuf_implBuf instance body: method names (remaining/chunk/advance) are fields
     # of bytes.buf.buf_impl.Buf, so nonrec def + struct literal causes "Unknown identifier".
