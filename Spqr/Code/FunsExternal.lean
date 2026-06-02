@@ -395,6 +395,13 @@ axiom
   core.slice.iter.ChunksExact T → F → Result (core.iter.adapters.map.Map
     (core.slice.iter.ChunksExact T) F)
 
+-- Rust's Result::ok() method: converts Result<T,E> to Option<T>, discarding the error.
+def core.result.Result.ok {T E : Type} (r : core.result.Result T E) :
+    Result (Option T) :=
+  match r with
+  | core.result.Result.Ok v => _root_.Aeneas.Std.Result.ok (some v)
+  | core.result.Result.Err _ => _root_.Aeneas.Std.Result.ok none
+
 /-- [core::slice::{[T]}::clone_from_slice]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4254:4-4256:44
     Name pattern: [core::slice::{[@T]}::clone_from_slice] -/
