@@ -26,7 +26,7 @@ namespace spqr
     Source: '/rustc/library/core/src/array/mod.rs', lines 354:0-354:57
     Name pattern: [core::fmt::Debug<[@T; @N]>] -/
 @[reducible, rust_trait_impl "core::fmt::Debug<[@T; @N]>"]
-def Array.Insts.CoreFmtDebug {T : Type} (N : Std.Usize) (fmtDebugInst :
+nonrec def Array.Insts.CoreFmtDebug {T : Type} (N : Std.Usize) (fmtDebugInst :
   core.fmt.Debug T) : core.fmt.Debug (Array T N) := {
   fmt := core.array.DebugArray.fmt fmtDebugInst
 }
@@ -69,7 +69,7 @@ nonrec def Usize.Insts.CoreFmtDisplay : core.fmt.Display Std.Usize := {
     Name pattern: [core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>] -/
 @[reducible, rust_trait_impl
   "core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>"]
-def
+nonrec def
   core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item
   {I : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst :
   core.iter.traits.iterator.Iterator I Clause0_Item) :
@@ -125,7 +125,7 @@ nonrec def core.ops.range.RangeFull.Insts.CoreSliceIndexPrivate_slice_indexSeale
     Name pattern: [core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>] -/
 @[reducible, rust_trait_impl
   "core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>"]
-def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice (T :
+nonrec def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice (T :
   Type) : core.slice.index.SliceIndex core.ops.range.RangeFull (Slice T) (Slice
   T) := {
   sealedInst :=
@@ -148,7 +148,7 @@ def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice (T :
     Name pattern: [alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>] -/
 @[reducible, rust_trait_impl
   "alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>"]
-def Slice.Insts.AllocSliceConcatTVec {T : Type} {V : Type} (corecloneCloneInst
+nonrec def Slice.Insts.AllocSliceConcatTVec {T : Type} {V : Type} (corecloneCloneInst
   : core.clone.Clone T) (coreborrowBorrowVSliceInst : core.borrow.Borrow V
   (Slice T)) : alloc.slice.Concat (Slice V) T (alloc.vec.Vec T) := {
   concat := Slice.Insts.AllocSliceConcatTVec.concat corecloneCloneInst
@@ -1040,7 +1040,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::epoch::EpochDirection> for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 350:24-350:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpPartialEqEpochDirection
   : core.cmp.PartialEq proto.pq_ratchet.chain.epoch.EpochDirection
   proto.pq_ratchet.chain.epoch.EpochDirection := {
@@ -1192,7 +1192,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 288:24-288:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpPartialEqCt2Sampled
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.Ct2Sampled
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled := {
@@ -1267,7 +1267,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 281:24-281:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpPartialEqCt1Acknowledged
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
   proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged := {
@@ -1312,7 +1312,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 189:24-189:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpPartialEqCt1SentEkReceived
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
   proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived := {
@@ -1343,7 +1343,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 274:24-274:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpPartialEqEkReceivedCt1Sampled
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := {
@@ -1381,7 +1381,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 265:24-265:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpPartialEqCt1Sampled
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.Ct1Sampled
   proto.pq_ratchet.v1_state.chunked.Ct1Sampled := {
@@ -1414,7 +1414,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 156:24-156:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.HeaderReceived
   proto.pq_ratchet.v1_state.unchunked.HeaderReceived := {
@@ -1445,7 +1445,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 258:24-258:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.HeaderReceived
   proto.pq_ratchet.v1_state.chunked.HeaderReceived := {
@@ -1472,7 +1472,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 149:24-149:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
   proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived := {
@@ -1503,7 +1503,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 251:24-251:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
   proto.pq_ratchet.v1_state.chunked.NoHeaderReceived := {
@@ -1542,7 +1542,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 137:24-137:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
   proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received := {
@@ -1573,7 +1573,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 243:24-243:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received := {
@@ -1604,7 +1604,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 236:24-236:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpPartialEqCt1Received
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.Ct1Received
   proto.pq_ratchet.v1_state.chunked.Ct1Received := {
@@ -1673,7 +1673,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 227:24-227:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.HeaderSent
   proto.pq_ratchet.v1_state.chunked.HeaderSent := {
@@ -1712,7 +1712,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 117:24-117:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.HeaderSent
   proto.pq_ratchet.v1_state.unchunked.HeaderSent := {
@@ -1743,7 +1743,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 220:24-220:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpPartialEqKeysSampled
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.KeysSampled
   proto.pq_ratchet.v1_state.chunked.KeysSampled := {
@@ -1770,7 +1770,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 110:24-110:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
   proto.pq_ratchet.v1_state.unchunked.KeysUnsampled := {
@@ -1794,7 +1794,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 215:24-215:33 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled
   : core.cmp.PartialEq proto.pq_ratchet.v1_state.chunked.KeysUnsampled
   proto.pq_ratchet.v1_state.chunked.KeysUnsampled := {
@@ -2070,7 +2070,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation> for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 38:20-38:29 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpPartialEqVersionNegotiation
   : core.cmp.PartialEq proto.pq_ratchet.pq_ratchet_state.VersionNegotiation
   proto.pq_ratchet.pq_ratchet_state.VersionNegotiation := {
@@ -2251,7 +2251,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::closure<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -2262,8 +2262,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
 @[reducible]
-nonrec def
-  proto.pq_ratchet.V1State.Insts.ProstMessageMessage : prost.message.Message
+nonrec def proto.pq_ratchet.V1State.Insts.ProstMessageMessage : prost.message.Message
   proto.pq_ratchet.V1State := sorry
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encode]:
@@ -2335,7 +2334,9 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk.eq
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 55:16-55:25 -/
 @[reducible]
 nonrec def proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk : core.cmp.PartialEq
-  proto.pq_ratchet.Chunk proto.pq_ratchet.Chunk := sorry
+  proto.pq_ratchet.Chunk proto.pq_ratchet.Chunk := {
+  eq := proto.pq_ratchet.Chunk.Insts.CoreCmpPartialEqChunk.eq
+}
 
 /-- [spqr::proto::pq_ratchet::{core::cmp::Eq for spqr::proto::pq_ratchet::Chunk}::assert_receiver_is_total_eq]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 55:27-55:29
@@ -2347,8 +2348,7 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpEq.assert_receiver_is_total_eq
 /-- Trait implementation: [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53 -/
 @[reducible]
-nonrec def
-  proto.pq_ratchet.Chunk.Insts.ProstMessageMessage : prost.message.Message
+nonrec def proto.pq_ratchet.Chunk.Insts.ProstMessageMessage : prost.message.Message
   proto.pq_ratchet.Chunk := sorry
 
 /-- [spqr::proto::pq_ratchet::{core::default::Default for spqr::proto::pq_ratchet::Chunk}::default]:
@@ -2390,7 +2390,9 @@ def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone.clone
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:13-73:18 -/
 @[reducible]
 nonrec def proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone : core.clone.Clone
-  proto.pq_ratchet.v1_msg.InnerMsg := sorry
+  proto.pq_ratchet.v1_msg.InnerMsg := {
+  clone := proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone.clone
+}
 
 /-- [spqr::proto::pq_ratchet::{core::clone::Clone for spqr::proto::pq_ratchet::V1Msg}::clone]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 62:9-62:14
@@ -2530,7 +2532,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure T0)
@@ -2552,7 +2554,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#1<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1
@@ -2574,7 +2576,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#2<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2
@@ -2596,7 +2598,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#3<0, 1, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3
@@ -2618,7 +2620,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#4<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4
@@ -2640,7 +2642,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#5<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5
@@ -2951,8 +2953,7 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreDefaultDefault.default
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61 -/
 @[reducible]
-nonrec def
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage :
+nonrec def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage :
   prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysUnsampled := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::default]:
@@ -3032,7 +3033,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
   := sorry
@@ -3076,8 +3077,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61 -/
 @[reducible]
-nonrec def
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
+nonrec def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderReceived := sorry
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::default]:
@@ -3120,7 +3120,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage
   : prost.message.Message
   proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := sorry
@@ -3142,8 +3142,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61 -/
 @[reducible]
-nonrec def
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
+nonrec def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
   : prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
   := sorry
 
@@ -3195,11 +3194,13 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce (proto.pq_ratchet.v1_state.InnerState.merge.closure
-  T0) Unit Unit := sorry
+  T0) Unit Unit := {
+  call_once := sorry
+}
 
 /-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#1<0, T0>}::call_once]:
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
@@ -3215,7 +3216,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#1<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3237,7 +3238,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#2<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3259,7 +3260,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#3<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3281,7 +3282,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#4<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3303,7 +3304,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#5<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3325,7 +3326,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#6<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_6.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3347,7 +3348,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#7<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_7.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3370,7 +3371,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#8<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_8.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3392,7 +3393,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#9<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_9.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -3414,7 +3415,7 @@ def
 /-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{core::ops::function::FnOnce<(()), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#10<0, T0>}]
     Source: 'target/out/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
 @[reducible]
-def
+nonrec def
   proto.pq_ratchet.v1_state.InnerState.merge.closure_10.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
   {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
   core.ops.function.FnOnce
@@ -4861,151 +4862,8 @@ def encoding.gf.GF16.Insts.CoreOpsArithSubShared0GF16GF16.sub
   := do
   encoding.gf.GF16.Insts.CoreOpsArithSubAssignShared0GF16.sub_assign self other
 
-/-- [spqr::encoding::gf::{core::ops::arith::MulAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul_assign]:
-    Source: 'src/encoding/gf.rs', lines 142:4-144:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
-
-/-- [spqr::encoding::gf::{core::ops::arith::Mul<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
-    Source: 'src/encoding/gf.rs', lines 150:4-154:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
-
-/-- [spqr::encoding::gf::{core::ops::arith::Mul<&0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
-    Source: 'src/encoding/gf.rs', lines 160:4-164:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithMulShared0GF16GF16.mul
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 553:8-556:9 -/
-@[rust_loop_body]
-def encoding.gf.GF16.div_impl_loop.body
-  (iter : core.ops.range.Range Std.I32) (square : encoding.gf.GF16)
-  (out : encoding.gf.GF16) :
-  Result (ControlFlow ((core.ops.range.Range Std.I32) × encoding.gf.GF16 ×
-    encoding.gf.GF16) encoding.gf.GF16)
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next I32.Insts.CoreIterRangeStep iter
-  match o with
-  | none => ok (done out)
-  | some _ =>
-    let out1 ←
-      encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign out square
-    let square1 ←
-      encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul square square
-    ok (cont (iter1, square1, out1))
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 553:8-556:9 -/
-@[rust_loop]
-def encoding.gf.GF16.div_impl_loop
-  (iter : core.ops.range.Range Std.I32) (square : encoding.gf.GF16)
-  (out : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  loop
-    (fun (iter1, square1, out1) => encoding.gf.GF16.div_impl_loop.body iter1
-      square1 out1)
-    (iter, square, out)
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]:
-    Source: 'src/encoding/gf.rs', lines 548:4-558:5 -/
-def encoding.gf.GF16.div_impl
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  let square ← encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul other other
-  encoding.gf.GF16.div_impl_loop { start := 1#i32, «end» := 16#i32 } square
-    self
-
-/-- [spqr::encoding::gf::{core::ops::arith::DivAssign<&0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::div_assign]:
-    Source: 'src/encoding/gf.rs', lines 170:4-172:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16.div_assign
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.div_impl self other
-
-/-- [spqr::encoding::gf::{core::ops::arith::DivAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div_assign]:
-    Source: 'src/encoding/gf.rs', lines 177:4-179:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16.div_assign
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.div_impl self other
-
-/-- [spqr::encoding::gf::{core::ops::arith::Div<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div]:
-    Source: 'src/encoding/gf.rs', lines 185:4-187:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithDivGF16GF16.div
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.div_impl self other
-
-/-- [spqr::encoding::gf::{core::ops::arith::Div<&0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div]:
-    Source: 'src/encoding/gf.rs', lines 193:4-195:5
-    Visibility: public -/
-def encoding.gf.GF16.Insts.CoreOpsArithDivShared0GF16GF16.div
-  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
-  Result encoding.gf.GF16
-  := do
-  encoding.gf.GF16.div_impl self other
-
-/-- [spqr::encoding::gf::parallel_mult]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 205:4-210:5
-    Visibility: public -/
-@[rust_loop_body]
-def encoding.gf.parallel_mult_loop.body
-  (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) (i : Std.Usize) :
-  Result (ControlFlow ((Slice encoding.gf.GF16) × Std.Usize) (encoding.gf.GF16
-    × (Slice encoding.gf.GF16) × Std.Usize))
-  := sorry
-/-- [spqr::encoding::gf::parallel_mult]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 205:4-210:5
-    Visibility: public -/
-@[rust_loop]
-def encoding.gf.parallel_mult_loop
-  (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) (i : Std.Usize) :
-  Result (encoding.gf.GF16 × (Slice encoding.gf.GF16) × Std.Usize)
-  := do
-  loop
-    (fun (into1, i1) => encoding.gf.parallel_mult_loop.body a into1 i1)
-    (into, i)
-
-/-- [spqr::encoding::gf::parallel_mult]:
-    Source: 'src/encoding/gf.rs', lines 201:0-214:1
-    Visibility: public -/
-def encoding.gf.parallel_mult
-  (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) :
-  Result (Slice encoding.gf.GF16)
-  := do
-  let (a1, into1, i) ← encoding.gf.parallel_mult_loop a into 0#usize
-  let i1 := Slice.len into1
-  if i < i1
-  then
-    let (g, index_mut_back) ← Slice.index_mut_usize into1 i
-    let g1 ← encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign g a1
-    ok (index_mut_back g1)
-  else ok into1
-
 /-- [spqr::encoding::gf::unaccelerated::poly_mul]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 394:8-425:9 -/
+    Source: 'src/encoding/gf.rs', lines 292:8-323:9 -/
 @[rust_loop_body]
 def encoding.gf.unaccelerated.poly_mul_loop.body
   (b : Std.U16) (me : Std.U32) (acc : Std.U32) (shift : Std.U32) :
@@ -5026,7 +4884,7 @@ def encoding.gf.unaccelerated.poly_mul_loop.body
   else ok (done acc)
 
 /-- [spqr::encoding::gf::unaccelerated::poly_mul]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 394:8-425:9 -/
+    Source: 'src/encoding/gf.rs', lines 292:8-323:9 -/
 @[rust_loop]
 def encoding.gf.unaccelerated.poly_mul_loop
   (b : Std.U16) (acc : Std.U32) (me : Std.U32) (shift : Std.U32) :
@@ -5038,14 +4896,14 @@ def encoding.gf.unaccelerated.poly_mul_loop
     (acc, shift)
 
 /-- [spqr::encoding::gf::unaccelerated::poly_mul]:
-    Source: 'src/encoding/gf.rs', lines 381:4-427:5 -/
+    Source: 'src/encoding/gf.rs', lines 279:4-325:5 -/
 def encoding.gf.unaccelerated.poly_mul
   (a : Std.U16) (b : Std.U16) : Result Std.U32 := do
   let me ← lift (UScalar.cast .U32 a)
   encoding.gf.unaccelerated.poly_mul_loop b 0#u32 me 0#u32
 
 /-- [spqr::encoding::gf::reduce::reduce_from_byte]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 505:8-513:9 -/
+    Source: 'src/encoding/gf.rs', lines 403:8-411:9 -/
 @[rust_loop_body]
 def encoding.gf.reduce.reduce_from_byte_loop.body
   (a : Std.U8) (out : Std.U32) (i : Std.U32) :
@@ -5068,7 +4926,7 @@ def encoding.gf.reduce.reduce_from_byte_loop.body
   else ok (done out)
 
 /-- [spqr::encoding::gf::reduce::reduce_from_byte]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 505:8-513:9 -/
+    Source: 'src/encoding/gf.rs', lines 403:8-411:9 -/
 @[rust_loop]
 def encoding.gf.reduce.reduce_from_byte_loop
   (a : Std.U8) (out : Std.U32) (i : Std.U32) : Result Std.U32 := do
@@ -5078,13 +4936,13 @@ def encoding.gf.reduce.reduce_from_byte_loop
     (a, out, i)
 
 /-- [spqr::encoding::gf::reduce::reduce_from_byte]:
-    Source: 'src/encoding/gf.rs', lines 502:4-515:5 -/
+    Source: 'src/encoding/gf.rs', lines 400:4-413:5 -/
 @[reducible]
 nonrec def encoding.gf.reduce.reduce_from_byte (a : Std.U8) : Result Std.U32 := do
   encoding.gf.reduce.reduce_from_byte_loop a 0#u32 8#u32
 
 /-- [spqr::encoding::gf::reduce::reduce_bytes]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 522:8-533:9 -/
+    Source: 'src/encoding/gf.rs', lines 420:8-431:9 -/
 @[rust_loop_body]
 def encoding.gf.reduce.reduce_bytes_loop.body
   (out : Array Std.U16 256#usize) (i : Std.Usize) :
@@ -5102,7 +4960,7 @@ def encoding.gf.reduce.reduce_bytes_loop.body
   else ok (done out)
 
 /-- [spqr::encoding::gf::reduce::reduce_bytes]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 522:8-533:9 -/
+    Source: 'src/encoding/gf.rs', lines 420:8-431:9 -/
 @[rust_loop]
 def encoding.gf.reduce.reduce_bytes_loop
   (out : Array Std.U16 256#usize) (i : Std.Usize) :
@@ -5113,19 +4971,19 @@ def encoding.gf.reduce.reduce_bytes_loop
     (out, i)
 
 /-- [spqr::encoding::gf::reduce::reduce_bytes]:
-    Source: 'src/encoding/gf.rs', lines 519:4-535:5 -/
+    Source: 'src/encoding/gf.rs', lines 417:4-433:5 -/
 def encoding.gf.reduce.reduce_bytes : Result (Array Std.U16 256#usize) := do
   let out := Array.repeat 256#usize 0#u16
   encoding.gf.reduce.reduce_bytes_loop out 0#usize
 
 /-- [spqr::encoding::gf::reduce::REDUCE_BYTES]
-    Source: 'src/encoding/gf.rs', lines 537:4-537:52 -/
+    Source: 'src/encoding/gf.rs', lines 435:4-435:52 -/
 @[global_simps, irreducible]
 def encoding.gf.reduce.REDUCE_BYTES : Result (Array Std.U16 256#usize) :=
   encoding.gf.reduce.reduce_bytes
 
 /-- [spqr::encoding::gf::reduce::poly_reduce]:
-    Source: 'src/encoding/gf.rs', lines 489:4-498:5
+    Source: 'src/encoding/gf.rs', lines 387:4-396:5
     Visibility: public -/
 def encoding.gf.reduce.poly_reduce (v : Std.U32) : Result Std.U16 := do
   let i ← v >>> 24#i32
@@ -5144,7 +5002,7 @@ def encoding.gf.reduce.poly_reduce (v : Std.U32) : Result Std.U16 := do
   ok (UScalar.cast .U16 v2)
 
 /-- [spqr::encoding::gf::unaccelerated::mul]:
-    Source: 'src/encoding/gf.rs', lines 444:4-446:5
+    Source: 'src/encoding/gf.rs', lines 342:4-344:5
     Visibility: public -/
 def encoding.gf.unaccelerated.mul
   (a : Std.U16) (b : Std.U16) : Result Std.U16 := do
@@ -5152,7 +5010,7 @@ def encoding.gf.unaccelerated.mul
   encoding.gf.reduce.poly_reduce i
 
 /-- [spqr::encoding::gf::unaccelerated::mul2]:
-    Source: 'src/encoding/gf.rs', lines 436:4-438:5
+    Source: 'src/encoding/gf.rs', lines 334:4-336:5
     Visibility: public -/
 def encoding.gf.unaccelerated.mul2
   (a : Std.U16) (b1 : Std.U16) (b2 : Std.U16) :
@@ -5163,25 +5021,95 @@ def encoding.gf.unaccelerated.mul2
   ok (i, i1)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
-    Source: 'src/encoding/gf.rs', lines 541:4-541:45
+    Source: 'src/encoding/gf.rs', lines 439:4-439:45
     Visibility: public -/
 @[global_simps, irreducible]
 def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
-    Source: 'src/encoding/gf.rs', lines 542:4-542:44
+    Source: 'src/encoding/gf.rs', lines 440:4-440:44
     Visibility: public -/
 @[global_simps, irreducible]
 def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::new]:
-    Source: 'src/encoding/gf.rs', lines 544:4-546:5
+    Source: 'src/encoding/gf.rs', lines 442:4-444:5
     Visibility: public -/
 def encoding.gf.GF16.new (value : Std.U16) : Result encoding.gf.GF16 := do
   ok { value }
 
+/-- [spqr::encoding::gf::{core::ops::arith::MulAssign<&0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::mul_assign]:
+    Source: 'src/encoding/gf.rs', lines 490:4-503:5 -/
+def encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  let i ← encoding.gf.unaccelerated.mul self.value other.value
+  ok { value := i }
+
+/-- [spqr::encoding::gf::{core::ops::arith::Mul<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
+    Source: 'src/encoding/gf.rs', lines 515:4-519:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
+
+/-- [spqr::encoding::gf::{core::ops::arith::MulAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul_assign]:
+    Source: 'src/encoding/gf.rs', lines 507:4-509:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]: loop body 0:
+    Source: 'src/encoding/gf.rs', lines 451:8-454:9 -/
+@[rust_loop_body]
+def encoding.gf.GF16.div_impl_loop.body
+  (iter : core.ops.range.Range Std.I32) (square : encoding.gf.GF16)
+  (out : encoding.gf.GF16) :
+  Result (ControlFlow ((core.ops.range.Range Std.I32) × encoding.gf.GF16 ×
+    encoding.gf.GF16) encoding.gf.GF16)
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next I32.Insts.CoreIterRangeStep iter
+  match o with
+  | none => ok (done out)
+  | some _ =>
+    let out1 ←
+      encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign out square
+    let square1 ←
+      encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul square square
+    ok (cont (iter1, square1, out1))
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]: loop 0:
+    Source: 'src/encoding/gf.rs', lines 451:8-454:9 -/
+@[rust_loop]
+def encoding.gf.GF16.div_impl_loop
+  (iter : core.ops.range.Range Std.I32) (square : encoding.gf.GF16)
+  (out : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  loop
+    (fun (iter1, square1, out1) => encoding.gf.GF16.div_impl_loop.body iter1
+      square1 out1)
+    (iter, square, out)
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]:
+    Source: 'src/encoding/gf.rs', lines 446:4-456:5 -/
+def encoding.gf.GF16.div_impl
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  let square ← encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul other other
+  encoding.gf.GF16.div_impl_loop { start := 1#i32, «end» := 16#i32 } square
+    self
+
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_mul]:
-    Source: 'src/encoding/gf.rs', lines 560:4-564:5
+    Source: 'src/encoding/gf.rs', lines 458:4-462:5
     Visibility: public -/
 def encoding.gf.GF16.const_mul
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -5191,7 +5119,7 @@ def encoding.gf.GF16.const_mul
   ok { value := i }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_sub]:
-    Source: 'src/encoding/gf.rs', lines 566:4-570:5
+    Source: 'src/encoding/gf.rs', lines 464:4-468:5
     Visibility: public -/
 def encoding.gf.GF16.const_sub
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -5201,7 +5129,7 @@ def encoding.gf.GF16.const_sub
   ok { value := i }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 580:12-586:13
+    Source: 'src/encoding/gf.rs', lines 478:12-484:13
     Visibility: public -/
 @[rust_loop_body]
 def encoding.gf.GF16.const_div_loop.body
@@ -5218,7 +5146,7 @@ def encoding.gf.GF16.const_div_loop.body
   else ok (done out)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 580:12-586:13
+    Source: 'src/encoding/gf.rs', lines 478:12-484:13
     Visibility: public -/
 @[rust_loop]
 def encoding.gf.GF16.const_div_loop
@@ -5231,7 +5159,7 @@ def encoding.gf.GF16.const_div_loop
     (square, out, i)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div]:
-    Source: 'src/encoding/gf.rs', lines 572:4-589:5
+    Source: 'src/encoding/gf.rs', lines 470:4-487:5
     Visibility: public -/
 @[reducible]
 nonrec def encoding.gf.GF16.const_div
@@ -5239,6 +5167,88 @@ nonrec def encoding.gf.GF16.const_div
   Result encoding.gf.GF16
   := do
   encoding.gf.GF16.const_div_loop other self 1#usize
+
+/-- [spqr::encoding::gf::{core::ops::arith::Mul<&0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
+    Source: 'src/encoding/gf.rs', lines 525:4-529:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithMulShared0GF16GF16.mul
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
+
+/-- [spqr::encoding::gf::{core::ops::arith::DivAssign<&0 (spqr::encoding::gf::GF16)> for spqr::encoding::gf::GF16}::div_assign]:
+    Source: 'src/encoding/gf.rs', lines 535:4-537:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16.div_assign
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.div_impl self other
+
+/-- [spqr::encoding::gf::{core::ops::arith::DivAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div_assign]:
+    Source: 'src/encoding/gf.rs', lines 542:4-544:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16.div_assign
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.div_impl self other
+
+/-- [spqr::encoding::gf::{core::ops::arith::Div<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div]:
+    Source: 'src/encoding/gf.rs', lines 550:4-552:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithDivGF16GF16.div
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.div_impl self other
+
+/-- [spqr::encoding::gf::{core::ops::arith::Div<&0 (spqr::encoding::gf::GF16), spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div]:
+    Source: 'src/encoding/gf.rs', lines 558:4-560:5
+    Visibility: public -/
+def encoding.gf.GF16.Insts.CoreOpsArithDivShared0GF16GF16.div
+  (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
+  Result encoding.gf.GF16
+  := do
+  encoding.gf.GF16.div_impl self other
+
+/-- [spqr::encoding::gf::parallel_mult]: loop body 0:
+    Source: 'src/encoding/gf.rs', lines 570:4-575:5
+    Visibility: public -/
+@[rust_loop_body]
+def encoding.gf.parallel_mult_loop.body
+  (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) (i : Std.Usize) :
+  Result (ControlFlow ((Slice encoding.gf.GF16) × Std.Usize) (encoding.gf.GF16
+    × (Slice encoding.gf.GF16) × Std.Usize))
+  := sorry
+/-- [spqr::encoding::gf::parallel_mult]: loop 0:
+    Source: 'src/encoding/gf.rs', lines 570:4-575:5
+    Visibility: public -/
+@[rust_loop]
+def encoding.gf.parallel_mult_loop
+  (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) (i : Std.Usize) :
+  Result (encoding.gf.GF16 × (Slice encoding.gf.GF16) × Std.Usize)
+  := do
+  loop
+    (fun (into1, i1) => encoding.gf.parallel_mult_loop.body a into1 i1)
+    (into, i)
+
+/-- [spqr::encoding::gf::parallel_mult]:
+    Source: 'src/encoding/gf.rs', lines 566:0-579:1
+    Visibility: public -/
+def encoding.gf.parallel_mult
+  (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) :
+  Result (Slice encoding.gf.GF16)
+  := do
+  let (a1, into1, i) ← encoding.gf.parallel_mult_loop a into 0#usize
+  let i1 := Slice.len into1
+  if i < i1
+  then
+    let (g, index_mut_back) ← Slice.index_mut_usize into1 i
+    let g1 ← encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign g a1
+    ok (index_mut_back g1)
+  else ok into1
 
 /-- [spqr::encoding::polynomial::{core::fmt::Debug for spqr::encoding::polynomial::PolynomialError}::fmt]:
     Source: 'src/encoding/polynomial.rs', lines 12:9-12:14
@@ -6304,7 +6314,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::const_polys_to_polys::{core::ops::function::FnOnce<(&'_ (spqr::encoding::polynomial::PolyConst<N>)), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::closure<N>}]
     Source: 'src/encoding/polynomial.rs', lines 466:19-466:34 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleSharedPolyConstPoly
   (N : Std.Usize) : core.ops.function.FnOnce
   (encoding.polynomial.const_polys_to_polys.closure N)
@@ -6316,7 +6326,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::const_polys_to_polys::{core::ops::function::FnMut<(&'_ (spqr::encoding::polynomial::PolyConst<N>)), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::closure<N>}]
     Source: 'src/encoding/polynomial.rs', lines 466:19-466:34 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
   (N : Std.Usize) : core.ops.function.FnMut
   (encoding.polynomial.const_polys_to_polys.closure N)
@@ -6937,7 +6947,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{core::ops::function::FnOnce<((usize, &'_ (spqr::encoding::gf::GF16))), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure#1}]
     Source: 'src/encoding/polynomial.rs', lines 641:25-644:21 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairUsizeSharedGF16Pt
   : core.ops.function.FnOnce encoding.polynomial.PolyEncoder.point_at.closure_1
   (Std.Usize × encoding.gf.GF16) encoding.polynomial.Pt := {
@@ -6948,7 +6958,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{core::ops::function::FnMut<((usize, &'_ (spqr::encoding::gf::GF16))), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure#1}]
     Source: 'src/encoding/polynomial.rs', lines 641:25-644:21 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
   : core.ops.function.FnMut encoding.polynomial.PolyEncoder.point_at.closure_1
   (Std.Usize × encoding.gf.GF16) encoding.polynomial.Pt := {
@@ -6985,7 +6995,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{core::ops::function::FnOnce<(usize), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure}]
     Source: 'src/encoding/polynomial.rs', lines 635:68-635:85 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyEncoder.point_at.closure.Insts.CoreOpsFunctionFnOnceTupleUsizePoly
   : core.ops.function.FnOnce encoding.polynomial.PolyEncoder.point_at.closure
   Std.Usize encoding.polynomial.Poly := {
@@ -6996,7 +7006,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{core::ops::function::FnMut<(usize), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure}]
     Source: 'src/encoding/polynomial.rs', lines 635:68-635:85 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyEncoder.point_at.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoly
   : core.ops.function.FnMut encoding.polynomial.PolyEncoder.point_at.closure
   Std.Usize encoding.polynomial.Poly := {
@@ -7149,7 +7159,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{core::ops::function::FnOnce<(usize), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::closure<0>}]
     Source: 'src/encoding/polynomial.rs', lines 676:63-678:9 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnOnceTupleUsizePoint
   : core.ops.function.FnOnce
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure Std.Usize
@@ -7161,7 +7171,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{core::ops::function::FnMut<(usize), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::closure<0>}]
     Source: 'src/encoding/polynomial.rs', lines 676:63-678:9 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoint
   : core.ops.function.FnMut
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure Std.Usize
@@ -7386,7 +7396,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{core::ops::function::FnOnce<(usize), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::closure}]
     Source: 'src/encoding/polynomial.rs', lines 788:38-788:58 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeSortedSetPt
   : core.ops.function.FnOnce
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure Std.Usize
@@ -7398,7 +7408,7 @@ def
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{core::ops::function::FnMut<(usize), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::closure}]
     Source: 'src/encoding/polynomial.rs', lines 788:38-788:58 -/
 @[reducible]
-def
+nonrec def
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt
   : core.ops.function.FnMut
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure Std.Usize
@@ -8449,7 +8459,7 @@ def
 /-- Trait implementation: [spqr::current_version::{core::ops::function::FnOnce<(prost::error::UnknownEnumValue), spqr::Error> for spqr::current_version::closure}]
     Source: 'src/lib.rs', lines 259:59-259:81 -/
 @[reducible]
-def
+nonrec def
   current_version.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
   : core.ops.function.FnOnce current_version.closure
   prost.error.UnknownEnumValue Error := {
@@ -8603,7 +8613,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 33:21-33:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure
@@ -8778,7 +8788,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure
@@ -8975,7 +8985,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure#1}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1
@@ -8997,7 +9007,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure
@@ -9242,7 +9252,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure
@@ -9326,7 +9336,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure
@@ -9493,7 +9503,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure
@@ -10086,7 +10096,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 37:21-37:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure
@@ -10201,7 +10211,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure#1}]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1
@@ -10223,7 +10233,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure
@@ -10448,7 +10458,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure
@@ -10529,7 +10539,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::closure}]
     Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
   : core.ops.function.FnOnce
   v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure
@@ -11464,7 +11474,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(alloc::string::String), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure#1}]
     Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError
   : core.ops.function.FnOnce
   v1.chunked.states.serialize.Message.deserialize.closure_1 String Error := {
@@ -11485,7 +11495,7 @@ def
 /-- Trait implementation: [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{core::ops::function::FnOnce<(core::num::error::TryFromIntError), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::closure}]
     Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
 @[reducible]
-def
+nonrec def
   v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError
   : core.ops.function.FnOnce
   v1.chunked.states.serialize.Message.deserialize.closure
