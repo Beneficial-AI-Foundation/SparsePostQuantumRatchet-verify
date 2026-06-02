@@ -20,8 +20,7 @@ open spqr
 
 /-- [core::array::equality::{core::cmp::PartialEq<[U; N]> for [T]}::eq]:
     Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40
-    Name pattern: [core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq]
-    Visibility: public -/
+    Name pattern: [core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq] -/
 @[rust_fun "core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq"]
 axiom Slice.Insts.CoreCmpPartialEqArray.eq
   {T : Type} {U : Type} {N : Std.Usize} (cmpPartialEqInst : core.cmp.PartialEq
@@ -30,8 +29,7 @@ axiom Slice.Insts.CoreCmpPartialEqArray.eq
 
 /-- [core::array::from_fn]:
     Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52
-    Name pattern: [core::array::from_fn]
-    Visibility: public -/
+    Name pattern: [core::array::from_fn] -/
 @[rust_fun "core::array::from_fn"]
 axiom core.array.from_fn
   {T : Type} {F : Type} (N : Std.Usize) (opsfunctionFnMutFTupleUsizeTInst :
@@ -40,32 +38,13 @@ axiom core.array.from_fn
 
 /-- [core::borrow::{core::borrow::Borrow<T> for &0 (T)}::borrow]:
     Source: '/rustc/library/core/src/borrow.rs', lines 230:4-230:26
-    Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow]
-    Visibility: public -/
+    Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow] -/
 @[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
 axiom Shared0T.Insts.CoreBorrowBorrow.borrow {T : Type} : T → Result T
 
-/-- [core::cmp::impls::{core::cmp::Eq for usize}::assert_receiver_is_total_eq]:
-    Source: '/rustc/library/core/src/cmp.rs', lines 1898:12-1898:32
-    Name pattern: [core::cmp::impls::{core::cmp::Eq<usize>}::assert_receiver_is_total_eq]
-    Visibility: public -/
-@[rust_fun
-  "core::cmp::impls::{core::cmp::Eq<usize>}::assert_receiver_is_total_eq"]
-axiom Usize.Insts.CoreCmpEq.assert_receiver_is_total_eq
-  : Std.Usize → Result Unit
-
-/-- [core::cmp::impls::{core::cmp::Eq for u8}::assert_receiver_is_total_eq]:
-    Source: '/rustc/library/core/src/cmp.rs', lines 1898:12-1898:32
-    Name pattern: [core::cmp::impls::{core::cmp::Eq<u8>}::assert_receiver_is_total_eq]
-    Visibility: public -/
-@[rust_fun
-  "core::cmp::impls::{core::cmp::Eq<u8>}::assert_receiver_is_total_eq"]
-axiom U8.Insts.CoreCmpEq.assert_receiver_is_total_eq : Std.U8 → Result Unit
-
 /-- [core::convert::num::{core::convert::TryFrom<u64, core::num::error::TryFromIntError> for u32}::try_from]:
     Source: '/rustc/library/core/src/convert/num.rs', lines 294:12-294:64
-    Name pattern: [core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from]
-    Visibility: public -/
+    Name pattern: [core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from] -/
 @[rust_fun
   "core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from"]
 axiom U32.Insts.CoreConvertTryFromU64TryFromIntError.try_from
@@ -75,8 +54,7 @@ axiom U32.Insts.CoreConvertTryFromU64TryFromIntError.try_from
 
 /-- [core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish]:
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2466:4-2473:15
-    Name pattern: [core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish]
-    Visibility: public -/
+    Name pattern: [core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish] -/
 @[rust_fun "core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish"]
 axiom core.fmt.Formatter.debug_struct_field2_finish
   :
@@ -86,8 +64,7 @@ axiom core.fmt.Formatter.debug_struct_field2_finish
 
 /-- [core::fmt::{core::fmt::Display for &0 (T)}::fmt]:
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2865:12-2865:58
-    Name pattern: [core::fmt::{core::fmt::Display<&'0 @T>}::fmt]
-    Visibility: public -/
+    Name pattern: [core::fmt::{core::fmt::Display<&'0 @T>}::fmt] -/
 @[rust_fun "core::fmt::{core::fmt::Display<&'0 @T>}::fmt"]
 axiom Shared0T.Insts.CoreFmtDisplay.fmt
   {T : Type} (DisplayInst : core.fmt.Display T) :
@@ -96,15 +73,13 @@ axiom Shared0T.Insts.CoreFmtDisplay.fmt
 
 /-- [core::hint::black_box]:
     Source: '/rustc/library/core/src/hint.rs', lines 490:0-490:40
-    Name pattern: [core::hint::black_box]
-    Visibility: public -/
+    Name pattern: [core::hint::black_box] -/
 @[rust_fun "core::hint::black_box"]
 axiom core.hint.black_box {T : Type} : T → Result T
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::next]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 79:4-79:64
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next]
-    Visibility: public -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next"]
 axiom
@@ -116,8 +91,7 @@ axiom
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::collect]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::collect]
-    Visibility: public -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::collect] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::collect"]
 axiom
@@ -130,8 +104,7 @@ axiom
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::enumerate]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::enumerate]
-    Visibility: public -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::enumerate] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::enumerate"]
 axiom
@@ -144,8 +117,7 @@ axiom
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::map]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map]
-    Visibility: public -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map"]
 axiom
@@ -159,8 +131,7 @@ axiom
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::step_by]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::step_by]
-    Visibility: public -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::step_by] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::step_by"]
 axiom
@@ -173,8 +144,7 @@ axiom
 
 /-- [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}::collect]:
     Source: '/rustc/library/core/src/iter/adapters/map.rs', lines 99:0-101:27
-    Name pattern: [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect]
-    Visibility: public -/
+    Name pattern: [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect] -/
 @[rust_fun
   "core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect"]
 axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
@@ -187,8 +157,7 @@ axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::backward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 340:16-340:74
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::backward_checked]
-    Visibility: public -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::backward_checked] -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::backward_checked"]
 axiom I32.Insts.CoreIterRangeStep.backward_checked
@@ -196,8 +165,7 @@ axiom I32.Insts.CoreIterRangeStep.backward_checked
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::forward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 319:16-319:73
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::forward_checked]
-    Visibility: public -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::forward_checked] -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::forward_checked"]
 axiom I32.Insts.CoreIterRangeStep.forward_checked
@@ -205,61 +173,14 @@ axiom I32.Insts.CoreIterRangeStep.forward_checked
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::steps_between]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 304:16-304:84
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between]
-    Visibility: public -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between] -/
 @[rust_fun "core::iter::range::{core::iter::range::Step<i32>}::steps_between"]
 axiom I32.Insts.CoreIterRangeStep.steps_between
   : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize))
 
-/-- [core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}::collect]:
-    Source: '/rustc/library/core/src/iter/range.rs', lines 852:0-852:40
-    Name pattern: [core::iter::range::{core::iter::traits::iterator::Iterator<core::ops::range::Range<@A>, @A>}::collect]
-    Visibility: public -/
-@[rust_fun
-  "core::iter::range::{core::iter::traits::iterator::Iterator<core::ops::range::Range<@A>, @A>}::collect"]
-axiom core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.collect
-  {A : Type} {B : Type} (StepInst : core.iter.range.Step A)
-  (traitscollectFromIteratorInst : core.iter.traits.collect.FromIterator B A) :
-  core.ops.range.Range A → Result B
-
-/-- [core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}::map]:
-    Source: '/rustc/library/core/src/iter/range.rs', lines 852:0-852:40
-    Name pattern: [core::iter::range::{core::iter::traits::iterator::Iterator<core::ops::range::Range<@A>, @A>}::map]
-    Visibility: public -/
-@[rust_fun
-  "core::iter::range::{core::iter::traits::iterator::Iterator<core::ops::range::Range<@A>, @A>}::map"]
-axiom core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.map
-  {A : Type} {B : Type} {F : Type} (StepInst : core.iter.range.Step A)
-  (opsfunctionFnMutFTupleABInst : core.ops.function.FnMut F A B) :
-  core.ops.range.Range A → F → Result (core.iter.adapters.map.Map
-    (core.ops.range.Range A) F)
-
-/-- [core::iter::traits::iterator::Iterator::map]:
-    Source: '/rustc/library/core/src/iter/traits/iterator.rs', lines 789:4-792:34
-    Name pattern: [core::iter::traits::iterator::Iterator::map]
-    Visibility: public -/
-@[rust_fun "core::iter::traits::iterator::Iterator::map"]
-axiom core.iter.traits.iterator.Iterator.map.default
-  {Self : Type} {B : Type} {F : Type} {Clause0_Item : Type} (IteratorInst :
-  core.iter.traits.iterator.Iterator Self Clause0_Item)
-  (opsfunctionFnMutFTupleClause0_ItemBInst : core.ops.function.FnMut F
-  Clause0_Item B) :
-  Self → F → Result (core.iter.adapters.map.Map Self F)
-
-/-- [core::iter::traits::iterator::Iterator::enumerate]:
-    Source: '/rustc/library/core/src/iter/traits/iterator.rs', lines 1005:4-1007:20
-    Name pattern: [core::iter::traits::iterator::Iterator::enumerate]
-    Visibility: public -/
-@[rust_fun "core::iter::traits::iterator::Iterator::enumerate"]
-axiom core.iter.traits.iterator.Iterator.enumerate.default
-  {Self : Type} {Clause0_Item : Type} (IteratorInst :
-  core.iter.traits.iterator.Iterator Self Clause0_Item) :
-  Self → Result (core.iter.adapters.enumerate.Enumerate Self)
-
 /-- [core::ops::range::{core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::end_bound]:
     Source: '/rustc/library/core/src/ops/range.rs', lines 1071:4-1071:36
-    Name pattern: [core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::end_bound]
-    Visibility: public -/
+    Name pattern: [core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::end_bound] -/
 @[rust_fun
   "core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::end_bound"]
 axiom core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
@@ -267,8 +188,7 @@ axiom core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
 
 /-- [core::ops::range::{core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::start_bound]:
     Source: '/rustc/library/core/src/ops/range.rs', lines 1068:4-1068:38
-    Name pattern: [core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::start_bound]
-    Visibility: public -/
+    Name pattern: [core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::start_bound] -/
 @[rust_fun
   "core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::start_bound"]
 axiom core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
@@ -276,23 +196,20 @@ axiom core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
 
 /-- [core::option::{core::option::Option<T>}::as_ref]:
     Source: '/rustc/library/core/src/option.rs', lines 744:4-744:44
-    Name pattern: [core::option::{core::option::Option<@T>}::as_ref]
-    Visibility: public -/
+    Name pattern: [core::option::{core::option::Option<@T>}::as_ref] -/
 @[rust_fun "core::option::{core::option::Option<@T>}::as_ref"]
 axiom core.option.Option.as_ref {T : Type} : Option T → Result (Option T)
 
 /-- [core::option::{core::option::Option<T>}::ok_or]:
     Source: '/rustc/library/core/src/option.rs', lines 1337:4-1337:73
-    Name pattern: [core::option::{core::option::Option<@T>}::ok_or]
-    Visibility: public -/
+    Name pattern: [core::option::{core::option::Option<@T>}::ok_or] -/
 @[rust_fun "core::option::{core::option::Option<@T>}::ok_or"]
 axiom core.option.Option.ok_or
   {T : Type} {E : Type} : Option T → E → Result (core.result.Result T E)
 
 /-- [core::option::{core::clone::Clone for core::option::Option<T>}::clone]:
     Source: '/rustc/library/core/src/option.rs', lines 2261:4-2261:27
-    Name pattern: [core::option::{core::clone::Clone<core::option::Option<@T>>}::clone]
-    Visibility: public -/
+    Name pattern: [core::option::{core::clone::Clone<core::option::Option<@T>>}::clone] -/
 @[rust_fun
   "core::option::{core::clone::Clone<core::option::Option<@T>>}::clone"]
 axiom core.option.Option.Insts.CoreCloneClone.clone
@@ -301,8 +218,7 @@ axiom core.option.Option.Insts.CoreCloneClone.clone
 
 /-- [core::option::{core::default::Default for core::option::Option<T>}::default]:
     Source: '/rustc/library/core/src/option.rs', lines 2297:4-2297:29
-    Name pattern: [core::option::{core::default::Default<core::option::Option<@T>>}::default]
-    Visibility: public -/
+    Name pattern: [core::option::{core::default::Default<core::option::Option<@T>>}::default] -/
 @[rust_fun
   "core::option::{core::default::Default<core::option::Option<@T>>}::default"]
 axiom core.option.Option.Insts.CoreDefaultDefault.default
@@ -310,8 +226,7 @@ axiom core.option.Option.Insts.CoreDefaultDefault.default
 
 /-- [core::option::{core::cmp::PartialEq<core::option::Option<T>> for core::option::Option<T>}::eq]:
     Source: '/rustc/library/core/src/option.rs', lines 2424:4-2424:38
-    Name pattern: [core::option::{core::cmp::PartialEq<core::option::Option<@T>, core::option::Option<@T>>}::eq]
-    Visibility: public -/
+    Name pattern: [core::option::{core::cmp::PartialEq<core::option::Option<@T>, core::option::Option<@T>>}::eq] -/
 @[rust_fun
   "core::option::{core::cmp::PartialEq<core::option::Option<@T>, core::option::Option<@T>>}::eq"]
 axiom core.option.Option.Insts.CoreCmpPartialEqOption.eq
@@ -320,16 +235,14 @@ axiom core.option.Option.Insts.CoreCmpPartialEqOption.eq
 
 /-- [core::result::{core::result::Result<T, E>}::is_ok]:
     Source: '/rustc/library/core/src/result.rs', lines 593:4-593:37
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::is_ok]
-    Visibility: public -/
+    Name pattern: [core::result::{core::result::Result<@T, @E>}::is_ok] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::is_ok"]
 axiom core.result.Result.is_ok
   {T : Type} {E : Type} : core.result.Result T E → Result Bool
 
 /-- [core::result::{core::result::Result<T, E>}::map]:
     Source: '/rustc/library/core/src/result.rs', lines 831:4-833:53
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::map]
-    Visibility: public -/
+    Name pattern: [core::result::{core::result::Result<@T, @E>}::map] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::map"]
 axiom core.result.Result.map
   {T : Type} {E : Type} {U : Type} {F : Type} (opsfunctionFnOnceFTupleTUInst :
@@ -338,8 +251,7 @@ axiom core.result.Result.map
 
 /-- [core::result::{core::result::Result<T, E>}::map_err]:
     Source: '/rustc/library/core/src/result.rs', lines 962:4-964:53
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::map_err]
-    Visibility: public -/
+    Name pattern: [core::result::{core::result::Result<@T, @E>}::map_err] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::map_err"]
 axiom core.result.Result.map_err
   {T : Type} {E : Type} {F : Type} {O : Type} (opsfunctionFnOnceOTupleEFInst :
@@ -348,16 +260,14 @@ axiom core.result.Result.map_err
 
 /-- [core::result::{core::result::Result<T, E>}::unwrap_or]:
     Source: '/rustc/library/core/src/result.rs', lines 1590:4-1593:28
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::unwrap_or]
-    Visibility: public -/
+    Name pattern: [core::result::{core::result::Result<@T, @E>}::unwrap_or] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::unwrap_or"]
 axiom core.result.Result.unwrap_or
   {T : Type} {E : Type} : core.result.Result T E → T → Result T
 
 /-- [core::result::{core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, E>}::branch]:
     Source: '/rustc/library/core/src/result.rs', lines 2172:4-2172:64
-    Name pattern: [core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch]
-    Visibility: public -/
+    Name pattern: [core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch] -/
 @[rust_fun
   "core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch"]
 axiom core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
@@ -367,8 +277,7 @@ axiom core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch
 
 /-- [core::result::{core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, F>}::from_residual]:
     Source: '/rustc/library/core/src/result.rs', lines 2187:4-2187:70
-    Name pattern: [core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual]
-    Visibility: public -/
+    Name pattern: [core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual] -/
 @[rust_fun
   "core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual"]
 axiom
@@ -379,8 +288,7 @@ axiom
 
 /-- [core::slice::cmp::{core::cmp::Ord for [T]}::cmp]:
     Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42
-    Name pattern: [core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]
-    Visibility: public -/
+    Name pattern: [core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp] -/
 @[rust_fun "core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp"]
 axiom Slice.Insts.CoreCmpOrd.cmp
   {T : Type} (cmpOrdInst : core.cmp.Ord T) :
@@ -388,8 +296,7 @@ axiom Slice.Insts.CoreCmpOrd.cmp
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::index_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 660:4-660:51
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index_mut]
-    Visibility: public -/
+    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index_mut] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index_mut"]
 axiom
@@ -400,8 +307,7 @@ axiom
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::index]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 655:4-655:39
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index]
-    Visibility: public -/
+    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index"]
 def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index
@@ -410,8 +316,7 @@ def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_unchecked_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 650:4-650:66
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked_mut]
-    Visibility: public -/
+    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked_mut] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked_mut"]
 axiom
@@ -422,8 +327,7 @@ axiom
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_unchecked]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 645:4-645:66
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked]
-    Visibility: public -/
+    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked"]
 axiom
@@ -434,8 +338,7 @@ axiom
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 640:4-640:57
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_mut]
-    Visibility: public -/
+    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_mut] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_mut"]
 axiom core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut
@@ -445,29 +348,16 @@ axiom core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 635:4-635:45
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get]
-    Visibility: public -/
+    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get"]
 axiom core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get
   {T : Type} :
   core.ops.range.RangeFull → Slice T → Result (Option (Slice T))
 
-/-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a (T)> for core::slice::iter::Iter<'a, T>}::collect]:
-    Source: '/rustc/library/core/src/slice/iter/macros.rs', lines 153:8-153:45
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::collect]
-    Visibility: public -/
-@[rust_fun
-  "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::collect"]
-axiom core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.collect
-  {T : Type} {B : Type} (itertraitscollectFromIteratorBSharedATInst :
-  core.iter.traits.collect.FromIterator B T) :
-  core.slice.iter.Iter T → Result B
-
 /-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a (T)> for core::slice::iter::Iter<'a, T>}::map]:
     Source: '/rustc/library/core/src/slice/iter/macros.rs', lines 153:8-153:45
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map]
-    Visibility: public -/
+    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map"]
 axiom core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
@@ -478,8 +368,7 @@ axiom core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
 
 /-- [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a (T), core::slice::iter::Iter<'a, T>> for &'a ([T])}::into_iter]:
     Source: '/rustc/library/core/src/slice/iter.rs', lines 25:4-25:37
-    Name pattern: [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter]
-    Visibility: public -/
+    Name pattern: [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter"]
 axiom
@@ -488,8 +377,7 @@ axiom
 
 /-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a ([T])> for core::slice::iter::ChunksExact<'a, T>}::collect]:
     Source: '/rustc/library/core/src/slice/iter.rs', lines 1892:0-1892:43
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::collect]
-    Visibility: public -/
+    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::collect] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::collect"]
 axiom
@@ -500,8 +388,7 @@ axiom
 
 /-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a ([T])> for core::slice::iter::ChunksExact<'a, T>}::map]:
     Source: '/rustc/library/core/src/slice/iter.rs', lines 1892:0-1892:43
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::map]
-    Visibility: public -/
+    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::map] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::map"]
 axiom
@@ -513,8 +400,7 @@ axiom
 
 /-- [core::slice::{[T]}::clone_from_slice]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4254:4-4256:44
-    Name pattern: [core::slice::{[@T]}::clone_from_slice]
-    Visibility: public -/
+    Name pattern: [core::slice::{[@T]}::clone_from_slice] -/
 @[rust_fun "core::slice::{[@T]}::clone_from_slice"]
 def core.slice.Slice.clone_from_slice
   {T : Type} (cloneCloneInst : core.clone.Clone T) :
@@ -523,8 +409,7 @@ def core.slice.Slice.clone_from_slice
 
 /-- [core::slice::{[T]}::copy_within]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16
-    Name pattern: [core::slice::{[@T]}::copy_within]
-    Visibility: public -/
+    Name pattern: [core::slice::{[@T]}::copy_within] -/
 @[rust_fun "core::slice::{[@T]}::copy_within"]
 axiom core.slice.Slice.copy_within
   {T : Type} {R : Type} (opsrangeRangeBoundsRUsizeInst :
@@ -534,8 +419,7 @@ axiom core.slice.Slice.copy_within
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, A>}::len]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 1633:4-1633:30
-    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::len]
-    Visibility: public -/
+    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::len] -/
 @[rust_fun
   "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::len"]
 axiom alloc.collections.vec_deque.VecDeque.len
@@ -544,8 +428,7 @@ axiom alloc.collections.vec_deque.VecDeque.len
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, A>}::pop_front]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 2064:4-2064:44
-    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::pop_front]
-    Visibility: public -/
+    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::pop_front] -/
 @[rust_fun
   "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::pop_front"]
 axiom alloc.collections.vec_deque.VecDeque.pop_front
@@ -555,8 +438,7 @@ axiom alloc.collections.vec_deque.VecDeque.pop_front
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, A>}::push_back]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 2205:4-2205:41
-    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::push_back]
-    Visibility: public -/
+    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::push_back] -/
 @[rust_fun
   "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, @A>}::push_back"]
 axiom alloc.collections.vec_deque.VecDeque.push_back
@@ -566,8 +448,7 @@ axiom alloc.collections.vec_deque.VecDeque.push_back
 
 /-- [alloc::collections::vec_deque::{core::ops::index::IndexMut<usize, T> for alloc::collections::vec_deque::VecDeque<T, A>}::index_mut]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3634:4-3634:51
-    Name pattern: [alloc::collections::vec_deque::{core::ops::index::IndexMut<alloc::collections::vec_deque::VecDeque<@T, @A>, usize, @T>}::index_mut]
-    Visibility: public -/
+    Name pattern: [alloc::collections::vec_deque::{core::ops::index::IndexMut<alloc::collections::vec_deque::VecDeque<@T, @A>, usize, @T>}::index_mut] -/
 @[rust_fun
   "alloc::collections::vec_deque::{core::ops::index::IndexMut<alloc::collections::vec_deque::VecDeque<@T, @A>, usize, @T>}::index_mut"]
 axiom
@@ -578,8 +459,7 @@ axiom
 
 /-- [alloc::collections::vec_deque::{core::convert::From<[T; N]> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3812:4-3812:32
-    Name pattern: [alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, [@T; @N]>}::from]
-    Visibility: public -/
+    Name pattern: [alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, [@T; @N]>}::from] -/
 @[rust_fun
   "alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, [@T; @N]>}::from"]
 axiom
@@ -589,8 +469,7 @@ axiom
 
 /-- [alloc::slice::{[T]}::concat]:
     Source: '/rustc/library/alloc/src/slice.rs', lines 578:4-580:27
-    Name pattern: [alloc::slice::{[@T]}::concat]
-    Visibility: public -/
+    Name pattern: [alloc::slice::{[@T]}::concat] -/
 @[rust_fun "alloc::slice::{[@T]}::concat"]
 axiom alloc.slice.Slice.concat
   {T : Type} {Item : Type} {Clause0_Output : Type}
@@ -600,8 +479,7 @@ axiom alloc.slice.Slice.concat
 
 /-- [alloc::slice::{alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}::concat]:
     Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37
-    Name pattern: [alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat]
-    Visibility: public -/
+    Name pattern: [alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat] -/
 @[rust_fun
   "alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat"]
 axiom Slice.Insts.AllocSliceConcatTVec.concat
@@ -611,16 +489,14 @@ axiom Slice.Insts.AllocSliceConcatTVec.concat
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
     Source: '/rustc/library/alloc/src/str.rs', lines 210:4-210:32
-    Name pattern: [alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned]
-    Visibility: public -/
+    Name pattern: [alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned] -/
 @[rust_fun
   "alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned"]
 axiom Str.Insts.AllocBorrowToOwnedString.to_owned : Str → Result String
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::truncate]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1696:4-1696:42
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::truncate]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::truncate] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::truncate"]
 axiom alloc.vec.Vec.truncate
   {T : Type} (A : Type) :
@@ -628,16 +504,14 @@ axiom alloc.vec.Vec.truncate
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::as_slice]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1733:4-1733:40
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::as_slice]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::as_slice] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::as_slice"]
 axiom alloc.vec.Vec.as_slice
   {T : Type} (A : Type) : alloc.vec.Vec T → Result (Slice T)
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::remove]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2276:4-2276:47
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::remove]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::remove] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::remove"]
 axiom alloc.vec.Vec.remove
   {T : Type} (A : Type) :
@@ -645,8 +519,7 @@ axiom alloc.vec.Vec.remove
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::append]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2802:4-2802:46
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::append]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::append] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::append"]
 axiom alloc.vec.Vec.append
   {T : Type} (A : Type) :
@@ -655,24 +528,21 @@ axiom alloc.vec.Vec.append
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::clear]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2903:4-2903:27
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::clear]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::clear] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::clear"]
 axiom alloc.vec.Vec.clear
   {T : Type} (A : Type) : alloc.vec.Vec T → Result (alloc.vec.Vec T)
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::is_empty]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2956:4-2956:40
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::is_empty]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::is_empty] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::is_empty"]
 axiom alloc.vec.Vec.is_empty
   {T : Type} (A : Type) : alloc.vec.Vec T → Result Bool
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::split_off]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2989:4-2991:17
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::split_off]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::split_off] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::split_off"]
 axiom alloc.vec.Vec.split_off
   {T : Type} {A : Type} (corecloneCloneInst : core.clone.Clone A) :
@@ -681,8 +551,7 @@ axiom alloc.vec.Vec.split_off
 
 /-- [alloc::vec::{core::default::Default for alloc::vec::Vec<T>}::default]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 4171:4-4171:26
-    Name pattern: [alloc::vec::{core::default::Default<alloc::vec::Vec<@T>>}::default]
-    Visibility: public -/
+    Name pattern: [alloc::vec::{core::default::Default<alloc::vec::Vec<@T>>}::default] -/
 @[rust_fun
   "alloc::vec::{core::default::Default<alloc::vec::Vec<@T>>}::default"]
 axiom alloc.vec.Vec.Insts.CoreDefaultDefault.default
@@ -690,8 +559,7 @@ axiom alloc.vec.Vec.Insts.CoreDefaultDefault.default
 
 /-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::advance]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2901:4-2901:37
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::advance]
-    Visibility: public -/
+    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::advance] -/
 @[rust_fun
   "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::advance"]
 axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.advance
@@ -699,8 +567,7 @@ axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.advance
 
 /-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::chunk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2896:4-2896:28
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::chunk]
-    Visibility: public -/
+    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::chunk] -/
 @[rust_fun
   "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::chunk"]
 axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.chunk
@@ -708,8 +575,7 @@ axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.chunk
 
 /-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::remaining]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2891:4-2891:32
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining]
-    Visibility: public -/
+    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining] -/
 @[rust_fun
   "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining"]
 axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
@@ -717,8 +583,7 @@ axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
 
 /-- [libcrux_hmac::hmac]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-hmac-0.0.6/src/hmac.rs', lines 51:0-51:90
-    Name pattern: [libcrux_hmac::hmac]
-    Visibility: public -/
+    Name pattern: [libcrux_hmac::hmac] -/
 @[rust_fun "libcrux_hmac::hmac"]
 axiom libcrux_hmac.hmac
   :
@@ -727,15 +592,13 @@ axiom libcrux_hmac.hmac
 
 /-- [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
-    Name pattern: [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::constants::SHARED_SECRET_SIZE] -/
 @[rust_const "libcrux_ml_kem::constants::SHARED_SECRET_SIZE"]
 axiom libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}::fmt]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
-    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>}::fmt]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>}::fmt] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>}::fmt"]
 axiom libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFmtDebug.fmt
@@ -745,8 +608,7 @@ axiom libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFmtDebug.fmt
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<LEN>}::len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 161:4-161:31
-    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len"]
 axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
@@ -754,8 +616,7 @@ axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<LEN>}::len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 174:4-174:31
-    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len"]
 axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
@@ -763,29 +624,25 @@ axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk1_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 26:8-26:39
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk1_len]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk1_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk1_len"]
 axiom libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk2_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 31:8-31:39
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk2_len]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk2_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk2_len"]
 axiom libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encaps_state_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 59:8-59:48
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encaps_state_len]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encaps_state_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encaps_state_len"]
 axiom libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed"]
 axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
@@ -795,8 +652,7 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1"]
 axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
@@ -806,8 +662,7 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 275:12-275:49
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2"]
 axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
@@ -817,8 +672,7 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 283:12-283:54
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk"]
 axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
@@ -828,8 +682,7 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes"]
 axiom libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   :
@@ -838,8 +691,7 @@ axiom libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 344:8-349:39
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate1]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate1] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate1"]
 axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1
   :
@@ -851,8 +703,7 @@ axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1
 
 /-- [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]
-    Visibility: public -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key"]
 axiom libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
   :
@@ -863,77 +714,38 @@ axiom libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
 
 /-- [prost::encoding::bool::encode]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 263:12-263:82
-    Name pattern: [prost::encoding::bool::encode]
-    Visibility: public -/
+    Name pattern: [prost::encoding::bool::encode] -/
 @[rust_fun "prost::encoding::bool::encode"]
 axiom prost.encoding.bool.encode
   {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
   Std.U32 → Bool → T0 → Result T0
 
-/-- [prost::encoding::bool::merge]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 268:12-268:130
-    Name pattern: [prost::encoding::bool::merge]
-    Visibility: public -/
-@[rust_fun "prost::encoding::bool::merge"]
-axiom prost.encoding.bool.merge
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  prost.encoding.wire_type.WireType → Bool → T0 →
-    prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × Bool × T0)
-
 /-- [prost::encoding::bool::encoded_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 294:12-294:73
-    Name pattern: [prost::encoding::bool::encoded_len]
-    Visibility: public -/
+    Name pattern: [prost::encoding::bool::encoded_len] -/
 @[rust_fun "prost::encoding::bool::encoded_len"]
 axiom prost.encoding.bool.encoded_len : Std.U32 → Bool → Result Std.Usize
 
 /-- [prost::encoding::message::encode]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 787:4-789:19
-    Name pattern: [prost::encoding::message::encode]
-    Visibility: public -/
+    Name pattern: [prost::encoding::message::encode] -/
 @[rust_fun "prost::encoding::message::encode"]
 axiom prost.encoding.message.encode
   {M : Type} {T1 : Type} (messageMessageInst : prost.message.Message M)
   (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T1) :
   Std.U32 → M → T1 → Result T1
 
-/-- [prost::encoding::message::merge]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 796:4-804:15
-    Name pattern: [prost::encoding::message::merge]
-    Visibility: public -/
-@[rust_fun "prost::encoding::message::merge"]
-axiom prost.encoding.message.merge
-  {M : Type} {B : Type} (messageMessageInst : prost.message.Message M)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf B) :
-  prost.encoding.wire_type.WireType → M → B →
-    prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × M × B)
-
 /-- [prost::encoding::message::encoded_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 845:4-847:19
-    Name pattern: [prost::encoding::message::encoded_len]
-    Visibility: public -/
+    Name pattern: [prost::encoding::message::encoded_len] -/
 @[rust_fun "prost::encoding::message::encoded_len"]
 axiom prost.encoding.message.encoded_len
   {M : Type} (messageMessageInst : prost.message.Message M) :
   Std.U32 → M → Result Std.Usize
 
-/-- [prost::message::Message::decode]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/message.rs', lines 105:4-107:22
-    Name pattern: [prost::message::Message::decode]
-    Visibility: public -/
-@[rust_fun "prost::message::Message::decode"]
-axiom prost.message.Message.decode.default
-  {Self : Type} {T1 : Type} (MessageInst : prost.message.Message Self)
-  (coredefaultDefaultInst : core.default.Default Self) (bytesbufbuf_implBufInst
-  : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result Self prost.error.DecodeError)
-
 /-- [sorted_vec::{core::clone::Clone for sorted_vec::SortedSet<T>}::clone]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 38:9-38:14
-    Name pattern: [sorted_vec::{core::clone::Clone<sorted_vec::SortedSet<@T>>}::clone]
-    Visibility: public -/
+    Name pattern: [sorted_vec::{core::clone::Clone<sorted_vec::SortedSet<@T>>}::clone] -/
 @[rust_fun
   "sorted_vec::{core::clone::Clone<sorted_vec::SortedSet<@T>>}::clone"]
 axiom sorted_vec.SortedSet.Insts.CoreCloneClone.clone
@@ -943,8 +755,7 @@ axiom sorted_vec.SortedSet.Insts.CoreCloneClone.clone
 
 /-- [sorted_vec::{core::ops::deref::Deref<alloc::vec::Vec<T>> for sorted_vec::SortedVec<T>}::deref]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 309:2-309:30
-    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref]
-    Visibility: public -/
+    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref] -/
 @[rust_fun
   "sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref"]
 axiom sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
@@ -953,8 +764,7 @@ axiom sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::new]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 347:2-347:22
-    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::new]
-    Visibility: public -/
+    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::new] -/
 @[rust_fun "sorted_vec::{sorted_vec::SortedSet<@T>}::new"]
 axiom sorted_vec.SortedSet.new
   {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
@@ -962,8 +772,7 @@ axiom sorted_vec.SortedSet.new
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::with_capacity]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 351:2-351:49
-    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::with_capacity]
-    Visibility: public -/
+    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::with_capacity] -/
 @[rust_fun "sorted_vec::{sorted_vec::SortedSet<@T>}::with_capacity"]
 axiom sorted_vec.SortedSet.with_capacity
   {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
@@ -971,8 +780,7 @@ axiom sorted_vec.SortedSet.with_capacity
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::push]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 392:2-392:58
-    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::push]
-    Visibility: public -/
+    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::push] -/
 @[rust_fun "sorted_vec::{sorted_vec::SortedSet<@T>}::push"]
 axiom sorted_vec.SortedSet.push
   {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
@@ -981,8 +789,7 @@ axiom sorted_vec.SortedSet.push
 
 /-- [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<T>> for sorted_vec::SortedSet<T>}::deref]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 543:2-543:36
-    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedSet<@T>, sorted_vec::SortedVec<@T>>}::deref]
-    Visibility: public -/
+    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedSet<@T>, sorted_vec::SortedVec<@T>>}::deref] -/
 @[rust_fun
   "sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedSet<@T>, sorted_vec::SortedVec<@T>>}::deref"]
 axiom sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
@@ -991,8 +798,7 @@ axiom sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
 
 /-- [thiserror::display::{thiserror::display::AsDisplay<'a, &'a (T)> for &1 (T)}::as_display]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.12/src/display.rs', lines 20:4-20:43
-    Name pattern: [thiserror::display::{thiserror::display::AsDisplay<'a, &'0 @T, &'a @T>}::as_display]
-    Visibility: public -/
+    Name pattern: [thiserror::display::{thiserror::display::AsDisplay<'a, &'0 @T, &'a @T>}::as_display] -/
 @[rust_fun
   "thiserror::display::{thiserror::display::AsDisplay<'a, &'0 @T, &'a @T>}::as_display"]
 axiom Shared0T.Insts.ThiserrorDisplayAsDisplayASharedAT.as_display
