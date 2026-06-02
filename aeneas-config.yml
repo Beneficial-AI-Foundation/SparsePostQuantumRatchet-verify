@@ -77,16 +77,6 @@ tweaks:
         set_option linter.style.setOption false
         set_option linter.style.whitespace false
 
-    # Sorry BytesBufBuf_implBuf instance body: method names (remaining/chunk/advance) are fields
-    # of bytes.buf.buf_impl.Buf, so nonrec def + struct literal causes "Unknown identifier".
-    - regex: "(nonrec def Shared0SliceU8\\.Insts\\.BytesBufBuf_implBuf[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
-      replace: "$1:= sorry"
-
-    # Sorry all prost Message instance bodies: method names are fields of prost.message.Message,
-    # so nonrec def + struct literal causes "Unknown constant" for the axiom references.
-    - regex: "(nonrec def\\s+[\\w.]+\\.Insts\\.ProstMessageMessage[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
-      replace: "$1:= sorry"
-
     # Fix duplicate field name in ZeroablePrimitive: both Copy clauses get named markerCopyInst
     # https://github.com/AeneasVerif/aeneas/issues/1051
     - find: "(parentClauses := [\"markerCopyInst\", \"privateSealedInst\", \"markerCopyInst\"])"
