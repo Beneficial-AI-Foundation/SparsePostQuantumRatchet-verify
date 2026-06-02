@@ -8545,6 +8545,32 @@ def incremental_mlkem768.encaps1
   let ss1 := deref_mut_back1 s6
   ok ((v, state1, ss1), rng1)
 
+/-- [spqr::incremental_mlkem768::encaps2]:
+    Source: 'src/incremental_mlkem768.rs', lines 71:0-79:1
+    Visibility: public -/
+def incremental_mlkem768.encaps2
+  (ek : alloc.vec.Vec Std.U8) (es : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let maybe_fix ←
+    incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+      es
+  let o ← core.option.Option.as_ref maybe_fix
+  let es1 ← lift (core.option.Option.unwrap_or o es)
+  let s ← alloc.vec.Vec.as_slice Global es1
+  let r ← core.array.TryFromSharedArraySlice.try_from 2080#usize s
+  let a ←
+    core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
+      "size should be correct")
+  let s1 ← alloc.vec.Vec.as_slice Global ek
+  let r1 ← core.array.TryFromSharedArraySlice.try_from 1152#usize s1
+  let a1 ←
+    core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
+      "size should be correct")
+  let ct2 ← libcrux_ml_kem.mlkem768.incremental.encapsulate2 a a1
+  let s2 ← lift (Array.to_slice ct2.value)
+  alloc.slice.Slice.to_vec core.clone.CloneU8 s2
+
 /-- [spqr::incremental_mlkem768::decaps]:
     Source: 'src/incremental_mlkem768.rs', lines 156:0-169:1
     Visibility: public -/

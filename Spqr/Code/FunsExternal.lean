@@ -644,6 +644,15 @@ axiom libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encaps_state_len"]
 axiom libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize
 
+/-- [libcrux_ml_kem::mlkem768::incremental::encapsulate2]:
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 407:8-407:111
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2] -/
+@[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate2"]
+axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
+  :
+  Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
+    (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
+
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed] -/
@@ -2006,13 +2015,11 @@ axiom encoding.gf.mul2_u16
 axiom encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
   : encoding.polynomial.PolyDecoder → Result (Option (alloc.vec.Vec Std.U8))
 
-/-- [spqr::incremental_mlkem768::encaps2]:
-    Source: 'src/incremental_mlkem768.rs', lines 71:0-79:1
-    Visibility: public -/
-axiom incremental_mlkem768.encaps2
-  :
-  alloc.vec.Vec Std.U8 → alloc.vec.Vec Std.U8 → Result (alloc.vec.Vec
-    Std.U8)
+/-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
+    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1 -/
+axiom
+  incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+  : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8))
 
 /-- [spqr::initial_state]:
     Source: 'src/lib.rs', lines 212:0-236:1
