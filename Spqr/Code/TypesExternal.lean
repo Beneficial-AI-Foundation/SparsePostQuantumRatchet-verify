@@ -14,186 +14,11 @@ set_option linter.style.whitespace false
 set_option maxHeartbeats 1000000
 set_option maxRecDepth 2048
 
-/-- [core::array::iter::IntoIter]
-    Source: '/rustc/library/core/src/array/iter.rs', lines 20:0-20:38
-    Name pattern: [core::array::iter::IntoIter]
-    Visibility: public -/
-@[rust_type "core::array::iter::IntoIter"]
-axiom core.array.iter.IntoIter (T : Type) (N : Std.Usize) : Type
-
 /-- [core::num::error::TryFromIntError]
     Source: '/rustc/library/core/src/num/error.rs', lines 10:0-10:26
     Name pattern: [core::num::error::TryFromIntError] -/
 @[rust_type "core::num::error::TryFromIntError"]
 axiom core.num.error.TryFromIntError : Type
-
-/-- [core::iter::adapters::array_chunks::ArrayChunks]
-    Source: '/rustc/library/core/src/iter/adapters/array_chunks.rs', lines 19:0-19:51
-    Name pattern: [core::iter::adapters::array_chunks::ArrayChunks]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::array_chunks::ArrayChunks"]
-axiom core.iter.adapters.array_chunks.ArrayChunks (I : Type) (Clause0_Item :
-  Type) (N : Std.Usize) : Type
-
-/-- [core::iter::adapters::chain::Chain]
-    Source: '/rustc/library/core/src/iter/adapters/chain.rs', lines 23:0-23:22
-    Name pattern: [core::iter::adapters::chain::Chain]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::chain::Chain"]
-axiom core.iter.adapters.chain.Chain (A : Type) (B : Type) : Type
-
-/-- [core::iter::adapters::cloned::Cloned]
-    Source: '/rustc/library/core/src/iter/adapters/cloned.rs', lines 18:0-18:20
-    Name pattern: [core::iter::adapters::cloned::Cloned]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::cloned::Cloned"]
-axiom core.iter.adapters.cloned.Cloned (I : Type) : Type
-
-/-- [core::iter::adapters::copied::Copied]
-    Source: '/rustc/library/core/src/iter/adapters/copied.rs', lines 19:0-19:20
-    Name pattern: [core::iter::adapters::copied::Copied]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::copied::Copied"]
-axiom core.iter.adapters.copied.Copied (I : Type) : Type
-
-/-- [core::iter::adapters::cycle::Cycle]
-    Source: '/rustc/library/core/src/iter/adapters/cycle.rs', lines 15:0-15:19
-    Name pattern: [core::iter::adapters::cycle::Cycle]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::cycle::Cycle"]
-axiom core.iter.adapters.cycle.Cycle (I : Type) : Type
-
-/-- [core::iter::adapters::filter::Filter]
-    Source: '/rustc/library/core/src/iter/adapters/filter.rs', lines 21:0-21:23
-    Name pattern: [core::iter::adapters::filter::Filter]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::filter::Filter"]
-axiom core.iter.adapters.filter.Filter (I : Type) (P : Type) : Type
-
-/-- [core::iter::adapters::filter_map::FilterMap]
-    Source: '/rustc/library/core/src/iter/adapters/filter_map.rs', lines 18:0-18:26
-    Name pattern: [core::iter::adapters::filter_map::FilterMap]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::filter_map::FilterMap"]
-axiom core.iter.adapters.filter_map.FilterMap (I : Type) (F : Type) : Type
-
-/-- [core::iter::adapters::flatten::FlatMap]
-    Source: '/rustc/library/core/src/iter/adapters/flatten.rs', lines 17:0-17:41
-    Name pattern: [core::iter::adapters::flatten::FlatMap]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::flatten::FlatMap"]
-axiom core.iter.adapters.flatten.FlatMap (I : Type) (U : Type) (F : Type)
-  (Clause0_Item : Type) (Clause0_IntoIter : Type) : Type
-
-/-- [core::iter::adapters::flatten::Flatten]
-    Source: '/rustc/library/core/src/iter/adapters/flatten.rs', lines 184:0-184:51
-    Name pattern: [core::iter::adapters::flatten::Flatten]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::flatten::Flatten"]
-axiom core.iter.adapters.flatten.Flatten (I : Type) (Clause0_Item : Type)
-  (Clause1_Item : Type) (Clause1_IntoIter : Type) : Type
-
-/-- [core::iter::adapters::fuse::Fuse]
-    Source: '/rustc/library/core/src/iter/adapters/fuse.rs', lines 17:0-17:18
-    Name pattern: [core::iter::adapters::fuse::Fuse]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::fuse::Fuse"]
-axiom core.iter.adapters.fuse.Fuse (I : Type) : Type
-
-/-- [core::iter::adapters::inspect::Inspect]
-    Source: '/rustc/library/core/src/iter/adapters/inspect.rs', lines 18:0-18:24
-    Name pattern: [core::iter::adapters::inspect::Inspect]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::inspect::Inspect"]
-axiom core.iter.adapters.inspect.Inspect (I : Type) (F : Type) : Type
-
-/-- [core::iter::adapters::intersperse::Intersperse]
-    Source: '/rustc/library/core/src/iter/adapters/intersperse.rs', lines 10:0-10:35
-    Name pattern: [core::iter::adapters::intersperse::Intersperse]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::intersperse::Intersperse"]
-axiom core.iter.adapters.intersperse.Intersperse (I : Type) (Clause0_Item :
-  Type) : Type
-
-/-- [core::iter::adapters::intersperse::IntersperseWith]
-    Source: '/rustc/library/core/src/iter/adapters/intersperse.rs', lines 91:0-91:32
-    Name pattern: [core::iter::adapters::intersperse::IntersperseWith]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::intersperse::IntersperseWith"]
-axiom core.iter.adapters.intersperse.IntersperseWith (I : Type) (G : Type)
-  (Clause0_Item : Type) : Type
-
-/-- [core::iter::adapters::map_while::MapWhile]
-    Source: '/rustc/library/core/src/iter/adapters/map_while.rs', lines 17:0-17:25
-    Name pattern: [core::iter::adapters::map_while::MapWhile]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::map_while::MapWhile"]
-axiom core.iter.adapters.map_while.MapWhile (I : Type) (P : Type) : Type
-
-/-- [core::iter::adapters::map_windows::MapWindows]
-    Source: '/rustc/library/core/src/iter/adapters/map_windows.rs', lines 11:0-11:53
-    Name pattern: [core::iter::adapters::map_windows::MapWindows]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::map_windows::MapWindows"]
-axiom core.iter.adapters.map_windows.MapWindows (I : Type) (F : Type)
-  (Clause0_Item : Type) (N : Std.Usize) : Type
-
-/-- [core::iter::adapters::peekable::Peekable]
-    Source: '/rustc/library/core/src/iter/adapters/peekable.rs', lines 17:0-17:32
-    Name pattern: [core::iter::adapters::peekable::Peekable]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::peekable::Peekable"]
-axiom core.iter.adapters.peekable.Peekable (I : Type) (Clause0_Item : Type) :
-  Type
-
-/-- [core::iter::adapters::scan::Scan]
-    Source: '/rustc/library/core/src/iter/adapters/scan.rs', lines 17:0-17:25
-    Name pattern: [core::iter::adapters::scan::Scan]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::scan::Scan"]
-axiom core.iter.adapters.scan.Scan (I : Type) (St : Type) (F : Type) : Type
-
-/-- [core::iter::adapters::skip::Skip]
-    Source: '/rustc/library/core/src/iter/adapters/skip.rs', lines 21:0-21:18
-    Name pattern: [core::iter::adapters::skip::Skip]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::skip::Skip"]
-axiom core.iter.adapters.skip.Skip (I : Type) : Type
-
-/-- [core::iter::adapters::skip_while::SkipWhile]
-    Source: '/rustc/library/core/src/iter/adapters/skip_while.rs', lines 17:0-17:26
-    Name pattern: [core::iter::adapters::skip_while::SkipWhile]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::skip_while::SkipWhile"]
-axiom core.iter.adapters.skip_while.SkipWhile (I : Type) (P : Type) : Type
-
-/-- [core::iter::adapters::take_while::TakeWhile]
-    Source: '/rustc/library/core/src/iter/adapters/take_while.rs', lines 17:0-17:26
-    Name pattern: [core::iter::adapters::take_while::TakeWhile]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::take_while::TakeWhile"]
-axiom core.iter.adapters.take_while.TakeWhile (I : Type) (P : Type) : Type
-
-/-- [core::iter::adapters::zip::Zip]
-    Source: '/rustc/library/core/src/iter/adapters/zip.rs', lines 15:0-15:20
-    Name pattern: [core::iter::adapters::zip::Zip]
-    Visibility: public -/
-@[rust_type "core::iter::adapters::zip::Zip"]
-axiom core.iter.adapters.zip.Zip (A : Type) (B : Type) : Type
-
-/-- [core::num::niche_types::NonZeroUsizeInner]
-    Source: '/rustc/library/core/src/num/niche_types.rs', lines 22:8-22:32
-    Name pattern: [core::num::niche_types::NonZeroUsizeInner]
-    Visibility: public -/
-@[rust_type "core::num::niche_types::NonZeroUsizeInner"]
-axiom core.num.niche_types.NonZeroUsizeInner : Type
-
-/-- [core::num::nonzero::NonZero]
-    Source: '/rustc/library/core/src/num/nonzero.rs', lines 127:0-127:40
-    Name pattern: [core::num::nonzero::NonZero]
-    Visibility: public -/
-@[rust_type "core::num::nonzero::NonZero"]
-axiom core.num.nonzero.NonZero (T : Type) (Clause0_NonZeroInner : Type) : Type
 
 /-- [alloc::collections::vec_deque::into_iter::IntoIter]
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 18:0-21:1
@@ -214,34 +39,6 @@ axiom alloc.collections.vec_deque.VecDeque (T : Type) (A : Type) : Type
 @[rust_type "bytes::buf::uninit_slice::UninitSlice"]
 axiom bytes.buf.uninit_slice.UninitSlice : Type
 
-/-- [bytes::buf::chain::Chain]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/chain.rs', lines 30:0-30:22
-    Name pattern: [bytes::buf::chain::Chain]
-    Visibility: public -/
-@[rust_type "bytes::buf::chain::Chain"]
-axiom bytes.buf.chain.Chain (T : Type) (U : Type) : Type
-
-/-- [bytes::buf::limit::Limit]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/limit.rs', lines 9:0-9:19
-    Name pattern: [bytes::buf::limit::Limit]
-    Visibility: public -/
-@[rust_type "bytes::buf::limit::Limit"]
-axiom bytes.buf.limit.Limit (T : Type) : Type
-
-/-- [bytes::buf::take::Take]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/take.rs', lines 13:0-13:18
-    Name pattern: [bytes::buf::take::Take]
-    Visibility: public -/
-@[rust_type "bytes::buf::take::Take"]
-axiom bytes.buf.take.Take (T : Type) : Type
-
-/-- [bytes::bytes::Bytes]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/bytes.rs', lines 102:0-102:16
-    Name pattern: [bytes::bytes::Bytes]
-    Visibility: public -/
-@[rust_type "bytes::bytes::Bytes"]
-axiom bytes.bytes.Bytes : Type
-
 /-- [libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 233:8-233:41
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes] -/
@@ -259,28 +56,6 @@ axiom prost.encoding.DecodeContext : Type
     Name pattern: [prost::error::DecodeError] -/
 @[rust_type "prost::error::DecodeError"]
 axiom prost.error.DecodeError : Type
-
-/-- [prost::error::EncodeError]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/error.rs', lines 90:0-90:22
-    Name pattern: [prost::error::EncodeError]
-    Visibility: public -/
-@[rust_type "prost::error::EncodeError"]
-axiom prost.error.EncodeError : Type
-
-/-- [rand::distr::distribution::Iter]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand-0.9.1/src/distr/distribution.rs', lines 125:0-125:24
-    Name pattern: [rand::distr::distribution::Iter]
-    Visibility: public -/
-@[rust_type "rand::distr::distribution::Iter"]
-axiom rand.distr.distribution.Iter (D : Type) (R : Type) (T : Type) : Type
-
-/-- [rand::distr::distribution::Map]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand-0.9.1/src/distr/distribution.rs', lines 163:0-163:26
-    Name pattern: [rand::distr::distribution::Map]
-    Visibility: public -/
-@[rust_type "rand::distr::distribution::Map"]
-axiom rand.distr.distribution.Map (D : Type) (F : Type) (T : Type) (S : Type) :
-  Type
 
 /-- [sorted_vec::SortedVec]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 27:0-27:30
