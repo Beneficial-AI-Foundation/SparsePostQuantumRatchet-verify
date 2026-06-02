@@ -12,7 +12,6 @@ set_option linter.style.whitespace false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
-set_option maxRecDepth 2048
 
 /-- [core::num::error::TryFromIntError]
     Source: '/rustc/library/core/src/num/error.rs', lines 10:0-10:26
