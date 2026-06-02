@@ -13,9 +13,6 @@ set_option linter.style.whitespace false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
-
-/- You can set the `maxRecDepth` value with the `-max-recdepth` CLI option -/
-set_option maxRecDepth 2048
 open spqr
 
 /-- [core::array::equality::{core::cmp::PartialEq<[U; N]> for [T]}::eq]:
@@ -804,88 +801,6 @@ axiom sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
 axiom Shared0T.Insts.ThiserrorDisplayAsDisplayASharedAT.as_display
   {T : Type} (corefmtDisplayInst : core.fmt.Display T) : T → Result T
 
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.PolynomialEncoder → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.PolynomialEncoder → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.PolynomialEncoder × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.PolynomialEncoder → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.PolynomialEncoder → Result
-    proto.pq_ratchet.PolynomialEncoder
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 2:37-2:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultPolynomialEncoderInst : core.default.Default
-  proto.pq_ratchet.PolynomialEncoder) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.PolynomialEncoder
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.PolynomialDecoder → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.PolynomialDecoder → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.PolynomialDecoder × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.PolynomialDecoder → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.PolynomialDecoder → Result
-    proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 14:37-14:53
-    Visibility: public -/
-axiom proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultPolynomialDecoderInst : core.default.Default
-  proto.pq_ratchet.PolynomialDecoder) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.PolynomialDecoder
-    prost.error.DecodeError)
-
 /-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::encode_raw]:
     Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
     Visibility: public -/
@@ -1047,124 +962,6 @@ axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.merge_field
 axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.encode_raw
   {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
   proto.pq_ratchet.Chunk → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1Msg}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.V1Msg → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1Msg}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.V1Msg → Std.U32 → prost.encoding.wire_type.WireType →
-    T0 → prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × proto.pq_ratchet.V1Msg × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1Msg}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.V1Msg → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1Msg}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.V1Msg → Result proto.pq_ratchet.V1Msg
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1Msg}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 62:37-62:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultV1MsgInst : core.default.Default
-  proto.pq_ratchet.V1Msg) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1)
-  :
-  T1 → Result (core.result.Result proto.pq_ratchet.V1Msg
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Authenticator}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.Authenticator → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Authenticator}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.Authenticator → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.Authenticator × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Authenticator}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.Authenticator → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Authenticator}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.Authenticator → Result proto.pq_ratchet.Authenticator
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Authenticator}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 91:37-91:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultAuthenticatorInst : core.default.Default
-  proto.pq_ratchet.Authenticator) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.Authenticator
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.Unchunked → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.Unchunked → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.Unchunked × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.Unchunked → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.Unchunked → Result
-    proto.pq_ratchet.v1_state.Unchunked
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 105:47-105:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultUnchunkedInst : core.default.Default
-  proto.pq_ratchet.v1_state.Unchunked) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.v1_state.Unchunked
-    prost.error.DecodeError)
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::encode_raw]:
     Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61
@@ -1627,47 +1424,6 @@ axiom
   proto.pq_ratchet.v1_state.unchunked.Ct2Sent) (bytesbufbuf_implBufInst :
   bytes.buf.buf_impl.Buf T1) :
   T1 → Result (core.result.Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.Chunked → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.Chunked → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.Chunked × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.Chunked → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.Chunked → Result
-    proto.pq_ratchet.v1_state.Chunked
-
-/-- [spqr::proto::pq_ratchet::v1_state::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 210:47-210:63
-    Visibility: public -/
-axiom proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultChunkedInst : core.default.Default
-  proto.pq_ratchet.v1_state.Chunked) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.v1_state.Chunked
     prost.error.DecodeError)
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::decode]:
@@ -2178,83 +1934,6 @@ axiom
   {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
   proto.pq_ratchet.v1_state.chunked.Ct2Sampled → T0 → Result T0
 
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chain}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43
-    Visibility: public -/
-axiom proto.pq_ratchet.Chain.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.Chain → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chain}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43
-    Visibility: public -/
-axiom proto.pq_ratchet.Chain.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.Chain → Std.U32 → prost.encoding.wire_type.WireType →
-    T0 → prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × proto.pq_ratchet.Chain × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chain}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43
-    Visibility: public -/
-axiom proto.pq_ratchet.Chain.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.Chain → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chain}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43
-    Visibility: public -/
-axiom proto.pq_ratchet.Chain.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.Chain → Result proto.pq_ratchet.Chain
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chain}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 324:27-324:43
-    Visibility: public -/
-axiom proto.pq_ratchet.Chain.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultChainInst : core.default.Default
-  proto.pq_ratchet.Chain) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1)
-  :
-  T1 → Result (core.result.Result proto.pq_ratchet.Chain
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::chain::{prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57
-    Visibility: public -/
-axiom proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.chain.Epoch → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::chain::{prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57
-    Visibility: public -/
-axiom proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.chain.Epoch → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.chain.Epoch × T0)
-
-/-- [spqr::proto::pq_ratchet::chain::{prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57
-    Visibility: public -/
-axiom proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.chain.Epoch → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::chain::{prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57
-    Visibility: public -/
-axiom proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.chain.Epoch → Result proto.pq_ratchet.chain.Epoch
-
-/-- [spqr::proto::pq_ratchet::chain::{prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 341:41-341:57
-    Visibility: public -/
-axiom proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEpochInst : core.default.Default
-  proto.pq_ratchet.chain.Epoch) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.chain.Epoch
-    prost.error.DecodeError)
-
 /-- [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::encode_raw]:
     Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61
     Visibility: public -/
@@ -2299,45 +1978,6 @@ axiom
   proto.pq_ratchet.chain.epoch.EpochDirection) (bytesbufbuf_implBufInst :
   bytes.buf.buf_impl.Buf T1) :
   T1 → Result (core.result.Result proto.pq_ratchet.chain.epoch.EpochDirection
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::ChainParams}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59
-    Visibility: public -/
-axiom proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.ChainParams → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::ChainParams}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59
-    Visibility: public -/
-axiom proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.ChainParams → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.ChainParams × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::ChainParams}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59
-    Visibility: public -/
-axiom proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.ChainParams → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::ChainParams}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59
-    Visibility: public -/
-axiom proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.ChainParams → Result proto.pq_ratchet.ChainParams
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::ChainParams}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 361:43-361:59
-    Visibility: public -/
-axiom proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultChainParamsInst : core.default.Default
-  proto.pq_ratchet.ChainParams) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.ChainParams
     prost.error.DecodeError)
 
 /-- [spqr::kdf::hkdf_to_slice]:
