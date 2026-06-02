@@ -30,7 +30,7 @@ In general it is best to open an issue or discuss with the others working on the
 
 PRs are reviewed when marked as ready (i.e., not a draft) and all checks have passed.
 After the PR is created (or marked as ready) the author should hold off on meaningful changes until after the review process, to avoid reviewers looking at outdated code.
-After review the author is solely responsible for merging in the accepted PR, and is expected to do so in a timely manner (ideally within 3 days).
+After review the author is solely responsible for merging in the accepted PR, and is expected to do so in a timely manner.
 
 The expected format for PR title, body, and footer is:
 
@@ -44,11 +44,13 @@ The expected format for PR title, body, and footer is:
 
 **Lables:** PRs are encouraged, but not required, to use the same labels as the underlying issues they close, especially if they are not verification-related.
 
-## Proof cheats (`sorry`s)
+## Proof cheats
 
-Our CI flags any PR that introduces new `sorry` statements. In such an event, the following is expected, based on the nature of the property proven via `sorry`:
-- if the `sorry` substitutes the proof of a property tagged as `externally_verified`, the documentation must list the source of said external verification.
-- if the `sorry` serves as a placeholder for a proof that intends to be completed later, the PR author should open a new issue documenting this placeholder and link the issue number in a TODO comment next to the `sorry`.
+- Some statements are externally verified and we do not replicate their proofs, for various reasons. In such instances, we use the `axiom` keyword. The documentation associated with each instance of `axiom` must list the source of its external verification.
+- We do not use of the `externally_verified` tag in this repository. Use `axiom` instead.
+- Our CI flags any PR that introduces new `sorry` statements. In such an event, the following is expected, based on the nature of the property proven via `sorry`:
+	- if the `sorry` serves as a placeholder for a proof that intends to be completed later, the PR author should open a new issue documenting this placeholder and link the issue number in a TODO comment next to the `sorry`.
+	- if the `sorry` substitutes the proof of an externally verified property, to be treated as an axiom, the author should use the `axiom` keyword instead.
 
 ## Performance
 
