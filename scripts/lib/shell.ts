@@ -9,7 +9,6 @@ export interface RunOptions {
   label?: string;
   logFile?: string;
   silent?: boolean;
-  allowFailure?: boolean;
 }
 
 /**
@@ -88,7 +87,7 @@ export async function runStreaming(cmd: string, args: string[], opts?: RunOption
     fs.writeFileSync(opts.logFile, chunks.join(""), "utf-8");
   }
 
-  if (result.exitCode !== 0 && !opts?.allowFailure) {
+  if (result.exitCode !== 0) {
     const hint = opts?.logFile ? `\nSee log: ${opts.logFile}` : "";
     throw new Error(`Command failed: ${cmd} ${args.join(" ")}${hint}`);
   }
