@@ -7,7 +7,7 @@ import Spqr.Code.Funs
 import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.GF16.DivImpl
 
-/-! # Spec theorem for `GF16::div_assign` (by-reference)
+/-! # Spec theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16.div_assign`
 
 In GF(2¹⁶) — the Galois field with 65 536 elements — every non-zero element `b` satisfies `b^(2¹⁶ −
 1) = 1`, so the multiplicative inverse is `b⁻¹ = b^(2¹⁶ − 2)` and `a / b = a · b^(2¹⁶ − 2)`.  Field
@@ -36,9 +36,8 @@ namespace spqr.encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16
   `Nat.toGF216 = BinaryPoly.toGF216 ∘ natToBinaryPoly` yields the GF(2¹⁶) Fermat-style
   quotient of the similarly-lifted inputs:
     `result.toGF216  = self.toGF216 * other.toGF216 ^ (2 ^ 16 - 2)`
-  where the operations on the right-hand side are performed in
-  `GF216 = GaloisField 2 16`.  When `other ≠ 0` Fermat's little
-  theorem in GF(2¹⁶) gives `other^(2¹⁶ − 1) = 1`, so
+  where the operations on the right-hand side are performed in `GF216 = GaloisField 2 16`.
+  When `other ≠ 0` Fermat's little theorem in GF(2¹⁶) gives `other^(2¹⁶ − 1) = 1`, so
   `other^(2¹⁶ − 2) = other⁻¹` and the right-hand side is genuinely
   the field quotient `self / other`. -/
 @[step]
@@ -50,7 +49,7 @@ theorem div_assign_spec (self other : GF16) :
 
 end spqr.encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16
 
-/-! # Spec theorem for `GF16::div_assign` (by-value)
+/-! # Spec theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16.div_assign`
 
 The by-value `DivAssign<GF16> for GF16` takes `other` by value in the original Rust source.  In the
 Aeneas extraction the by-value vs by-reference distinction is erased, so the Lean signature is
@@ -76,9 +75,8 @@ namespace spqr.encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16
   quotient of the similarly-lifted inputs:
     `result.toGF216 = self.toGF216 * other.toGF216 ^ (2 ^ 16 - 2)`
   where the operations on the right-hand side are performed in
-  `GF216 = GaloisField 2 16`.  When `other ≠ 0` Fermat's little
-  theorem in GF(2¹⁶) gives `other^(2¹⁶ − 1) = 1`, so
-  `other^(2¹⁶ − 2) = other⁻¹` and the right-hand side is genuinely
+  `GF216 = GaloisField 2 16`.  When `other ≠ 0` Fermat's little theorem in GF(2¹⁶) gives
+  `other^(2¹⁶ − 1) = 1`, so `other^(2¹⁶ − 2) = other⁻¹` and the right-hand side is genuinely
   the field quotient `self / other`. -/
 @[step]
 theorem div_assign_spec (self other : GF16) :
