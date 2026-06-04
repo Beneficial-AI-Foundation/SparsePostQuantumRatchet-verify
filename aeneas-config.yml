@@ -75,15 +75,6 @@ tweaks:
         set_option linter.style.setOption false
         set_option linter.style.whitespace false
 
-    # The following two tweaks were required when start_from_pub was active but not otherwise
-    # Fix duplicate field name in ZeroablePrimitive: both Copy clauses get named markerCopyInst
-    # https://github.com/AeneasVerif/aeneas/issues/1051
-    # - find: "(parentClauses := [\"markerCopyInst\", \"privateSealedInst\", \"markerCopyInst\"])"
-    #   replace: "(parentClauses := [\"markerCopyInst\", \"privateSealedInst\", \"markerCopyNonZeroInnerInst\"])"
-    # https://github.com/AeneasVerif/aeneas/issues/1051
-    # - regex: "(privateSealedInst : core\\.num\\.nonzero\\.private\\.Sealed Self\\n)  markerCopyInst : core\\.marker\\.Copy Self_NonZeroInner"
-    #   replace: "$1  markerCopyNonZeroInnerInst : core.marker.Copy Self_NonZeroInner"
-
     # Sorry BytesBufBuf instance body: remaining/chunk/advance are fields of Buf,
     # so the self-referential struct literal causes termination errors.
     # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
