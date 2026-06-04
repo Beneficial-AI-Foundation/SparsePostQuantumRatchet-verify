@@ -2128,6 +2128,3 @@ axiom
   {T : Type} {A : Type} :
   alloc.collections.vec_deque.VecDeque T A → Result
     (alloc.collections.vec_deque.into_iter.IntoIter T A)
-
-
-
