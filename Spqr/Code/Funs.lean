@@ -6615,7 +6615,20 @@ def encoding.gf.parallel_mult_loop.body
   (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) (i : Std.Usize) :
   Result (ControlFlow ((Slice encoding.gf.GF16) × Std.Usize) (encoding.gf.GF16
     × (Slice encoding.gf.GF16) × Std.Usize))
-  := sorry
+  := do
+  let i1 ← i + 2#usize
+  let i2 := Slice.len into
+  if i1 <= i2
+  then
+    let g ← Slice.index_usize into i
+    let i3 ← i + 1#usize
+    let g1 ← Slice.index_usize into i3
+    let (i4, i5) ← encoding.gf.mul2_u16 a.value g.value g1.value
+    let into1 ← Slice.update into i ({ value := i4 } : encoding.gf.GF16)
+    let s ← Slice.update into1 i3 ({ value := i5 } : encoding.gf.GF16)
+    ok (cont (s, i1))
+  else ok (done (a, into, i))
+
 /-- [spqr::encoding::gf::parallel_mult]: loop 0:
     Source: 'src/encoding/gf.rs', lines 205:4-210:5
     Visibility: public -/
@@ -7836,7 +7849,16 @@ def encoding.polynomial.lagrange_polys_for_complete_points_loop0.body
   {N : Std.Usize} (ones : Array encoding.polynomial.Pt N) (i : Std.Usize) :
   Result (ControlFlow ((Array encoding.polynomial.Pt N) × Std.Usize) (Array
     encoding.polynomial.Pt N))
-  := sorry
+  := do
+  if i < N
+  then
+    let (p, index_mut_back) ← Array.index_mut_usize ones i
+    let i1 ← lift (UScalar.cast .U16 i)
+    let i2 ← i + 1#usize
+    let a := index_mut_back { p with x := { value := i1 } }
+    ok (cont (a, i2))
+  else ok (done ones)
+
 /-- [spqr::encoding::polynomial::lagrange_polys_for_complete_points]: loop 0:
     Source: 'src/encoding/polynomial.rs', lines 477:8-482:9 -/
 @[rust_loop]
@@ -8519,7 +8541,39 @@ def encoding.polynomial.PolyEncoder.from_pb_loop1.body
   Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
     encoding.polynomial.Point 16#usize)) (core.result.Result
     encoding.polynomial.PolyEncoder encoding.polynomial.PolynomialError))
-  := sorry
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none =>
+    ok (done (core.result.Result.Ok
+      { idx := i, s := (encoding.polynomial.EncoderState.Points out) }))
+  | some i1 =>
+    let pts ←
+      alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice (alloc.vec.Vec
+        Std.U8)) v i1
+    let i2 := alloc.vec.Vec.len pts
+    let i3 ← i2 % 2#usize
+    if i3 != 0#usize
+    then
+      ok (done (core.result.Result.Err
+        encoding.polynomial.PolynomialError.SerializationInvalid))
+    else
+      let i4 := alloc.vec.Vec.len pts
+      let i5 ← i4 / 2#usize
+      let v1 := alloc.vec.Vec.with_capacity encoding.gf.GF16 i5
+      let i6 := alloc.vec.Vec.len pts
+      let i7 ← i6 / 2#usize
+      let v2 ←
+        encoding.polynomial.PolyEncoder.from_pb_loop1_loop0
+          { start := 0#usize, «end» := i7 } pts v1
+      massert (i1 < 16#usize)
+      let (p, index_mut_back) ← Array.index_mut_usize out i1
+      let out1 := index_mut_back p
+      let a ←
+        Array.update out1 i1 ({ value := v2 } : encoding.polynomial.Point)
+      ok (cont (iter1, a))
+
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb]: loop 1:
     Source: 'src/encoding/polynomial.rs', lines 593:12-606:73 -/
 @[rust_loop]
@@ -8867,7 +8921,29 @@ def encoding.polynomial.PolyEncoder.encode_bytes_base_loop.body
   Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
     (core.slice.iter.ChunksExact Std.U8)) × (Array encoding.polynomial.Point
     16#usize)) (Array encoding.polynomial.Point 16#usize))
-  := sorry
+  := do
+  let (o, iter1) ←
+    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.next
+      (core.iter.traits.iterator.IteratorChunksExact Std.U8) iter
+  match o with
+  | none => ok (done pts)
+  | some p =>
+    let (i, c) := p
+    let s ← lift (Array.to_slice pts)
+    let i1 := Slice.len s
+    let poly ← i % i1
+    let (p1, index_mut_back) ← Array.index_mut_usize pts poly
+    let i2 ← Slice.index_usize c 0#usize
+    let i3 ← lift (UScalar.cast .U16 i2)
+    let i4 ← i3 <<< 8#i32
+    let i5 ← Slice.index_usize c 1#usize
+    let i6 ← lift (UScalar.cast .U16 i5)
+    let i7 ← i4 + i6
+    let g ← encoding.gf.GF16.new i7
+    let v ← alloc.vec.Vec.push p1.value g
+    let a := index_mut_back { value := v }
+    ok (cont (iter1, a))
+
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base]: loop 0:
     Source: 'src/encoding/polynomial.rs', lines 679:8-686:9 -/
 @[rust_loop]

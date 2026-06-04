@@ -147,13 +147,6 @@ tweaks:
     - regex: "\\n  collect := fun \\{B : Type\\}[\\s\\S]*?(?=\\n\\})"
       replace: "\n  take := sorry"
 
-    # Sorry loop bodies where Aeneas generates () instead of the correct typed value.
-    # Issue #1044 is now fixed in the new Aeneas version, so this tweak can be removed
-    # once PolyReduce.lean proofs are updated to work with the real loop bodies.
-    # https://github.com/AeneasVerif/aeneas/issues/1044
-    - regex: "(def (?:encoding\\.gf\\.parallel_mult_loop\\.body|encoding\\.polynomial\\.lagrange_polys_for_complete_points_loop0\\.body|encoding\\.polynomial\\.PolyEncoder\\.from_pb_loop1\\.body|encoding\\.polynomial\\.PolyEncoder\\.encode_bytes_base_loop\\.body)\\n[\\s\\S]*?):= do[\\s\\S]*?(?=\\n/-- )"
-      replace: "$1:= sorry"
-
     # Sorry merge closure FnOnce call_once assignments (Aeneas types them wrong)
     # https://github.com/AeneasVerif/aeneas/issues/1046
     - regex: "call_once :=\\n    proto\\.pq_ratchet\\.\\S+\\.merge\\.closure\\S*\\.Insts\\.CoreOpsFunctionFnOnceTupleTupleTuple\\.call_once\\n    bytesbufbuf_implBufInst\\n}"
