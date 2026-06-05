@@ -18,7 +18,7 @@ in the [Workflow and PR Guide](doc/WORKFLOW_AND_PR_GUIDE.md).
 This repository is [dual-licensed](./README.md#license). By submitting a pull
 request, you agree that:
 
-- Any modifications to the **upstream Rust source** in [`src/`](./src/) remain
+- Any modifications to the **upstream source** remain
   under [AGPL-3.0-only](./LICENSE) per the upstream project's terms.
 - Other contributions (such as hand-written Lean code) are released under the
   [Apache License, Version 2.0](./LICENSE-APACHE).

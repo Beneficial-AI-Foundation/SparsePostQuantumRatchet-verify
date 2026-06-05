@@ -37,12 +37,12 @@ with the following additional clause:
 
 This repository is dual-licensed:
 
-- **Upstream Rust source** in [`src/`](./src/) is licensed under
+- **Upstream source** is licensed under
   [AGPL-3.0-only](./LICENSE), inherited from
   [signalapp/SparsePostQuantumRatchet](https://github.com/signalapp/SparsePostQuantumRatchet).
   The [Aeneas](https://github.com/AeneasVerif/aeneas)-generated Lean translation
-  in [`Spqr/Code/`](./Spqr/Code/) is a derivative of that source and is
-  therefore also covered by [AGPL-3.0-only](./LICENSE).
+  in `Types.lean` and `Funs.lean` in [`Spqr/Code/`](./Spqr/Code/) is a derivative of that source
+  and is therefore also covered by [AGPL-3.0-only](./LICENSE).
 
 - **Other contributions** (such as hand-written Lean code under
   [`Spqr/Math/`](./Spqr/Math/) or [`Spqr/Specs/`](./Spqr/Specs/)) are
