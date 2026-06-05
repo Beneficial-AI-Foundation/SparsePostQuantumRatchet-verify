@@ -42,7 +42,6 @@ theorem mul2_u16_spec (a b1 b2 : U16) :
       result.1.val.toGF216 = a.val.toGF216 * b1.val.toGF216 ∧
       result.2.val.toGF216 = a.val.toGF216 * b2.val.toGF216 ⦄ := by
   unfold mul2_u16
-  have h := unaccelerated.mul2_spec a b1 b2
   step*
 
 end spqr.encoding.gf
