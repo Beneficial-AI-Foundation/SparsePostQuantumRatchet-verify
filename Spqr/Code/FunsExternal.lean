@@ -655,22 +655,25 @@ def alloc.vec.Vec.split_off
     T)) :=
   fun v at_ =>
     if h : at_.val ≤ v.val.length then
-      ok (⟨v.val.take at_.val, by
-            have := v.property; simp only [List.length_take]; omega⟩,
-          ⟨v.val.drop at_.val, by
-            have := v.property; simp only [List.length_drop]; omega⟩)
+      -- Aeneas `&mut self` convention: `(return_value, updated_self)`.
+      -- `split_off` returns the suffix `[at_, len)` and leaves `self = [0, at_)`.
+      ok (⟨v.val.drop at_.val, by
+            have := v.property; simp only [List.length_drop]; omega⟩,
+          ⟨v.val.take at_.val, by
+            have := v.property; simp only [List.length_take]; omega⟩)
     else
       fail .panic
 
-/-- **Spec theorem for `Vec::split_off`**: splits at index `at_`, keeping the prefix
-`[0, at_)` in `self` and returning the suffix `[at_, len)`. Panics (here: fails)
-when `at_` exceeds the length. -/
+/-- **Spec theorem for `Vec::split_off`**: splits at index `at_`. Following Aeneas's
+mutable-reference convention `(return_value, updated_self)`, the first component is
+the returned suffix `[at_, len)` and the second is the truncated `self` `[0, at_)`.
+Panics (here: fails) when `at_` exceeds the length. -/
 @[step]
 theorem alloc.vec.Vec.split_off_spec
     {T A : Type} (corecloneCloneInst : core.clone.Clone A)
     (v : alloc.vec.Vec T) (at_ : Std.Usize) (hbound : at_.val ≤ v.val.length) :
     alloc.vec.Vec.split_off corecloneCloneInst v at_ ⦃ (r1, r2) =>
-      r1.val = v.val.take at_.val ∧ r2.val = v.val.drop at_.val ⦄ := by
+      r1.val = v.val.drop at_.val ∧ r2.val = v.val.take at_.val ⦄ := by
   simp [alloc.vec.Vec.split_off, hbound]
 
 /-- [alloc::vec::{core::default::Default for alloc::vec::Vec<T>}::default]:
