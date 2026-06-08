@@ -7,18 +7,65 @@ import Spqr.Code.Funs
 import Spqr.Math.Gf16.Field
 import Mathlib.RingTheory.Polynomial.Basic
 
+/-! # Bridge frox the Aeneas-extracted `Poly` to `GF(2¹⁶)[X]`
+
+This file defines the type abbreviation `GF216Poly := GF216[X]` and the canonical bridge
+functions `listToGF216Poly` and `Poly.toGF216Poly` from the Aeneas-extracted
+`spqr.encoding.polynomial.Poly` to the Mathlib polynomial ring `GF216[X]`.
+
+The bridge from the implementation to the mathematics is:
+
+```
+  Implementation Layer          Mathematical Layer
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  GF16 (value : U16)    ──────► GF216 = GF(2¹⁶)
+          │    GF16.toGF216         │
+          │                        │
+  Vec<GF16>             ──────► GF216[X]
+          │    listToGF216Poly     │
+          │                        │
+  Poly                  ──────► GF216[X]
+               Poly.toGF216Poly
+```
+
+## Main definitions
+
+* `GF216Poly` — abbreviation for `GF216[X]`.
+* `listToGF216Poly` — interprets a `List GF16` as a polynomial in `GF216[X]`.
+* `Poly.toGF216Poly` — canonical bridge from the Aeneas-extracted `Poly` to `GF216[X]`.
+-/
+
 open Polynomial
 
-abbrev GF216Poly := GF216[X]
+GF216[X]
 
 namespace spqr.encoding.polynomial
 
+/-! ## Inhabited instances -/
+
 instance : Inhabited spqr.encoding.polynomial.Pt where default := ⟨⟨0#u16⟩, ⟨0#u16⟩⟩
 
-noncomputable def listToGF216Poly (cs : List spqr.encoding.gf.GF16) : GF216Poly :=
+/-- ## Core definitions
+
+Interpret a list of `GF16` coefficients (in ascending degree order) as a polynomial in
+`GF(2¹⁶)[X]`.
+
+Given `cs = [a₀, a₁, …, aₙ]`, this produces:
+
+  `C(a₀.toGF216) + C(a₁.toGF216)·X + … + C(aₙ.toGF216)·Xⁿ`
+
+where `C : GF216 →+* GF216[X]` is the constant-polynomial embedding. The sum is indexed by `Fin
+cs.length`, ensuring well-typed access to each coefficient.
+-/
+noncomputable def listToGF216Poly (cs : List spqr.encoding.gf.GF16) : GF216[X] :=
   ∑ i : Fin cs.length, C ((cs.get i).toGF216) * X ^ i.val
 
-noncomputable def Poly.toGF216Poly (p : Poly) : GF216Poly :=
+/-- Interpret a `Poly` as a mathematical polynomial in `GF(2¹⁶)[X]`.
+
+This is the canonical bridge between the Aeneas-extracted implementation type
+`spqr.encoding.polynomial.Poly` and the Mathlib polynomial ring `GF216[X]`.  It reads the
+coefficient vector from the `Poly` and maps each `GF16` coefficient through `GF16.toGF216`. -/
+noncomputable def Poly.toGF216Poly (p : Poly) : GF216[X] :=
   listToGF216Poly p.coefficients.val
 
 end spqr.encoding.polynomial
