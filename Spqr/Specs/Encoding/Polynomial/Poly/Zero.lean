@@ -12,7 +12,7 @@ The zero polynomial has an empty coefficient list.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
-open Aeneas Aeneas.Std Result
+open Aeneas Aeneas.Std
 
 namespace spqr.encoding.polynomial.Poly
 

@@ -42,9 +42,7 @@ The bridge from the implementation to the mathematics is:
 * `listToGF216Poly` reads coefficients in ascending degree order.
 -/
 
-open Aeneas Aeneas.Std Result
 open Polynomial
-open spqr.encoding.gf spqr.math.gf
 
 abbrev GF216Poly := GF216[X]
 
@@ -52,10 +50,7 @@ namespace spqr.encoding.polynomial
 
 /-! ## Inhabited instances -/
 
-deriving instance Inhabited for spqr.encoding.gf.GF16
-
-instance : Inhabited spqr.encoding.polynomial.Pt where
-  default := ⟨⟨0#u16⟩, ⟨0#u16⟩⟩
+instance : Inhabited spqr.encoding.polynomial.Pt where default := ⟨⟨0#u16⟩, ⟨0#u16⟩⟩
 
 /-! ## Core definitions -/
 
