@@ -5,12 +5,6 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Math.Poly.Basic.Defs
 
-/-! # Zero-polynomial characterization
-
-The empty coefficient list maps to the zero polynomial under `listToGF216Poly`. As a
-consequence, a `Poly` with empty coefficient vector represents `0 : GF216[X]`. -/
-
-
 namespace spqr.encoding.polynomial
 
 lemma listToGF216Poly_nil :
