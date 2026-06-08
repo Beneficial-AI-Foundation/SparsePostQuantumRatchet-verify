@@ -10,7 +10,6 @@ import Spqr.Math.Poly.Basic.Defs
 The empty coefficient list maps to the zero polynomial under `listToGF216Poly`. As a
 consequence, a `Poly` with empty coefficient vector represents `0 : GF216[X]`. -/
 
-
 namespace spqr.encoding.polynomial
 
 lemma listToGF216Poly_nil :
@@ -21,8 +20,7 @@ theorem Poly.toGF216Poly_eq_zero (p : Poly)
     (h : p.coefficients.length = 0) :
     p.toGF216Poly = 0 := by
   unfold Poly.toGF216Poly
-  have hnil : p.coefficients.val = [] :=
-    List.eq_nil_of_length_eq_zero h
+  have hnil : p.coefficients.val = [] := List.eq_nil_of_length_eq_zero h
   rw [hnil]
   exact listToGF216Poly_nil
 
