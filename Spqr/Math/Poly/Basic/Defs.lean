@@ -37,7 +37,7 @@ The bridge from the implementation to the mathematics is:
 
 open Polynomial
 
-GF216[X]
+
 
 namespace spqr.encoding.polynomial
 
