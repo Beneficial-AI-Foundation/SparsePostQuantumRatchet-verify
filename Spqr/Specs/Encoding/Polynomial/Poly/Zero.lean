@@ -25,6 +25,6 @@ theorem zero_spec (capacity : Usize) :
     zero capacity ⦃ (result : Poly) =>
       result.coefficients.val.length = 0 ∧ result.toGF216Poly = 0 ⦄ := by
   unfold zero
-  simp [alloc.vec.Vec.with_capacity, toGF216Poly, listToGF216Poly]
+  simp [alloc.vec.Vec.with_capacity, toGF216Poly]
 
 end spqr.encoding.polynomial.Poly
