@@ -17,23 +17,12 @@ bound:
 open Aeneas Aeneas.Std Result
 
 namespace spqr.encoding.polynomial
-
-@[simp]
-theorem MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1_eq :
-    MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 = 36#usize := by
-  simp [MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1]
-
-theorem MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1_val :
-    MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1.val = 36 := by
-  simp
-
 /-- **Spec theorem for `encoding.polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1`**:
 
 Concretely: `MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1.val = 36` -/
-@[step]
+@[simp]
 theorem MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1_spec :
-    ok MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 ⦃ (result : Std.Usize) =>
-      result.val = 36 ⦄ := by
-  simp
+    MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1.val = 36 := by
+  simp [MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1]
 
 end spqr.encoding.polynomial
