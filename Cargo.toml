@@ -2,11 +2,6 @@
 name = "spqr"
 version = "1.5.0"
 edition = "2021"
-# The "license = [...]" expression below describes the Rust crate only, which is AGPL-3.0-only
-# (inherited from upstream https://github.com/signalapp/SparsePostQuantumRatchet). The full
-# repository is dual-licensed: hand-written code (mostly Lean) is Apache-2.0 (see LICENSE-APACHE);
-# upstream source and Aeneas-generated Lean translation from source are
-# AGPL-3.0-only (see README.md).
 license = "AGPL-3.0-only"
 rust-version = "1.83.0"
 
