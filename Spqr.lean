@@ -9,7 +9,8 @@ import Spqr.Math.Gf16.Field
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Gf2Poly.Basic
 import Spqr.Math.Gf2Poly.NatRep
-import Spqr.Math.Poly
+import Spqr.Math.Poly.Basic.Defs
+import Spqr.Math.Poly.Basic.Zero
 import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Encoding.Gf.GF16.Add
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign

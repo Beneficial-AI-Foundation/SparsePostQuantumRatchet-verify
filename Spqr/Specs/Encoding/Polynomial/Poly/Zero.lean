@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Code.Funs
-import Spqr.Math.Poly
+import Spqr.Math.Poly.Basic.Zero
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::zero`
 
 A `Poly` holds coefficients `[a₀, …, aₙ]` of a GF(2¹⁶) polynomial `a₀ + a₁·x + … + aₙ·xⁿ`.
