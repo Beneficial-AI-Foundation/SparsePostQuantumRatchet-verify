@@ -307,6 +307,20 @@ namespace Shared0T.Insts.CoreBorrowBorrow
     Source: '/rustc/library/core/src/borrow.rs', lines 230:4-230:26
     Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow]
 
+    Concrete model of Rust's `Borrow::borrow` for a shared reference `&T`:
+    borrowing simply returns the value unchanged.  The outer `Result` is
+    always `ok` (the call never panics). -/
+@[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
+def Shared0T.Insts.CoreBorrowBorrow.borrow {T : Type} : T → Result T :=
+  fun x => ok x
+
+/-- **Spec theorem for `Borrow<&T>::borrow`**: borrowing returns the value unchanged. -/
+@[step]
+private theorem Shared0T_borrow_spec {T : Type} (x : T) :
+    Shared0T.Insts.CoreBorrowBorrow.borrow x ⦃ result => result = x ⦄ := by
+  unfold Shared0T.Insts.CoreBorrowBorrow.borrow
+  simp
+
     Concrete model of Rust's `<&T as Borrow<&T>>::borrow` for a shared reference `&T`:
     borrowing simply returns the value unchanged.  The outer `Result` is
     always `ok` (the call never panics). -/
