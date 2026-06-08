@@ -18,7 +18,7 @@ namespace spqr.encoding.polynomial
 
 Concretely: `MAX_STORED_POLYNOMIAL_DEGREE_V1.val = 35` -/
 @[simp]
-theorem MAX_STORED_POLYNOMIAL_DEGREE_V1_val :
+theorem MAX_STORED_POLYNOMIAL_DEGREE_V1_spec :
     MAX_STORED_POLYNOMIAL_DEGREE_V1.val = 35 := by
   simp [MAX_STORED_POLYNOMIAL_DEGREE_V1]
 
