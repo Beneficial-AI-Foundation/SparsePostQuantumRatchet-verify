@@ -15,7 +15,11 @@ set_option linter.style.whitespace false
 set_option maxHeartbeats 1000000
 open spqr
 
-/-- Element-wise equality of two lists, delegating per-element to the `PartialEq`
+/-- Implementation helper for `Slice.Insts.CoreCmpPartialEqArray.eq`
+(`[core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq]`,
+Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40).
+
+Element-wise equality of two lists, delegating per-element to the `PartialEq`
 instance and short-circuiting on the first inequality; lists of different lengths
 are unequal. -/
 private def Slice.partialEqAux {T U : Type} (cmpPartialEqInst : core.cmp.PartialEq T U) :
@@ -473,7 +477,11 @@ theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.f
       T convertFromInst (.Err e) =
       (do let f ← convertFromInst.from_ e; ok (.Err f)) := rfl
 
-/-- Lexicographic comparison of two element lists, delegating per-element to the
+/-- Implementation helper for `Slice.Insts.CoreCmpOrd.cmp`
+(`[core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]`,
+Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42).
+
+Lexicographic comparison of two element lists, delegating per-element to the
 `Ord` instance and short-circuiting on the first non-`eq` result. -/
 private def Slice.lexCmpAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
     List T → List T → Result Ordering
@@ -674,14 +682,22 @@ theorem core.slice.Slice.clone_from_slice_spec
   simp only [core.slice.Slice.clone_from_slice]
   exact Slice.clone_spec h
 
-/-- Resolve a `RangeBounds` lower bound to a concrete start index. -/
+/-- Implementation helper for `core.slice.Slice.copy_within`
+(`[core::slice::{[@T]}::copy_within]`,
+Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
+
+Resolve a `RangeBounds` lower bound to a concrete start index. -/
 private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
   match b with
   | .Included i => i.val
   | .Excluded i => i.val + 1
   | .Unbounded => 0
 
-/-- Resolve a `RangeBounds` upper bound to a concrete end index (`len` when open). -/
+/-- Implementation helper for `core.slice.Slice.copy_within`
+(`[core::slice::{[@T]}::copy_within]`,
+Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
+
+Resolve a `RangeBounds` upper bound to a concrete end index (`len` when open). -/
 private def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
   match b with
   | .Included i => i.val + 1
@@ -795,11 +811,19 @@ theorem alloc.slice.Slice.concat_eq
     (inst : alloc.slice.Concat (Slice T) Item Clause0_Output) (s : Slice T) :
     alloc.slice.Slice.concat inst s = inst.concat s := rfl
 
-/-- Package an element list as a `Vec`, failing if it would exceed `Usize.max`. -/
+/-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
+(`[alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat]`,
+Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
+
+Package an element list as a `Vec`, failing if it would exceed `Usize.max`. -/
 private def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
   if h : l.length ≤ Std.Usize.max then ok ⟨l, h⟩ else fail .panic
 
-/-- Flatten a list of borrowable chunks: borrow each `V` to a `Slice T`, clone its
+/-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
+(`[alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat]`,
+Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
+
+Flatten a list of borrowable chunks: borrow each `V` to a `Slice T`, clone its
 elements, and concatenate the results into one element list. -/
 private def Slice.concatListAux {T V : Type} (corecloneCloneInst : core.clone.Clone T)
     (coreborrowBorrowVSliceInst : core.borrow.Borrow V (Slice T)) :
