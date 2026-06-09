@@ -674,15 +674,57 @@ theorem core.slice.Slice.clone_from_slice_spec
   simp only [core.slice.Slice.clone_from_slice]
   exact Slice.clone_spec h
 
+/-- Resolve a `RangeBounds` lower bound to a concrete start index. -/
+private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
+  match b with
+  | .Included i => i.val
+  | .Excluded i => i.val + 1
+  | .Unbounded => 0
+
+/-- Resolve a `RangeBounds` upper bound to a concrete end index (`len` when open). -/
+private def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
+  match b with
+  | .Included i => i.val + 1
+  | .Excluded i => i.val
+  | .Unbounded => len
+
 /-- [core::slice::{[T]}::copy_within]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16
     Name pattern: [core::slice::{[@T]}::copy_within] -/
 @[rust_fun "core::slice::{[@T]}::copy_within"]
-axiom core.slice.Slice.copy_within
+def core.slice.Slice.copy_within
   {T : Type} {R : Type} (opsrangeRangeBoundsRUsizeInst :
   core.ops.range.RangeBounds R Std.Usize) (markerCopyInst : core.marker.Copy T)
   :
-  Slice T → R → Std.Usize → Result (Slice T)
+  Slice T → R → Std.Usize → Result (Slice T) :=
+  fun self src dest => do
+    let sb ← opsrangeRangeBoundsRUsizeInst.start_bound src
+    let eb ← opsrangeRangeBoundsRUsizeInst.end_bound src
+    let s := Slice.copyWithinStart sb
+    let e := Slice.copyWithinEnd eb self.length
+    -- Rust panics if the source range is invalid or the copy runs past the end.
+    if s ≤ e ∧ e ≤ self.length ∧ dest.val + (e - s) ≤ self.length then
+      ok (self.setSlice! dest.val ((self.val.drop s).take (e - s)))
+    else
+      fail .panic
+
+/-- **Spec theorem for `<[T]>::copy_within`**: the source range is resolved through
+the `RangeBounds` instance, then the segment `self[s, e)` is copied to start at
+`dest` (via `Slice.setSlice!`). The bound resolution is definitional in the instance,
+so this is stated as an unfolding lemma. -/
+@[simp]
+theorem core.slice.Slice.copy_within_eq
+    {T R : Type} (rbInst : core.ops.range.RangeBounds R Std.Usize)
+    (copyInst : core.marker.Copy T) (self : Slice T) (src : R) (dest : Std.Usize) :
+    core.slice.Slice.copy_within rbInst copyInst self src dest =
+      (do
+        let sb ← rbInst.start_bound src
+        let eb ← rbInst.end_bound src
+        let s := Slice.copyWithinStart sb
+        let e := Slice.copyWithinEnd eb self.length
+        if s ≤ e ∧ e ≤ self.length ∧ dest.val + (e - s) ≤ self.length then
+          ok (self.setSlice! dest.val ((self.val.drop s).take (e - s)))
+        else fail .panic) := rfl
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, A>}::len]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 1633:4-1633:30
