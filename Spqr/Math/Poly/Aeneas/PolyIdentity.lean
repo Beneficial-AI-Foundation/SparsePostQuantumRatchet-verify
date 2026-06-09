@@ -22,7 +22,7 @@ open spqr.math.gf spqr.encoding.gf spqr.encoding.polynomial
 
 namespace spqr.encoding.polynomial
 
-/-! ## Polynomial identity from loop 1 -/
+/-! ## Polynomial identity -/
 
 /--
 The mathematical polynomial identity from the Horner-scheme loop.
@@ -33,7 +33,7 @@ a field element `g : GF16`, a scale `s : GF216`, and the conditions that
 `v[k].toGF216 = s * hornerAccum g coeffs k` for `k > 0`, then
 `listToGF216Poly v * (X - C g.toGF216) = X * C s * listToGF216Poly coeffs`.
 -/
-theorem poly_identity_from_loop1
+theorem poly_identity_from
     (coeffs v : List GF16)
     (g : GF16) (s : GF216)
     (hlen : v.length = coeffs.length)
