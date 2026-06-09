@@ -21,8 +21,6 @@ import Spqr.Math.Poly.Basic.Defs
 open Polynomial
 open spqr.encoding.gf
 
-deriving instance Inhabited for spqr.encoding.gf.GF16
-
 namespace spqr.encoding.polynomial
 
 /--

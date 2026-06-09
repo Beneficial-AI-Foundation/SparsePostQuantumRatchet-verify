@@ -10,9 +10,9 @@ import Spqr.Specs.Encoding.Gf.GF16.Div
 import Spqr.Specs.Encoding.Gf.GF16.Eq
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
 import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceIteratorNext
-import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Mathlib.RingTheory.DedekindDomain.Basic
 /-!
@@ -150,7 +150,8 @@ open spqr.encoding.polynomial (lagrangeDenomProd lagrangeDenomProd_ge
 private lemma slice_get_eq_of_eq {T : Type} {s₁ s₂ : Slice T} (h : s₁ = s₂)
     (i : Nat) (h₁ : i < s₁.val.length) (h₂ : i < s₂.val.length) :
     s₁.val.get ⟨i, h₁⟩ = s₂.val.get ⟨i, h₂⟩ := by
-  subst h; rfl
+  subst h
+  rfl
 
 /--
 **Spec theorem for `encoding.polynomial.Poly.lagrange_interpolate_complete_loop0`**:
@@ -292,6 +293,10 @@ theorem body_spec
     · simp_all
       grind
     · simp_all
+
+
+
+
   · obtain ⟨h_opt_eq, h_range_eq⟩ := h_none (by omega)
     rw [h_opt_eq]
     grind

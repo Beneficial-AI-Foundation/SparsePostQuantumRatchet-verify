@@ -92,7 +92,7 @@ lemma natDegree_prodLinearFactors_le
             Polynomial.natDegree_mul_le
         _ ≤ (k - s) + 1 := by
             have h1 := ih (by omega) (by omega)
-            have h2 : (X - C ((pts.get ⟨k, by omega⟩).x.toGF216) : GF216Poly).natDegree = 1 :=
+            have h2 : (X - C ((pts.get ⟨k, by omega⟩).x.toGF216) : GF216[X]).natDegree = 1 :=
               Polynomial.natDegree_X_sub_C _
             omega
         _ = k + 1 - s := by omega

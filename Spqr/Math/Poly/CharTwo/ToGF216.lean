@@ -5,7 +5,6 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Math.Poly.Coeff.Basic
 import Mathlib.RingTheory.DedekindDomain.Basic
-
 /-!
 # `GF16.toGF216` at distinguished values, and the `getElem!`/`coeff` bridge
 
@@ -47,8 +46,6 @@ alias GF16.toGF216_one_val := GF16.toGF216_eq_one
 end spqr.encoding.gf
 
 namespace spqr.encoding.polynomial
-
-deriving instance Inhabited for spqr.encoding.gf.GF16
 
 /-! ## Bridge between `getElem!` and coefficients -/
 

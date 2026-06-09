@@ -57,17 +57,14 @@ lemma listToGF216Poly_coeff_eq_zero (cs : List spqr.encoding.gf.GF16)
 /-! ## Singleton and cons decomposition -/
 
 /--
-A single-coefficient list `[a]` produces the constant polynomial `C (a.toGF216)` in `GF(2¹⁶)[X]`.
--/
+A single-coefficient list `[a]` produces the constant polynomial `C (a.toGF216)` in `GF(2¹⁶)[X]`. -/
 lemma listToGF216Poly_singleton (a : spqr.encoding.gf.GF16) :
     listToGF216Poly [a] = C (a.toGF216) := by
   simp [listToGF216Poly, Finset.univ_unique]
 
-/--
-Decomposition: `listToGF216Poly (c :: cs) = C(c.toGF216) + X · listToGF216Poly cs`.
+/-- Decomposition: `listToGF216Poly (c :: cs) = C(c.toGF216) + X · listToGF216Poly cs`.
 
-This is the cons-cell decomposition that mirrors the Horner-scheme evaluation pattern.
--/
+This is the cons-cell decomposition that mirrors the Horner-scheme evaluation pattern. -/
 lemma listToGF216Poly_cons
     (c : spqr.encoding.gf.GF16)
     (cs : List spqr.encoding.gf.GF16) :
