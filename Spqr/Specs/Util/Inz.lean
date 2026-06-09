@@ -16,7 +16,7 @@ high bit lives at position 8 and can be isolated by `>> 8 & 1`.
 **Source:** "spqr/src/util.rs"
 -/
 
-open Aeneas Aeneas.Std Result
+open Aeneas Aeneas.Std
 namespace spqr.util
 
 /-- **Spec theorem for `spqr::util::inz`**
