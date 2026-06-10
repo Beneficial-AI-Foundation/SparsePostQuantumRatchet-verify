@@ -43,9 +43,6 @@ lemma expectedTrailingPoly_coeff_eq_zero_of_lt
         rw [coeff_C]; exact if_neg (by omega)
       rw [h1, h2, this]; ring
 
-@[deprecated expectedTrailingPoly_coeff_eq_zero_of_lt (since := "2026-06-08")]
-alias expectedTrailingPoly_coeff_eq_zero := expectedTrailingPoly_coeff_eq_zero_of_lt
-
 /--
 Bridge lemma: when the initial polynomial has `p[offset] = ONE` and `p[j] = ZERO` for `j <
 offset`, the expected trailing polynomial collapses to `prodLinearFactors`.

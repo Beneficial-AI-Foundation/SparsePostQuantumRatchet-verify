@@ -28,15 +28,9 @@ independent of both Mathlib-specific algebra and Aeneas-extracted types.
 * `list_getElem_bang_set_self`: `(l.set n x)[n]! = x` when `n < l.length`.
 * `list_double_set_getElem_fst`: reading position `i` after setting at `i` then `j ≠ i`.
 * `list_getElem?_getD_eq_getElem`: `xs[n]?.getD default = xs[n]` when `n < xs.length`.
-* `getElem?_append_of_lt`: `(l₁ ++ l₂)[i]? = l₁[i]?` when `i < l₁.length`.
+* `getElem?_append_of_lt`: `(l₁ ++ l₂)[i]? = l₁[i]?` when `i < l₁.length`.-/
 
-### Arithmetic utilities
-* `hornerAccum_eq_of_idx_eq`: index-shifting helper for `hornerAccum` equality.
--/
 
-open spqr.encoding.gf spqr.encoding.polynomial
-
-namespace spqr.encoding.polynomial
 
 /-! ## List indexing utilities -/
 
@@ -88,6 +82,3 @@ theorem getElem?_append_of_lt {α : Type}
     (l₁ l₂ : List α) {i : Nat} (h : i < l₁.length) :
     (l₁ ++ l₂)[i]? = l₁[i]? := by
   simp [List.getElem?_append_left h]
-
-
-end spqr.encoding.polynomial

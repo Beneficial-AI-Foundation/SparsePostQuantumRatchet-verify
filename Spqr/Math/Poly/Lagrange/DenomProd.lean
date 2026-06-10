@@ -21,9 +21,6 @@ import Spqr.Math.Poly.Basic.Defs
 * `lagrangeDenomProd_skip`, `lagrangeDenomProd_accum` — one-step unfoldings.
 -/
 
-open Polynomial
-open spqr.encoding.gf
-
 namespace spqr.encoding.polynomial
 
 /--
@@ -54,9 +51,6 @@ lemma lagrangeDenomProd_eq_one_of_le (pi_x : spqr.encoding.gf.GF16)
     lagrangeDenomProd pi_x pts start = 1 := by
   unfold lagrangeDenomProd
   simp [show ¬(start < pts.length) from by omega]
-
-@[deprecated lagrangeDenomProd_eq_one_of_le (since := "2026-06-08")]
-alias lagrangeDenomProd_ge := lagrangeDenomProd_eq_one_of_le
 
 /-- One-step unfolding when the current point matches `pi_x`. -/
 lemma lagrangeDenomProd_skip (pi_x : spqr.encoding.gf.GF16)

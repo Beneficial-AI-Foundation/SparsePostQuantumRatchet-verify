@@ -48,9 +48,6 @@ lemma prodLinearFactors_eq_one_of_not_lt (pts : List Pt) (start stop : Nat)
     prodLinearFactors pts start stop = 1 := by
   unfold prodLinearFactors; rw [dif_neg h]
 
-@[deprecated prodLinearFactors_eq_one_of_not_lt (since := "2026-06-08")]
-alias prodLinearFactors_base := prodLinearFactors_eq_one_of_not_lt
-
 /-- One-step unfolding of `prodLinearFactors` from the left. -/
 lemma prodLinearFactors_step (pts : List Pt) (start stop : Nat)
     (h1 : start < stop) (h2 : start < pts.length) :

@@ -46,9 +46,6 @@ lemma hornerAccum_eq_zero_of_le (g_x : spqr.encoding.gf.GF16)
   unfold hornerAccum
   simp [show ¬(pos < coeffs.length) from by omega]
 
-@[deprecated hornerAccum_eq_zero_of_le (since := "2026-06-08")]
-alias hornerAccum_ge := hornerAccum_eq_zero_of_le
-
 lemma hornerAccum_unfold (g_x : spqr.encoding.gf.GF16)
     (coeffs : List spqr.encoding.gf.GF16) (pos : Nat)
     (h : pos < coeffs.length) :

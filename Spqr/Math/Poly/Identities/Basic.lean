@@ -82,9 +82,6 @@ lemma coeff_zero_eq_zero_of_X_mul_identity
     rw [CharTwo.neg_eq] at h0
     exact (mul_eq_zero.mp h0).elim id (absurd · ha)
 
-@[deprecated coeff_zero_eq_zero_of_X_mul_identity (since := "2026-06-08")]
-alias coeff_zero_of_X_mul_identity := coeff_zero_eq_zero_of_X_mul_identity
-
 /-! ## List/Finset sum bridge -/
 
 /-- Converting `List.map/sum` to `Finset.sum` indexed by `Fin`. -/
@@ -98,9 +95,6 @@ lemma List.map_sum_eq_Finset_sum
     simp only [List.map_cons, List.sum_cons, List.length_cons, List.get_eq_getElem]
     rw [ih, Fin.sum_univ_succ]
     simp [Fin.val_succ, List.get_eq_getElem]
-
-@[deprecated List.map_sum_eq_Finset_sum (since := "2026-06-08")]
-alias list_map_sum_eq_finset_sum := List.map_sum_eq_Finset_sum
 
 /-! ## Remaining `Inhabited` instance -/
 

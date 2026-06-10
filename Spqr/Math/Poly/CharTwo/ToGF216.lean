@@ -30,18 +30,12 @@ lemma GF16.toGF216_eq_zero (g : spqr.encoding.gf.GF16) (h : g.value.val = 0) :
   rw [h]
   simp [natToBinaryPoly_zero, map_zero]
 
-@[deprecated GF16.toGF216_eq_zero (since := "2026-06-08")]
-alias GF16.toGF216_zero_val := GF16.toGF216_eq_zero
-
 /-- `GF16.toGF216` preserves the one element. -/
 lemma GF16.toGF216_eq_one (g : spqr.encoding.gf.GF16) (h : g.value.val = 1) :
     g.toGF216 = 1 := by
   unfold GF16.toGF216 Nat.toGF216
   rw [h]
   simp [natToBinaryPoly_one, map_one]
-
-@[deprecated GF16.toGF216_eq_one (since := "2026-06-08")]
-alias GF16.toGF216_one_val := GF16.toGF216_eq_one
 
 end spqr.encoding.gf
 
@@ -118,7 +112,7 @@ theorem Nat_toGF216_eq_zero
   omega
 
 /-- If `g.toGF216 = 0`, then `g.value.val = 0`.
-This is the reverse direction of `GF16.toGF216_zero_val`. -/
+This is the reverse direction of `GF16.toGF216_eq_zero`. -/
 theorem GF16_toGF216_eq_zero_imp
     (g : GF16) (h : g.toGF216 = 0) :
     g.value.val = 0 := by

@@ -73,9 +73,6 @@ lemma prodLinearFactors_eq_X_sub_C_mul
       prodLinearFactors_snoc pts 0 i (by omega) hi]
   ring
 
-@[deprecated prodLinearFactors_eq_X_sub_C_mul (since := "2026-06-08")]
-alias prodLinearFactors_eq_factor_mul_basis := prodLinearFactors_eq_X_sub_C_mul
-
 /-- Degree bound for `prodLinearFactors`. -/
 lemma natDegree_prodLinearFactors_le
     (pts : List Pt) (s t : Nat) (hs : s ≤ t) (ht : t ≤ pts.length) :

@@ -20,7 +20,6 @@ the in-range and out-of-range coefficients, the singleton and cons decomposition
 -/
 
 open Polynomial
-open spqr.encoding.gf
 
 namespace spqr.encoding.polynomial
 

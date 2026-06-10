@@ -109,9 +109,6 @@ lemma listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one
     · have hdn : ¬(n < (cs.drop 1).length) := by rw [List.length_drop]; omega
       rw [dif_neg hn, dif_neg hdn]
 
-@[deprecated listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one (since := "2026-06-08")]
-alias listToGF216Poly_eq_X_mul_drop_one := listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one
-
 /--
 If all coefficients of a list, interpreted via `GF16.toGF216`, match those of a polynomial `q`
 at in-range positions, and `q` has zero coefficients beyond the list length, then
