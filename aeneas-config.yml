@@ -1,8 +1,8 @@
 # Aeneas extraction configuration
 
 aeneas:
-  commit: "ce1708e" # pinned commit hash
-  repo: "https://github.com/AeneasVerif/aeneas.git"
+  commit: "2d49adb" # pinned commit hash (fork: ce1708e + -emit-json, global-init fix)
+  repo: "https://github.com/oliver-butterley/aeneas.git"
 
 # Upstream Rust crate we are verifying
 upstream:
@@ -54,7 +54,7 @@ charon:
 aeneas_args:
   options:
     - split-files
-    # - emit-json # writes translation.json
+    - emit-json # writes translation.json
   dest: "." # output directory (project root)
   subdir: "SrcTranslated" # sub-folder for files (sets import paths to SrcTranslated.*)
 

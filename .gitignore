@@ -3,7 +3,6 @@ tarpaulin-report.html
 rust-toolchain.toml
 /.fstar-cache
 proptest-regressions
-*.llbc
 .logs/
 .aeneas/
 .tmp/
