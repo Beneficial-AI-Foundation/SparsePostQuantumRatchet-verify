@@ -10,6 +10,7 @@ import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Gf2Poly.Basic
 import Spqr.Math.Gf2Poly.NatRep
 import Spqr.Math.List
+import Spqr.Math.Poly.Aeneas.MultXdiff
 import Spqr.Math.Poly.Aeneas.PolyIdentity
 import Spqr.Math.Poly.Basic.Defs
 import Spqr.Math.Poly.Basic.Zero
@@ -63,6 +64,7 @@ import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.PolyConstN.ZEROS
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
