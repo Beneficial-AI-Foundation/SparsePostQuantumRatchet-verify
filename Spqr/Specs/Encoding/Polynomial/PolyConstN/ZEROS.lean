@@ -3,13 +3,7 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.ListOps
-import Spqr.Math.Poly.CharTwo.ToGF216
 import Spqr.Math.Poly.Eval
-import Spqr.Math.Poly.Lagrange.InterpolantSum
-import Spqr.Math.Poly.Horner.Eval
-import Spqr.Math.Poly.ExpectedTrailing.Basic
-import Spqr.Math.Poly.Identities.Basic
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
 
 /-!
@@ -20,7 +14,7 @@ import Spqr.Specs.Encoding.Gf.GF16.ZERO
 **Source**: spqr/src/encoding/polynomial.rs (lines 363:4-365:6)
 -/
 
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf Polynomial
+open Aeneas Aeneas.Std Result spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyConst
 
