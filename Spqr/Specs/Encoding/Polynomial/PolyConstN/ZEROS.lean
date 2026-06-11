@@ -11,8 +11,7 @@ import Spqr.Specs.Encoding.Gf.GF16.ZERO
 
 `ZEROS` is the zero polynomial in `PolyConst<N>`, with all `N` coefficients set to `GF16::ZERO`.
 
-**Source**: spqr/src/encoding/polynomial.rs (lines 363:4-365:6)
--/
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 open Aeneas Aeneas.Std Result spqr.encoding.gf
 
