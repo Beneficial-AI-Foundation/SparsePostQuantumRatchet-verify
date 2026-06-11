@@ -31,7 +31,8 @@ def functionJson (env : Environment) (known : Std.HashSet Name)
   let name := f.leanId.toName
   let exists_ := env.find? name |>.isSome
   let hasSpec := hasSpecTheorem env name
-  let deps := filterToKnownFunctions known (getDirectDeps env name)
+  let deps := (filterToKnownFunctions known (getDirectDeps env name)).qsort
+    (fun a b => a.toString < b.toString)
   let base : List (String × Json) := [
     ("lean_id", Json.str f.leanId),
     ("def_id", toJson f.defId),
@@ -53,7 +54,8 @@ def functionJson (env : Environment) (known : Std.HashSet Name)
       [ ("spec_name", Json.str (getSpecName name).toString),
         ("verified", Json.bool (isFullyVerified env known name)),
         ("verified_modulo_specs", Json.bool (isVerified env name)),
-        ("axioms", Json.arr ((specAxioms env name).map (fun (a, k) => axiomJson a k))) ]
+        ("axioms", Json.arr (((specAxioms env name).qsort
+          (fun a b => a.1.toString < b.1.toString)).map (fun (a, k) => axiomJson a k))) ]
     else []
   Json.mkObj (base ++ specFields)
 
