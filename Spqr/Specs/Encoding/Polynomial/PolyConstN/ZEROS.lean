@@ -20,12 +20,10 @@ namespace spqr.encoding.polynomial.PolyConst
 /-- **Spec theorem for `encoding.polynomial.PolyConst.ZEROS`**:
 the coefficient array of `ZEROS N` is `N` copies of `GF16.ZERO`, and lifting it
 to `GF216[X]` gives the zero polynomial. -/
-@[simp]
 theorem ZEROS_coefficients (N : Usize) :
     (ZEROS N).coefficients = Array.repeat N GF16.ZERO := by
   simp [ZEROS]
 
-@[simp]
 theorem ZEROS_coefficients_val (N : Usize) :
     (ZEROS N).coefficients.val = List.replicate N.val GF16.ZERO := by
   simp [ZEROS, Array.repeat_val]
