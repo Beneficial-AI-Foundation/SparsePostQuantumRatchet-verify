@@ -5448,8 +5448,8 @@ def chain.ChainEpochDirection.next_key
   Result ((Std.U32 × (alloc.vec.Vec Std.U8)) × chain.ChainEpochDirection)
   := do
   let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.next)
-  let (p, s1, i) ← chain.ChainEpochDirection.next_key_internal s self.ctr
-  let (idx, key) := p
+  let ((idx, key), s1, i) ←
+    chain.ChainEpochDirection.next_key_internal s self.ctr
   let s2 ← lift (Array.to_slice key)
   let v ← alloc.slice.Slice.to_vec core.clone.CloneU8 s2
   let v1 := deref_mut_back s1
@@ -5524,8 +5524,7 @@ def chain.ChainEpochDirection.key
         chain.ChainEpochDirection.key_loop self.ctr self.next kh at1 params
       let kh2 ← chain.KeyHistory.gc kh1 i4 params
       let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut v)
-      let (p, s1, i5) ← chain.ChainEpochDirection.next_key_internal s i4
-      let (_, a) := p
+      let ((_, a), s1, i5) ← chain.ChainEpochDirection.next_key_internal s i4
       let s2 ← lift (Array.to_slice a)
       let v1 ← alloc.slice.Slice.to_vec core.clone.CloneU8 s2
       let v2 := deref_mut_back s1
@@ -11046,10 +11045,9 @@ def v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk
   rand_core.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) (rng : R) :
   Result ((v1.chunked.send_ek.KeysSampled × encoding.Chunk) × R)
   := do
-  let (t, rng1) ←
+  let ((uc, to_send, mac), rng1) ←
     v1.unchunked.send_ek.KeysUnsampled.send_header randrngRngInst
       rand_coreCryptoRngInst self.uc rng
-  let (uc, to_send, mac) := t
   let (to_send1, _) ← alloc.vec.Vec.append Global to_send mac
   let s := alloc.vec.Vec.deref to_send1
   let encoder ←
@@ -11143,10 +11141,9 @@ def v1.unchunked.send_ct.HeaderReceived.send_ct1
   Result ((v1.unchunked.send_ct.Ct1Sent × (alloc.vec.Vec Std.U8) ×
     EpochSecret) × R)
   := do
-  let (t, rng1) ←
+  let ((ct1, es, secret), rng1) ←
     incremental_mlkem768.encaps1 randrngRngInst rand_coreCryptoRngInst 
       self.hdr rng
-  let (ct1, es, secret) := t
   let s ←
     lift (Array.to_slice
       (Array.make 33#usize [
@@ -11181,10 +11178,9 @@ def v1.chunked.send_ct.HeaderReceived.send_ct1_chunk
   Result ((v1.chunked.send_ct.Ct1Sampled × encoding.Chunk × EpochSecret) ×
     R)
   := do
-  let (t, rng1) ←
+  let ((uc, ct1, epoch_secret), rng1) ←
     v1.unchunked.send_ct.HeaderReceived.send_ct1 randrngRngInst
       rand_coreCryptoRngInst self.uc rng
-  let (uc, ct1, epoch_secret) := t
   let s := alloc.vec.Vec.deref ct1
   let encoder ←
     encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
@@ -11214,10 +11210,9 @@ def v1.chunked.states.States.send
   match self with
   | v1.chunked.states.States.KeysUnsampled state =>
     let epoch ← v1.chunked.send_ek.KeysUnsampled.epoch state
-    let (p, rng1) ←
+    let ((state1, chunk), rng1) ←
       v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk randrngRngInst
         rand_coreCryptoRngInst state rng
-    let (state1, chunk) := p
     ok (core.result.Result.Ok
       {
         msg :=
@@ -11275,10 +11270,9 @@ def v1.chunked.states.States.send
       }, rng)
   | v1.chunked.states.States.HeaderReceived state =>
     let epoch ← v1.chunked.send_ct.HeaderReceived.epoch state
-    let (t, rng1) ←
+    let ((state1, chunk, epoch_secret), rng1) ←
       v1.chunked.send_ct.HeaderReceived.send_ct1_chunk randrngRngInst
         rand_coreCryptoRngInst state rng
-    let (state1, chunk, epoch_secret) := t
     ok (core.result.Result.Ok
       {
         msg :=

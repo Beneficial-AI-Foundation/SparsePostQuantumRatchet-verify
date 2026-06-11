@@ -101,7 +101,7 @@ async function getOpamEnv(switchName: string): Promise<Record<string, string>> {
 }
 
 const OCAML_DEPS = [
-  "ppx_deriving", "visitors", "easy_logging", "zarith", "yojson",
+  "ppx_deriving", "ppx_deriving_yojson", "visitors", "easy_logging", "zarith", "yojson",
   "core_unix", "odoc", "ocamlgraph", "menhir", "ocamlformat",
   "unionFind", "domainslib", "progress",
 ];
@@ -154,6 +154,9 @@ async function setupRustToolchain(repoDir: string): Promise<void> {
 async function setupRepo(repo: string, repoDir: string, commit: string): Promise<void> {
   if (fs.existsSync(repoDir)) {
     const spinner = ora("Updating repository...").start();
+    // Keep the remote in sync with the configured repo (it may have changed,
+    // e.g. switching from upstream to a fork).
+    await run("git", ["remote", "set-url", "origin", repo], { cwd: repoDir, silent: true });
     await run("git", ["fetch", "origin"], { cwd: repoDir, silent: true });
     await run("git", ["checkout", commit], { cwd: repoDir, silent: true });
     spinner.succeed(`Aeneas at ${commit}`);
