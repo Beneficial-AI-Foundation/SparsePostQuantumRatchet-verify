@@ -19,3 +19,10 @@ name = "SrcTranslated"
 
 [[lean_lib]]
 name = "Spqr"
+
+[[lean_lib]]
+name = "Utils"
+
+[[lean_exe]]
+name = "status"
+root = "Utils.Status"
