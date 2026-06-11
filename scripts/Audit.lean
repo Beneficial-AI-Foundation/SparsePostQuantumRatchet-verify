@@ -21,7 +21,6 @@ Section 4 writes `sorry-manifest.txt` (machine-readable, one line per
 Reference: https://lean-lang.org/doc/reference/latest/ValidatingProofs/
 -/
 import Spqr
-import SrcTranslated
 
 open Lean Elab Command
 
