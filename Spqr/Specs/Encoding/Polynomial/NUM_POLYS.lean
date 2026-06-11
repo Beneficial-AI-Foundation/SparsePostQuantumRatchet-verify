@@ -10,8 +10,7 @@ import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
 In Protocol V1, each 32-byte chunk (`CHUNK_SIZE`) is split into 2-byte pairs, with each pair
 representing a single element of GF(2¹⁶). Therefore: `NUM_POLYS = CHUNK_SIZE / 2 = 32 / 2 = 16`
 
-**Source**: spqr/src/encoding/polynomial.rs (lines 510:0-510:44)
--/
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 open Aeneas Aeneas.Std Result
 
