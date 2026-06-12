@@ -63,10 +63,12 @@ def main (args : List String) : IO UInt32 := do
   IO.eprintln "Loading spqr environment..."
   let env ← loadEnvironment
   IO.eprintln "Reading translation.json + spqr.llbc..."
-  let (funs, metaMap) ← readArtifacts
-  IO.eprintln s!"  {funs.size} function entries, {metaMap.size} LLBC fun_decls"
-
-  -- Known function set (for dependency filtering): all resolvable lean ids.
+  let (allFuns, metaMap) ← readArtifacts
+  IO.eprintln s!"  {allFuns.size} function entries, {metaMap.size} LLBC fun_decls"
+  -- Restrict the report to functions defined in the crate under study.
+  let funs := allFuns.filter fun f => (metaMap.getD f.defId default).isLocal
+  IO.eprintln s!"  {funs.size} crate-local entries (filtered from {allFuns.size})"
+  -- Known function set (for dependency filtering): resolvable, crate-local lean ids.
   let known : Std.HashSet Name := funs.foldl (init := {}) fun acc f =>
     let n := f.leanId.toName
     if env.find? n |>.isSome then acc.insert n else acc
