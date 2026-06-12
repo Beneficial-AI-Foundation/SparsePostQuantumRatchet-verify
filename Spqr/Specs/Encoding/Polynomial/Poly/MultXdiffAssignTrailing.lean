@@ -3,7 +3,7 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Aeneas.MultXdiff
+import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
 import Spqr.Specs.Encoding.Gf.GF16.Mul
 import Spqr.Specs.Encoding.Gf.GF16.SubAssign
 import Spqr.Specs.Aeneas.RangeIteratorNext
@@ -24,8 +24,7 @@ For a polynomial `p(x) = ∑ᵢ cᵢxⁱ`, multiplication by `(x − d)` expands
 the `x · p(x)` term shifts coefficients by one degree, while `−d · p(x)` contributes `cᵢ · d` to
 position `i − 1`. The loop performs this update in place over the trailing range.
 
-**Source**: `spqr/src/encoding/polynomial.rs`
--/
+**Source**: `spqr/src/encoding/polynomial.rs`-/
 
 
 open Aeneas Aeneas.Std  spqr.encoding.gf
@@ -38,15 +37,15 @@ theorem body_spec
     (iter : core.ops.range.Range Usize)
     (v : alloc.vec.Vec GF16)
     (h_start_ge : 1 ≤ iter.start.val)
-    (h_end_eq : iter.«end».val = v.val.length) :
+    (h_end_eq : iter.end.val = v.val.length) :
     body difference iter v ⦃ cf =>
       match cf with
       | ControlFlow.done r =>
-          r = v ∧ ¬ (iter.start.val < iter.«end».val)
+          r = v ∧ ¬ (iter.start.val < iter.end.val)
       | ControlFlow.cont (iter1, v1) =>
-          iter.start.val < iter.«end».val ∧
+          iter.start.val < iter.end.val ∧
           iter1.start.val = iter.start.val + 1 ∧
-          iter1.«end» = iter.«end» ∧
+          iter1.end = iter.end ∧
           v1.val.length = v.val.length ∧
           (∀ (h_idx : iter.start.val - 1 < v1.val.length),
             (v1.val.get ⟨iter.start.val - 1, h_idx⟩).toGF216 =
@@ -57,7 +56,7 @@ theorem body_spec
   obtain ⟨opt, iter1, hnext, h_none, h_some⟩ := core.iter.range.IteratorRange.next_Usize_spec iter
   rw [hnext]
   simp only [bind_tc_ok]
-  by_cases h_lt : iter.start.val < iter.«end».val
+  by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
     step*
@@ -90,26 +89,25 @@ namespace spqr.encoding.polynomial.Poly.mult_xdiff_assign_trailing_loop
 theorem loop_spec
     (difference : GF16) (iter : core.ops.range.Range Usize) (v : alloc.vec.Vec GF16)
     (h_start_ge : 1 ≤ iter.start.val)
-    (h_end_eq : iter.«end».val = v.val.length)
-    (h_le : iter.start.val ≤ iter.«end».val) :
-    mult_xdiff_assign_trailing_loop
-      iter v difference ⦃ result =>
+    (h_end_eq : iter.end.val = v.val.length)
+    (h_le : iter.start.val ≤ iter.end.val) :
+    mult_xdiff_assign_trailing_loop iter v difference ⦃ result =>
       result.val.length = v.val.length ∧
       (∀ (j : Nat),
-        iter.start.val ≤ j + 1 ∧  j + 1 < iter.«end».val →
+        iter.start.val ≤ j + 1 ∧  j + 1 < iter.end.val →
         ∀ (hj : j < result.val.length),
           (result.val.get ⟨j, hj⟩).toGF216 =
             (v.val[j]!).toGF216 - (v.val[j + 1]!).toGF216 * difference.toGF216) ∧
-      (∀ (j : Nat), ¬(iter.start.val ≤ j + 1 ∧ j + 1 < iter.«end».val) →
+      (∀ (j : Nat), ¬(iter.start.val ≤ j + 1 ∧ j + 1 < iter.end.val) →
         result.val[j]? = v.val[j]?) ⦄ := by
   unfold mult_xdiff_assign_trailing_loop
   apply loop.spec_decr_nat
     (measure := fun (p : core.ops.range.Range Usize × alloc.vec.Vec GF16) =>
-                  p.1.«end».val - p.1.start.val)
+                  p.1.end.val - p.1.start.val)
     (inv := fun (p : core.ops.range.Range Usize × alloc.vec.Vec GF16) =>
-        p.1.«end» = iter.«end» ∧
+        p.1.end = iter.end ∧
         iter.start.val ≤ p.1.start.val ∧
-        p.1.start.val ≤ iter.«end».val ∧
+        p.1.start.val ≤ iter.end.val ∧
         p.2.val.length = v.val.length ∧
         (∀ (j : Nat), iter.start.val ≤ j + 1 ∧  j + 1 < p.1.start.val →
           ∀ (hj : j < p.2.val.length),
@@ -194,6 +192,6 @@ theorem mult_xdiff_assign_trailing_spec
   simp_all only [alloc.vec.Vec.len, Usize.ofNatCore_val_eq, List.get_eq_getElem, getElem!_pos,
     not_and, not_lt, implies_true, toGF216Poly, true_and]
   apply mult_xdiff_poly_identity
-  all_goals simp_all
+  all_goals grind
 
 end spqr.encoding.polynomial.Poly
