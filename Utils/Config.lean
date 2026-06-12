@@ -17,13 +17,9 @@ def specSuffix : String := "_spec"
 
 /-- Inputs produced by `npm run aeneas-extract` (paths relative to repo root). -/
 def translationJsonPath : String := "translation.json"
-def llbcPath : String := "spqr.llbc"
+def llbcSummaryPath : String := "llbc-summary.json"
 
 /-- Default output path for the status report. -/
 def statusOutPath : String := "status.json"
-
-/-- Module-name root of the Aeneas-extracted code. An `axiom` declared in a module under this root
-is a *trusted external model* (an opaque Rust item), as opposed to `sorry` or builtin axiom. -/
-def extractedRoot : Name := `SrcTranslated
 
 end Utils.Config

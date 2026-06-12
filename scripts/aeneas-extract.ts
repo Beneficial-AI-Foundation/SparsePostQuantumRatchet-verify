@@ -12,6 +12,7 @@ import { findBinary } from "./lib/paths.js";
 import { runStreaming } from "./lib/shell.js";
 import { applyTweaks, warnUnmatchedTweaks } from "./lib/tweaks.js";
 import { syncLeanToolchain } from "./lib/lean-toolchain.js";
+import { writeLlbcSummary } from "./lib/llbc-summary.js";
 
 async function main(): Promise<void> {
   console.log(chalk.bold("\nAeneas Extract\n"));
@@ -124,7 +125,16 @@ async function main(): Promise<void> {
     console.log();
   }
 
-  // ── Step 4: Lean toolchain sync ─────────────────────────────────────
+  // ── Step 4: LLBC summary ────────────────────────────────────────────
+  // Distill the large, machine-specific .llbc into a small, path-normalized
+  // llbc-summary.json (committed; consumed by the status utility). The raw
+  // .llbc is an untracked intermediate.
+  console.log(chalk.bold("Step 4: Writing llbc-summary.json..."));
+  const summaryPath = path.join(root, "llbc-summary.json");
+  const nSummary = writeLlbcSummary(llbcPath, summaryPath, root);
+  console.log(chalk.green(`  Wrote llbc-summary.json (${nSummary} functions)\n`));
+
+  // ── Step 5: Lean toolchain sync ─────────────────────────────────────
   syncLeanToolchain(root);
 
   console.log(chalk.green("Done."));

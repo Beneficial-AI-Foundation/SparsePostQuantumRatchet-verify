@@ -21,10 +21,6 @@ def loadEnvironment : IO Environment := do
   Lean.initSearchPath (← Lean.findSysroot)
   importModules #[{ module := Utils.Config.mainModule }] {}
 
-/-- JSON for one classified axiom. -/
-def axiomJson (a : Name) (k : AxiomKind) : Json :=
-  Json.mkObj [("name", Json.str a.toString), ("kind", Json.str k.toString)]
-
 /-- JSON record for one extracted function. -/
 def functionJson (env : Environment) (known : Std.HashSet Name)
     (f : TransFun) (fm : FunMeta) : Json :=
@@ -41,7 +37,11 @@ def functionJson (env : Environment) (known : Std.HashSet Name)
     ("line_start", toJson fm.lineStart),
     ("line_end", toJson fm.lineEnd),
     ("is_public", Json.bool fm.isPublic),
+    ("is_local", Json.bool fm.isLocal),
+    ("opacity", Json.str fm.opacity),
     ("is_opaque", Json.bool f.isOpaque),
+    ("is_global_initializer", Json.bool fm.isGlobalInit),
+    ("is_unsafe", Json.bool fm.isUnsafe),
     ("is_extraction_artifact", Json.bool f.isLoopArtifact),
     ("can_fail", Json.bool f.canFail),
     ("exists", Json.bool exists_),
@@ -52,10 +52,9 @@ def functionJson (env : Environment) (known : Std.HashSet Name)
   let specFields : List (String × Json) :=
     if hasSpec then
       [ ("spec_name", Json.str (getSpecName name).toString),
-        ("verified", Json.bool (isFullyVerified env known name)),
         ("verified_modulo_specs", Json.bool (isVerified env name)),
         ("axioms", Json.arr (((specAxioms env name).qsort
-          (fun a b => a.1.toString < b.1.toString)).map (fun (a, k) => axiomJson a k))) ]
+          (fun a b => a.toString < b.toString)).map (fun a => Json.str a.toString))) ]
     else []
   Json.mkObj (base ++ specFields)
 

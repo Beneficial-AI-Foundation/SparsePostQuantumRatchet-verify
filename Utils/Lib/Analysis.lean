@@ -2,9 +2,8 @@ import Lean
 import Utils.Config
 /-! Analysis: spec-existence, verification status, dependency and axiom analysis.
 
-* `isVerified`: the spec's own proof has no `sorry` (i.e. verified *assuming* every spec theorem it
-calls is proven);
-* `isFullyVerified`: proof depends only on the standard permitted axioms. -/
+* `isVerified`: the spec's own proof has no `sorry`;
+* `specAxioms`: the spec's full transitive axiom closure. -/
 
 open Lean
 
@@ -39,88 +38,24 @@ def proofContainsSorry (env : Environment) (name : Name) : Bool :=
     | none => true
   | none => true
 
-/-- Verified *modulo specs*: the spec exists and its own proof has no `sorry`
-    (calls to other, possibly-unproven, spec theorems are assumed). -/
+/-- Verified *modulo specs*: the spec exists and its own proof has no `sorry`. -/
 def isVerified (env : Environment) (name : Name) : Bool :=
   match env.find? (getSpecName name) with
   | some _ => !proofContainsSorry env (getSpecName name)
   | none => false
 
-/-- Transitive function dependencies within `knownNames`. -/
-partial def getTransitiveDeps (env : Environment) (knownNames : Std.HashSet Name)
-    (name : Name) (visited : Std.HashSet Name := {}) : Std.HashSet Name :=
-  if visited.contains name then visited
-  else
-    let visited := visited.insert name
-    let deps := filterToKnownFunctions knownNames (getDirectDeps env name)
-    deps.foldl (fun acc dep => getTransitiveDeps env knownNames dep acc) visited
+/-! Axiom analysis: There is no separate "fully verified" predicate: a spec is fully proven iff its
+axoms contains no `sorryAx`. Consumers read that directly off the emitted `axioms` list. -/
 
-/-- Fully verified: this function's spec is proven and every transitively-called
-    function's spec is also proven. -/
-def isFullyVerified (env : Environment) (knownNames : Std.HashSet Name) (name : Name) : Bool :=
-  if !isVerified env name then false
-  else
-    let transitive := (getTransitiveDeps env knownNames name).erase name
-    transitive.toList.all (isVerified env)
+abbrev EnvM := ReaderT Environment Id
+instance : MonadEnv EnvM where
+  getEnv := read
+  modifyEnv _ := pure ()
 
-/-! ## Axiom analysis (new) -/
-
-inductive AxiomKind where
-  | sorryAx   -- the Lean `sorry`
-  | builtin   -- propext / Classical.choice / Quot.sound
-  | external  -- a trusted external model (axiom declared under `SrcTranslated.*`)
-  | other     -- any other axiom
-  deriving DecidableEq, Repr
-
-def AxiomKind.toString : AxiomKind → String
-  | .sorryAx => "sorry"
-  | .builtin => "builtin"
-  | .external => "external"
-  | .other => "other"
-
-private def isBuiltinAxiom (n : Name) : Bool :=
-  n == ``propext || n == ``Classical.choice || n == ``Quot.sound
-
-/-- Classify an axiom by where it comes from. -/
-def classifyAxiom (env : Environment) (n : Name) : AxiomKind :=
-  if n == ``sorryAx then .sorryAx
-  else if isBuiltinAxiom n then .builtin
-  else
-    match env.getModuleIdxFor? n with
-    | some idx =>
-      let m := env.allImportedModuleNames[idx.toNat]!
-      if m.getRoot == Utils.Config.extractedRoot then .external else .other
-    | none => .other
-
-/-- Transitive axiom closure of a declaration's proof: BFS over the constants
-    used in proof/value terms, collecting those that are themselves axioms.
-    (Same closure as `Lean.collectAxioms`, restricted to what we need.) -/
-partial def collectAxioms (env : Environment) (root : Name) : Array Name := Id.run do
-  let mut visited : Std.HashSet Name := {}
-  let mut axioms : Std.HashSet Name := {}
-  let mut queue : Array Name := #[root]
-  let mut i := 0
-  while h : i < queue.size do
-    let nm := queue[i]
-    i := i + 1
-    if visited.contains nm then continue
-    visited := visited.insert nm
-    match env.find? nm with
-    | some (.axiomInfo _) => axioms := axioms.insert nm
-    | some ci =>
-      match ci.value? (allowOpaque := true) with
-      | some v => for r in v.getUsedConstants do
-          if !visited.contains r then queue := queue.push r
-      | none => pure ()
-    | none => pure ()
-  return axioms.toArray
-
-/-- The classified axioms used by a function's spec theorem (including the
-    builtin `propext` / `Classical.choice` / `Quot.sound`). -/
-def specAxioms (env : Environment) (name : Name) : Array (Name × AxiomKind) :=
+/-- The axioms in a spec theorem's transitive closure, via `Lean.collectAxioms`. -/
+def specAxioms (env : Environment) (name : Name) : Array Name :=
   let specName := getSpecName name
   if env.find? specName |>.isNone then #[]
-  else
-    (collectAxioms env specName).map (fun a => (a, classifyAxiom env a))
+  else Id.run <| (Lean.collectAxioms (m := EnvM) specName).run env
 
 end Utils.Lib.Analysis

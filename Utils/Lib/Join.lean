@@ -1,7 +1,7 @@
 import Lean
 import Utils.Config
-/-! Join: parse `translation.json` (Aeneas) and `spqr.llbc` (charon) and join them on the shared
-`def_id` to link each extracted Lean function to its Rust source. -/
+/-! Join: parse `translation.json` (Aeneas) and `llbc-summary.json` (charon) and join them on the
+shared `def_id` to link each extracted Lean function to its Rust source. -/
 
 open Lean
 
@@ -45,71 +45,48 @@ def parseTransFun (j : Json) : TransFun :=
 def parseTranslation (j : Json) : Array TransFun :=
   (jArr j "functions").map parseTransFun
 
-/-! ## spqr.llbc -/
+/-! ## llbc-summary.json -/
 
-/-- Rust-side metadata for one `def_id`, read from the LLBC `fun_decls`. -/
+/-- Rust-side metadata for one `def_id`, read from `llbc-summary.json`. -/
 structure FunMeta where
   rustName : String
   source : String
   lineStart : Nat
   lineEnd : Nat
   isPublic : Bool
+  /-- Defined in the crate (vs a dependency / std). -/
+  isLocal : Bool
+  /-- charon-level opacity: `Transparent` / `Opaque` / `Foreign`. -/
+  opacity : String
+  /-- A global's synthetic initializer function. -/
+  isGlobalInit : Bool
+  isUnsafe : Bool
   deriving Repr, Inhabited
 
-/-- A LLBC name is a list of path components; keep the `Ident` ones, joined by `::`. -/
-private def nameComponent (j : Json) : Option String :=
-  match (j.getObjVal? "Ident").toOption with
-  | some ident => ((ident.getArr?).toOption.bind (·[0]?)).bind (Json.getStr? · |>.toOption)
-  | none => none
-
-private def rustNameOf (nameArr : Array Json) : String :=
-  String.intercalate "::" (nameArr.filterMap nameComponent).toList
-
-/-- file_id → source path, from `translated.files`. -/
-private def fileMap (translated : Json) : Std.HashMap Nat String := Id.run do
-  let mut m : Std.HashMap Nat String := {}
-  for f in jArr translated "files" do
-    let id := jNat f "id"
-    let nameObj := (jVal? f "name").getD Json.null
-    -- name is { "Local": path } or { "Virtual": path }
-    let path :=
-      match (nameObj.getObjVal? "Local").bind Json.getStr? |>.toOption with
-      | some p => p
-      | none => ((nameObj.getObjVal? "Virtual").bind Json.getStr?).toOption.getD ""
-    m := m.insert id path
-  return m
-
-/-- Build `def_id → FunMeta` from the LLBC `fun_decls`. -/
-def parseLlbc (root : Json) : Std.HashMap Nat FunMeta := Id.run do
-  let translated := (jVal? root "translated").getD Json.null
-  let files := fileMap translated
+/-- Build `def_id → FunMeta` from the `functions` array of `llbc-summary.json`. -/
+def parseSummary (root : Json) : Std.HashMap Nat FunMeta := Id.run do
   let mut m : Std.HashMap Nat FunMeta := {}
-  for fd in jArr translated "fun_decls" do
-    -- `fun_decls` is a sparse, index-keyed vector: skip the `null` holes
-    -- (filtered/untranslated FunDeclIds) so they don't collapse onto def_id 0.
-    if (fd.getObjVal? "def_id").toOption |>.isNone then continue
-    let defId := jNat fd "def_id"
-    let im := (jVal? fd "item_meta").getD Json.null
-    let rustName := rustNameOf (jArr im "name")
-    let span := (jVal? im "span").getD Json.null
-    let data := (jVal? span "data").getD Json.null
-    let lineStart := jNat ((jVal? data "beg").getD Json.null) "line"
-    let lineEnd := jNat ((jVal? data "end").getD Json.null) "line"
-    let fileId := jNat data "file_id"
-    let isPublic := jBool ((jVal? im "attr_info").getD Json.null) "public"
-    m := m.insert defId
-      { rustName, source := files.getD fileId "", lineStart, lineEnd, isPublic }
+  for fd in jArr root "functions" do
+    m := m.insert (jNat fd "def_id")
+      { rustName := jStr fd "rust_name"
+        source := jStr fd "source"
+        lineStart := jNat fd "line_start"
+        lineEnd := jNat fd "line_end"
+        isPublic := jBool fd "is_public"
+        isLocal := jBool fd "is_local"
+        opacity := jStr fd "opacity"
+        isGlobalInit := jBool fd "is_global_initializer"
+        isUnsafe := jBool fd "is_unsafe" }
   return m
 
 /-! ## Combined read -/
 
-/-- Read and parse both artifacts. Returns the Aeneas function entries and the
-    `def_id → Rust metadata` map. -/
+/-- Read and parse both artifacts. -/
 def readArtifacts : IO (Array TransFun × Std.HashMap Nat FunMeta) := do
   let transStr ← IO.FS.readFile Utils.Config.translationJsonPath
-  let llbcStr ← IO.FS.readFile Utils.Config.llbcPath
+  let summaryStr ← IO.FS.readFile Utils.Config.llbcSummaryPath
   let transJson ← IO.ofExcept (Json.parse transStr)
-  let llbcJson ← IO.ofExcept (Json.parse llbcStr)
-  return (parseTranslation transJson, parseLlbc llbcJson)
+  let summaryJson ← IO.ofExcept (Json.parse summaryStr)
+  return (parseTranslation transJson, parseSummary summaryJson)
 
 end Utils.Lib.Join
