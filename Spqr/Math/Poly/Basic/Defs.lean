@@ -46,4 +46,11 @@ the coefficient vector from the `Poly` and  maps each `GF16` coefficient through
 noncomputable def Poly.toGF216Poly (p : Poly) : GF216[X] :=
   listToGF216Poly p.coefficients.val
 
+
 end spqr.encoding.polynomial
+
+namespace spqr.encoding.polynomial.Poly
+
+noncomputable def degree (g : Poly) : Nat := g.coefficients.length
+
+end spqr.encoding.polynomial.Poly
