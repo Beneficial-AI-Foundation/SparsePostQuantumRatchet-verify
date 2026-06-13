@@ -29,7 +29,6 @@ private lemma EnumerateSliceIter_next_post
     IteratorSliceIter.next]
   split <;> exact ⟨_, _, rfl⟩
 
-
 private lemma in_range_update_post
     {coeffs : List GF16} {i : Nat} {v g1 : GF16}
     (h_lt : i < coeffs.length)

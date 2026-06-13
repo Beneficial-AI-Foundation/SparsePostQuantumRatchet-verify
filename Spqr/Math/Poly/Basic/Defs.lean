@@ -49,8 +49,10 @@ noncomputable def Poly.toGF216Poly (p : Poly) : GF216[X] :=
 
 end spqr.encoding.polynomial
 
+/-! Definition of degree of polynomial via length of coefficients -/
 namespace spqr.encoding.polynomial.Poly
 
+/-- The degree of a polynomial, defined as the length of its coefficient list. -/
 noncomputable def degree (g : Poly) : Nat := g.coefficients.length
 
 end spqr.encoding.polynomial.Poly
