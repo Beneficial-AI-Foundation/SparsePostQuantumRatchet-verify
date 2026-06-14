@@ -6,19 +6,19 @@ Authors: Liao Zhang
 import Spqr.Lint.SpecIndent
 
 /-!
-# Curve25519Dalek project linters
+# SparsePostQuantumRatchet verification project linters
 
 Importing this module activates all project-specific linters.  It is imported transitively
-by `Curve25519Dalek.Aux` and `Curve25519Dalek.FunsExternal`, which together cover the full
-transitive import graph of spec theorem files.
+by `SrcTranslated.TypesExternal` (and hence `SrcTranslated.FunsExternal`), which together
+cover the full transitive import graph of spec theorem files.
 
 ## Linters provided
 
 | Option | What it checks |
 |---|---|
-| `linter.curve25519.specIndent` | `@[step]` theorem indentation (binders/type/body/proof) |
+| `linter.spqr.specIndent` | `@[step]` theorem indentation (binders/type/body/proof) |
 
 All linters are enabled by default (`defValue := true`) and can be suppressed locally with a
-documented `set_option linter.curve25519.* false in` — consistent with the style guide's
+documented `set_option linter.spqr.* false in` — consistent with the style guide's
 requirement that suppressions carry an explanatory comment.
 -/

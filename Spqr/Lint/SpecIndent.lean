@@ -20,11 +20,11 @@ Enforces the four indentation rules defined in `doc/STYLE_GUIDE.md`:
 
 The first three checks apply only to `@[step]` Aeneas spec theorems; the proof-body indent
 rule applies to every theorem so that the project's 2-space proof style is uniform.  The
-linter is controlled by a single option `linter.curve25519.specIndent` so that a justified
+linter is controlled by a single option `linter.spqr.specIndent` so that a justified
 deviation can be suppressed uniformly.
 -/
 
-namespace Curve25519Dalek.Lint
+namespace Spqr.Lint
 
 open Lean Elab Command Linter
 
@@ -32,7 +32,7 @@ open Lean Elab Command Linter
 
 /-- Warns when a theorem's indentation deviates from the project style guide.
 See `doc/STYLE_GUIDE.md` §"Indentation Structure". -/
-register_option linter.curve25519.specIndent : Bool := {
+register_option linter.spqr.specIndent : Bool := {
   defValue := true
   descr := "Warns when a theorem's indentation deviates from the style guide."
 }
@@ -173,7 +173,7 @@ private def runStepChecks
   for node in firstPerLine do
     if let some nodeCol := colOf node fm then
       unless nodeCol == 4 do
-        logLint linter.curve25519.specIndent node
+        logLint linter.spqr.specIndent node
           m!"Continuation line is at column {nodeCol}, expected 4. \
             Arguments, preconditions, and the function application line \
             on a new line should be indented 4 spaces \
@@ -182,7 +182,7 @@ private def runStepChecks
   let misindentedBodies := collectMisindentedWpBodies typeTerm fm 6
   for node in misindentedBodies do
     let col := (colOf node fm).getD 0
-    logLint linter.curve25519.specIndent node
+    logLint linter.spqr.specIndent node
       m!"Postcondition body is at column {col}, expected 6. \
         The postcondition body after `=>` should be indented 6 spaces \
         per the spec theorem style guide."
@@ -194,7 +194,7 @@ private def runStepChecks
   for body in collectWpBodies typeTerm do
     if (body.getPos?.map flaggedBodyPos.contains).getD false then continue
     for (node, msg) in collectMisindentedAndRhs body fm 6 do
-      logLint linter.curve25519.specIndent node m!"{msg}"
+      logLint linter.spqr.specIndent node m!"{msg}"
 
 /-- Check 4 (applies to every theorem): proof body after `by` must be at column 2
 when it starts on a new line. -/
@@ -211,14 +211,14 @@ private def runProofBodyCheck (declVal : Syntax) (fm : FileMap) : CommandElabM U
       if tacLine > byLine then
         if let some tacCol := colOf tacticSeq fm then
           unless tacCol == 2 do
-            logLint linter.curve25519.specIndent tacticSeq
+            logLint linter.spqr.specIndent tacticSeq
               m!"Proof body is at column {tacCol}, expected 2. \
                 Tactics after `by` should be indented 2 spaces \
                 per the project style guide."
 
-/-- Implementation of `linter.curve25519.specIndent`. -/
+/-- Implementation of `linter.spqr.specIndent`. -/
 def specIndentLinter : Linter where run stx := do
-  unless getLinterValue linter.curve25519.specIndent (← getLinterOptions) do return
+  unless getLinterValue linter.spqr.specIndent (← getLinterOptions) do return
   unless stx.isOfKind ``Lean.Parser.Command.declaration do return
   let some inner := stx.getArgs[1]? | return
   unless inner.isOfKind ``Lean.Parser.Command.theorem do return
@@ -241,4 +241,4 @@ def specIndentLinter : Linter where run stx := do
 
 initialize addLinter specIndentLinter
 
-end Curve25519Dalek.Lint
+end Spqr.Lint

@@ -7,22 +7,22 @@ import Aeneas
 import Spqr.Lint.Basic
 
 /-!
-# Tests for `linter.curve25519.specIndent`
+# Tests for `linter.spqr.specIndent`
 
 Tests for the four indentation checks.  The first three checks fire only on `@[step]`
 theorems; the proof-body (Check 4) rule fires on every theorem.  Each `#guard_msgs` block
 targets exactly one violation so the expected-output annotation stays minimal.
 
 These tests live in the `Tests` Lake library (module `Tests.LinterTest.SpecIndent`) rather
-than in the `Curve25519Dalek` library, so the dummy theorems below (and their `@[step]`
+than in the `Spqr` library, so the dummy theorems below (and their `@[step]`
 registrations) never leak into the production library or its public namespace.  They are
-additionally wrapped in the `Curve25519Dalek.Lint.Test` namespace as a second line of
+additionally wrapped in the `Spqr.Lint.Test` namespace as a second line of
 defence.
 -/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 
-namespace Curve25519Dalek.Lint.Test
+namespace Spqr.Lint.Test
 
 -- Two minimal dummy functions for the test cases below.
 private def dummyI (n : Nat) : Result Nat := .ok n
@@ -33,7 +33,7 @@ private def dummyP (n : Nat) : Result (Nat × Nat) := .ok ⟨n, n⟩
 /--
 warning: Continuation line is at column 2, expected 4. Arguments, preconditions, and the function application line on a new line should be indented 4 spaces per the spec theorem style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Triggers `specIndent` check 1: `(_h : n > 0)` wraps to a new line but uses only 2 spaces.
@@ -59,7 +59,7 @@ theorem dummyI_binder_ok_spec (n : Nat) (_h
 /--
 warning: Continuation line is at column 2, expected 4. Arguments, preconditions, and the function application line on a new line should be indented 4 spaces per the spec theorem style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Triggers `specIndent` check 1: type term is on a new line but only 2 spaces deep.
@@ -84,7 +84,7 @@ theorem dummyI_type_ok_spec (n : Nat) :
 /--
 warning: Postcondition body is at column 8, expected 6. The postcondition body after `=>` should be indented 6 spaces per the spec theorem style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Triggers `specIndent` check 3a: WP body `r = n` is on a new line but at column 8, not 6.
@@ -108,7 +108,7 @@ theorem dummyI_postcond_body_ok_spec (n : Nat) :
 /--
 warning: Postcondition conjunct is at column 8, expected 6. Conjunction operands on new lines should be indented 6 spaces per the spec theorem style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Triggers `specIndent` check 3b: `∧` RHS `r.2 = n` wraps to a new line at column 8.
@@ -133,7 +133,7 @@ theorem dummyP_postcond_ok_spec (n : Nat) :
 /--
 warning: ∧ operator should be appended to the end of the preceding line, not placed at the start of a new line, per the spec theorem style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Triggers `specIndent` check 3b's operator-placement branch: the `∧` starts a new line
@@ -152,7 +152,7 @@ theorem dummyP_and_on_new_line_spec (n : Nat) :
 /--
 warning: Postcondition body is at column 8, expected 6. The postcondition body after `=>` should be indented 6 spaces per the spec theorem style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- The WP body is itself a conjunction that, as a whole, starts on a new line at column 8.
@@ -170,7 +170,7 @@ theorem dummyP_conj_body_misindent_spec (n : Nat) :
 /--
 warning: Proof body is at column 4, expected 2. Tactics after `by` should be indented 2 spaces per the project style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Triggers `specIndent` check 4: first tactic is at column 4 instead of 2.
@@ -193,7 +193,7 @@ theorem dummyI_proof_ok_spec (n : Nat) :
 /--
 warning: Proof body is at column 4, expected 2. Tactics after `by` should be indented 2 spaces per the project style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Plain theorem (no `@[step]`): only Check 4 applies, and it must fire on the bad indent.
@@ -226,7 +226,7 @@ theorem plain_proof_term_mode_ok (n : Nat) : n = n := rfl
 /--
 warning: Proof body is at column 4, expected 2. Tactics after `by` should be indented 2 spaces per the project style guide.
 
-Note: This linter can be disabled with `set_option linter.curve25519.specIndent false`
+Note: This linter can be disabled with `set_option linter.spqr.specIndent false`
 -/
 #guard_msgs in
 -- Plain theorem with BOTH a wrapped binder at column 2 (would-be Check 1 violation) and
@@ -238,7 +238,7 @@ theorem plain_both_violations_only_check4 (n : Nat)
 
 -- No warning: suppression via `set_option` must work on plain theorems too.
 #guard_msgs in
-set_option linter.curve25519.specIndent false in
+set_option linter.spqr.specIndent false in
 theorem plain_proof_suppressed_ok (n : Nat) : n = n := by
     rfl
 
@@ -246,7 +246,7 @@ theorem plain_proof_suppressed_ok (n : Nat) : n = n := by
 
 -- No warning expected: the whole indentation linter is suppressed.
 #guard_msgs in
-set_option linter.curve25519.specIndent false in
+set_option linter.spqr.specIndent false in
 @[step]
 theorem dummyI_suppressed_spec (n : Nat)
   (_h : n > 0) :
@@ -277,4 +277,4 @@ theorem dummyP_canonical2_spec
   simp
   simp [dummyP]
 
-end Curve25519Dalek.Lint.Test
+end Spqr.Lint.Test
