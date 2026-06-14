@@ -53,6 +53,6 @@ end spqr.encoding.polynomial
 namespace spqr.encoding.polynomial.Poly
 
 /-- The degree of a polynomial, defined as the length of its coefficient list. -/
-noncomputable def degree (g : Poly) : Nat := g.coefficients.length
+def degree (g : Poly) : Nat := g.coefficients.length
 
 end spqr.encoding.polynomial.Poly
