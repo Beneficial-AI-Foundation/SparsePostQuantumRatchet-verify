@@ -18,6 +18,10 @@ lake exe mk_all
 
 to regenerate the root import file that lists every module in the project.
 
+## Linting
+
+To lint the Lean code, use `lake exe runLinter Spqr`.
+
 ## PR Workflow and Formatting
 
 All PRs, unless special circumstances are justified, must close an open issue in the project.
@@ -64,8 +68,4 @@ See our performance tracking guidelines for more information: [TODO #11: write, 
 
 **Specifications:** PRs introducing AI-generated specifications of any kind are strictly prohibited, and their submission may result in a contribution ban at the maintainers' discretion.
 
-**Proofs:** AI-generated proofs are welcome, as long as they are compliant with the style guide and requirements listed in this document. The human submitting the PR is held responsible for the contents of the PR, in particular its adherence to style and contribution guidelines, as well as the performance impact outlined above. 
-
-
-
-
+**Proofs:** AI-generated proofs are welcome, as long as they are compliant with the style guide and requirements listed in this document. The human submitting the PR is held responsible for the contents of the PR, in particular its adherence to style and contribution guidelines, as well as the performance impact outlined above.
