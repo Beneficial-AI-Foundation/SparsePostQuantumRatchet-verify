@@ -15,7 +15,7 @@ Enforces the four indentation rules defined in `doc/STYLE_GUIDE.md`:
 |---|---|---|
 | Continuation line on a new line after the `theorem` line | 4 | `@[step]` only |
 | Postcondition body on a new line after `=>` in the WP binder | 6 | `@[step]` only |
-| `∧` RHS postcondition on a new line inside the WP binder | 6 | `@[step]` only |
+| `∧` RHS of the conjunction directly after the first `=>` of the WP binder | 6 | `@[step]` only |
 | Proof body after `by` (when on a new line) | 2 | all theorems |
 
 The first three checks apply only to `@[step]` Aeneas spec theorems; the proof-body indent
@@ -136,12 +136,17 @@ private partial def collectMisindentedAndRhs_aux
   else #[]
 
 
-private partial def collectMisindentedAndRhs
+/-- Check the conjunction that is *directly* the postcondition body — the term immediately
+after the first `=>` of the WP binder.  We deliberately do NOT recurse into sub-terms: when
+the body is some other form (e.g. a `match` whose arms each introduce their own `=>`), the
+conjuncts nested under those later arrows have their own natural indentation and must not be
+flagged.  The rule scopes to the indentation after the *first* `=>` only. -/
+private def collectMisindentedAndRhs
     (stx : Syntax) (fm : FileMap) (expected : Nat) : Array (Syntax × String) :=
   if isAndNode stx then
     collectMisindentedAndRhs_aux stx fm expected
   else
-    stx.getArgs.flatMap (collectMisindentedAndRhs · fm expected)
+    #[]
 
 
 /-! ## Linter -/
