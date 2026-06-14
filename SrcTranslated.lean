@@ -1,4 +1,6 @@
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal_Template
 import SrcTranslated.Types
 import SrcTranslated.TypesExternal
+import SrcTranslated.TypesExternal_Template
