@@ -60,9 +60,9 @@ The expected format for PR title, body, and footer is:
 
 All PRs are expected to consider the performance impact they may have on verification time/CI.
 
-Upon opening a PR, you may call `[command]` (TODO #11), to invoke our performance analysis tool.
+Upon opening a PR, you may call `!radar`, to invoke our performance analysis tool.
 
-See our performance tracking guidelines for more information: [TODO #11: write, then link to, the doc on performance tracking and expectations.]
+See our [performance tracking guidelines](./PERFORMANCE.md) for more information.
 
 ## AI contributions
 
