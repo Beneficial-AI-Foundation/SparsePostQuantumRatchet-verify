@@ -60,21 +60,59 @@ axiom core.array.from_fn
   core.ops.function.FnMut F Std.Usize T) :
   F → Result (Array T N)
 
+namespace Shared0T.Insts.CoreBorrowBorrow
 /-- [core::borrow::{core::borrow::Borrow<T> for &0 (T)}::borrow]:
     Source: '/rustc/library/core/src/borrow.rs', lines 230:4-230:26
-    Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow] -/
-@[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
-axiom Shared0T.Insts.CoreBorrowBorrow.borrow {T : Type} : T → Result T
+    Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow]
 
+    Concrete model of Rust's `<&T as Borrow<&T>>::borrow` for a shared reference `&T`:
+    borrowing simply returns the value unchanged.  The outer `Result` is
+    always `ok` (the call never panics). -/
+@[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
+def borrow {T : Type} : T → Result T :=
+  fun x => ok x
+
+/-- **Spec theorem for `<&T as Borrow<&T>>::borrow`**: borrowing returns the value unchanged. -/
+@[step]
+private theorem borrow_spec {T : Type} (x : T) :
+    borrow x ⦃ result => result = x ⦄ := by
+  unfold borrow
+  simp
+
+end Shared0T.Insts.CoreBorrowBorrow
+
+namespace U32.Insts.CoreConvertTryFromU64TryFromIntError
+open core.num.error
 /-- [core::convert::num::{core::convert::TryFrom<u64, core::num::error::TryFromIntError> for u32}::try_from]:
     Source: '/rustc/library/core/src/convert/num.rs', lines 294:12-294:64
-    Name pattern: [core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from] -/
+    Name pattern: [core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from]
+
+    Concrete model of Rust's `<u32 as TryFrom<u64>>::try_from`: the conversion succeeds with
+    `Ok v` (where `v.val = value.val`) exactly when `value` fits in a `u32`
+    (`value.val ≤ u32::MAX`), and otherwise returns `Err` carrying a
+    `TryFromIntError`.  The outer `Result` is always `ok` (the call never
+    panics). -/
 @[rust_fun
   "core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from"]
-axiom U32.Insts.CoreConvertTryFromU64TryFromIntError.try_from
-  :
-  Std.U64 → Result (core.result.Result Std.U32
-    core.num.error.TryFromIntError)
+def try_from (value : Std.U64) : Result (core.result.Result Std.U32 TryFromIntError) :=
+    match UScalar.tryMkOpt .U32 value.val with
+    | some v => ok (core.result.Result.Ok v)
+    | none   => ok (core.result.Result.Err {})
+
+-- /-- **Spec theorem for `<<u32> as TryFrom<u64>>::try_from`**
+-- * if `value.val ≤ U32.max` the result is `Ok v` with `v.val = value.val`;
+-- * otherwise the result is `Err`. -/
+@[step]
+theorem try_from_spec (value : U64) :
+    try_from value ⦃ (r : core.result.Result U32 TryFromIntError) =>
+      match r with
+      | .Ok v => value.val ≤ U32.max ∧ v.val = value.val
+      | .Err _ => ¬ value.val ≤ U32.max ⦄ := by
+  unfold try_from
+  have htry := UScalar.tryMkOpt_eq .U32 value.val
+  step*
+
+end U32.Insts.CoreConvertTryFromU64TryFromIntError
 
 /-- [core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish]:
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2466:4-2473:15
@@ -201,13 +239,35 @@ axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
   core.iter.traits.collect.FromIterator B1 B) :
   core.iter.adapters.map.Map I F → Result B1
 
+namespace I32.Insts.CoreIterRangeStep
 /-- [core::iter::range::{core::iter::range::Step for i32}::backward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 340:16-340:74
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::backward_checked] -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::backward_checked]
+
+    Concrete model of Rust's `Step::backward_checked` for `i32`:
+    given `start : i32` and `count : usize`, compute the integer difference
+    `start - count` and return `Some(result)` if it fits in `i32`,
+    `None` otherwise.  The outer `Result` is always `ok` (the call
+    never panics). -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::backward_checked"]
-axiom I32.Insts.CoreIterRangeStep.backward_checked
-  : Std.I32 → Std.Usize → Result (Option Std.I32)
+def backward_checked : Std.I32 → Std.Usize → Result (Option Std.I32) :=
+  fun start n => ok (IScalar.tryMkOpt .I32 (start.val - n.val))
+
+/-- **Spec theorem for `Step<i32>::backward_checked` with step 1**
+
+* if `I32.min ≤ start.val - 1` the returned option is `some z` with `z.val = start.val - 1`;
+* otherwise the returned option is `none`. -/
+@[step]
+theorem backward_checked_one_spec (start : I32) :
+    backward_checked start 1#usize ⦃ (opt : Option I32) =>
+      match opt with
+      | some z => I32.min ≤ start.val - 1 ∧ z.val = start.val - 1
+      | none   => ¬ I32.min ≤ start.val - 1 ⦄ := by
+  unfold  I32.Insts.CoreIterRangeStep.backward_checked
+  have htry := IScalar.tryMkOpt_eq .I32 (start.val - ↑(1#usize).val)
+  step*
+  grind
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::forward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 319:16-319:73
@@ -220,43 +280,57 @@ axiom I32.Insts.CoreIterRangeStep.backward_checked
     never panics). -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::forward_checked"]
-def I32.Insts.CoreIterRangeStep.forward_checked
-  : Std.I32 → Std.Usize → Result (Option Std.I32) :=
-  fun start n => ok (IScalar.tryMkOpt .I32 (start.val + n.val))
-
+def forward_checked (start: Std.I32) (n : Std.Usize) : Result (Option Std.I32) :=
+  ok (IScalar.tryMkOpt .I32 (start.val + n.val))
 
 /-- **Spec theorem for `Step<i32>::forward_checked` with step 1**
-
-* if `start.val + 1 ≤ I32.max` the returned option is `some z` with `z.val = start.val + 1`;
-* otherwise the returned option is `none`. -/
+- if `start.val + 1 ≤ I32.max` the returned option is `some z` with `z.val = start.val + 1`;
+- otherwise the returned option is `none`. -/
 @[step]
-private theorem I32_forward_checked_one_spec
-    (start : I32) :
-    I32.Insts.CoreIterRangeStep.forward_checked start 1#usize ⦃ (opt : Option I32) =>
+theorem forward_checked_one_spec (start : I32) :
+    forward_checked start 1#usize ⦃ (opt : Option I32) =>
       match opt with
       | some z => start.val + 1 ≤ I32.max ∧ z.val = start.val + 1
       | none   => ¬ start.val + 1 ≤ I32.max ⦄ := by
-  suffices h : ∃ opt,
-      I32.Insts.CoreIterRangeStep.forward_checked start 1#usize = ok opt ∧
-      (start.val + 1 ≤ I32.max →
-          ∃ z, opt = some z ∧ z.val = start.val + 1) ∧
-      (¬ start.val + 1 ≤ I32.max → opt = none) by grind
-  unfold  I32.Insts.CoreIterRangeStep.forward_checked
+  unfold forward_checked
   have htry := IScalar.tryMkOpt_eq .I32 (start.val + ↑(1#usize).val)
-  generalize IScalar.tryMkOpt .I32 (start.val + ↑(1#usize).val) = opt at htry ⊢
-  cases opt with
-  | none => grind
-  | some z =>
-    refine ⟨some z, rfl, fun _ => ⟨z, rfl, by grind⟩, fun h => by grind⟩
-
-
+  step*
+  grind
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::steps_between]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 304:16-304:84
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between] -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between]
+
+    Concrete model of Rust's `Step::steps_between` for `i32`:
+    given `a : i32` and `b : i32`, if `a ≤ b` the number of steps `b - a` is a
+    non-negative integer that always fits in `usize` (since `i32` is no wider
+    than `usize`), so the result is `(d, some d)` with `d = b - a`; otherwise the
+    result is `(0, none)`.  The outer `Result` is always `ok` (the call never
+    panics). -/
 @[rust_fun "core::iter::range::{core::iter::range::Step<i32>}::steps_between"]
-axiom I32.Insts.CoreIterRangeStep.steps_between
-  : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize))
+def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize)) :=
+  fun a b =>
+    if a.val ≤ b.val then
+      let o := UScalar.tryMkOpt .Usize (b.val - a.val).toNat
+      ok (o.getD 0#usize, o)
+    else
+      ok (0#usize, none)
+
+/-- **Spec theorem for `Step<i32>::steps_between`**
+
+* if `a.val ≤ b.val` the result is `(d, some d)` with `d.val = (b.val - a.val).toNat`;
+* otherwise the result is `(0, none)`. -/
+@[step]
+theorem steps_between_spec (a b : I32) :
+    steps_between a b ⦃ (r : Std.Usize × Option Std.Usize) =>
+      (a.val ≤ b.val → r.1.val = (b.val - a.val).toNat ∧ r.2 = some r.1) ∧
+      (¬ a.val ≤ b.val → r = (0#usize, none)) ⦄ := by
+  unfold steps_between
+  have htry := UScalar.tryMkOpt_eq .Usize ((b.val - a.val).toNat)
+  step*
+  grind
+
+end I32.Insts.CoreIterRangeStep
 
 /-- [core::ops::range::{core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::end_bound]:
     Source: '/rustc/library/core/src/ops/range.rs', lines 1071:4-1071:36
