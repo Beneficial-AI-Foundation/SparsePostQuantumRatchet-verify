@@ -74,10 +74,9 @@ def borrow {T : Type} : T → Result T :=
 
 /-- **Spec theorem for `<&T as Borrow<&T>>::borrow`**: borrowing returns the value unchanged. -/
 @[step]
-private theorem borrow_spec {T : Type} (x : T) :
+theorem borrow_spec {T : Type} (x : T) :
     borrow x ⦃ result => result = x ⦄ := by
-  unfold borrow
-  simp
+  simp [borrow]
 
 end Shared0T.Insts.CoreBorrowBorrow
 
