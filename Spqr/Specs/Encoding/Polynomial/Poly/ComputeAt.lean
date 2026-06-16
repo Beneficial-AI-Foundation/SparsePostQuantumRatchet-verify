@@ -18,7 +18,9 @@ One step of the power-vector construction loop. Calls `next` on the range iterat
      to `xs`.
 
 Maintains the invariant `xs[j].toGF216 = x.toGF216 ^ j` for all `j < xs.length`, using the
-identity `x^i = x^(i/2) · x^(i/2 + i%2)`. -/
+identity `x^i = x^(i/2) · x^(i/2 + i%2)`.
+
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 open Aeneas Aeneas.Std spqr.encoding.gf
 
@@ -60,7 +62,8 @@ Each step computes `xs[i] = xs[i/2] * xs[i/2 + i%2]`.
 
 **Loop invariant**: `xs.val.length = iter.start.val` and
 `∀ j < xs.val.length, (xs[j]!).toGF216 = x.toGF216 ^ j`.
--/
+
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.Poly.compute_at_loop0
 
@@ -109,7 +112,8 @@ One step of the accumulation loop. Calls `next` on the range iterator and either
 
 Maintains the invariant
 `out.toGF216 = Σ_{j < iter.start.val} v[j].toGF216 * xs[j].toGF216`.
--/
+
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.Poly.compute_at_loop1
 
@@ -148,7 +152,8 @@ After all iterations:
 
 **Loop invariant**: the accumulator holds the partial sum of the first `iter.start.val`
 coefficient–power products, using `Finset.sum_range_succ` at each step.
--/
+
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.Poly.compute_at_loop1
 
@@ -193,8 +198,7 @@ theorem loop_spec
 
 end spqr.encoding.polynomial.Poly.compute_at_loop1
 
-/-!
-# Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::compute_at`
+/-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::compute_at`
 
 Evaluates a polynomial `self` at point `x` in GF(2¹⁶), computing
 `p(x) = a₀ + a₁·x + a₂·x² + … + aₙ₋₁·xⁿ⁻¹`.
@@ -204,10 +208,11 @@ Two phases:
      `x^i = x^(i/2) · x^(i/2 + i%2)`.
   2. **Dot-product accumulation** (loop 1): computes `out = Σ coeff[j] · xs[j]`.
 
-The final result satisfies `result.toGF216 = (self.toGF216Poly).eval (x.toGF216)`. -/
+The final result satisfies `result.toGF216 = (self.toGF216Poly).eval (x.toGF216)`.
+
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.Poly
-
 
 /-- **Spec theorem for `encoding.polynomial.Poly.compute_at`**:
 
