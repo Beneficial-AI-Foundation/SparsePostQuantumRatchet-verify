@@ -18,7 +18,6 @@ set_option maxHeartbeats 1000000
     Source: '/rustc/library/core/src/num/error.rs', lines 10:0-10:26
     Name pattern: [core::num::error::TryFromIntError] -/
 @[rust_type "core::num::error::TryFromIntError"]
--- axiom core.num.error.TryFromIntError : Type
 structure core.num.error.TryFromIntError deriving Inhabited, DecidableEq
 
 /-- [alloc::collections::vec_deque::into_iter::IntoIter]
