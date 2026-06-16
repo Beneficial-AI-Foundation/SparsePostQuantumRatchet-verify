@@ -5,50 +5,23 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Math.Poly.CharTwo.ToGF216
 
-/-!
-# Power-vector invariant
+/-! # Power-vector invariant
 
-Lemmas for maintaining the invariant `xs[j].toGF216 = x.toGF216 ^ j`
-during the power-vector construction in `compute_at`.
+Lemmas for maintaining `xs[j].toGF216 = x.toGF216 ^ j` during power-vector construction. -/
 
-## Main statements
-
-* `div2_add_sum_eq` — `n / 2 + (n / 2 + n % 2) = n`.
-* `power_invariant_step` — appending `g = xs[n/2] * xs[n/2 + n%2]` extends
-  the power vector.
-* `initial_power_invariant` — `[GF16::ONE, x]` satisfies the power-vector
-  invariant.
--/
-
-open Aeneas Aeneas.Std Result Polynomial
-open spqr.math.gf spqr.encoding.gf spqr.encoding.polynomial
+open spqr.math.gf spqr.encoding.gf
 
 namespace spqr.encoding.polynomial
 
-/-! ## Euclidean-division helper -/
-
-/-- Euclidean-division identity: `n / 2 + (n / 2 + n % 2) = n`. -/
 theorem div2_add_sum_eq (n : Nat) : n / 2 + (n / 2 + n % 2) = n := by
-  have := Nat.div_add_mod n 2; omega
+  have := Nat.div_add_mod n 2
+  omega
 
-/-! ## Power-vector invariant -/
-
-/--
-Power-vector invariant preservation.
-
-Appending `g = xs[n/2] * xs[n/2 + n%2]` to a power vector `xs` of length
-`n ≥ 2` that satisfies `xs[j].toGF216 = x.toGF216 ^ j` for all `j < n`
-produces a vector of length `n + 1` satisfying the same property for all
-`j < n + 1`.
--/
 theorem power_invariant_step
-    (x : GF16)
-    (xs : List GF16)
-    (g : GF16)
+    (x : GF16) (xs : List GF16) (g : GF16)
     (h_ge2 : 2 ≤ xs.length)
     (h_pow : ∀ j < xs.length, (xs[j]!).toGF216 = x.toGF216 ^ j)
-    (h_g : g.toGF216 =
-      (xs[xs.length / 2]!).toGF216 *
+    (h_g : g.toGF216 = (xs[xs.length / 2]!).toGF216 *
       (xs[xs.length / 2 + xs.length % 2]!).toGF216) :
     ∀ j < (xs ++ [g]).length, ((xs ++ [g])[j]!).toGF216 = x.toGF216 ^ j := by
   intro j hj
@@ -57,8 +30,7 @@ theorem power_invariant_step
   have h_sum_lt : xs.length / 2 + xs.length % 2 < xs.length := by
     have := Nat.div_add_mod xs.length 2; omega
   by_cases hlt : j < xs.length
-  · have hlt' : j < (xs ++ [g]).length := by grind
-    grind
+  · grind
   · have hj_eq : j = xs.length := by omega
     subst hj_eq
     have hlt' : xs.length < (xs ++ [g]).length := by grind
@@ -67,12 +39,6 @@ theorem power_invariant_step
       tsub_self, List.getElem_cons_zero]
     rw [h_g, h_pow _ h_div2_lt, h_pow _ h_sum_lt, ← pow_add, div2_add_sum_eq]
 
-/--
-Initial power-vector invariant.
-
-The two-element vector `[GF16::ONE, x]` satisfies the power-vector invariant:
-`[ONE, x][j]!.toGF216 = x.toGF216 ^ j` for all `j < 2`.
--/
 theorem initial_power_invariant (x : GF16) :
     ∀ j, j < [GF16.ONE, x].length →
       ([GF16.ONE, x][j]!).toGF216 = x.toGF216 ^ j := by
