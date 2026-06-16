@@ -291,10 +291,18 @@ theorem forward_checked_one_spec (start : I32) :
       match opt with
       | some z => start.val + 1 ≤ I32.max ∧ z.val = start.val + 1
       | none   => ¬ start.val + 1 ≤ I32.max ⦄ := by
-  unfold forward_checked
+  suffices h : ∃ opt,
+      I32.Insts.CoreIterRangeStep.forward_checked start 1#usize = ok opt ∧
+      (start.val + 1 ≤ I32.max →
+          ∃ z, opt = some z ∧ z.val = start.val + 1) ∧
+      (¬ start.val + 1 ≤ I32.max → opt = none) by grind
+  unfold  I32.Insts.CoreIterRangeStep.forward_checked
   have htry := IScalar.tryMkOpt_eq .I32 (start.val + ↑(1#usize).val)
-  step*
-  grind
+  generalize IScalar.tryMkOpt .I32 (start.val + ↑(1#usize).val) = opt at htry ⊢
+  cases opt with
+  | none => grind
+  | some z =>
+    refine ⟨some z, rfl, fun _ => ⟨z, rfl, by grind⟩, fun h => by grind⟩
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::steps_between]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 304:16-304:84
