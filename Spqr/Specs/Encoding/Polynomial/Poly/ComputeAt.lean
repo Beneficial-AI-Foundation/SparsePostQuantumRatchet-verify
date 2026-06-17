@@ -53,7 +53,6 @@ theorem body_spec
     grind
   · grind
 
-end spqr.encoding.polynomial.Poly.compute_at_loop0
 
 /-! # Spec theorem for `Poly::compute_at`: loop 0
 
@@ -64,8 +63,6 @@ Each step computes `xs[i] = xs[i/2] * xs[i/2 + i%2]`.
 `∀ j < xs.val.length, (xs[j]!).toGF216 = x.toGF216 ^ j`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
-
-namespace spqr.encoding.polynomial.Poly.compute_at_loop0
 
 @[step]
 theorem loop_spec
