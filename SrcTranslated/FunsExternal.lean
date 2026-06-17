@@ -315,13 +315,6 @@ theorem forward_checked_one_spec (start : I32) :
     result is `(0, none)`.  The outer `Result` is always `ok` (the call never
     panics). -/
 @[rust_fun "core::iter::range::{core::iter::range::Step<i32>}::steps_between"]
--- def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize)) :=
---   fun a b =>
---     if a.val ≤ b.val then
---       let o := UScalar.tryMkOpt .Usize (b.val - a.val).toNat
---       ok (o.getD 0#usize, o)
---     else
---       ok (0#usize, none)
 def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize)) :=
   fun a b =>
     if a.val ≤ b.val then
