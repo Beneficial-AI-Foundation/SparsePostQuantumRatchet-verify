@@ -315,6 +315,13 @@ theorem forward_checked_one_spec (start : I32) :
     result is `(0, none)`.  The outer `Result` is always `ok` (the call never
     panics). -/
 @[rust_fun "core::iter::range::{core::iter::range::Step<i32>}::steps_between"]
+-- def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize)) :=
+--   fun a b =>
+--     if a.val ≤ b.val then
+--       let o := UScalar.tryMkOpt .Usize (b.val - a.val).toNat
+--       ok (o.getD 0#usize, o)
+--     else
+--       ok (0#usize, none)
 def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize)) :=
   fun a b =>
     if a.val ≤ b.val then
@@ -323,19 +330,23 @@ def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usi
     else
       ok (0#usize, none)
 
+
 /-- **Spec theorem for `Step<i32>::steps_between`**
-- if `start.val ≤ end_.val` the result is `(diff, some diff)`
-  with `diff.val = (end_.val - start.val).toNat`;
-- otherwise the result is `(0, none)`. -/
+- If `start.val ≤ end_.val` the result is `(diff, some diff)` with
+  `diff.val = (end_.val - start.val).toNat`. The `none` branch is `False`: since
+  `i32` is no wider than `usize`, `diff = end_.val - start.val` always fits in
+  `usize`, so `UScalar.tryMkOpt` always returns `some` and the `none` case is
+  not accessible.
+- Otherwise the result is `(0, none)`. -/
 @[step]
-theorem steps_between_spec2
+theorem steps_between_spec
     (start end_ : I32) :
     steps_between start end_ ⦃ (result : Usize × Option Usize) =>
       if start.val ≤ end_.val then
         let diff := (end_.val - start.val).toNat
         match result.2 with
         | some hi => diff ≤ Usize.max ∧ result.1.val = diff ∧ hi.val = diff
-        | none    => ¬ (diff ≤ Usize.max) ∧ result.1.val = Usize.max
+        | none    => False
       else
         result.1.val = 0 ∧ result.2 = none ⦄ := by
   unfold steps_between
