@@ -69,8 +69,7 @@ namespace Shared0T.Insts.CoreBorrowBorrow
     borrowing simply returns the value unchanged.  The outer `Result` is
     always `ok` (the call never panics). -/
 @[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
-def borrow {T : Type} : T → Result T :=
-  fun x => ok x
+def borrow {T : Type} (x : T): Result T := ok x
 
 /-- **Spec theorem for `<&T as Borrow<&T>>::borrow`**: borrowing returns the value unchanged. -/
 @[step]
@@ -250,8 +249,8 @@ namespace I32.Insts.CoreIterRangeStep
     never panics). -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::backward_checked"]
-def backward_checked : Std.I32 → Std.Usize → Result (Option Std.I32) :=
-  fun start n => ok (IScalar.tryMkOpt .I32 (start.val - n.val))
+def backward_checked (start: Std.I32) (n : Std.Usize) : Result (Option Std.I32) :=
+  ok (IScalar.tryMkOpt .I32 (start.val - n.val))
 
 /-- **Spec theorem for `Step<i32>::backward_checked` with step 1**
 
@@ -309,20 +308,18 @@ theorem forward_checked_one_spec (start : I32) :
     Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between]
 
     Concrete model of Rust's `Step::steps_between` for `i32`:
-    given `a : i32` and `b : i32`, if `a ≤ b` the number of steps `b - a` is a
-    non-negative integer that always fits in `usize` (since `i32` is no wider
-    than `usize`), so the result is `(d, some d)` with `d = b - a`; otherwise the
+    given `start : i32` and `end_ : i32`, if `start ≤ end_` the number of steps `end_ - start` is
+    a non-negative integer that always fits in `usize` (since `i32` is no wider
+    than `usize`), so the result is `(d, some d)` with `d = end_ - start`; otherwise the
     result is `(0, none)`.  The outer `Result` is always `ok` (the call never
     panics). -/
 @[rust_fun "core::iter::range::{core::iter::range::Step<i32>}::steps_between"]
-def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize)) :=
-  fun a b =>
-    if a.val ≤ b.val then
-      let o := UScalar.tryMkOpt .Usize (b.val - a.val).toNat
+def steps_between (start end_ : Std.I32) : Result (Std.Usize × (Option Std.Usize)) :=
+    if start.val ≤ end_.val then
+      let o := UScalar.tryMkOpt .Usize (end_.val - start.val).toNat
       ok (o.getD 0#usize, o)
     else
       ok (0#usize, none)
-
 
 /-- **Spec theorem for `Step<i32>::steps_between`**
 - If `start.val ≤ end_.val` the result is `(diff, some diff)` with
@@ -332,8 +329,7 @@ def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usi
   not accessible.
 - Otherwise the result is `(0, none)`. -/
 @[step]
-theorem steps_between_spec
-    (start end_ : I32) :
+theorem steps_between_spec (start end_ : I32) :
     steps_between start end_ ⦃ (result : Usize × Option Usize) =>
       if start.val ≤ end_.val then
         let diff := (end_.val - start.val).toNat
