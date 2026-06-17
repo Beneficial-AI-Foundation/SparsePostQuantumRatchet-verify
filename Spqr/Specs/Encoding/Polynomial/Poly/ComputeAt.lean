@@ -139,8 +139,6 @@ theorem body_spec
     grind
   · grind
 
-end spqr.encoding.polynomial.Poly.compute_at_loop1
-
 /-! # Spec theorem for `Poly::compute_at`: loop 1
 
 Iterates the range `0..n`, accumulating one coefficient–power product per step.
@@ -151,8 +149,6 @@ After all iterations:
 coefficient–power products, using `Finset.sum_range_succ` at each step.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
-
-namespace spqr.encoding.polynomial.Poly.compute_at_loop1
 
 @[step]
 theorem loop_spec
