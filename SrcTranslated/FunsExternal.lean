@@ -324,16 +324,22 @@ def steps_between : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usi
       ok (0#usize, none)
 
 /-- **Spec theorem for `Step<i32>::steps_between`**
-
-* if `a.val ≤ b.val` the result is `(d, some d)` with `d.val = (b.val - a.val).toNat`;
-* otherwise the result is `(0, none)`. -/
+- if `start.val ≤ end_.val` the result is `(diff, some diff)`
+  with `diff.val = (end_.val - start.val).toNat`;
+- otherwise the result is `(0, none)`. -/
 @[step]
-theorem steps_between_spec (a b : I32) :
-    steps_between a b ⦃ (r : Std.Usize × Option Std.Usize) =>
-      (a.val ≤ b.val → r.1.val = (b.val - a.val).toNat ∧ r.2 = some r.1) ∧
-      (¬ a.val ≤ b.val → r = (0#usize, none)) ⦄ := by
+theorem steps_between_spec2
+    (start end_ : I32) :
+    steps_between start end_ ⦃ (result : Usize × Option Usize) =>
+      if start.val ≤ end_.val then
+        let diff := (end_.val - start.val).toNat
+        match result.2 with
+        | some hi => diff ≤ Usize.max ∧ result.1.val = diff ∧ hi.val = diff
+        | none    => ¬ (diff ≤ Usize.max) ∧ result.1.val = Usize.max
+      else
+        result.1.val = 0 ∧ result.2 = none ⦄ := by
   unfold steps_between
-  have htry := UScalar.tryMkOpt_eq .Usize ((b.val - a.val).toNat)
+  have htry := UScalar.tryMkOpt_eq .Usize ((end_.val - start.val).toNat)
   step*
   grind
 
