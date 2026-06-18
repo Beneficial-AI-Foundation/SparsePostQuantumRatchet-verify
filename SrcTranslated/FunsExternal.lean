@@ -146,6 +146,59 @@ theorem core.hint.black_box_spec {T : Type} (x : T) :
     core.hint.black_box x ⦃ (r : T) => r = x ⦄ := by
   simp [core.hint.black_box]
 
+namespace core.iter
+namespace traits.iterator.Iterator
+
+-- Default implementations for Iterator fields
+def enumerate.default
+  {Self : Type} (self: Self) :
+  Result (core.iter.adapters.enumerate.Enumerate Self) :=
+  .ok ⟨ self, 0#usize ⟩
+
+def take.default
+  {Self : Type} (self: Self) (n: Usize):
+  Result (core.iter.adapters.take.Take Self) :=
+  .ok ⟨ self, n ⟩
+
+-- Since `next` is often the only custom method, we define a way to construct an entire
+-- `Iterator` from just the `next` function, and populate the rest with defaults.
+def fromNext
+  {Self: Type} {Self_Item: Type}
+  (nextFn: Self → Result ((Option Self_Item) × Self)) :
+  core.iter.traits.iterator.Iterator Self Self_Item :=
+  {
+    next := nextFn,
+    step_by := core.iter.traits.iterator.Iterator.step_by.default,
+    enumerate := enumerate.default,
+    take := take.default
+  }
+
+end traits.iterator.Iterator
+
+namespace adapters.map
+
+def mapIteratorTransformer
+  {I: Type} {A: Type} {B: Type} {F: Type}
+  (map: core.iter.adapters.map.Map I F)
+  (iterImpl: core.iter.traits.iterator.Iterator I A)
+  (fnImpl: core.ops.function.FnMut F A B) :
+  core.iter.traits.iterator.Iterator I B :=
+    -- we define the `next` behavior of the mapped-over iterator:
+    let mapNext (iter: I) : Result ((Option B) × I) := do
+      -- advance underlying iterator
+      let (opt, iter') ← iterImpl.next iter
+      match opt with
+      | none => ok (none, iter') -- If done, nothing to map over
+      | some val =>
+        -- If underlying iterator returns x, compute f(x). This may fail or diverge
+        let (postFnVal, _) ← fnImpl.call_mut map.f val
+        -- if execution reaches here, call_mut did not return div or fail
+        ok (some postFnVal, iter')
+    traits.iterator.Iterator.fromNext mapNext
+
+end adapters.map
+end core.iter
+
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::next]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 79:4-79:64
     Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next]
@@ -202,14 +255,15 @@ axiom
     Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map"]
-axiom
+def
   core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.map
   {I : Type} {B : Type} {F : Type} {Clause0_Item : Type}
-  (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I
-  Clause0_Item) (opsfunctionFnMutFTuplePairUsizeClause0_ItemBInst :
-  core.ops.function.FnMut F (Std.Usize × Clause0_Item) B) :
-  core.iter.adapters.enumerate.Enumerate I → F → Result
-    (core.iter.adapters.map.Map (core.iter.adapters.enumerate.Enumerate I) F)
+  (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I Clause0_Item)
+  (opsfunctionFnMutFTuplePairUsizeClause0_ItemBInst : core.ops.function.FnMut F (Std.Usize × Clause0_Item) B)
+  (self: core.iter.adapters.enumerate.Enumerate I)
+  (fn: F) : Result (core.iter.adapters.map.Map (core.iter.adapters.enumerate.Enumerate I) F) :=
+    -- The `.map` operation merely stores information that is computed on demand, so it cannot fail
+    ok ({iter := self, f := fn})
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::step_by]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
@@ -252,18 +306,20 @@ namespace I32.Insts.CoreIterRangeStep
 def backward_checked (start: Std.I32) (n : Std.Usize) : Result (Option Std.I32) :=
   ok (IScalar.tryMkOpt .I32 (start.val - n.val))
 
-/-- **Spec theorem for `Step<i32>::backward_checked` with step 1**
+/-- **Spec theorem for `Step<i32>::backward_checked` with an arbitrary step `n`**
 
-* if `I32.min ≤ start.val - 1` the returned option is `some z` with `z.val = start.val - 1`;
-* otherwise the returned option is `none`. -/
+- Since `n.val ≥ 0`, the difference `start.val - n.val ≤ start.val ≤ I32.max` always satisfies the
+  upper bound, so only the lower bound is relevant.
+- If `I32.min ≤ start.val - n.val` the returned option is `some z` with `z.val = start.val - n.val`.
+- Otherwise the returned option is `none`. -/
 @[step]
-theorem backward_checked_one_spec (start : I32) :
-    backward_checked start 1#usize ⦃ (opt : Option I32) =>
+theorem backward_checked_spec (start : I32) (n : Usize) :
+    backward_checked start n ⦃ (opt : Option I32) =>
       match opt with
-      | some z => I32.min ≤ start.val - 1 ∧ z.val = start.val - 1
-      | none   => ¬ I32.min ≤ start.val - 1 ⦄ := by
+      | some z => I32.min ≤ start.val - n.val ∧ z.val = start.val - n.val
+      | none   => ¬ I32.min ≤ start.val - n.val ⦄ := by
   unfold  I32.Insts.CoreIterRangeStep.backward_checked
-  have htry := IScalar.tryMkOpt_eq .I32 (start.val - ↑(1#usize).val)
+  have htry := IScalar.tryMkOpt_eq .I32 (start.val - ↑n.val)
   step*
   grind
 
@@ -281,23 +337,26 @@ theorem backward_checked_one_spec (start : I32) :
 def forward_checked (start: Std.I32) (n : Std.Usize) : Result (Option Std.I32) :=
   ok (IScalar.tryMkOpt .I32 (start.val + n.val))
 
-/-- **Spec theorem for `Step<i32>::forward_checked` with step 1**
-- if `start.val + 1 ≤ I32.max` the returned option is `some z` with `z.val = start.val + 1`;
-- otherwise the returned option is `none`. -/
+/-- **Spec theorem for `Step<i32>::forward_checked` with an arbitrary step `n`**
+
+- Since `n.val ≥ 0`, the sum `start.val + n.val ≥ start.val ≥ I32.min` always satisfies the lower
+  bound, so only the upper bound is relevant.
+- If `start.val + n.val ≤ I32.max` the returned option is `some z` with `z.val = start.val + n.val`;
+- Otherwise the returned option is `none`. -/
 @[step]
-theorem forward_checked_one_spec (start : I32) :
-    forward_checked start 1#usize ⦃ (opt : Option I32) =>
+theorem forward_checked_spec (start : I32) (n : Usize) :
+    forward_checked start n ⦃ (opt : Option I32) =>
       match opt with
-      | some z => start.val + 1 ≤ I32.max ∧ z.val = start.val + 1
-      | none   => ¬ start.val + 1 ≤ I32.max ⦄ := by
+      | some z => start.val + n.val ≤ I32.max ∧ z.val = start.val + n.val
+      | none   => ¬ start.val + n.val ≤ I32.max ⦄ := by
   suffices h : ∃ opt,
-      I32.Insts.CoreIterRangeStep.forward_checked start 1#usize = ok opt ∧
-      (start.val + 1 ≤ I32.max →
-          ∃ z, opt = some z ∧ z.val = start.val + 1) ∧
-      (¬ start.val + 1 ≤ I32.max → opt = none) by grind
+      I32.Insts.CoreIterRangeStep.forward_checked start n = ok opt ∧
+      (start.val + n.val ≤ I32.max →
+          ∃ z, opt = some z ∧ z.val = start.val + n.val) ∧
+      (¬ start.val + n.val ≤ I32.max → opt = none) by grind
   unfold  I32.Insts.CoreIterRangeStep.forward_checked
-  have htry := IScalar.tryMkOpt_eq .I32 (start.val + ↑(1#usize).val)
-  generalize IScalar.tryMkOpt .I32 (start.val + ↑(1#usize).val) = opt at htry ⊢
+  have htry := IScalar.tryMkOpt_eq .I32 (start.val + ↑n.val)
+  generalize IScalar.tryMkOpt .I32 (start.val + ↑n.val) = opt at htry ⊢
   cases opt with
   | none => grind
   | some z =>
