@@ -3,11 +3,7 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Hoang Le Truong
 -/
-<<<<<<< HEAD
-import Spqr.Code.Funs
-=======
 import SrcTranslated.Funs
->>>>>>> 917f6e40441ff857db4a4e838b0aba12b560ef27
 import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Mul2U16
 import Spqr.Specs.Encoding.Gf.GF16.MulAssign
@@ -22,16 +18,8 @@ strides of two, then a `MulAssign` fix-up for the trailing element if length is 
 
 open Aeneas Aeneas.Std
 
-<<<<<<< HEAD
-deriving instance Inhabited for spqr.encoding.gf.GF16
-
 namespace spqr.encoding.gf
 
-
-=======
-namespace spqr.encoding.gf
-
->>>>>>> 917f6e40441ff857db4a4e838b0aba12b560ef27
 /-- **Spec theorem for `encoding.gf.parallel_mult_loop.body`**:
 
 Either `done` with unchanged state, or `cont` advancing `i` by 2 with the two written entries
