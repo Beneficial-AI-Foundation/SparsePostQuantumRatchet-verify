@@ -2,7 +2,7 @@
 -- [spqr]: external functions.
 -- This is a template file: rename it to "FunsExternal.lean" and fill the holes.
 import Aeneas
-import Spqr.Code.Types
+import SrcTranslated.Types
 open Aeneas Aeneas.Std Result ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -15,14 +15,41 @@ set_option linter.style.whitespace false
 set_option maxHeartbeats 1000000
 open spqr
 
+/-- Implementation helper for `Slice.Insts.CoreCmpPartialEqArray.eq`
+(`[core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq]`,
+Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40).
+
+Element-wise equality of two lists, delegating per-element to the `PartialEq`
+instance and short-circuiting on the first inequality; lists of different lengths
+are unequal. -/
+private def Slice.partialEqAux {T U : Type} (cmpPartialEqInst : core.cmp.PartialEq T U) :
+    List T → List U → Result Bool
+  | [], [] => ok true
+  | a :: xs, b :: ys => do
+    let e ← cmpPartialEqInst.eq a b
+    if e then Slice.partialEqAux cmpPartialEqInst xs ys else ok false
+  | _, _ => ok false
+
 /-- [core::array::equality::{core::cmp::PartialEq<[U; N]> for [T]}::eq]:
     Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40
     Name pattern: [core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq] -/
 @[rust_fun "core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq"]
-axiom Slice.Insts.CoreCmpPartialEqArray.eq
+def Slice.Insts.CoreCmpPartialEqArray.eq
   {T : Type} {U : Type} {N : Std.Usize} (cmpPartialEqInst : core.cmp.PartialEq
   T U) :
-  Slice T → Array U N → Result Bool
+  Slice T → Array U N → Result Bool :=
+  fun s arr => Slice.partialEqAux cmpPartialEqInst s.val arr.val
+
+/-- **Spec theorem for `PartialEq<[U; N]>::eq` on `[T]`**: element-wise comparison of
+the slice against the array. The per-element behaviour is definitional in the
+`PartialEq` instance, so this exposes the comparison as the list helper
+`Slice.partialEqAux`. -/
+@[simp]
+theorem Slice.Insts.CoreCmpPartialEqArray.eq_eq
+    {T U : Type} {N : Std.Usize} (cmpPartialEqInst : core.cmp.PartialEq T U)
+    (s : Slice T) (arr : Array U N) :
+    Slice.Insts.CoreCmpPartialEqArray.eq cmpPartialEqInst s arr =
+      Slice.partialEqAux cmpPartialEqInst s.val arr.val := rfl
 
 /-- [core::array::from_fn]:
     Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52
@@ -33,21 +60,57 @@ axiom core.array.from_fn
   core.ops.function.FnMut F Std.Usize T) :
   F → Result (Array T N)
 
+namespace Shared0T.Insts.CoreBorrowBorrow
 /-- [core::borrow::{core::borrow::Borrow<T> for &0 (T)}::borrow]:
     Source: '/rustc/library/core/src/borrow.rs', lines 230:4-230:26
-    Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow] -/
-@[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
-axiom Shared0T.Insts.CoreBorrowBorrow.borrow {T : Type} : T → Result T
+    Name pattern: [core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow]
 
+    Concrete model of Rust's `<&T as Borrow<&T>>::borrow` for a shared reference `&T`:
+    borrowing simply returns the value unchanged.  The outer `Result` is
+    always `ok` (the call never panics). -/
+@[rust_fun "core::borrow::{core::borrow::Borrow<&'0 @T, @T>}::borrow"]
+def borrow {T : Type} (x : T): Result T := ok x
+
+/-- **Spec theorem for `<&T as Borrow<&T>>::borrow`**: borrowing returns the value unchanged. -/
+@[step]
+theorem borrow_spec {T : Type} (x : T) :
+    borrow x ⦃ result => result = x ⦄ := by
+  simp [borrow]
+
+end Shared0T.Insts.CoreBorrowBorrow
+
+namespace U32.Insts.CoreConvertTryFromU64TryFromIntError
+open core.num.error
 /-- [core::convert::num::{core::convert::TryFrom<u64, core::num::error::TryFromIntError> for u32}::try_from]:
     Source: '/rustc/library/core/src/convert/num.rs', lines 294:12-294:64
-    Name pattern: [core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from] -/
+    Name pattern: [core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from]
+
+    Concrete model of Rust's `<u32 as TryFrom<u64>>::try_from`: the conversion succeeds with
+    `Ok v` (where `v.val = value.val`) exactly when `value` fits in a `u32`
+    (`value.val ≤ u32::MAX`), and otherwise returns `Err` carrying a
+    `TryFromIntError`.  The outer `Result` is always `ok` (the call never
+    panics). -/
 @[rust_fun
   "core::convert::num::{core::convert::TryFrom<u32, u64, core::num::error::TryFromIntError>}::try_from"]
-axiom U32.Insts.CoreConvertTryFromU64TryFromIntError.try_from
-  :
-  Std.U64 → Result (core.result.Result Std.U32
-    core.num.error.TryFromIntError)
+def try_from (value : Std.U64) : Result (core.result.Result Std.U32 TryFromIntError) :=
+    match UScalar.tryMkOpt .U32 value.val with
+    | some v => ok (core.result.Result.Ok v)
+    | none   => ok (core.result.Result.Err {})
+
+-- /-- **Spec theorem for `<<u32> as TryFrom<u64>>::try_from`**
+-- * if `value.val ≤ U32.max` the result is `Ok v` with `v.val = value.val`;
+-- * otherwise the result is `Err`. -/
+@[step]
+theorem try_from_spec (value : U64) :
+    try_from value ⦃ (r : core.result.Result U32 TryFromIntError) =>
+      match r with
+      | .Ok v => value.val ≤ U32.max ∧ v.val = value.val
+      | .Err _ => ¬ value.val ≤ U32.max ⦄ := by
+  unfold try_from
+  have htry := UScalar.tryMkOpt_eq .U32 value.val
+  step*
+
+end U32.Insts.CoreConvertTryFromU64TryFromIntError
 
 /-- [core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish]:
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2466:4-2473:15
@@ -72,19 +135,94 @@ axiom Shared0T.Insts.CoreFmtDisplay.fmt
     Source: '/rustc/library/core/src/hint.rs', lines 490:0-490:40
     Name pattern: [core::hint::black_box] -/
 @[rust_fun "core::hint::black_box"]
-axiom core.hint.black_box {T : Type} : T → Result T
+def core.hint.black_box {T : Type} : T → Result T :=
+  fun x => ok x
+
+/-- **Spec theorem for `core::hint::black_box`**: `black_box` is documented as
+an identity function on values; its compile-time effect in Rust is making its
+argument opaque to the optimiser, which has no semantic content in the Lean model. -/
+@[step]
+theorem core.hint.black_box_spec {T : Type} (x : T) :
+    core.hint.black_box x ⦃ (r : T) => r = x ⦄ := by
+  simp [core.hint.black_box]
+
+namespace core.iter
+namespace traits.iterator.Iterator
+
+-- Default implementations for Iterator fields
+def enumerate.default
+  {Self : Type} (self: Self) :
+  Result (core.iter.adapters.enumerate.Enumerate Self) :=
+  .ok ⟨ self, 0#usize ⟩
+
+def take.default
+  {Self : Type} (self: Self) (n: Usize):
+  Result (core.iter.adapters.take.Take Self) :=
+  .ok ⟨ self, n ⟩
+
+-- Since `next` is often the only custom method, we define a way to construct an entire
+-- `Iterator` from just the `next` function, and populate the rest with defaults.
+def fromNext
+  {Self: Type} {Self_Item: Type}
+  (nextFn: Self → Result ((Option Self_Item) × Self)) :
+  core.iter.traits.iterator.Iterator Self Self_Item :=
+  {
+    next := nextFn,
+    step_by := core.iter.traits.iterator.Iterator.step_by.default,
+    enumerate := enumerate.default,
+    take := take.default
+  }
+
+end traits.iterator.Iterator
+
+namespace adapters.map
+
+def mapIteratorTransformer
+  {I: Type} {A: Type} {B: Type} {F: Type}
+  (map: core.iter.adapters.map.Map I F)
+  (iterImpl: core.iter.traits.iterator.Iterator I A)
+  (fnImpl: core.ops.function.FnMut F A B) :
+  core.iter.traits.iterator.Iterator I B :=
+    -- we define the `next` behavior of the mapped-over iterator:
+    let mapNext (iter: I) : Result ((Option B) × I) := do
+      -- advance underlying iterator
+      let (opt, iter') ← iterImpl.next iter
+      match opt with
+      | none => ok (none, iter') -- If done, nothing to map over
+      | some val =>
+        -- If underlying iterator returns x, compute f(x). This may fail or diverge
+        let (postFnVal, _) ← fnImpl.call_mut map.f val
+        -- if execution reaches here, call_mut did not return div or fail
+        ok (some postFnVal, iter')
+    traits.iterator.Iterator.fromNext mapNext
+
+end adapters.map
+end core.iter
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::next]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 79:4-79:64
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next] -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next]
+
+    Concrete model of Rust's `Enumerate<I>::next`: retrieves the next element from the
+    underlying iterator, pairs it with the current count, and increments the count using
+    wrapping addition (matching Rust's std library semantics where the count increment
+    is explicitly wrapping and cannot fail). -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::next"]
-axiom
+def
   core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.next
   {I : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst :
   core.iter.traits.iterator.Iterator I Clause0_Item) :
   core.iter.adapters.enumerate.Enumerate I → Result ((Option (Std.Usize ×
-    Clause0_Item)) × (core.iter.adapters.enumerate.Enumerate I))
+    Clause0_Item)) × (core.iter.adapters.enumerate.Enumerate I)) :=
+  fun self => do
+    let (opt, iter') ← traitsiteratorIteratorInst.next self.iter
+    match opt with
+    | none => ok (none, ⟨iter', self.count⟩)
+    | some val =>
+      let i := self.count
+      let count' ← i + 1#usize
+      ok (some (i, val), ⟨iter', count'⟩)
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::collect]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
@@ -117,14 +255,15 @@ axiom
     Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map"]
-axiom
+def
   core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.map
   {I : Type} {B : Type} {F : Type} {Clause0_Item : Type}
-  (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I
-  Clause0_Item) (opsfunctionFnMutFTuplePairUsizeClause0_ItemBInst :
-  core.ops.function.FnMut F (Std.Usize × Clause0_Item) B) :
-  core.iter.adapters.enumerate.Enumerate I → F → Result
-    (core.iter.adapters.map.Map (core.iter.adapters.enumerate.Enumerate I) F)
+  (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I Clause0_Item)
+  (opsfunctionFnMutFTuplePairUsizeClause0_ItemBInst : core.ops.function.FnMut F (Std.Usize × Clause0_Item) B)
+  (self: core.iter.adapters.enumerate.Enumerate I)
+  (fn: F) : Result (core.iter.adapters.map.Map (core.iter.adapters.enumerate.Enumerate I) F) :=
+    -- The `.map` operation merely stores information that is computed on demand, so it cannot fail
+    ok ({iter := self, f := fn})
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::step_by]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
@@ -152,13 +291,37 @@ axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
   core.iter.traits.collect.FromIterator B1 B) :
   core.iter.adapters.map.Map I F → Result B1
 
+namespace I32.Insts.CoreIterRangeStep
 /-- [core::iter::range::{core::iter::range::Step for i32}::backward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 340:16-340:74
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::backward_checked] -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::backward_checked]
+
+    Concrete model of Rust's `Step::backward_checked` for `i32`:
+    given `start : i32` and `count : usize`, compute the integer difference
+    `start - count` and return `Some(result)` if it fits in `i32`,
+    `None` otherwise.  The outer `Result` is always `ok` (the call
+    never panics). -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::backward_checked"]
-axiom I32.Insts.CoreIterRangeStep.backward_checked
-  : Std.I32 → Std.Usize → Result (Option Std.I32)
+def backward_checked (start: Std.I32) (n : Std.Usize) : Result (Option Std.I32) :=
+  ok (IScalar.tryMkOpt .I32 (start.val - n.val))
+
+/-- **Spec theorem for `Step<i32>::backward_checked` with an arbitrary step `n`**
+
+- Since `n.val ≥ 0`, the difference `start.val - n.val ≤ start.val ≤ I32.max` always satisfies the
+  upper bound, so only the lower bound is relevant.
+- If `I32.min ≤ start.val - n.val` the returned option is `some z` with `z.val = start.val - n.val`.
+- Otherwise the returned option is `none`. -/
+@[step]
+theorem backward_checked_spec (start : I32) (n : Usize) :
+    backward_checked start n ⦃ (opt : Option I32) =>
+      match opt with
+      | some z => I32.min ≤ start.val - n.val ∧ z.val = start.val - n.val
+      | none   => ¬ I32.min ≤ start.val - n.val ⦄ := by
+  unfold  I32.Insts.CoreIterRangeStep.backward_checked
+  have htry := IScalar.tryMkOpt_eq .I32 (start.val - ↑n.val)
+  step*
+  grind
 
 /-- [core::iter::range::{core::iter::range::Step for i32}::forward_checked]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 319:16-319:73
@@ -171,72 +334,143 @@ axiom I32.Insts.CoreIterRangeStep.backward_checked
     never panics). -/
 @[rust_fun
   "core::iter::range::{core::iter::range::Step<i32>}::forward_checked"]
-def I32.Insts.CoreIterRangeStep.forward_checked
-  : Std.I32 → Std.Usize → Result (Option Std.I32) :=
-  fun start n => ok (IScalar.tryMkOpt .I32 (start.val + n.val))
+def forward_checked (start: Std.I32) (n : Std.Usize) : Result (Option Std.I32) :=
+  ok (IScalar.tryMkOpt .I32 (start.val + n.val))
 
+/-- **Spec theorem for `Step<i32>::forward_checked` with an arbitrary step `n`**
 
-/-- **Spec theorem for `Step<i32>::forward_checked` with step 1**
-
-* if `start.val + 1 ≤ I32.max` the returned option is `some z` with `z.val = start.val + 1`;
-* otherwise the returned option is `none`. -/
+- Since `n.val ≥ 0`, the sum `start.val + n.val ≥ start.val ≥ I32.min` always satisfies the lower
+  bound, so only the upper bound is relevant.
+- If `start.val + n.val ≤ I32.max` the returned option is `some z` with `z.val = start.val + n.val`;
+- Otherwise the returned option is `none`. -/
 @[step]
-private theorem I32_forward_checked_one_spec
-    (start : I32) :
-     I32.Insts.CoreIterRangeStep.forward_checked start 1#usize ⦃ (opt : Option I32) =>
+theorem forward_checked_spec (start : I32) (n : Usize) :
+    forward_checked start n ⦃ (opt : Option I32) =>
       match opt with
-      | some z => start.val + 1 ≤ I32.max ∧ z.val = start.val + 1
-      | none   => ¬ start.val + 1 ≤ I32.max ⦄ := by
+      | some z => start.val + n.val ≤ I32.max ∧ z.val = start.val + n.val
+      | none   => ¬ start.val + n.val ≤ I32.max ⦄ := by
   suffices h : ∃ opt,
-      I32.Insts.CoreIterRangeStep.forward_checked start 1#usize = ok opt ∧
-      (start.val + 1 ≤ I32.max →
-          ∃ z, opt = some z ∧ z.val = start.val + 1) ∧
-      (¬ start.val + 1 ≤ I32.max → opt = none) by grind
+      I32.Insts.CoreIterRangeStep.forward_checked start n = ok opt ∧
+      (start.val + n.val ≤ I32.max →
+          ∃ z, opt = some z ∧ z.val = start.val + n.val) ∧
+      (¬ start.val + n.val ≤ I32.max → opt = none) by grind
   unfold  I32.Insts.CoreIterRangeStep.forward_checked
-  have htry := IScalar.tryMkOpt_eq .I32 (start.val + ↑(1#usize).val)
-  generalize IScalar.tryMkOpt .I32 (start.val + ↑(1#usize).val) = opt at htry ⊢
+  have htry := IScalar.tryMkOpt_eq .I32 (start.val + ↑n.val)
+  generalize IScalar.tryMkOpt .I32 (start.val + ↑n.val) = opt at htry ⊢
   cases opt with
   | none => grind
   | some z =>
     refine ⟨some z, rfl, fun _ => ⟨z, rfl, by grind⟩, fun h => by grind⟩
 
-
-
 /-- [core::iter::range::{core::iter::range::Step for i32}::steps_between]:
     Source: '/rustc/library/core/src/iter/range.rs', lines 304:16-304:84
-    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between] -/
+    Name pattern: [core::iter::range::{core::iter::range::Step<i32>}::steps_between]
+
+    Concrete model of Rust's `Step::steps_between` for `i32`:
+    given `start : i32` and `end_ : i32`, if `start ≤ end_` the number of steps `end_ - start` is
+    a non-negative integer that always fits in `usize` (since `i32` is no wider
+    than `usize`), so the result is `(d, some d)` with `d = end_ - start`; otherwise the
+    result is `(0, none)`.  The outer `Result` is always `ok` (the call never
+    panics). -/
 @[rust_fun "core::iter::range::{core::iter::range::Step<i32>}::steps_between"]
-axiom I32.Insts.CoreIterRangeStep.steps_between
-  : Std.I32 → Std.I32 → Result (Std.Usize × (Option Std.Usize))
+def steps_between (start end_ : Std.I32) : Result (Std.Usize × (Option Std.Usize)) :=
+    if start.val ≤ end_.val then
+      let o := UScalar.tryMkOpt .Usize (end_.val - start.val).toNat
+      ok (o.getD 0#usize, o)
+    else
+      ok (0#usize, none)
+
+/-- **Spec theorem for `Step<i32>::steps_between`**
+- If `start.val ≤ end_.val` the result is `(diff, some diff)` with
+  `diff.val = (end_.val - start.val).toNat`. The `none` branch is `False`: since
+  `i32` is no wider than `usize`, `diff = end_.val - start.val` always fits in
+  `usize`, so `UScalar.tryMkOpt` always returns `some` and the `none` case is
+  not accessible.
+- Otherwise the result is `(0, none)`. -/
+@[step]
+theorem steps_between_spec (start end_ : I32) :
+    steps_between start end_ ⦃ (result : Usize × Option Usize) =>
+      if start.val ≤ end_.val then
+        let diff := (end_.val - start.val).toNat
+        match result.2 with
+        | some hi => diff ≤ Usize.max ∧ result.1.val = diff ∧ hi.val = diff
+        | none    => False
+      else
+        result.1.val = 0 ∧ result.2 = none ⦄ := by
+  unfold steps_between
+  have htry := UScalar.tryMkOpt_eq .Usize ((end_.val - start.val).toNat)
+  step*
+  grind
+
+end I32.Insts.CoreIterRangeStep
 
 /-- [core::ops::range::{core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::end_bound]:
     Source: '/rustc/library/core/src/ops/range.rs', lines 1071:4-1071:36
     Name pattern: [core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::end_bound] -/
 @[rust_fun
   "core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::end_bound"]
-axiom core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
-  {T : Type} : core.ops.range.RangeFrom T → Result (core.ops.range.Bound T)
+def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
+  {T : Type} : core.ops.range.RangeFrom T → Result (core.ops.range.Bound T) :=
+  fun _ => ok .Unbounded
+
+/-- **Spec theorem for `RangeBounds<RangeFrom>::end_bound`**: a `start..` range is
+unbounded above. -/
+@[step]
+theorem core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound_spec
+    {T : Type} (rf : core.ops.range.RangeFrom T) :
+    core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound rf
+      ⦃ b => b = .Unbounded ⦄ := by
+  simp [core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound]
 
 /-- [core::ops::range::{core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::start_bound]:
     Source: '/rustc/library/core/src/ops/range.rs', lines 1068:4-1068:38
     Name pattern: [core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::start_bound] -/
 @[rust_fun
   "core::ops::range::{core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>}::start_bound"]
-axiom core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
-  {T : Type} : core.ops.range.RangeFrom T → Result (core.ops.range.Bound T)
+def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
+  {T : Type} : core.ops.range.RangeFrom T → Result (core.ops.range.Bound T) :=
+  fun rf => ok (.Included rf.start)
+
+/-- **Spec theorem for `RangeBounds<RangeFrom>::start_bound`**: a `start..` range is
+bounded below, inclusively, by `start`. -/
+@[step]
+theorem core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound_spec
+    {T : Type} (rf : core.ops.range.RangeFrom T) :
+    core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound rf
+      ⦃ b => b = .Included rf.start ⦄ := by
+  simp [core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound]
 
 /-- [core::option::{core::option::Option<T>}::as_ref]:
     Source: '/rustc/library/core/src/option.rs', lines 744:4-744:44
     Name pattern: [core::option::{core::option::Option<@T>}::as_ref] -/
 @[rust_fun "core::option::{core::option::Option<@T>}::as_ref"]
-axiom core.option.Option.as_ref {T : Type} : Option T → Result (Option T)
+def core.option.Option.as_ref {T : Type} : Option T → Result (Option T) :=
+  fun o => ok o
+
+/-- **Spec theorem for `Option::as_ref`**: references are transparent in the Lean
+model, so `as_ref` is the identity. -/
+@[step]
+theorem core.option.Option.as_ref_spec {T : Type} (o : Option T) :
+    core.option.Option.as_ref o ⦃ r => r = o ⦄ := by
+  simp [core.option.Option.as_ref]
 
 /-- [core::option::{core::option::Option<T>}::ok_or]:
     Source: '/rustc/library/core/src/option.rs', lines 1337:4-1337:73
     Name pattern: [core::option::{core::option::Option<@T>}::ok_or] -/
 @[rust_fun "core::option::{core::option::Option<@T>}::ok_or"]
-axiom core.option.Option.ok_or
-  {T : Type} {E : Type} : Option T → E → Result (core.result.Result T E)
+def core.option.Option.ok_or
+  {T : Type} {E : Type} : Option T → E → Result (core.result.Result T E) :=
+  fun o e =>
+    match o with
+    | some v => ok (.Ok v)
+    | none => ok (.Err e)
+
+/-- **Spec theorem for `Option::ok_or`**: `some v` becomes `Ok v`; `none` becomes
+`Err e`. -/
+@[step]
+theorem core.option.Option.ok_or_spec {T E : Type} (o : Option T) (e : E) :
+    core.option.Option.ok_or o e ⦃ r => r = o.elim (.Err e) .Ok ⦄ := by
+  rcases o with _ | v <;> simp [core.option.Option.ok_or]
 
 /-- [core::option::{core::clone::Clone for core::option::Option<T>}::clone]:
     Source: '/rustc/library/core/src/option.rs', lines 2261:4-2261:27
@@ -260,16 +494,45 @@ axiom core.option.Option.Insts.CoreDefaultDefault.default
     Name pattern: [core::option::{core::cmp::PartialEq<core::option::Option<@T>, core::option::Option<@T>>}::eq] -/
 @[rust_fun
   "core::option::{core::cmp::PartialEq<core::option::Option<@T>, core::option::Option<@T>>}::eq"]
-axiom core.option.Option.Insts.CoreCmpPartialEqOption.eq
+def core.option.Option.Insts.CoreCmpPartialEqOption.eq
   {T : Type} (cmpPartialEqInst : core.cmp.PartialEq T T) :
-  Option T → Option T → Result Bool
+  Option T → Option T → Result Bool :=
+  fun o1 o2 =>
+    match o1, o2 with
+    | some a, some b => cmpPartialEqInst.eq a b
+    | none, none => ok true
+    | _, _ => ok false
+
+/-- **Spec theorem for `PartialEq::eq` on `Option<T>`**: structural equality —
+`none = none` is `true`, a `some`/`none` mismatch is `false`, and `some a = some b`
+delegates to the element instance `cmpPartialEqInst.eq a b`. -/
+@[simp]
+theorem core.option.Option.Insts.CoreCmpPartialEqOption.eq_eq
+    {T : Type} (cmpPartialEqInst : core.cmp.PartialEq T T) (o1 o2 : Option T) :
+    core.option.Option.Insts.CoreCmpPartialEqOption.eq cmpPartialEqInst o1 o2 =
+      match o1, o2 with
+      | some a, some b => cmpPartialEqInst.eq a b
+      | none, none => ok true
+      | _, _ => ok false := by
+  rfl
 
 /-- [core::result::{core::result::Result<T, E>}::is_ok]:
     Source: '/rustc/library/core/src/result.rs', lines 593:4-593:37
     Name pattern: [core::result::{core::result::Result<@T, @E>}::is_ok] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::is_ok"]
-axiom core.result.Result.is_ok
-  {T : Type} {E : Type} : core.result.Result T E → Result Bool
+def core.result.Result.is_ok
+  {T : Type} {E : Type} : core.result.Result T E → Result Bool :=
+  fun r =>
+    match r with
+    | .Ok _ => ok true
+    | .Err _ => ok false
+
+/-- **Spec theorem for `Result::is_ok`**: `true` on `Ok`, `false` on `Err`. -/
+@[step]
+theorem core.result.Result.is_ok_spec {T E : Type} (r : core.result.Result T E) :
+    core.result.Result.is_ok r ⦃ b =>
+      b = match r with | .Ok _ => true | .Err _ => false ⦄ := by
+  rcases r with v | e <;> simp [core.result.Result.is_ok]
 
 /-- [core::result::{core::result::Result<T, E>}::map]:
     Source: '/rustc/library/core/src/result.rs', lines 831:4-833:53
@@ -284,57 +547,159 @@ axiom core.result.Result.map
     Source: '/rustc/library/core/src/result.rs', lines 962:4-964:53
     Name pattern: [core::result::{core::result::Result<@T, @E>}::map_err] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::map_err"]
-axiom core.result.Result.map_err
+def core.result.Result.map_err
   {T : Type} {E : Type} {F : Type} {O : Type} (opsfunctionFnOnceOTupleEFInst :
   core.ops.function.FnOnce O E F) :
-  core.result.Result T E → O → Result (core.result.Result T F)
+  core.result.Result T E → O → Result (core.result.Result T F) :=
+  fun r op =>
+    match r with
+    | .Ok v => ok (.Ok v)
+    | .Err e => do
+      let f ← opsfunctionFnOnceOTupleEFInst.call_once op e
+      ok (.Err f)
+
+/-- **Spec theorems for `Result::map_err`**: `Ok` is unchanged; `Err e` applies the
+closure to `e` via `FnOnce::call_once`. The `Err` behaviour is definitional in the
+closure, so these are stated as unfolding lemmas on the constructors. -/
+@[simp]
+theorem core.result.Result.map_err_Ok
+    {T E F O : Type} (inst : core.ops.function.FnOnce O E F) (v : T) (op : O) :
+    core.result.Result.map_err inst (.Ok v) op = ok (.Ok v) := rfl
+
+@[simp]
+theorem core.result.Result.map_err_Err
+    {T E F O : Type} (inst : core.ops.function.FnOnce O E F) (e : E) (op : O) :
+    core.result.Result.map_err (T := T) inst (.Err e) op =
+      (do let f ← inst.call_once op e; ok (.Err f)) := rfl
 
 /-- [core::result::{core::result::Result<T, E>}::unwrap_or]:
     Source: '/rustc/library/core/src/result.rs', lines 1590:4-1593:28
     Name pattern: [core::result::{core::result::Result<@T, @E>}::unwrap_or] -/
 @[rust_fun "core::result::{core::result::Result<@T, @E>}::unwrap_or"]
-axiom core.result.Result.unwrap_or
-  {T : Type} {E : Type} : core.result.Result T E → T → Result T
+def core.result.Result.unwrap_or
+  {T : Type} {E : Type} : core.result.Result T E → T → Result T :=
+  fun r default =>
+    match r with
+    | .Ok v => ok v
+    | .Err _ => ok default
+
+/-- **Spec theorem for `Result::unwrap_or`**: returns the `Ok` payload, or the
+supplied default on `Err`. -/
+@[step]
+theorem core.result.Result.unwrap_or_spec {T E : Type}
+    (r : core.result.Result T E) (default : T) :
+    core.result.Result.unwrap_or r default ⦃ x =>
+      x = match r with | .Ok v => v | .Err _ => default ⦄ := by
+  rcases r with v | e <;> simp [core.result.Result.unwrap_or]
 
 /-- [core::result::{core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, E>}::branch]:
     Source: '/rustc/library/core/src/result.rs', lines 2172:4-2172:64
     Name pattern: [core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch] -/
 @[rust_fun
   "core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch"]
-axiom core.result.Result.Insts.CoreOpsTry_traitTry.branch
+def core.result.Result.Insts.CoreOpsTry_traitTry.branch
   {T : Type} {E : Type} :
   core.result.Result T E → Result (core.ops.control_flow.ControlFlow
-    (core.result.Result core.convert.Infallible E) T)
+    (core.result.Result core.convert.Infallible E) T) :=
+  fun r =>
+    match r with
+    | .Ok v => ok (.Continue v)
+    | .Err e => ok (.Break (.Err e))
+
+/-- **Spec theorem for `Try::branch` on `Result`** (the desugaring of `?`):
+`Ok v` continues with `v`; `Err e` breaks with the residual `Err e`. -/
+@[step]
+theorem core.result.Result.Insts.CoreOpsTry_traitTry.branch_spec
+    {T E : Type} (r : core.result.Result T E) :
+    core.result.Result.Insts.CoreOpsTry_traitTry.branch r ⦃ cf =>
+      cf = match r with
+        | .Ok v => .Continue v
+        | .Err e => .Break (.Err e) ⦄ := by
+  rcases r with v | e <;> simp [core.result.Result.Insts.CoreOpsTry_traitTry.branch]
 
 /-- [core::result::{core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, F>}::from_residual]:
     Source: '/rustc/library/core/src/result.rs', lines 2187:4-2187:70
     Name pattern: [core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual] -/
 @[rust_fun
   "core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual"]
-axiom
+def
   core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
   (T : Type) {E : Type} {F : Type} (convertFromInst : core.convert.From F E) :
   core.result.Result core.convert.Infallible E → Result (core.result.Result T
-    F)
+    F) :=
+  fun r =>
+    match r with
+    | .Err e => do
+      let f ← convertFromInst.from_ e
+      ok (.Err f)
+    | .Ok x => nomatch x
+
+/-- **Spec theorem for `FromResidual::from_residual` on `Result`** (part of the `?`
+desugaring): the residual is always `Err e` (the `Ok` payload is `Infallible`), and
+the error is converted via the `From` instance. Stated as an unfolding lemma since
+the conversion is definitional in the instance. -/
+@[simp]
+theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual_Err
+    (T : Type) {E F : Type} (convertFromInst : core.convert.From F E) (e : E) :
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+      T convertFromInst (.Err e) =
+      (do let f ← convertFromInst.from_ e; ok (.Err f)) := rfl
+
+/-- Implementation helper for `Slice.Insts.CoreCmpOrd.cmp`
+(`[core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]`,
+Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42).
+
+Lexicographic comparison of two element lists, delegating per-element to the
+`Ord` instance and short-circuiting on the first non-`eq` result. -/
+private def Slice.lexCmpAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
+    List T → List T → Result Ordering
+  | [], [] => ok .eq
+  | [], _ :: _ => ok .lt
+  | _ :: _, [] => ok .gt
+  | a :: xs, b :: ys => do
+    let o ← cmpOrdInst.cmp a b
+    match o with
+    | .eq => Slice.lexCmpAux cmpOrdInst xs ys
+    | o => ok o
 
 /-- [core::slice::cmp::{core::cmp::Ord for [T]}::cmp]:
     Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42
     Name pattern: [core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp] -/
 @[rust_fun "core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp"]
-axiom Slice.Insts.CoreCmpOrd.cmp
+def Slice.Insts.CoreCmpOrd.cmp
   {T : Type} (cmpOrdInst : core.cmp.Ord T) :
-  Slice T → Slice T → Result Ordering
+  Slice T → Slice T → Result Ordering :=
+  fun s1 s2 => Slice.lexCmpAux cmpOrdInst s1.val s2.val
+
+/-- **Spec theorem for `Ord::cmp` on `[T]`**: lexicographic comparison over the
+elements. The per-element behaviour is definitional in the `Ord` instance, so this
+exposes the comparison as the list helper `Slice.lexCmpAux`. -/
+@[simp]
+theorem Slice.Insts.CoreCmpOrd.cmp_eq
+    {T : Type} (cmpOrdInst : core.cmp.Ord T) (s1 s2 : Slice T) :
+    Slice.Insts.CoreCmpOrd.cmp cmpOrdInst s1 s2 =
+      Slice.lexCmpAux cmpOrdInst s1.val s2.val := rfl
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::index_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 660:4-660:51
     Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index_mut] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::index_mut"]
-axiom
+def
   core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_mut
   {T : Type} :
   core.ops.range.RangeFull → Slice T → Result ((Slice T) × (Slice T →
-    Slice T))
+    Slice T)) :=
+  fun _ s => ok (s, fun s' => s')
+
+/-- **Spec theorem for `SliceIndex<RangeFull>::index_mut`**: the whole-slice
+mutable borrow returns the slice unchanged with an identity write-back. -/
+@[step]
+theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_mut_spec
+    {T : Type} (r : core.ops.range.RangeFull) (s : Slice T) :
+    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_mut r s
+      ⦃ (s', back) => s' = s ∧ ∀ x, back x = x ⦄ := by
+  simp [core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_mut]
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::index]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 655:4-655:39
@@ -344,6 +709,15 @@ axiom
 def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index
   {T : Type} : core.ops.range.RangeFull → Slice T → Result (Slice T) :=
   fun _ s => ok s
+
+/-- **Spec theorem for `SliceIndex<RangeFull>::index`**: indexing by `..` returns
+the whole slice unchanged. -/
+@[step]
+theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_spec
+    {T : Type} (r : core.ops.range.RangeFull) (s : Slice T) :
+    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index r s
+      ⦃ r' => r' = s ⦄ := by
+  simp [core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index]
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_unchecked_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 650:4-650:66
@@ -372,19 +746,40 @@ axiom
     Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_mut] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_mut"]
-axiom core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut
+def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut
   {T : Type} :
   core.ops.range.RangeFull → Slice T → Result ((Option (Slice T)) ×
-    (Option (Slice T) → Slice T))
+    (Option (Slice T) → Slice T)) :=
+  fun _ s => ok (some s, fun o => o.getD s)
+
+/-- **Spec theorem for `SliceIndex<RangeFull>::get_mut`**: the whole slice is always
+in bounds, so this returns `some s` plus a write-back that installs the new slice
+(keeping the original when given `none`). -/
+@[step]
+theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut_spec
+    {T : Type} (r : core.ops.range.RangeFull) (s : Slice T) :
+    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut r s
+      ⦃ (o, back) => o = some s ∧ ∀ x, back x = x.getD s ⦄ := by
+  simp [core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut]
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 635:4-635:45
     Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get] -/
 @[rust_fun
   "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get"]
-axiom core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get
+def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get
   {T : Type} :
-  core.ops.range.RangeFull → Slice T → Result (Option (Slice T))
+  core.ops.range.RangeFull → Slice T → Result (Option (Slice T)) :=
+  fun _ s => ok (some s)
+
+/-- **Spec theorem for `SliceIndex<RangeFull>::get`**: the whole slice is always in
+bounds, so `get` by `..` returns `some s`. -/
+@[step]
+theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_spec
+    {T : Type} (r : core.ops.range.RangeFull) (s : Slice T) :
+    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get r s
+      ⦃ o => o = some s ⦄ := by
+  simp [core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get]
 
 /-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a (T)> for core::slice::iter::Iter<'a, T>}::map]:
     Source: '/rustc/library/core/src/slice/iter/macros.rs', lines 153:8-153:45
@@ -402,9 +797,19 @@ axiom core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
     Name pattern: [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter"]
-axiom
+def
   SharedASlice.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
-  {T : Type} : Slice T → Result (core.slice.iter.Iter T)
+  {T : Type} : Slice T → Result (core.slice.iter.Iter T) :=
+  fun s => ok ⟨s, 0⟩
+
+@[step]
+theorem into_iter_spec {T : Type} (s : Slice T) :
+    SharedASlice.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
+      s
+      ⦃ (iter : core.slice.iter.Iter T) =>
+      iter.slice = s ∧ iter.i = 0 ⦄ := by
+  unfold SharedASlice.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
+  simp [WP.spec_ok]
 
 /-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a ([T])> for core::slice::iter::ChunksExact<'a, T>}::collect]:
     Source: '/rustc/library/core/src/slice/iter.rs', lines 1892:0-1892:43
@@ -436,24 +841,99 @@ def core.result.Result.ok {T E : Type} (r : core.result.Result T E) :
   | core.result.Result.Ok v => _root_.Aeneas.Std.Result.ok (some v)
   | core.result.Result.Err _ => _root_.Aeneas.Std.Result.ok none
 
+namespace core.slice.Slice
+
 /-- [core::slice::{[T]}::clone_from_slice]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4254:4-4256:44
     Name pattern: [core::slice::{[@T]}::clone_from_slice] -/
 @[rust_fun "core::slice::{[@T]}::clone_from_slice"]
-def core.slice.Slice.clone_from_slice
-  {T : Type} (cloneCloneInst : core.clone.Clone T) :
+def clone_from_slice {T : Type} (cloneCloneInst : core.clone.Clone T) :
   Slice T → Slice T → Result (Slice T) :=
-  fun dst src => Slice.clone cloneCloneInst.clone src
+  fun dst src =>
+    -- Rust panics when the destination and source lengths differ.
+    if dst.length = src.length then Slice.clone cloneCloneInst.clone src
+    else fail .panic
+
+/-- **Spec theorem for `<[T]>::clone_from_slice`**: requires the destination and source to have
+equal length (Rust panics otherwise); when the element `Clone` instance acts as the identity
+(the usual case), the destination becomes a copy of the source. -/
+@[step]
+theorem clone_from_slice_spec {T : Type} (cloneCloneInst : core.clone.Clone T) (dst src : Slice T)
+    (hlen : dst.length = src.length) (h : ∀ x ∈ src.val, cloneCloneInst.clone x = ok x) :
+    clone_from_slice cloneCloneInst dst src ⦃ (r : Slice T) => src = r ⦄ := by
+  simpa [clone_from_slice, if_pos hlen] using Slice.clone_spec h
+
+/-- `clone_from_slice` for `u8` copies the source slice into the destination, returning a slice
+whose contents and length equal those of the source. Requires the destination and source to have
+equal length (Rust panics otherwise). -/
+@[step]
+lemma clone_from_slice_U8_spec (dst src : Slice Std.U8) (hlen : dst.length = src.length) :
+    clone_from_slice core.clone.CloneU8 dst src ⦃ (result : Slice U8) =>
+      result.val = src.val ∧ result.length = src.length ⦄ := by
+  unfold clone_from_slice
+  step*
+
+end core.slice.Slice
+
+/-- Implementation helper for `core.slice.Slice.copy_within`
+(`[core::slice::{[@T]}::copy_within]`,
+Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
+
+Resolve a `RangeBounds` lower bound to a concrete start index. -/
+private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
+  match b with
+  | .Included i => i.val
+  | .Excluded i => i.val + 1
+  | .Unbounded => 0
+
+/-- Implementation helper for `core.slice.Slice.copy_within`
+(`[core::slice::{[@T]}::copy_within]`,
+Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
+
+Resolve a `RangeBounds` upper bound to a concrete end index (`len` when open). -/
+private def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
+  match b with
+  | .Included i => i.val + 1
+  | .Excluded i => i.val
+  | .Unbounded => len
 
 /-- [core::slice::{[T]}::copy_within]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16
     Name pattern: [core::slice::{[@T]}::copy_within] -/
 @[rust_fun "core::slice::{[@T]}::copy_within"]
-axiom core.slice.Slice.copy_within
+def core.slice.Slice.copy_within
   {T : Type} {R : Type} (opsrangeRangeBoundsRUsizeInst :
   core.ops.range.RangeBounds R Std.Usize) (markerCopyInst : core.marker.Copy T)
   :
-  Slice T → R → Std.Usize → Result (Slice T)
+  Slice T → R → Std.Usize → Result (Slice T) :=
+  fun self src dest => do
+    let sb ← opsrangeRangeBoundsRUsizeInst.start_bound src
+    let eb ← opsrangeRangeBoundsRUsizeInst.end_bound src
+    let s := Slice.copyWithinStart sb
+    let e := Slice.copyWithinEnd eb self.length
+    -- Rust panics if the source range is invalid or the copy runs past the end.
+    if s ≤ e ∧ e ≤ self.length ∧ dest.val + (e - s) ≤ self.length then
+      ok (self.setSlice! dest.val ((self.val.drop s).take (e - s)))
+    else
+      fail .panic
+
+/-- **Spec theorem for `<[T]>::copy_within`**: the source range is resolved through
+the `RangeBounds` instance, then the segment `self[s, e)` is copied to start at
+`dest` (via `Slice.setSlice!`). The bound resolution is definitional in the instance,
+so this is stated as an unfolding lemma. -/
+@[simp]
+theorem core.slice.Slice.copy_within_eq
+    {T R : Type} (rbInst : core.ops.range.RangeBounds R Std.Usize)
+    (copyInst : core.marker.Copy T) (self : Slice T) (src : R) (dest : Std.Usize) :
+    core.slice.Slice.copy_within rbInst copyInst self src dest =
+      (do
+        let sb ← rbInst.start_bound src
+        let eb ← rbInst.end_bound src
+        let s := Slice.copyWithinStart sb
+        let e := Slice.copyWithinEnd eb self.length
+        if s ≤ e ∧ e ≤ self.length ∧ dest.val + (e - s) ≤ self.length then
+          ok (self.setSlice! dest.val ((self.val.drop s).take (e - s)))
+        else fail .panic) := rfl
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, A>}::len]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 1633:4-1633:30
@@ -509,21 +989,70 @@ axiom
     Source: '/rustc/library/alloc/src/slice.rs', lines 578:4-580:27
     Name pattern: [alloc::slice::{[@T]}::concat] -/
 @[rust_fun "alloc::slice::{[@T]}::concat"]
-axiom alloc.slice.Slice.concat
+def alloc.slice.Slice.concat
   {T : Type} {Item : Type} {Clause0_Output : Type}
   (ConcatSliceItemClause0_OutputInst : alloc.slice.Concat (Slice T) Item
   Clause0_Output) :
-  Slice T → Result Clause0_Output
+  Slice T → Result Clause0_Output :=
+  fun s => ConcatSliceItemClause0_OutputInst.concat s
+
+/-- **Spec theorem for `<[T]>::concat`**: the free function delegates to the
+`Concat` trait instance. -/
+@[simp]
+theorem alloc.slice.Slice.concat_eq
+    {T Item Clause0_Output : Type}
+    (inst : alloc.slice.Concat (Slice T) Item Clause0_Output) (s : Slice T) :
+    alloc.slice.Slice.concat inst s = inst.concat s := rfl
+
+/-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
+(`[alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat]`,
+Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
+
+Package an element list as a `Vec`, failing if it would exceed `Usize.max`. -/
+private def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
+  if h : l.length ≤ Std.Usize.max then ok ⟨l, h⟩ else fail .panic
+
+/-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
+(`[alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat]`,
+Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
+
+Flatten a list of borrowable chunks: borrow each `V` to a `Slice T`, clone its
+elements, and concatenate the results into one element list. -/
+private def Slice.concatListAux {T V : Type} (corecloneCloneInst : core.clone.Clone T)
+    (coreborrowBorrowVSliceInst : core.borrow.Borrow V (Slice T)) :
+    List V → Result (List T)
+  | [] => ok []
+  | v :: vs => do
+    let s ← coreborrowBorrowVSliceInst.borrow v
+    let cs ← Slice.clone corecloneCloneInst.clone s
+    let rest ← Slice.concatListAux corecloneCloneInst coreborrowBorrowVSliceInst vs
+    ok (cs.val ++ rest)
 
 /-- [alloc::slice::{alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}::concat]:
     Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37
     Name pattern: [alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat] -/
 @[rust_fun
   "alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat"]
-axiom Slice.Insts.AllocSliceConcatTVec.concat
+def Slice.Insts.AllocSliceConcatTVec.concat
   {T : Type} {V : Type} (corecloneCloneInst : core.clone.Clone T)
   (coreborrowBorrowVSliceInst : core.borrow.Borrow V (Slice T)) :
-  Slice V → Result (alloc.vec.Vec T)
+  Slice V → Result (alloc.vec.Vec T) :=
+  fun sv => do
+    let l ← Slice.concatListAux corecloneCloneInst coreborrowBorrowVSliceInst sv.val
+    Slice.listToVec l
+
+/-- **Spec theorem for `Concat<[V], T, Vec<T>>::concat`**: the result is the
+flattening produced by `Slice.concatListAux`, packaged as a `Vec`. The chunk
+contents are definitional in the `Borrow`/`Clone` instances. -/
+@[simp]
+theorem Slice.Insts.AllocSliceConcatTVec.concat_eq
+    {T V : Type} (corecloneCloneInst : core.clone.Clone T)
+    (coreborrowBorrowVSliceInst : core.borrow.Borrow V (Slice T)) (sv : Slice V) :
+    Slice.Insts.AllocSliceConcatTVec.concat corecloneCloneInst
+        coreborrowBorrowVSliceInst sv =
+      (do
+        let l ← Slice.concatListAux corecloneCloneInst coreborrowBorrowVSliceInst sv.val
+        Slice.listToVec l) := rfl
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
     Source: '/rustc/library/alloc/src/str.rs', lines 210:4-210:32
@@ -536,64 +1065,160 @@ axiom Str.Insts.AllocBorrowToOwnedString.to_owned : Str → Result String
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1696:4-1696:42
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::truncate] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::truncate"]
-axiom alloc.vec.Vec.truncate
+def alloc.vec.Vec.truncate
   {T : Type} (A : Type) :
-  alloc.vec.Vec T → Std.Usize → Result (alloc.vec.Vec T)
+  alloc.vec.Vec T → Std.Usize → Result (alloc.vec.Vec T) :=
+  fun v n => ok ⟨v.val.take n.val, by
+    have := v.property; simp only [List.length_take]; omega⟩
+
+/-- **Spec theorem for `Vec::truncate`**: keeps the first `n` elements. -/
+@[step]
+theorem alloc.vec.Vec.truncate_spec
+    {T : Type} (A : Type) (v : alloc.vec.Vec T) (n : Std.Usize) :
+    alloc.vec.Vec.truncate A v n ⦃ nv => nv.val = v.val.take n.val ⦄ := by
+  simp [alloc.vec.Vec.truncate]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::as_slice]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1733:4-1733:40
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::as_slice] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::as_slice"]
-axiom alloc.vec.Vec.as_slice
-  {T : Type} (A : Type) : alloc.vec.Vec T → Result (Slice T)
+def alloc.vec.Vec.as_slice
+  {T : Type} (A : Type) : alloc.vec.Vec T → Result (Slice T) :=
+  fun v => ok ⟨v.val, v.property⟩
+
+/-- **Spec theorem for `Vec::as_slice`**: the slice view shares the vector's
+elements. -/
+@[step]
+theorem alloc.vec.Vec.as_slice_spec
+    {T : Type} (A : Type) (v : alloc.vec.Vec T) :
+    alloc.vec.Vec.as_slice A v ⦃ s => s.val = v.val ⦄ := by
+  simp [alloc.vec.Vec.as_slice]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::remove]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2276:4-2276:47
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::remove] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::remove"]
-axiom alloc.vec.Vec.remove
+def alloc.vec.Vec.remove
   {T : Type} (A : Type) :
-  alloc.vec.Vec T → Std.Usize → Result (T × (alloc.vec.Vec T))
+  alloc.vec.Vec T → Std.Usize → Result (T × (alloc.vec.Vec T)) :=
+  fun v i =>
+    if h : i.val < v.val.length then
+      ok (v.val[i.val]'h, ⟨v.val.eraseIdx i.val, by
+        have := v.property; have := List.length_eraseIdx_le v.val i.val; omega⟩)
+    else
+      fail .arrayOutOfBounds
+
+/-- **Spec theorem for `Vec::remove`**: removes (and returns) the element at index
+`i`, shifting the remaining elements left. Panics (here: fails) when out of bounds. -/
+@[step]
+theorem alloc.vec.Vec.remove_spec
+    {T : Type} (A : Type) (v : alloc.vec.Vec T) (i : Std.Usize)
+    (hbound : i.val < v.val.length) :
+    alloc.vec.Vec.remove A v i ⦃ (x, nv) =>
+      x = v.val[i.val] ∧ nv.val = v.val.eraseIdx i.val ⦄ := by
+  simp [alloc.vec.Vec.remove, hbound]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::append]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2802:4-2802:46
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::append] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::append"]
-axiom alloc.vec.Vec.append
+def alloc.vec.Vec.append
   {T : Type} (A : Type) :
   alloc.vec.Vec T → alloc.vec.Vec T → Result ((alloc.vec.Vec T) ×
-    (alloc.vec.Vec T))
+    (alloc.vec.Vec T)) :=
+  fun v1 v2 =>
+    if h : v1.val.length + v2.val.length ≤ Std.Usize.max then
+      ok (⟨v1.val ++ v2.val, by simp only [List.length_append]; omega⟩,
+          alloc.vec.Vec.new T)
+    else
+      fail .panic
+
+/-- **Spec theorem for `Vec::append`**: drains all of `v2` onto the end of `v1`;
+following Aeneas's mutable-reference convention it returns both the extended `v1`
+and the now-empty `v2`. -/
+@[step]
+theorem alloc.vec.Vec.append_spec
+    {T : Type} (A : Type) (v1 v2 : alloc.vec.Vec T)
+    (h : v1.val.length + v2.val.length ≤ Std.Usize.max) :
+    alloc.vec.Vec.append A v1 v2 ⦃ (r1, r2) =>
+      r1.val = v1.val ++ v2.val ∧ r2.val = [] ⦄ := by
+  simp [alloc.vec.Vec.append, h, alloc.vec.Vec.new]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::clear]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2903:4-2903:27
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::clear] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::clear"]
-axiom alloc.vec.Vec.clear
-  {T : Type} (A : Type) : alloc.vec.Vec T → Result (alloc.vec.Vec T)
+def alloc.vec.Vec.clear
+  {T : Type} (A : Type) : alloc.vec.Vec T → Result (alloc.vec.Vec T) :=
+  fun _ => ok (alloc.vec.Vec.new T)
+
+/-- **Spec theorem for `Vec::clear`**: empties the vector. -/
+@[step]
+theorem alloc.vec.Vec.clear_spec
+    {T : Type} (A : Type) (v : alloc.vec.Vec T) :
+    alloc.vec.Vec.clear A v ⦃ nv => nv.val = [] ⦄ := by
+  simp [alloc.vec.Vec.clear, alloc.vec.Vec.new]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::is_empty]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2956:4-2956:40
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::is_empty] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::is_empty"]
-axiom alloc.vec.Vec.is_empty
-  {T : Type} (A : Type) : alloc.vec.Vec T → Result Bool
+def alloc.vec.Vec.is_empty
+  {T : Type} (A : Type) : alloc.vec.Vec T → Result Bool :=
+  fun v => ok v.val.isEmpty
+
+/-- **Spec theorem for `Vec::is_empty`**: `true` iff the underlying list is empty. -/
+@[step]
+theorem alloc.vec.Vec.is_empty_spec
+    {T : Type} (A : Type) (v : alloc.vec.Vec T) :
+    alloc.vec.Vec.is_empty A v ⦃ b => b = v.val.isEmpty ⦄ := by
+  simp [alloc.vec.Vec.is_empty]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::split_off]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2989:4-2991:17
     Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::split_off] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::split_off"]
-axiom alloc.vec.Vec.split_off
+def alloc.vec.Vec.split_off
   {T : Type} {A : Type} (corecloneCloneInst : core.clone.Clone A) :
   alloc.vec.Vec T → Std.Usize → Result ((alloc.vec.Vec T) × (alloc.vec.Vec
-    T))
+    T)) :=
+  fun v at_ =>
+    if h : at_.val ≤ v.val.length then
+      -- Aeneas `&mut self` convention: `(return_value, updated_self)`.
+      -- `split_off` returns the suffix `[at_, len)` and leaves `self = [0, at_)`.
+      ok (⟨v.val.drop at_.val, by
+            have := v.property; simp only [List.length_drop]; omega⟩,
+          ⟨v.val.take at_.val, by
+            have := v.property; simp only [List.length_take]; omega⟩)
+    else
+      fail .panic
+
+/-- **Spec theorem for `Vec::split_off`**: splits at index `at_`. Following Aeneas's
+mutable-reference convention `(return_value, updated_self)`, the first component is
+the returned suffix `[at_, len)` and the second is the truncated `self` `[0, at_)`.
+Panics (here: fails) when `at_` exceeds the length. -/
+@[step]
+theorem alloc.vec.Vec.split_off_spec
+    {T A : Type} (corecloneCloneInst : core.clone.Clone A)
+    (v : alloc.vec.Vec T) (at_ : Std.Usize) (hbound : at_.val ≤ v.val.length) :
+    alloc.vec.Vec.split_off corecloneCloneInst v at_ ⦃ (r1, r2) =>
+      r1.val = v.val.drop at_.val ∧ r2.val = v.val.take at_.val ⦄ := by
+  simp [alloc.vec.Vec.split_off, hbound]
 
 /-- [alloc::vec::{core::default::Default for alloc::vec::Vec<T>}::default]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 4171:4-4171:26
     Name pattern: [alloc::vec::{core::default::Default<alloc::vec::Vec<@T>>}::default] -/
 @[rust_fun
   "alloc::vec::{core::default::Default<alloc::vec::Vec<@T>>}::default"]
-axiom alloc.vec.Vec.Insts.CoreDefaultDefault.default
-  (T : Type) : Result (alloc.vec.Vec T)
+def alloc.vec.Vec.Insts.CoreDefaultDefault.default
+  (T : Type) : Result (alloc.vec.Vec T) :=
+  ok (alloc.vec.Vec.new T)
+
+/-- **Spec theorem for `Default for Vec<T>`**: the default vector is empty. -/
+@[step]
+theorem alloc.vec.Vec.Insts.CoreDefaultDefault.default_spec (T : Type) :
+    alloc.vec.Vec.Insts.CoreDefaultDefault.default T ⦃ v => v.val = [] ⦄ := by
+  simp [alloc.vec.Vec.Insts.CoreDefaultDefault.default, alloc.vec.Vec.new]
 
 /-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::advance]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2901:4-2901:37

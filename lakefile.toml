@@ -1,6 +1,6 @@
 name = "Spqr"
 version = "0.1.0"
-defaultTargets = ["Spqr"]
+defaultTargets = ["Spqr", "SrcTranslated"]
 
 [leanOptions]
 autoImplicit = false
@@ -12,7 +12,16 @@ maxRecDepth = 10000
 name = "aeneas"
 git = "https://github.com/AeneasVerif/aeneas.git"
 subDir = "backends/lean"
-rev = "ac9f1bc5"
+rev = "39c6a720"
+
+[[lean_lib]]
+name = "SrcTranslated"
 
 [[lean_lib]]
 name = "Spqr"
+
+# Test suites: the project-linter `#guard_msgs` tests (`Tests.LinterTest.*`) and the
+# property-based Plausible tests (`Tests.PlausibleTests.*`).  Deliberately NOT in
+# `defaultTargets`, so neither the dummy `@[step]` linter theorems nor the randomized
+[[lean_lib]]
+name = "Tests"
