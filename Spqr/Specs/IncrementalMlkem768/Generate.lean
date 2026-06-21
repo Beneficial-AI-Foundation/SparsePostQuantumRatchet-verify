@@ -1,9 +1,10 @@
 /-
 Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Liao Zhang
 -/
-import Spqr.Code.Funs
-import Spqr.Code.FunsExternal
+import SrcTranslated.Funs
+import SrcTranslated.FunsExternal
 
 /-! # Spec theorem for `incremental_mlkem768::generate`
 
@@ -61,9 +62,11 @@ axiom sk_spec (k : KeyPairCompressedBytes) :
 
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
-Assuming the RNG's `fill_bytes` does not panic, `generate` returns a `Keys` whose three buffers
-have the sizes mandated by the Rust contract: `hdr` is 64 bytes, `ek` is 1152 bytes, and `dk` is
-2400 bytes. -/
+- Assuming the RNG's `fill_bytes` does not panic
+- `generate` returns a `Keys` whose three buffers have the sizes mandated by the Rust contract
+  * `hdr` is 64 bytes
+  * `ek` is 1152 bytes
+  * and `dk` is 2400 bytes. -/
 theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoInst : rand_core.CryptoRng R) (rng : R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
