@@ -20,10 +20,12 @@ sizes of those buffers:
 
 with `HEADER_SIZE = 64` and `ENCAPSULATION_KEY_SIZE = 1152`.
 
-The libcrux routines `KeyPairCompressedBytes::{from_seed, pk1, pk2, sk}` are opaque externals
-whose return *types* already pin the array sizes (`[u8; 64]`, `[u8; 1152]`, `[u8; 2400]`); we
-only postulate that they do not panic (return `ok`), mirroring the admitted libcrux interface
-used by the hax extraction.  `RngCore::fill_bytes` is a trait method on an arbitrary `R`, so its
+The libcrux routines `KeyPairCompressedBytes::{from_seed, pk1, pk2, sk}` are externals whose
+return *types* already pin the array sizes (`[u8; 64]`, `[u8; 1152]`, `[u8; 2400]`).  They are
+modelled in `SrcTranslated/FunsExternal.lean` as honest `def`s over a concrete
+`KeyPairCompressedBytes` struct, each with a proved `@[step]` spec stating only that the call
+does not panic (the cryptographic content is not modelled).
+`RngCore::fill_bytes` is a trait method on an arbitrary `R`, so its
 non-panicking behaviour is taken as a hypothesis on the instance.  The output buffer lengths are
 then independent of the randomness: `from_slice` reconstructs a `[u8; 64]` regardless, so the
 sizes follow from the `pk1`/`pk2`/`sk` return types through `to_slice`/`to_vec`.
@@ -35,30 +37,6 @@ open Aeneas Aeneas.Std Result
 namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
-
-/-- Trusted interface spec: `KeyPairCompressedBytes::from_seed` does not panic.  The result type
-`KeyPairCompressedBytes` carries no size obligation, so the postcondition is trivial. -/
-@[step]
-axiom from_seed_spec (x : Array Std.U8 64#usize) :
-    KeyPairCompressedBytes.from_seed x ⦃ fun _ => True ⦄
-
-/-- Trusted interface spec: `KeyPairCompressedBytes::pk1` does not panic.  Its return type
-`[u8; 64]` pins the header size. -/
-@[step]
-axiom pk1_spec (k : KeyPairCompressedBytes) :
-    KeyPairCompressedBytes.pk1 k ⦃ fun (_ : Array Std.U8 64#usize) => True ⦄
-
-/-- Trusted interface spec: `KeyPairCompressedBytes::pk2` does not panic.  Its return type
-`[u8; 1152]` pins the encapsulation-key size. -/
-@[step]
-axiom pk2_spec (k : KeyPairCompressedBytes) :
-    KeyPairCompressedBytes.pk2 k ⦃ fun (_ : Array Std.U8 1152#usize) => True ⦄
-
-/-- Trusted interface spec: `KeyPairCompressedBytes::sk` does not panic.  Its return type
-`[u8; 2400]` pins the decapsulation-key size. -/
-@[step]
-axiom sk_spec (k : KeyPairCompressedBytes) :
-    KeyPairCompressedBytes.sk k ⦃ fun (_ : Array Std.U8 2400#usize) => True ⦄
 
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 

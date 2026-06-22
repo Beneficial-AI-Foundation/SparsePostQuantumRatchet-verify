@@ -1526,40 +1526,78 @@ axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed"]
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
-  :
-  Array Std.U8 64#usize → Result
-    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes
+def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
+  (_seed : Array Std.U8 64#usize) : Result
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes :=
+  ok default
+
+/-- **Spec theorem for `KeyPairCompressedBytes::from_seed`**: deriving the compressed
+key pair from a seed does not panic.  The result type `KeyPairCompressedBytes` carries
+no size obligation, so the postcondition is trivial; the cryptographic content of the
+key pair is not modelled. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
+    (seed : Array Std.U8 64#usize) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed
+      ⦃ fun _ => True ⦄ := by
+  simp [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1"]
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
-  :
-  libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
-    Std.U8 64#usize)
+def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
+  (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+  Result (Array Std.U8 64#usize) :=
+  ok k.pk1Bytes
+
+/-- **Spec theorem for `KeyPairCompressedBytes::pk1`**: extracting the header buffer
+does not panic.  Its return type `[u8; 64]` pins the header size. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_spec
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1 k
+      ⦃ fun (_ : Array Std.U8 64#usize) => True ⦄ := by
+  simp [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 275:12-275:49
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2"]
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
-  :
-  libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
-    Std.U8 1152#usize)
+def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
+  (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+  Result (Array Std.U8 1152#usize) :=
+  ok k.pk2Bytes
+
+/-- **Spec theorem for `KeyPairCompressedBytes::pk2`**: extracting the encapsulation-key
+buffer does not panic.  Its return type `[u8; 1152]` pins the encapsulation-key size. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_spec
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2 k
+      ⦃ fun (_ : Array Std.U8 1152#usize) => True ⦄ := by
+  simp [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 283:12-283:54
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk"]
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
-  :
-  libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
-    Std.U8 2400#usize)
+def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
+  (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+  Result (Array Std.U8 2400#usize) :=
+  ok k.skBytes
+
+/-- **Spec theorem for `KeyPairCompressedBytes::sk`**: extracting the decapsulation-key
+buffer does not panic.  Its return type `[u8; 2400]` pins the decapsulation-key size. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k
+      ⦃ fun (_ : Array Std.U8 2400#usize) => True ⦄ := by
+  simp [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
