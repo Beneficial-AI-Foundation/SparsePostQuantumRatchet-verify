@@ -37,8 +37,6 @@ structure alloc.collections.vec_deque.into_iter.IntoIter (T : Type) (A : Type)
     where
   inner : alloc.collections.vec_deque.VecDeque T A
 
-
-
 /-- [bytes::buf::uninit_slice::UninitSlice]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/uninit_slice.rs', lines 22:0-22:22
     Name pattern: [bytes::buf::uninit_slice::UninitSlice] -/
