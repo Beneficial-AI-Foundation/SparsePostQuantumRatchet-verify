@@ -975,36 +975,33 @@ def alloc.collections.vec_deque.VecDeque.pop_front
       else
         fail .panic
 
-/-- Spec: `pop_front` on an empty deque returns `(none, self)`. -/
-theorem alloc.collections.vec_deque.VecDeque.pop_front_spec_empty
-    {T : Type} {A : Type} (self : alloc.collections.vec_deque.VecDeque T A)
-    (hempty : self.length = 0#usize) :
-    alloc.collections.vec_deque.VecDeque.pop_front self
-      ⦃ (res : (Option T) × (alloc.collections.vec_deque.VecDeque T A)) =>
-        res.1 = none ∧ res.2 = self ⦄ := by
-  simp [alloc.collections.vec_deque.VecDeque.pop_front, hempty]
+/-- `pop_front` on an empty deque returns `(none, self)`.
+  `pop_front` on a non-empty deque returns `(some elem, self')`
+  where `elem = buf[head]`, `self'.head = head + 1`,
+  `self'.length = length - 1`, and `self'.buf` is unchanged.
 
-/-- Spec: `pop_front` on a non-empty deque returns `(some elem, self')`
-    where `elem = buf[head]`, `self'.head = head + 1`,
-    `self'.length = length - 1`, and `self'.buf` is unchanged.
-
-    Growing-list model: `head` advances linearly (no wrap-around). -/
+  Growing-list model: `head` advances linearly (no wrap-around). -/
+@[step]
 theorem alloc.collections.vec_deque.VecDeque.pop_front_spec_nonempty
     {T : Type} {A : Type} (self : alloc.collections.vec_deque.VecDeque T A)
-    (hne : self.length ≠ 0#usize)
-    (hidx : self.head < self.buf.length) :
-    alloc.collections.vec_deque.VecDeque.pop_front self
-      ⦃ (res : (Option T) × (alloc.collections.vec_deque.VecDeque T A)) =>
-        res.1 = some (self.buf.val[self.head.val]'hidx) ∧
+    (hidx : self.head < self.buf.length):
+    alloc.collections.vec_deque.VecDeque.pop_front self ⦃ (res : (Option T) × (alloc.collections.vec_deque.VecDeque T A)) =>
+      (self.length = 0#usize → res.1 = none ∧ res.2 = self) ∧
+      (self.length ≠ 0#usize →
+        res.1 = (self.buf.val[self.head.val]'hidx) ∧
         res.2.head.val = self.head + 1 ∧
         res.2.length = self.length.val - 1 ∧
-        res.2.buf = self.buf ⦄ := by
+        res.2.buf = self.buf) ⦄ := by
   unfold alloc.collections.vec_deque.VecDeque.pop_front
-  simp only [if_neg hne, dif_pos hidx]
-  have : self.head + (1#usize).val ≤ Usize.max := by
-    have := self.buf.property; scalar_tac
-  have : (1#usize).val ≤ self.length := by scalar_tac
-  step*
+  split
+  · rename_i hempty
+    simp [hempty]
+  · rename_i hne
+    simp only
+    have : self.head + (1#usize).val ≤ Usize.max := by
+      have := self.buf.property; scalar_tac
+    have : (1#usize).val ≤ self.length := by scalar_tac
+    step*
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, A>}::push_back]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 2205:4-2205:41
