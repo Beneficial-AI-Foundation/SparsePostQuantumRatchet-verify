@@ -18,13 +18,17 @@ sizes of those buffers:
   && result.dk.len() == 2400)]
 ```
 
-with `HEADER_SIZE = 64` and `ENCAPSULATION_KEY_SIZE = 1152`.
+with `HEADER_SIZE = 64` and `ENCAPSULATION_KEY_SIZE = 1152`.  These three sizes are not bare
+literals in the model: they are the buffer lengths *derived* from the ML-KEM-768 parameter set
+in `SrcTranslated/TypesExternal.lean` (`headerBytes = 64`,
+`mlkem768Params.encapsulationKeyBytes = 1152`, `mlkem768Params.decapsulationKeyBytes = 2400`).
 
 The libcrux routines `KeyPairCompressedBytes::{from_seed, pk1, pk2, sk}` are externals whose
 return *types* already pin the array sizes (`[u8; 64]`, `[u8; 1152]`, `[u8; 2400]`).  They are
 modelled in `SrcTranslated/FunsExternal.lean` as honest `def`s over a concrete
-`KeyPairCompressedBytes` struct, each with a proved `@[step]` spec stating only that the call
-does not panic (the cryptographic content is not modelled).
+`KeyPairCompressedBytes` struct — whose field lengths are exactly those derived sizes — each
+with a proved `@[step]` spec stating only that the call does not panic (the cryptographic
+content is not modelled).
 `RngCore::fill_bytes` is a trait method on an arbitrary `R`, so its
 non-panicking behaviour is taken as a hypothesis on the instance.  The output buffer lengths are
 then independent of the randomness: `from_slice` reconstructs a `[u8; 64]` regardless, so the
@@ -37,7 +41,7 @@ open Aeneas Aeneas.Std Result
 namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
-
+open Spqr.Mlkem
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
 - Assuming the RNG's `fill_bytes` does not panic
