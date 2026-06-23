@@ -1,7 +1,7 @@
 # Aeneas extraction configuration
 
 aeneas:
-  commit: "39c6a720" # pinned commit hash
+  commit: "34d3b272" # pinned commit hash
   repo: "https://github.com/AeneasVerif/aeneas.git"
 
 # Upstream Rust crate we are verifying
@@ -15,6 +15,7 @@ crate:
 
 charon:
   preset: "aeneas"
+  sysroot: "default"
   hide_marker_traits: true
   cargo_args: ["--features", "extraction"]
   # trait issue means that we can't use start_from_pub
