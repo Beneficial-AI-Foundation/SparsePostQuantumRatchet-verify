@@ -152,17 +152,34 @@ async function setupRustToolchain(repoDir: string): Promise<void> {
 // ── Git operations ────────────────────────────────────────────────────
 
 async function setupRepo(repo: string, repoDir: string, commit: string): Promise<void> {
-  if (fs.existsSync(repoDir)) {
-    const spinner = ora("Updating repository...").start();
-    await run("git", ["fetch", "origin"], { cwd: repoDir, silent: true });
-    await run("git", ["checkout", commit], { cwd: repoDir, silent: true });
-    spinner.succeed(`Aeneas at ${commit}`);
-  } else {
+  if (!fs.existsSync(repoDir)) {
     const spinner = ora(`Cloning ${repo}...`).start();
     await run("git", ["clone", repo, repoDir], { silent: true });
-    await run("git", ["checkout", commit], { cwd: repoDir, silent: true });
-    spinner.succeed(`Cloned and checked out ${commit}`);
+    spinner.succeed(`Cloned ${repo}`);
+  } else {
+    // Make sure `origin` points at the configured repo before fetching.
+    let originUrl: string | null = null;
+    try {
+      const out = await run("git", ["remote", "get-url", "origin"], { cwd: repoDir, silent: true });
+      originUrl = out.trim();
+    } catch {
+      // no `origin` remote configured
+    }
+    if (originUrl !== repo) {
+      const action = originUrl === null ? "add" : "set-url";
+      const spinner = ora(
+        originUrl === null ? `Adding 'origin' → ${repo}...` : `Repointing 'origin' ${originUrl} → ${repo}...`,
+      ).start();
+      await run("git", ["remote", action, "origin", repo], { cwd: repoDir, silent: true });
+      spinner.succeed(`'origin' set to ${repo}`);
+    }
   }
+
+  // Fetch from `origin` and check out the pin.
+  const spinner = ora(`Fetching Aeneas ${commit}...`).start();
+  await run("git", ["fetch", "--force", "--tags", "origin"], { cwd: repoDir, silent: true });
+  await run("git", ["checkout", commit], { cwd: repoDir, silent: true });
+  spinner.succeed(`Aeneas at ${commit}`);
 }
 
 // ── Build ─────────────────────────────────────────────────────────────
