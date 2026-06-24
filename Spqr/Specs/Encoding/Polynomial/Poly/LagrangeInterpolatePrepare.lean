@@ -67,8 +67,10 @@ theorem body_spec
               j + 1 < p.coefficients.length) →
             p1.coefficients[j]? = p.coefficients[j]?) ⦄ := by
   unfold body
-  obtain ⟨opt, iter1, hnext, h_none, h_some⟩ := core.iter.range.IteratorRange.next_Usize_spec iter
-  rw [hnext]; simp only [bind_tc_ok]
+  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
+    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
+  rw [hnext]
+  simp only [bind_tc_ok]
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
