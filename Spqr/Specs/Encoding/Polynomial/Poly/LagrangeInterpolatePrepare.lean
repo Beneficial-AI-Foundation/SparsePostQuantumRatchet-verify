@@ -40,7 +40,7 @@ Propagates the `mult_xdiff_assign_trailing` spec with `start = offset − i`,
 theorem body_spec
     (pts : Slice Pt)
     (offset : Usize)
-    (iter : core.ops.range.Range Std.Usize)
+    (iter : core.ops.range.Range Usize)
     (p : Poly)
     (h_end_le_pts : iter.end ≤ pts.length)
     (h_end_le_offset : iter.end ≤ offset)
@@ -123,11 +123,9 @@ theorem loop_spec
   unfold spqr.encoding.polynomial.Poly.lagrange_interpolate_prepare_loop
   simp only [degree, alloc.vec.Vec.length] at h_len_eq
   apply loop.spec_decr_nat
-    (measure := fun (st : core.ops.range.Range Std.Usize ×
-                        encoding.polynomial.Poly) =>
+    (measure := fun (st : core.ops.range.Range Usize × Poly) =>
                   st.1.end.val - st.1.start.val)
-    (inv := fun (st : core.ops.range.Range Std.Usize ×
-                     encoding.polynomial.Poly) =>
+    (inv := fun (st : core.ops.range.Range Usize × Poly) =>
         st.1.end = iter.end ∧
         iter.start ≤ st.1.start.val ∧
         st.1.start.val ≤ iter.end.val ∧
@@ -135,10 +133,10 @@ theorem loop_spec
         st.2.coefficients[offset.val]? =
           p.coefficients[offset.val]? ∧
         (∀ (hoff : offset.val < st.2.coefficients.length),
-          (st.2.coefficients.val.get ⟨offset.val, hoff⟩).toGF216 =
-            (p.coefficients[offset.val]!).toGF216) ∧
+          (st.2.coefficients.val.get ⟨offset, hoff⟩).toGF216 =
+            (p.coefficients[offset]!).toGF216) ∧
         (∀ (j : Nat),
-          ¬(offset.val - st.1.start.val ≤ j ∧ j < offset.val) →
+          ¬(offset - st.1.start ≤ j ∧ j < offset.val) →
           st.2.coefficients[j]? = p.coefficients[j]?) ∧
         (∀ (m : Nat), m ≤ st.1.start.val - iter.start.val →
           ∀ (hpos : offset.val - (st.1.start - iter.start) + m < st.2.degree),
@@ -255,8 +253,7 @@ theorem lagrange_interpolate_prepare_spec
     lagrange_interpolate_prepare pts ⦃ (result : Poly) =>
       result.degree = pts.length + 1 ∧
       result.coefficients[pts.length]! = ONE ∧
-      (∀ (hoff : pts.length < result.degree), (result.coefficients[pts.length]).toGF216 = 1) ∧
-      (∀ (m : Nat), m ≤ pts.length → ∀ (_ : m < result.degree),
+      (∀ m ≤ pts.length,
         (result.coefficients[m]!).toGF216 = (prodLinearFactors pts 0 pts.length).coeff m) ∧
       result.toGF216Poly = prodLinearFactors pts 0 pts.length ⦄ := by
   unfold lagrange_interpolate_prepare degree
@@ -273,7 +270,7 @@ theorem lagrange_interpolate_prepare_spec
       lt_add_iff_pos_right, Order.lt_one_iff, getElem!_pos, List.getElem_set_self,
       alloc.vec.Vec.getElem_Nat_eq, ONE_toGF216, implies_true, tsub_self, zero_le, true_and, not_lt,
       alloc.vec.Vec.getElem?_Nat_eq, tsub_zero, zero_add, ONE_value, alloc.vec.Vec.length,
-      Order.lt_add_one_iff, forall_const]
+      Order.lt_add_one_iff]
     have h_bridge : expectedTrailingPoly
         ((p.coefficients.val.resize (pts.length + 1) ZERO).set pts.length ONE)
         pts pts.length 0 pts.length =
