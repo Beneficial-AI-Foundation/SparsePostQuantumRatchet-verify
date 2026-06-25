@@ -64,29 +64,6 @@ def U32.Insts.CoreFmtDisplay : core.fmt.Display Std.U32 := {
   fmt := core.fmt.num.imp.DisplayU32.fmt
 }
 
-/-- Trait implementation: [core::iter::adapters::enumerate::{impl core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}]
-    Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>] -/
-@[reducible, rust_trait_impl
-  "core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>"]
-def
-  core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item
-  {I : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst :
-  core.iter.traits.iterator.Iterator I Clause0_Item) :
-  core.iter.traits.iterator.Iterator (core.iter.adapters.enumerate.Enumerate I)
-  (Std.Usize × Clause0_Item) := {
-  next :=
-    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.next
-    traitsiteratorIteratorInst
-  step_by :=
-    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.step_by
-    traitsiteratorIteratorInst
-  enumerate :=
-    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.enumerate
-    traitsiteratorIteratorInst
-  take := sorry
-}
-
 /-- Trait implementation: [core::iter::range::{impl core::iter::range::Step for i32}]
     Source: '/rustc/library/core/src/iter/range.rs', lines 301:12-301:43
     Name pattern: [core::iter::range::Step<i32>] -/
@@ -7180,8 +7157,7 @@ def encoding.polynomial.Poly.lagrange_interpolate_complete
   := do
   let pi ← Slice.index_usize pts i
   let iter ←
-    SharedASlice.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
-      pts
+    SharedSlice.Insts.CoreIterTraitsCollectIntoIteratorSharedIter.into_iter pts
   let (pi1, denominator) ←
     encoding.polynomial.Poly.lagrange_interpolate_complete_loop0 iter pi
       encoding.gf.GF16.ONE
@@ -7459,7 +7435,7 @@ def encoding.polynomial.Poly.add_assign_loop.body
     encoding.polynomial.Poly)
   := do
   let (o, iter1) ←
-    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.next
+    core.iter.adapters.enumerate.IteratorEnumerate.next
       (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16) iter
   match o with
   | none => ok (done self)
@@ -8060,7 +8036,7 @@ def encoding.polynomial.Poly.from_complete_points_loop.body
     encoding.polynomial.Poly Unit))
   := do
   let (o, iter1) ←
-    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.next
+    core.iter.adapters.enumerate.IteratorEnumerate.next
       (core.iter.traits.iterator.IteratorSliceIter encoding.polynomial.Pt) iter
   match o with
   | none =>
@@ -8782,7 +8758,7 @@ def encoding.polynomial.PolyEncoder.point_at_loop.body
         e ()
     let pt_vec ←
       core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
-        (core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item
+        (core.iter.traits.iterator.IteratorEnumerate
         (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16))
         encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
         (core.iter.traits.collect.FromIteratorVec encoding.polynomial.Pt) m
@@ -8932,7 +8908,7 @@ def encoding.polynomial.PolyEncoder.encode_bytes_base_loop.body
     16#usize)) (Array encoding.polynomial.Point 16#usize))
   := do
   let (o, iter1) ←
-    core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.next
+    core.iter.adapters.enumerate.IteratorEnumerate.next
       (core.iter.traits.iterator.IteratorChunksExact Std.U8) iter
   match o with
   | none => ok (done pts)

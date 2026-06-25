@@ -1,5 +1,7 @@
 import Spqr.Aux.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Aux.Aeneas.StdNextStepUsize
+import Spqr.Lint.Basic
+import Spqr.Lint.SpecIndent
 import Spqr.Math.Gf16.Basic
 import Spqr.Math.Gf16.Field
 import Spqr.Math.Gf16.Irreducible
@@ -13,7 +15,10 @@ import Spqr.Math.Poly.CharTwo.Basic
 import Spqr.Math.Poly.CharTwo.ToGF216
 import Spqr.Math.Poly.Coeff.Basic
 import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
 import Spqr.Math.Poly.Eval
+import Spqr.Math.Poly.Eval.DotProduct
+import Spqr.Math.Poly.Eval.PowerVector
 import Spqr.Math.Poly.ExpectedTrailing.Basic
 import Spqr.Math.Poly.ExpectedTrailing.Defs
 import Spqr.Math.Poly.Horner.Defs
@@ -29,6 +34,9 @@ import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceIteratorNext
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
+import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Encoding.Gf.GF16.Add
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
@@ -58,7 +66,16 @@ import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
 import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
+import Spqr.Specs.Encoding.Polynomial.Poly.Clone
+import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
+import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeSum
+import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
+import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
+import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.PolyConstN.ZEROS
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
