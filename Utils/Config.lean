@@ -15,9 +15,8 @@ def crateName : String := "spqr"
 /-- Suffix forming a spec theorem name: function `foo` ↦ theorem `foo_spec`. -/
 def specSuffix : String := "_spec"
 
-/-- Inputs produced by `npm run aeneas-extract` (paths relative to repo root). -/
+/-- Location of translation.json produced by Aeneas. -/
 def translationJsonPath : String := "translation.json"
-def llbcSummaryPath : String := "llbc-summary.json"
 
 /-- Default output path for the status report. -/
 def statusOutPath : String := "status.json"
