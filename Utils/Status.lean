@@ -61,9 +61,10 @@ def main (args : List String) : IO UInt32 := do
   IO.eprintln "Reading translation.json..."
   let allFuns ← readTranslation
   IO.eprintln s!"  {allFuns.size} function entries"
-  -- Restrict the report to functions defined in the crate under study.
-  let funs := allFuns.filter fun f => f.isLocal
-  IO.eprintln s!"  {funs.size} crate-local entries (filtered from {allFuns.size})"
+  -- Restrict the report to crate-local functions we actually track for verification:
+  -- exclude trait-impl methods and opaque functions.
+  let funs := allFuns.filter fun f => f.isLocal && !f.isTraitImpl && !f.isOpaque
+  IO.eprintln s!"  {funs.size} crate-local verifiable entries"
   -- Known function set (for dependency filtering): resolvable, crate-local lean ids.
   let known : Std.HashSet Name := funs.foldl (init := {}) fun acc f =>
     let n := f.leanName.toName

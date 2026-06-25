@@ -37,6 +37,12 @@ structure TransFun where
   isLocal : Bool
   deriving Repr, Inhabited
 
+/-- `true` if this is a trait-impl method (e.g. `Clone`, `prost::Message`, `Add` for `GF16`, …).
+Aeneas nests every trait-instance method under a `…Insts.<TraitInst>.<method>` namespace, so the
+`.Insts.` marker identifies them. (Verified to coincide exactly with `translation.json`'s
+`trait_impls` registry; inherent methods and free functions never contain it.) -/
+def TransFun.isTraitImpl (f : TransFun) : Bool := (f.leanName.splitOn ".Insts.").length > 1
+
 def parseTransFun (j : Json) : TransFun :=
   let src := jVal? j "source"
   { defId := jNat j "def_id"
