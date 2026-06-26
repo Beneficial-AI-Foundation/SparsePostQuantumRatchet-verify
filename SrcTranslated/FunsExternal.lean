@@ -2864,13 +2864,46 @@ axiom
   T1 → Result (core.result.Result proto.pq_ratchet.chain.epoch.EpochDirection
     prost.error.DecodeError)
 
+noncomputable def kdf.hkdf_to_slice.expand_loop
+  (prk : Slice Std.U8) (info : Slice Std.U8) :
+  Nat → Nat → List Std.U8 → List Std.U8 → Result (List Std.U8)
+  | _, 0, _, acc => ok acc
+  | i, n+1, tPrev, acc =>
+    if hcnt : i < 256 then
+      let cnt : Std.U8 := Std.U8.ofNatCore i (by
+        have h : (2 : Nat) ^ Std.UScalarTy.U8.numBits = 256 := by decide
+        omega)
+      let buf_list : List Std.U8 := tPrev ++ info.val ++ [cnt]
+      if hlen : buf_list.length ≤ Std.Usize.max then
+        do
+          let t_vec ←
+            libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 prk
+              ⟨buf_list, hlen⟩ none
+          kdf.hkdf_to_slice.expand_loop prk info (i + 1) n t_vec.val
+            (acc ++ t_vec.val)
+      else
+        fail panic
+    else
+      fail panic
+
 /-- [spqr::kdf::hkdf_to_slice]:
     Source: 'src/kdf.rs', lines 14:0-18:1
     Visibility: public -/
-axiom kdf.hkdf_to_slice
-  :
-  Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Result
-    (Slice Std.U8)
+noncomputable def kdf.hkdf_to_slice
+  (salt ikm info okm : Slice Std.U8) : Result (Slice Std.U8) :=
+  if okm.val.length > 255 * 32 then
+    fail panic
+  else do
+    let prk_vec ←
+      libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 salt ikm none
+    let prk ← alloc.vec.Vec.as_slice Global prk_vec
+    let blocks ←
+      kdf.hkdf_to_slice.expand_loop prk info 1
+        ((okm.val.length + 31) / 32) [] []
+    ok ⟨blocks.take okm.val.length, by
+      rw [List.length_take]
+      have := okm.property
+      omega⟩
 
 /-- [spqr::encoding::gf::mul2_u16]:
     Source: 'src/encoding/gf.rs', lines 216:0-225:1 -/
