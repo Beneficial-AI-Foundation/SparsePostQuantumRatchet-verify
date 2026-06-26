@@ -1616,6 +1616,7 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
         MlkemParams.decapsulationKeyBytes]
       decide))
 
+
 /-- **Spec theorem for `KeyPairCompressedBytes::pk1`**: extracting the header buffer does
 not panic and returns exactly the header sub-range of the shared `value` buffer, i.e. the
 `64` bytes `value[2·enc .. 2·enc + 64]` (with `enc = encapsulationKeyBytes`).  The second
