@@ -135,18 +135,31 @@ open Spqr.Mlkem
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 233:8-233:41
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes]
 
-    Concrete model of libcrux's `KeyPairCompressedBytes`: the three serialized
-    byte buffers it exposes via `pk1`/`pk2`/`sk`.  Their lengths are not bare
-    literals but the sizes *derived* from the ML-KEM-768 parameter set defined just
-    above (`headerBytes = 64`, `mlkem768Params.encapsulationKeyBytes = 1152`,
-    `mlkem768Params.decapsulationKeyBytes = 2400`), each of which reduces
-    definitionally to the corresponding `usize` literal.  Only these sizes are
-    relevant downstream; the cryptographic content is opaque to the Lean model. -/
+    Faithful model of libcrux's `KeyPairCompressedBytes`, which in Rust is a *single*
+    serialized buffer
+
+    ```rust
+    /// Layout: dk | (t | ⍴) | H(ek) | z
+    pub struct KeyPairCompressedBytes { value: [u8; key_pair_compressed_len()] }
+    ```
+
+    We model exactly that one `value` buffer.  Its length is not a bare literal but the
+    size *derived* from the ML-KEM-768 parameter set defined just above: Rust fixes
+    `key_pair_compressed_len() = COMPRESSED_KEYPAIR_LEN = SECRET_KEY_SIZE`, i.e. the full
+    decapsulation key, which here is `mlkem768Params.decapsulationKeyBytes` and reduces
+    definitionally to the `usize` literal `2400`.
+
+    The public accessors are then recovered as *slices* of this one buffer (see
+    `FunsExternal.lean`): `sk` is the whole `value`, `pk2` the `t̂` sub-range
+    `value[enc .. 2·enc]`, and `pk1` the header sub-range `value[2·enc .. 2·enc + 64]`,
+    where `enc = mlkem768Params.encapsulationKeyBytes = RANKED_BYTES_PER_RING_ELEMENT =
+    1152`.  Modelling the shared buffer (rather than three independent fields) is what
+    makes "`pk1`/`pk2` are byte-for-byte sub-ranges of `sk`" *definitionally* true in the
+    model, exactly as it is in the Rust source.  The cryptographic content of `value`
+    remains opaque to the Lean model. -/
 @[rust_type "libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes"]
 structure libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes where
-  pk1Bytes : Array Std.U8 (Usize.ofNat headerBytes)
-  pk2Bytes : Array Std.U8 (Usize.ofNat mlkem768Params.encapsulationKeyBytes)
-  skBytes  : Array Std.U8 (Usize.ofNat mlkem768Params.decapsulationKeyBytes)
+  value : Array Std.U8 (Usize.ofNat mlkem768Params.decapsulationKeyBytes)
 deriving Inhabited
 
 /-- [prost::encoding::DecodeContext]
