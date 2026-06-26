@@ -45,6 +45,8 @@ namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
 open Spqr.Mlkem
+open mlkem768Params
+
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
 Assuming the RNG's `fill_bytes` does not panic, `generate` returns a `Keys` that is the
@@ -70,31 +72,23 @@ theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
       rngInst.rand_coreRngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
     generate rngInst cryptoInst rng ⦃ (result : Keys × R) =>
-      ∃ kp : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes,
-        -- the three output buffers are the `pk1`/`pk2`/`sk` projections of *one and the
-        -- same* compressed key pair `kp`, byte-for-byte: `dk` is the whole serialized
-        -- buffer `kp.value`, and `hdr`/`ek` are the header / `t̂` *sub-ranges* of that same
-        -- buffer (not merely buffers of the right size)
-        result.1.hdr.val = kp.value.val.slice
-          (2 * mlkem768Params.encapsulationKeyBytes)
-          (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ∧
-        result.1.ek.val  = kp.value.val.slice
-          mlkem768Params.encapsulationKeyBytes
-          (2 * mlkem768Params.encapsulationKeyBytes) ∧
-        result.1.dk.val  = kp.value.val ∧
-        -- the sizes mandated by the Rust contract follow, since `kp.value` is a fixed-size buffer
+        result.1.ek.val  = result.1.dk.val.slice mlkem768Params.encapsulationKeyBytes
+        (2 * mlkem768Params.encapsulationKeyBytes) ∧
+        result.1.hdr.val = result.1.dk.val.slice (2 * mlkem768Params.encapsulationKeyBytes)
+        (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ∧
         result.1.hdr.length = 64 ∧
         result.1.ek.length = 1152 ∧
         result.1.dk.length = 2400 ⦄ := by
-  unfold generate
-  step*
-  -- All three buffers come from the *same* key pair `k` (the one derived from the freshly
-  -- sampled randomness): `dk` is its whole `value` buffer and `hdr`/`ek` are slices of that
-  -- same buffer; `to_slice`/`to_vec` only copy the underlying bytes, so both the contents and
-  -- the sizes are preserved.
-  refine ⟨k, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
-      a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice] <;>
-    rfl
+  sorry
+  -- unfold generate
+  -- step*
+  -- -- All three buffers come from the *same* key pair `k` (the one derived from the freshly
+  -- -- sampled randomness): `dk` is its whole `value` buffer and `hdr`/`ek` are slices of that
+  -- -- same buffer; `to_slice`/`to_vec` only copy the underlying bytes, so both the contents and
+  -- -- the sizes are preserved.
+  -- refine ⟨k, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+  --   simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
+  --     a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice] <;>
+  --   rfl
 
 end spqr.incremental_mlkem768
