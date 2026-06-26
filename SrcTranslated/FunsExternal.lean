@@ -1532,27 +1532,86 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes :=
   ok default
 
-/-- **Spec theorem for `KeyPairCompressedBytes::from_seed`**: deriving the compressed
-key pair from a seed does not panic, and the three serialized buffers of the resulting
-key pair have exactly the sizes mandated by the ML-KEM-768 parameter set:
+/-- **Spec theorem for `KeyPairCompressedBytes::from_seed`** — the guarantees this
+external offers to its callers.  Modelled after the documentation discipline of
+`axiom.md`: each conjunct is justified by (a) downstream sufficiency, (b) faithfulness
+to the Rust source, and (c) minimality of what is asserted.
 
-* the header (`pk1`) is `headerBytes = 64` bytes;
-* the encapsulation key (`pk2`) is `mlkem768Params.encapsulationKeyBytes = 1152` bytes;
-* the decapsulation key (`sk`) is `mlkem768Params.decapsulationKeyBytes = 2400` bytes.
+**Rust source (libcrux-ml-kem 0.0.7, `src/mlkem.rs`, lines 240-246):**
 
-These size guarantees are what the callers of `from_seed` actually rely on; the
-cryptographic content of the key pair is not modelled. -/
+```rust
+pub fn from_seed(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Self {
+    let mut out = Self { value: [0u8; key_pair_compressed_len()] };
+    generate_key_pair_compressed(randomness, &mut out.value);
+    out
+}
+```
+
+The serialized buffer has the documented compressed layout `dk | (t | ⍴) | H(ek) | z`,
+which the accessor methods slice as: `sk()` returns the *whole* `value`, `pk2()` the
+`t̂` sub-range at offset `RANKED_BYTES_PER_RING_ELEMENT`, and `pk1()` the header
+(`⍴ | H(ek)`) sub-range at offset `2 * RANKED_BYTES_PER_RING_ELEMENT`.
+
+**(1) Total success / panic-freedom for every seed.**  The triple carries *no*
+precondition on `seed`, so it asserts that `from_seed` succeeds (returns `ok`) for an
+arbitrary 64-byte seed.  *Faithfulness:* `from_seed` returns `Self` by value — there is
+no `Result` and no `unwrap`; its only callee `generate_key_pair_compressed` writes into
+`&mut out.value : &mut [u8; COMPRESSED_KEYPAIR_LEN]`, a buffer whose length matches
+`key_pair_compressed_len()` by construction, so there is no fallible length check that
+could panic.
+
+**(2) Exact buffer sizes mandated by the ML-KEM-768 parameter set.**  The three buffers
+have the sizes the Rust return types pin (`[u8; 64]`, `[u8; 1152]`, `[u8; 2400]`),
+expressed here through the parameter-derived constants rather than bare literals:
+
+* the header (`pk1`) is `headerBytes = 2 * seedBytes = 64` bytes;
+* the encapsulation key (`pk2`) is
+  `mlkem768Params.encapsulationKeyBytes = k * serializedPolyBytes = 1152` bytes;
+* the decapsulation key (`sk`) is
+  `mlkem768Params.decapsulationKeyBytes = 2 * (k * serializedPolyBytes) + 3 * seedBytes
+  = 2400` bytes.
+
+These are exactly what callers (`generate`) rely on for their own size contract.
+
+**(3) Layout containment: `pk1` and `pk2` fit inside the full `sk` serialization.**
+Because `sk()` returns the entire `value` while `pk1()`/`pk2()` are *sub-ranges* of that
+same buffer, each public buffer is no longer than `sk`, and — being disjoint ranges of
+it (`pk2` = `[RBPRE, 2·RBPRE)`, `pk1` = `[2·RBPRE, 2·RBPRE + 64)`) — they fit inside `sk`
+together.  This records the in-bounds facts a caller needs to justify copying `pk1`/`pk2`
+out of the `sk` serialization, and follows arithmetically from (2):
+`64 + 1152 ≤ 2400`.
+
+**Minimality.**  Nothing is claimed about the *cryptographic content* of the key pair:
+`from_seed` is an external whose key derivation is not modelled (the Lean stub returns a
+default struct), so the only honest guarantees are the structural ones above — and in
+particular this spec deliberately does *not* assert any seed→key functional behaviour. -/
 @[step]
 theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
     (seed : Array Std.U8 64#usize) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed
       ⦃ fun kp =>
+          -- (2) exact sizes mandated by the ML-KEM-768 parameter set
           kp.pk1Bytes.length = headerBytes ∧
           kp.pk2Bytes.length = mlkem768Params.encapsulationKeyBytes ∧
-          kp.skBytes.length  = mlkem768Params.decapsulationKeyBytes ⦄ := by
+          kp.skBytes.length  = mlkem768Params.decapsulationKeyBytes ∧
+          -- (3) `pk1`/`pk2` are sub-ranges of the full `sk` serialization, so each fits …
+          kp.pk1Bytes.length ≤ kp.skBytes.length ∧
+          kp.pk2Bytes.length ≤ kp.skBytes.length ∧
+          -- … and, being disjoint sub-ranges, the two public buffers fit together inside `sk`
+          kp.pk1Bytes.length + kp.pk2Bytes.length ≤ kp.skBytes.length ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed,
     WP.spec_ok]
-  exact ⟨Array.length_eq _, Array.length_eq _, Array.length_eq _⟩
+  have e1 : (default : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes).pk1Bytes.length
+      = headerBytes := Array.length_eq _
+  have e2 : (default : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes).pk2Bytes.length
+      = mlkem768Params.encapsulationKeyBytes := Array.length_eq _
+  have e3 : (default : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes).skBytes.length
+      = mlkem768Params.decapsulationKeyBytes := Array.length_eq _
+  refine ⟨e1, e2, e3, ?_, ?_, ?_⟩ <;>
+    simp only [e1, e2, e3, headerBytes, seedBytes, mlkem768Params,
+      MlkemParams.encapsulationKeyBytes, MlkemParams.serializedPolyBytes,
+      MlkemParams.decapsulationKeyBytes] <;>
+    decide
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
