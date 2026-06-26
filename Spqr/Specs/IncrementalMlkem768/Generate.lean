@@ -45,7 +45,6 @@ namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
 open Spqr.Mlkem
-open mlkem768Params
 
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
