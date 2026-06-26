@@ -2878,7 +2878,7 @@ noncomputable def kdf.hkdf_to_slice.expand_loop
         do
           let t_vec ←
             libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 prk
-              ⟨buf_list, hlen⟩ none
+              ⟨buf_list, hlen⟩ (some 32#usize)
           kdf.hkdf_to_slice.expand_loop prk info (i + 1) n t_vec.val
             (acc ++ t_vec.val)
       else
@@ -2895,7 +2895,7 @@ noncomputable def kdf.hkdf_to_slice
     fail panic
   else do
     let prk_vec ←
-      libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 salt ikm none
+      libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 salt ikm (some 32#usize)
     let prk ← alloc.vec.Vec.as_slice Global prk_vec
     let blocks ←
       kdf.hkdf_to_slice.expand_loop prk info 1
