@@ -1532,68 +1532,12 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes :=
   ok default
 
-/-- **Spec theorem for `KeyPairCompressedBytes::from_seed`** — the guarantees this
-external offers to its callers.  Modelled after the documentation discipline of
-`axiom.md`: each conjunct is justified by (a) downstream sufficiency, (b) faithfulness
-to the Rust source, and (c) minimality of what is asserted.
-
-**Rust source (libcrux-ml-kem 0.0.7, `src/mlkem.rs`, lines 240-246):**
-
-```rust
-pub fn from_seed(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> Self {
-    let mut out = Self { value: [0u8; key_pair_compressed_len()] };
-    generate_key_pair_compressed(randomness, &mut out.value);
-    out
-}
-```
-
-The serialized buffer has the documented compressed layout `dk | (t | ⍴) | H(ek) | z`,
-which the accessor methods slice as: `sk()` returns the *whole* `value`, `pk2()` the
-`t̂` sub-range at offset `RANKED_BYTES_PER_RING_ELEMENT`, and `pk1()` the header
-(`⍴ | H(ek)`) sub-range at offset `2 * RANKED_BYTES_PER_RING_ELEMENT`.
-
-**(1) Total success / panic-freedom for every seed.**  The triple carries *no*
-precondition on `seed`, so it asserts that `from_seed` succeeds (returns `ok`) for an
-arbitrary 64-byte seed.  *Faithfulness:* `from_seed` returns `Self` by value — there is
-no `Result` and no `unwrap`; its only callee `generate_key_pair_compressed` writes into
-`&mut out.value : &mut [u8; COMPRESSED_KEYPAIR_LEN]`, a buffer whose length matches
-`key_pair_compressed_len()` by construction, so there is no fallible length check that
-could panic.
-
-**(2) Exact buffer sizes mandated by the ML-KEM-768 parameter set.**  The three buffers
-have the sizes the Rust return types pin (`[u8; 64]`, `[u8; 1152]`, `[u8; 2400]`),
-expressed here through the parameter-derived constants rather than bare literals:
-
-* the header (`pk1`) is `headerBytes = 2 * seedBytes = 64` bytes;
-* the encapsulation key (`pk2`) is
-  `mlkem768Params.encapsulationKeyBytes = k * serializedPolyBytes = 1152` bytes;
-* the decapsulation key (`sk`) is
-  `mlkem768Params.decapsulationKeyBytes = 2 * (k * serializedPolyBytes) + 3 * seedBytes
-  = 2400` bytes.
-
-These are exactly what callers (`generate`) rely on for their own size contract.
-
-**(3) Layout: `from_seed` produces the single `value` buffer.**  In this faithful
-single-buffer model, `from_seed` returns a `KeyPairCompressedBytes` holding the whole
-serialized buffer `value`, of size `mlkem768Params.decapsulationKeyBytes = 2400` (Rust
-`key_pair_compressed_len() = SECRET_KEY_SIZE`).  The fact that the public accessors
-`pk1`/`pk2` are byte-for-byte *sub-ranges* of `sk` (= the whole `value`) is now
-*definitional* — it lives in the accessor models `pk1`/`pk2`/`sk` below, where each is a
-literal `List.slice` of this same `value` — so it need not (and should not) be restated
-here.  The only thing `from_seed` itself must guarantee its callers is that this buffer
-has the mandated size.
-
-**Minimality.**  Nothing is claimed about the *cryptographic content* of the key pair:
-`from_seed` is an external whose key derivation is not modelled (the Lean stub returns a
-default struct), so the only honest guarantee is the structural size one above — and in
-particular this spec deliberately does *not* assert any seed→key functional behaviour. -/
+-- TODO: add cryptographic properties of from_seed_spec
 @[step]
 axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
     (seed : Array Std.U8 64#usize) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed
-      ⦃ fun kp =>
-          -- (2) the single serialized buffer has the size mandated by the parameter set
-          kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄
+      ⦃ fun kp => kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
@@ -1603,8 +1547,6 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
 def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
   (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
   Result (Array Std.U8 64#usize) :=
-  -- Rust: `const START = 2 * RANKED_BYTES_PER_RING_ELEMENT; value[START .. START + pk1_len()]`,
-  -- i.e. the header sub-range `value[2·enc .. 2·enc + 64]` of the shared buffer.
   ok (Array.make 64#usize
     (k.value.val.slice
       (2 * mlkem768Params.encapsulationKeyBytes)
@@ -1617,20 +1559,22 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
       decide))
 
 
-/-- **Spec theorem for `KeyPairCompressedBytes::pk1`**: extracting the header buffer does
-not panic and returns exactly the header sub-range of the shared `value` buffer, i.e. the
-`64` bytes `value[2·enc .. 2·enc + 64]` (with `enc = encapsulationKeyBytes`).  The second
-conjunct is the *faithful layout fact*: `pk1` is a byte-for-byte slice of the buffer that
-`sk` returns whole — not merely a buffer of the right size. -/
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::pk1`**
+
+- Extracting the header buffer does not panic and returns exactly the header sub-range of the
+  shared `value` buffer, i.e. the `64` bytes `value[2·enc .. 2·enc + 64]` (with
+  `enc = encapsulationKeyBytes`).
+- The second conjunct is the *faithful layout fact*: `pk1` is a byte-for-byte slice of the buffer
+  that `sk` returns whole — not merely a buffer of the right size. -/
 @[step]
 theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_spec
     (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1 k
-      ⦃ fun (r : Array Std.U8 64#usize) =>
-          r.length = headerBytes ∧
-          r.val = k.value.val.slice
-            (2 * mlkem768Params.encapsulationKeyBytes)
-            (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ⦄ := by
+      ⦃ (r : Array Std.U8 64#usize) =>
+      r.length = headerBytes ∧
+      r.val = k.value.val.slice
+        (2 * mlkem768Params.encapsulationKeyBytes)
+        (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1, WP.spec_ok]
   exact ⟨Array.length_eq _, rfl⟩
 
@@ -1642,8 +1586,6 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_spec
 def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
   (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
   Result (Array Std.U8 1152#usize) :=
-  -- Rust: `const START = RANKED_BYTES_PER_RING_ELEMENT; value[START .. START + pk2_len()]`,
-  -- i.e. the `t̂` sub-range `value[enc .. 2·enc]` of the shared buffer.
   ok (Array.make 1152#usize
     (k.value.val.slice
       mlkem768Params.encapsulationKeyBytes
@@ -1655,20 +1597,22 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
         MlkemParams.decapsulationKeyBytes]
       decide))
 
-/-- **Spec theorem for `KeyPairCompressedBytes::pk2`**: extracting the encapsulation-key
-buffer does not panic and returns exactly the `t̂` sub-range of the shared `value` buffer,
-i.e. the `1152` bytes `value[enc .. 2·enc]` (with `enc = encapsulationKeyBytes`).  The
-second conjunct is the *faithful layout fact*: `pk2` is a byte-for-byte slice of the buffer
-that `sk` returns whole — not merely a buffer of the right size. -/
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::pk2`**
+
+- Extracting the encapsulation-key buffer does not panic and returns exactly the sub-range
+  of the shared `value` buffer, i.e. the `1152` bytes `value[enc .. 2·enc]` (with
+  `enc = encapsulationKeyBytes`).
+- `pk2` is a byte-for-byte slice of the buffer that `sk` returns whole — not merely a buffer of the right
+size. -/
 @[step]
 theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_spec
     (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2 k
-      ⦃ fun (r : Array Std.U8 1152#usize) =>
-          r.length = mlkem768Params.encapsulationKeyBytes ∧
-          r.val = k.value.val.slice
-            mlkem768Params.encapsulationKeyBytes
-            (2 * mlkem768Params.encapsulationKeyBytes) ⦄ := by
+      ⦃ (r : Array Std.U8 1152#usize) =>
+      r.length = mlkem768Params.encapsulationKeyBytes ∧
+      r.val = k.value.val.slice
+        mlkem768Params.encapsulationKeyBytes
+        (2 * mlkem768Params.encapsulationKeyBytes) ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2, WP.spec_ok]
   exact ⟨Array.length_eq _, rfl⟩
 
@@ -1683,17 +1627,18 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
   -- Rust: `sk(&self) -> &[u8; SECRET_KEY_SIZE] { &self.value }` — the *whole* buffer.
   ok k.value
 
-/-- **Spec theorem for `KeyPairCompressedBytes::sk`**: extracting the decapsulation-key
-buffer does not panic and returns the *entire* shared `value` buffer (whose return type
-`[u8; 2400]` pins the decapsulation-key size).  Because `sk` returns `value` whole while
-`pk1`/`pk2` are slices of that same `value`, this is the buffer of which the two public
-keys are sub-ranges. -/
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::sk`**
+
+- Extracting the decapsulation-key buffer does not panic and returns the entire shared
+  `value` buffer (whose return type `[u8; 2400]` pins the decapsulation-key size).
+- `sk` returns `value` whole while `pk1`/`pk2` are slices of that same `value`, this is the buffer of
+which the two public keys are sub-ranges. -/
 @[step]
 theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
     (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k
-      ⦃ fun (r : Array Std.U8 2400#usize) =>
-          r.length = mlkem768Params.decapsulationKeyBytes ∧ r.val = k.value.val ⦄ := by
+      ⦃ (r : Array Std.U8 2400#usize) =>
+      r.length = mlkem768Params.decapsulationKeyBytes ∧ r.val = k.value.val ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk, WP.spec_ok]
   exact ⟨Array.length_eq _, trivial⟩
 
