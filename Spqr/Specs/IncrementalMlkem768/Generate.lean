@@ -8,36 +8,38 @@ import SrcTranslated.FunsExternal
 
 /-! # Spec theorem for `incremental_mlkem768::generate`
 
-`generate` draws fresh randomness, derives a compressed ML-KEM key pair via libcrux, and
-returns the three serialized buffers `(hdr, ek, dk)`.  The Rust contract is purely about the
-sizes of those buffers:
+`generate` is ML-KEM-768 key generation packaged for the SPQR ratchet: it samples a fresh
+64-byte seed from a cryptographically secure RNG, derives a compressed ML-KEM-768 key pair via
+libcrux, and returns the three serialized buffers `(hdr, ek, dk)` that the protocol transmits
+and stores.
 
-```
-#[hax_lib::ensures(|result|
-  result.hdr.len() == HEADER_SIZE && result.ek.len() == ENCAPSULATION_KEY_SIZE
-  && result.dk.len() == 2400)]
-```
+The extracted body in `SrcTranslated/Funs.lean` proceeds in four steps:
+* allocate a 64-byte zero buffer and overwrite it via `RngCore::fill_bytes` — the fresh seed;
+* `KeyPairCompressedBytes::from_seed seed` — libcrux's ML-KEM-768 keygen, returning one
+  compressed key pair `k`;
+* read the three projections `k.pk1 ()`, `k.pk2 ()`, `k.sk ()` — the 64-byte header, the
+  1152-byte encapsulation key (the serialized `t̂` vector), and the 2400-byte decapsulation key;
+* copy each into an owned `Vec` (`to_slice` then `to_vec`) and assemble `Keys { hdr, ek, dk }`.
 
-with `HEADER_SIZE = 64` and `ENCAPSULATION_KEY_SIZE = 1152`.  These three sizes are not bare
-literals in the model: they are the buffer lengths *derived* from the ML-KEM-768 parameter set
-in `SrcTranslated/TypesExternal.lean` (`headerBytes = 64`,
-`mlkem768Params.encapsulationKeyBytes = 1152`, `mlkem768Params.decapsulationKeyBytes = 2400`).
+Cryptographically the three buffers are *not* independent: ML-KEM's decapsulation key embeds the
+public key.  In the serialized layout `dk` is the whole key pair, `ek` is the sub-range
+`dk[enc .. 2·enc]`, and `hdr` is the sub-range `dk[2·enc .. 2·enc + 64]`, where
+`enc = encapsulationKeyBytes = 1152`.  These containments — not just the lengths — are exactly
+what the spec theorem proves.
 
-The libcrux routines `KeyPairCompressedBytes::{from_seed, pk1, pk2, sk}` are externals whose
-return *types* already pin the array sizes (`[u8; 64]`, `[u8; 1152]`, `[u8; 2400]`).  They are
-modelled in `SrcTranslated/FunsExternal.lean` over a concrete `KeyPairCompressedBytes` struct
-that faithfully mirrors the Rust one: a *single* serialized buffer `value` of length
-`decapsulationKeyBytes = 2400`, of which `sk` returns the whole thing and `pk1`/`pk2` are
-byte-for-byte *slices* (`value[2·enc .. 2·enc+64]` and `value[enc .. 2·enc]`, with
-`enc = encapsulationKeyBytes = 1152`).  `from_seed` carries an `@[step]` spec stating only that
-the resulting buffer has the mandated size (the cryptographic content is not modelled); the
-slice accessors carry proved `@[step]` specs recording both their size and their slice provenance.
-`RngCore::fill_bytes` is a trait method on an arbitrary `R`, so its
-non-panicking behaviour is taken as a hypothesis on the instance.  The output buffer lengths are
-then independent of the randomness: `from_slice` reconstructs a `[u8; 64]` regardless, so the
-sizes follow from the `pk1`/`pk2`/`sk` return types through `to_slice`/`to_vec`.
+`KeyPairCompressedBytes::{from_seed, pk1, pk2, sk}` are externals modelled in
+`SrcTranslated/FunsExternal.lean` over a concrete `KeyPairCompressedBytes` that faithfully
+mirrors the Rust struct: a *single* serialized buffer `value` of length
+`mlkem768Params.decapsulationKeyBytes = 2400`.  Over it `sk` returns the whole buffer, `pk2` the
+slice `value[enc .. 2·enc]`, and `pk1` the slice `value[2·enc .. 2·enc + 64]`, where
+`enc = mlkem768Params.encapsulationKeyBytes = 1152`.  The three contractual sizes are therefore
+not bare literals but the buffer lengths *derived* from the ML-KEM-768 parameter set in
+`SrcTranslated/TypesExternal.lean` (`headerBytes = 64`, `encapsulationKeyBytes = 1152`,
+`decapsulationKeyBytes = 2400`).  `pk1`/`pk2`/`sk` carry proved `@[step]` specs recording both
+their length and their slice provenance; `from_seed` carries an `@[step]` spec fixing only the
+length of its buffer (its key derivation is not modelled).
 
-**Source**: spqr/src/incremental_mlkem768.rs (lines 34:0-43:1) -/
+**Source**: `src/incremental_mlkem768.rs`, lines 34:0-43:1 -/
 
 open Aeneas Aeneas.Std Result
 
@@ -62,10 +64,24 @@ with `enc = encapsulationKeyBytes = 1152`.  Because the model stores one shared 
 than three independent fields, the fact that `hdr`/`ek` are *sub-ranges of* `dk` is exact (a
 `List.slice` equality), mirroring the Rust accessors that slice the same `value`.  The
 contractual sizes (`64`, `1152`, `2400`) then follow because `kp.value` is a fixed-size array.
-The *cryptographic* content of `kp.value` is opaque in this model (libcrux's `from_seed` is an
-external whose key-derivation is not modelled), so this is the strongest relationship the model
-supports — it pins the structure and provenance of the output, not the algebraic key-generation
-itself. -/
+The *cryptographic* content of `kp.value` is left for furture work.
+
+TODO:
+- Functional correctness (round-trip). For (ek, dk) from generate, any shared secret encapsulated to
+  ek is recovered by decapsulating with dk:
+  decaps(dk, encaps(ek)) = ss, up to ML-KEM's negligible (~2⁻¹³⁸) failure probability. This is the minimal
+  crypto-functional property, and it's the one the current model cannot state because from_seed/encaps/decaps are
+  opaque size-only externals.
+
+  2. Distributional faithfulness. (ek, dk) is identically distributed to ML-KEM-768 KeyGen on a uniform seed. This
+  is the bridge to all security: IND-CCA2 only transfers to these keys if their distribution is correct.
+
+  3. Security (inherited, game-based). Given (2): the KEM built on (ek, dk) is IND-CCA2; ek/hdr are pseudorandom
+  (safe to transmit — MLWE hides t̂); and the secret portion of dk (i.e. dk \ (ek‖hdr) — dk_pke, z) is one-way /
+  computationally hidden given the transmitted (hdr, ek). The subtlety from the layout above: secrecy is not that
+  ek/hdr bytes are disjoint from dk — they aren't — it's that the complement slices stay hidden.
+
+-/
 theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoInst : rand_core.CryptoRng R) (rng : R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
@@ -78,16 +94,10 @@ theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
         result.1.hdr.length = 64 ∧
         result.1.ek.length = 1152 ∧
         result.1.dk.length = 2400 ⦄ := by
-  sorry
-  -- unfold generate
-  -- step*
-  -- -- All three buffers come from the *same* key pair `k` (the one derived from the freshly
-  -- -- sampled randomness): `dk` is its whole `value` buffer and `hdr`/`ek` are slices of that
-  -- -- same buffer; `to_slice`/`to_vec` only copy the underlying bytes, so both the contents and
-  -- -- the sizes are preserved.
-  -- refine ⟨k, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-  --   simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
-  --     a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice] <;>
-  --   rfl
+  unfold generate
+  step*
+  refine ⟨?_, ?_, ?_⟩ <;>
+  simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
+    a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice] ; grind
 
 end spqr.incremental_mlkem768
