@@ -50,38 +50,30 @@ open Spqr.Mlkem
 
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
-Assuming the RNG's `fill_bytes` does not panic, `generate` returns a `Keys` that is the
-*serialization of a single compressed ML-KEM key pair* — not merely three independent buffers
-of the right size.  Concretely, there is one key pair `kp` (the one libcrux derives from the
-freshly sampled 64-byte randomness) whose single serialized buffer `kp.value` is the source of
-all three outputs, byte-for-byte:
+Assuming `fill_bytes` is panic-free, `generate` returns a `Keys` that is the serialization of a
+*single* compressed ML-KEM key pair `kp` — not three independent buffers of the right size.  All
+three outputs come, byte-for-byte, from `kp`'s one serialized buffer `kp.value`
+(`enc = encapsulationKeyBytes = 1152`):
 
-  * `dk`  is the *whole* decapsulation-key buffer `kp.value`;
-  * `ek`  is the encapsulation-key (`t̂`) sub-range `kp.value[enc .. 2·enc]`;
-  * `hdr` is the header sub-range `kp.value[2·enc .. 2·enc + 64]`,
+  * `dk`  = the *whole* buffer `kp.value`                 (length `2400`);
+  * `ek`  = the `t̂` sub-range `kp.value[enc .. 2·enc]`    (length `1152`);
+  * `hdr` = the header sub-range `kp.value[2·enc .. 2·enc + 64]` (length `64`).
 
-with `enc = encapsulationKeyBytes = 1152`.  Because the model stores one shared buffer rather
-than three independent fields, the fact that `hdr`/`ek` are *sub-ranges of* `dk` is exact (a
-`List.slice` equality), mirroring the Rust accessors that slice the same `value`.  The
-contractual sizes (`64`, `1152`, `2400`) then follow because `kp.value` is a fixed-size array.
-The *cryptographic* content of `kp.value` is left for furture work.
+Because the model stores one shared buffer, the slice provenance is *exact* — `List.slice`
+equalities, not just length facts — mirroring the Rust accessors that slice the same `value`; the
+contractual sizes follow since `kp.value` is fixed-size.
 
-TODO:
-- Functional correctness (round-trip). For (ek, dk) from generate, any shared secret encapsulated to
-  ek is recovered by decapsulating with dk:
-  decaps(dk, encaps(ek)) = ss, up to ML-KEM's negligible (~2⁻¹³⁸) failure probability. This is the minimal
-  crypto-functional property, and it's the one the current model cannot state because from_seed/encaps/decaps are
-  opaque size-only externals.
+TODO: the *cryptographic* content of `kp.value` is left to future work; the size-only externals
+(`from_seed`/`encaps`/`decaps`) cannot yet state:
 
-  2. Distributional faithfulness. (ek, dk) is identically distributed to ML-KEM-768 KeyGen on a uniform seed. This
-  is the bridge to all security: IND-CCA2 only transfers to these keys if their distribution is correct.
-
-  3. Security (inherited, game-based). Given (2): the KEM built on (ek, dk) is IND-CCA2; ek/hdr are pseudorandom
-  (safe to transmit — MLWE hides t̂); and the secret portion of dk (i.e. dk \ (ek‖hdr) — dk_pke, z) is one-way /
-  computationally hidden given the transmitted (hdr, ek). The subtlety from the layout above: secrecy is not that
-  ek/hdr bytes are disjoint from dk — they aren't — it's that the complement slices stay hidden.
-
--/
+1. **Round-trip correctness.** `decaps(dk, encaps(ek)) = ss`, up to ML-KEM's negligible
+   (~2⁻¹³⁸) failure probability.
+2. **Distributional faithfulness.** `(ek, dk)` is identically distributed to ML-KEM-768 KeyGen on
+   a uniform seed — the bridge that transfers security to these keys.
+3. **Security (game-based, given 2).** The KEM is IND-CCA2; `ek`/`hdr` are pseudorandom (MLWE
+   hides `t̂`, safe to transmit); the secret complement `dk \ (ek‖hdr)` stays computationally
+   hidden.  Note secrecy is *not* byte-disjointness (the bytes overlap) but that the complement
+   slices stay hidden. -/
 theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoInst : rand_core.CryptoRng R) (rng : R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
