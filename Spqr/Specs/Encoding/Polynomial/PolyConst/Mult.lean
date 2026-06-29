@@ -116,8 +116,8 @@ namespace spqr.encoding.polynomial.PolyConst
 
 private lemma mult_result_eq
     {N : Usize} (a : Array GF16 N) (m : GF16) (result : Array GF16 N)
-    (h_scaled : ∀ (j : Nat), 0 ≤ j ∧ j < N →
-      ∀ (hj : j < result.length), (result[j]).toGF216 = (a.val[j]!).toGF216 * m.toGF216) :
+    (h_scaled : ∀ (j : Nat), j < N →
+      ∀ (_ : j < result.length), (result[j]).toGF216 = (a.val[j]!).toGF216 * m.toGF216) :
     listToGF216Poly result = C (m.toGF216) * listToGF216Poly a := by
   apply listToGF216Poly_eq_of_coeffs
   · grind [← getElem!_toGF216_eq_coeff]
