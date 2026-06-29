@@ -218,17 +218,6 @@ theorem core.hint.black_box_spec {T : Type} (x : T) :
 namespace core.iter
 namespace traits.iterator.Iterator
 
--- Default implementations for Iterator fields
-def enumerate.default
-  {Self : Type} (self: Self) :
-  Result (core.iter.adapters.enumerate.Enumerate Self) :=
-  .ok ⟨ self, 0#usize ⟩
-
-def take.default
-  {Self : Type} (self: Self) (n: Usize):
-  Result (core.iter.adapters.take.Take Self) :=
-  .ok ⟨ self, n ⟩
-
 -- Since `next` is often the only custom method, we define a way to construct an entire
 -- `Iterator` from just the `next` function, and populate the rest with defaults.
 def fromNext
@@ -238,8 +227,8 @@ def fromNext
   {
     next := nextFn,
     step_by := core.iter.traits.iterator.Iterator.step_by.default,
-    enumerate := enumerate.default,
-    take := take.default
+    enumerate := core.iter.traits.iterator.Iterator.enumerate.default,
+    take := core.iter.traits.iterator.Iterator.take.default
   }
 
 end traits.iterator.Iterator
@@ -293,31 +282,18 @@ def
       let count' ← i + 1#usize
       ok (some (i, val), ⟨iter', count'⟩)
 
-/-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::collect]:
-    Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::collect] -/
-@[rust_fun
-  "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::collect"]
-axiom
-  core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.collect
-  {I : Type} {B : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst :
-  core.iter.traits.iterator.Iterator I Clause0_Item)
-  (traitscollectFromIteratorBPairUsizeClause0_ItemInst :
-  core.iter.traits.collect.FromIterator B (Std.Usize × Clause0_Item)) :
-  core.iter.adapters.enumerate.Enumerate I → Result B
-
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::enumerate]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
     Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::enumerate] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::enumerate"]
-axiom
+def
   core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.enumerate
-  {I : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst :
-  core.iter.traits.iterator.Iterator I Clause0_Item) :
-  core.iter.adapters.enumerate.Enumerate I → Result
-    (core.iter.adapters.enumerate.Enumerate
-    (core.iter.adapters.enumerate.Enumerate I))
+  {I : Type} {Clause0_Item : Type}
+  (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I Clause0_Item)
+  (self: core.iter.adapters.enumerate.Enumerate I):
+  Result (core.iter.adapters.enumerate.Enumerate (core.iter.adapters.enumerate.Enumerate I)) :=
+    core.iter.traits.iterator.Iterator.enumerate.default self
 
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::map]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
@@ -339,26 +315,32 @@ def
     Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::step_by] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::step_by"]
-axiom
+def
   core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.step_by
-  {I : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst :
-  core.iter.traits.iterator.Iterator I Clause0_Item) :
-  core.iter.adapters.enumerate.Enumerate I → Std.Usize → Result
-    (core.iter.adapters.step_by.StepBy (core.iter.adapters.enumerate.Enumerate
-    I))
+  {I : Type} {Clause0_Item : Type}
+  (traitsiteratorIteratorInst: core.iter.traits.iterator.Iterator I Clause0_Item)
+  (self: core.iter.adapters.enumerate.Enumerate I)
+  (n: Std.Usize):
+    Result (core.iter.adapters.step_by.StepBy (core.iter.adapters.enumerate.Enumerate I)) :=
+      core.iter.traits.iterator.Iterator.step_by.default self n
 
 /-- [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}::collect]:
     Source: '/rustc/library/core/src/iter/adapters/map.rs', lines 99:0-101:27
     Name pattern: [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect] -/
 @[rust_fun
   "core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect"]
-axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
+def core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
   {B : Type} {I : Type} {F : Type} {B1 : Type} {Clause0_Item : Type}
-  (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I
-  Clause0_Item) (opsfunctionFnMutFTupleClause0_ItemBInst :
-  core.ops.function.FnMut F Clause0_Item B) (traitscollectFromIteratorInst :
-  core.iter.traits.collect.FromIterator B1 B) :
-  core.iter.adapters.map.Map I F → Result B1
+  (traitsiteratorIteratorInst: core.iter.traits.iterator.Iterator I Clause0_Item)
+  (opsfunctionFnMutFTupleClause0_ItemBInst: core.ops.function.FnMut F Clause0_Item B)
+  (traitscollectFromIteratorInst: core.iter.traits.collect.FromIterator B1 B)
+  (map: core.iter.adapters.map.Map I F): Result B1 :=
+    core.iter.traits.iterator.Iterator.collect.default
+      -- mapIteratorTransformer turns an A-iterator into a B-iterator, given f: A → B
+      (mapIteratorTransformer map traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
+      traitscollectFromIteratorInst
+      map.iter
+
 
 namespace I32.Insts.CoreIterRangeStep
 /-- [core::iter::range::{core::iter::range::Step for i32}::backward_checked]:
@@ -1479,6 +1461,55 @@ axiom libcrux_hmac.hmac
   :
   libcrux_hmac.Algorithm → Slice Std.U8 → Slice Std.U8 → Option Std.Usize
     → Result (alloc.vec.Vec Std.U8)
+
+/-- **Axiom claim:** If `key.length ≤ u32::MAX` and `data.length ≤ u32::MAX`, then
+`libcrux_hmac::hmac(Sha256, key, data, Some(32))` is panic-free and returns an
+`alloc::vec::Vec<u8>` of length exactly `32`.
+
+**External source references (libcrux-hmac 0.0.6):**
+
+* wrapper, `src/hmac.rs`:
+  <https://docs.rs/libcrux-hmac/0.0.6/src/libcrux_hmac/hmac.rs.html>
+
+* glue, `src/impl_hacl.rs`:
+  <https://docs.rs/libcrux-hmac/0.0.6/src/libcrux_hmac/impl_hacl.rs.html>
+
+This axiom is designed to maximise three desiderata simultaneously:
+
+**(a) Sufficiency for downstream specs:** This axiom allows to formulate and
+prove spec theorems for `mac_ct` and `mac_hdr`, which in turn unblock a variety
+of dependent spec theorems.
+
+**(b) Faithfulness to the external sources:** Both halves of the claim follow
+from inspecting the external source references:
+
+  * *Panic-freedom (no panic under the given settings).* The only potential
+    panic sites sit in the glue layer `src/impl_hacl.rs`, namely the two
+    `usize → u32` casts `key.len().try_into().unwrap()` and
+    `data.len().try_into().unwrap()`. The hypotheses
+    `key.length ≤ u32::MAX` and `data.length ≤ u32::MAX` ensure that neither
+    `try_into` returns `Err`, so the two `unwrap()` calls (and hence the
+    whole call) cannot panic.
+
+  * *Output length is `32` (under the given settings).* For
+    `Algorithm.Sha256`, the wrapper calls `wrap_bufalloc(|buf| hmac_sha2_256(buf, …))`,
+    which allocates a stack buffer `[u8; 32]`, lets `hmac_sha2_256` fill it
+    through the `&mut [u8; 32]` parameter, and returns it as `buf.to_vec()`, which is
+    a `Vec<u8>` of length `32`. The wrapper then calls `dst.truncate(32)`.
+    Since `Vec::truncate(n)` is a no-op when the vector already has length
+    `≤ n`, the returned vector has length exactly `32`.
+
+**(c) Minimality of trust base extension:** Both call sites of `libcrux_hmac.hmac`
+in `Funs.lean` use precisely `Algorithm.Sha256` and `some MACSIZE` with
+`MACSIZE = 32`, so the axiom is specialised to exactly the shape that occurs
+in this codebase and adds no surplus assumptions. -/
+@[step]
+axiom libcrux_hmac.hmac_sha256_tag32_length_eq_32
+    (key data : Slice Std.U8)
+    (hkey  : key.length  ≤ Std.U32.max)
+    (hdata : data.length ≤ Std.U32.max) :
+    libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 key data (some 32#usize)
+      ⦃ (r : alloc.vec.Vec Std.U8) => r.length = 32 ⦄
 
 /-- [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
