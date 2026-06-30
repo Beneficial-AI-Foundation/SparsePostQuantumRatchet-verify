@@ -48,14 +48,12 @@ For `pts.len() + 1 ≤ Usize.max` and `i < pts.len()`, the function succeeds and
        C(lagrangeScaleGF216(pts[i], pts)) · prodLinearFactors pts.val 0 pts.val.length` -/
 @[step]
 theorem lagrange_interpolate_pt_spec
-    (pts : Slice Pt)
-    (i : Usize)
+    (pts : Slice Pt) (i : Usize)
     (hi : i < pts.length)
     (h_len : pts.length + 1 ≤ Usize.max) :
     lagrange_interpolate_pt pts i ⦃ (result : Poly) =>
       result.degree = pts.length ∧
-      result.toGF216Poly *
-        (X - C (GF16.toGF216 (pts[i]).x)) =
+      result.toGF216Poly * (X - C (GF16.toGF216 (pts[i]).x)) =
         C (lagrangeScaleGF216 (pts[i]) pts) * prodLinearFactors pts 0 pts.length ⦄ := by
   unfold lagrange_interpolate_pt
   step with lagrange_interpolate_prepare_spec pts h_len as
