@@ -1263,6 +1263,29 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_eq
         let l ← Slice.concatListAux corecloneCloneInst coreborrowBorrowVSliceInst sv.val
         Slice.listToVec l) := rfl
 
+/-- **Spec theorem for `Concat<[V], T, Vec<T>>::concat` with shared borrow and identity clone**:
+concatenating a slice of slices yields a `Vec` whose underlying list is the flattened
+concatenation, provided `Clone` is the identity (`hclone`) and the total length fits
+in `Usize` (`hlen`). -/
+@[step]
+theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
+    {T : Type} (corecloneCloneInst : core.clone.Clone T)
+    (hclone : ∀ x, corecloneCloneInst.clone x = ok x)
+    (sv : Slice (Slice T))
+    (hlen : (sv.val.map (·.val)).flatten.length ≤ Std.Usize.max) :
+    Slice.Insts.AllocSliceConcatTVec.concat corecloneCloneInst
+        { borrow := Shared0T.Insts.CoreBorrowBorrow.borrow } sv ⦃ (v : alloc.vec.Vec T) =>
+      v.val = (sv.val.map (·.val)).flatten ⦄ := by
+  set b : core.borrow.Borrow (Slice T) (Slice T) :=
+    { borrow := Shared0T.Insts.CoreBorrowBorrow.borrow }
+  have h : ∀ l, Slice.concatListAux corecloneCloneInst b l = ok ((l.map (·.val)).flatten) :=
+    fun l => l.rec rfl fun hd _ ih => by
+      obtain ⟨_, heq, rfl⟩ :=
+        WP.spec_imp_exists (Slice.clone_spec (s := hd) fun _ _ => hclone _)
+      simp [Slice.concatListAux, Shared0T.Insts.CoreBorrowBorrow.borrow, b, heq, ih]
+  simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq, h, bind_tc_ok,
+    Slice.listToVec, dif_pos hlen, WP.spec_ok]
+
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
     Source: '/rustc/library/alloc/src/str.rs', lines 210:4-210:32
     Name pattern: [alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned] -/
