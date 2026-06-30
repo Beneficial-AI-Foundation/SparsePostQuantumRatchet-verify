@@ -58,14 +58,16 @@ aeneas_args:
   dest: "." # output directory (project root)
   subdir: "SrcTranslated" # sub-folder for files (sets import paths to SrcTranslated.*)
 
+llbc_tweaks:
+  substitutions:
+    # Normalize absolute build paths for prost-generated files.
+    - regex: '"Local":"[^"]*/target/[^"]*/out/'
+      replace: '"Local":"target/out/'
+
 # Post-extraction find/replace applied to generated Lean files.
 tweaks:
   files: ["Types.lean", "Funs.lean"]
   substitutions:
-    # Normalize absolute build paths in Source comments so they are reproducible across machines
-    - regex: "Source: '[^']*/target/[^']*/out/"
-      replace: "Source: 'target/out/"
-
     # Disable long line linter for auto-generated files
     - find: |
         set_option linter.unusedVariables false
