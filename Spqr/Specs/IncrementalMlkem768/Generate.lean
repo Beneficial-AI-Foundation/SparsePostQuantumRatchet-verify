@@ -27,18 +27,6 @@ public key.  In the serialized layout `dk` is the whole key pair, `ek` is the su
 `enc = encapsulationKeyBytes = 1152`.  These containments — not just the lengths — are exactly
 what the spec theorem proves.
 
-`KeyPairCompressedBytes::{from_seed, pk1, pk2, sk}` are externals modelled in
-`SrcTranslated/FunsExternal.lean` over a concrete `KeyPairCompressedBytes` that faithfully
-mirrors the Rust struct: a *single* serialized buffer `value` of length
-`mlkem768Params.decapsulationKeyBytes = 2400`.  Over it `sk` returns the whole buffer, `pk2` the
-slice `value[enc .. 2·enc]`, and `pk1` the slice `value[2·enc .. 2·enc + 64]`, where
-`enc = mlkem768Params.encapsulationKeyBytes = 1152`.  The three contractual sizes are therefore
-not bare literals but the buffer lengths *derived* from the ML-KEM-768 parameter set in
-`SrcTranslated/TypesExternal.lean` (`headerBytes = 64`, `encapsulationKeyBytes = 1152`,
-`decapsulationKeyBytes = 2400`).  `pk1`/`pk2`/`sk` carry proved `@[step]` specs recording both
-their length and their slice provenance; `from_seed` carries an `@[step]` spec fixing only the
-length of its buffer (its key derivation is not modelled).
-
 **Source**: `src/incremental_mlkem768.rs`, lines 34:0-43:1 -/
 
 open Aeneas Aeneas.Std Result
@@ -51,17 +39,12 @@ open Spqr.Mlkem
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
 Assuming `fill_bytes` is panic-free, `generate` returns a `Keys` that is the serialization of a
-*single* compressed ML-KEM key pair `kp` — not three independent buffers of the right size.  All
+single compressed ML-KEM key pair `kp` — not three independent buffers of the right size.  All
 three outputs come, byte-for-byte, from `kp`'s one serialized buffer `kp.value`
 (`enc = encapsulationKeyBytes = 1152`):
-
-  * `dk`  = the *whole* buffer `kp.value`                 (length `2400`);
-  * `ek`  = the `t̂` sub-range `kp.value[enc .. 2·enc]`    (length `1152`);
-  * `hdr` = the header sub-range `kp.value[2·enc .. 2·enc + 64]` (length `64`).
-
-Because the model stores one shared buffer, the slice provenance is *exact* — `List.slice`
-equalities, not just length facts — mirroring the Rust accessors that slice the same `value`; the
-contractual sizes follow since `kp.value` is fixed-size.
+* `dk`  = the whole buffer `kp.value`                 (length `2400`);
+* `ek`  = the sub-range `kp.value[enc .. 2·enc]`    (length `1152`);
+* `hdr` = the header sub-range `kp.value[2·enc .. 2·enc + 64]` (length `64`).
 
 TODO: the *cryptographic* content of `kp.value` is left to future work; the size-only externals
 (`from_seed`/`encaps`/`decaps`) cannot yet state:
@@ -72,7 +55,7 @@ TODO: the *cryptographic* content of `kp.value` is left to future work; the size
    a uniform seed — the bridge that transfers security to these keys.
 3. **Security (game-based, given 2).** The KEM is IND-CCA2; `ek`/`hdr` are pseudorandom (MLWE
    hides `t̂`, safe to transmit); the secret complement `dk \ (ek‖hdr)` stays computationally
-   hidden.  Note secrecy is *not* byte-disjointness (the bytes overlap) but that the complement
+   hidden.  Note secrecy is not byte-disjointness (the bytes overlap) but that the complement
    slices stay hidden. -/
 theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoInst : rand_core.CryptoRng R) (rng : R)
