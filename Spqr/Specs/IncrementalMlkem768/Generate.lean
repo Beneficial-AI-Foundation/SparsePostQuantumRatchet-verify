@@ -66,9 +66,9 @@ theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
         (2 * mlkem768Params.encapsulationKeyBytes) ∧
         result.1.hdr.val = result.1.dk.val.slice (2 * mlkem768Params.encapsulationKeyBytes)
         (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ∧
-        result.1.hdr.length = 64 ∧
-        result.1.ek.length = 1152 ∧
-        result.1.dk.length = 2400 ⦄ := by
+        result.1.hdr.length = headerBytes ∧
+        result.1.ek.length = mlkem768Params.encapsulationKeyBytes ∧
+        result.1.dk.length = mlkem768Params.decapsulationKeyBytes ⦄ := by
   unfold generate
   step*
   refine ⟨?_, ?_, ?_⟩ <;>
