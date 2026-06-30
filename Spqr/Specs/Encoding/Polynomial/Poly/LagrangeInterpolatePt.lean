@@ -45,9 +45,7 @@ For `pts.len() + 1 ≤ Usize.max` and `i < pts.len()`, the function succeeds and
 
 • **Polynomial identity**:
     `result.toGF216Poly * (X − C(GF16.toGF216(pts[i].x))) =
-       C(lagrangeScaleGF216(pts[i], pts)) · prodLinearFactors pts.val 0 pts.val.length`
-  Cancelling `(X − pts[i].x)` yields
-  `result.toGF216Poly = C(lagrangeScaleGF216(pts[i], pts)) · lagrangeBasisPoly pts i`. -/
+       C(lagrangeScaleGF216(pts[i], pts)) · prodLinearFactors pts.val 0 pts.val.length` -/
 @[step]
 theorem lagrange_interpolate_pt_spec
     (pts : Slice Pt)
