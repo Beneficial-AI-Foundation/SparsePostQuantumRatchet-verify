@@ -1527,12 +1527,14 @@ in `Funs.lean` use precisely `Algorithm.Sha256` and `some MACSIZE` with
 `MACSIZE = 32`, so the axiom is specialised to exactly the shape that occurs
 in this codebase and adds no surplus assumptions. -/
 @[step]
-axiom libcrux_hmac.hmac_sha256_tag32_length_eq_32
-    (key data : Slice Std.U8)
-    (hkey  : key.length  ≤ Std.U32.max)
-    (hdata : data.length ≤ Std.U32.max) :
-    libcrux_hmac.hmac libcrux_hmac.Algorithm.Sha256 key data (some 32#usize)
-      ⦃ (r : alloc.vec.Vec Std.U8) => r.length = 32 ⦄
+axiom libcrux_hmac.hmac_sha256_tag32_spec
+    (key data : Slice U8)
+    (hkey : key.length ≤ U32.max)
+    (hdata : data.length ≤ U32.max) :
+    libcrux_hmac.hmac .Sha256 key data (some 32#usize)
+      ⦃ (r : alloc.vec.Vec U8) =>
+        libcrux_hmac.hmac .Sha256 key data (some 32#usize) = ok r ∧
+        r.length = 32 ⦄
 
 /-- [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
