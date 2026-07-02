@@ -37,6 +37,7 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Authenticator.Authenticator.MacCt
+import Spqr.Specs.Authenticator.Authenticator.MacHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Encoding.Gf.GF16.Add
@@ -81,6 +82,7 @@ import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
+import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
