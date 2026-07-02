@@ -24,6 +24,7 @@ import Spqr.Math.Poly.ExpectedTrailing.Defs
 import Spqr.Math.Poly.Horner.Defs
 import Spqr.Math.Poly.Horner.Eval
 import Spqr.Math.Poly.Identities.Basic
+import Spqr.Math.Poly.Identities.MultXdiff
 import Spqr.Math.Poly.Lagrange.BasisPoly
 import Spqr.Math.Poly.Lagrange.DenomProd
 import Spqr.Math.Poly.Lagrange.InterpolantSum
@@ -73,15 +74,17 @@ import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
 import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePt
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeSum
 import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
 import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
-import Spqr.Specs.Encoding.Polynomial.PolyConstN.ZEROS
+import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+import Spqr.Specs.IncrementalMlkem768.Generate
 import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
