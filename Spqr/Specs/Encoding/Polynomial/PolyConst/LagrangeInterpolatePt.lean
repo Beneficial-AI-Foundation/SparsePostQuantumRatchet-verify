@@ -45,28 +45,6 @@ polynomial `p`, running `denominator`, and counter `j`:
 theorem body_spec
     {N : Usize} (pts : Slice Pt) (pi : Pt) (p : PolyConst N) (denominator : GF16) (j : Usize)
     (h_N_pos : 0 < N.val)
-    (h_N_le_pts : N ≤ pts.length)
-    (h_deg : p.degree + 1 < N) :
-    body pts pi p denominator j ⦃ (cf : ControlFlow (PolyConst N × GF16 × Usize)
-    (Pt × PolyConst N × GF16)) =>
-      match cf with
-      | ControlFlow.done (pi', p', denominator') =>
-          pi' = pi ∧ p' = p ∧ denominator' = denominator ∧ ¬ (j < N)
-      | ControlFlow.cont (p1, denominator1, j1) =>
-          j < N ∧
-          j1 = j.val + 1 ∧
-          ∀ (hj : j < pts.length),
-            (pi.x.value = pts[j].x.value → p1 = p ∧ denominator1 = denominator) ∧
-            (pi.x.value ≠ (pts[j]).x.value →
-            listToGF216Poly p1.coefficients =
-              (X - C ((pts[j]).x.toGF216)) * listToGF216Poly p.coefficients ∧
-          denominator1.toGF216 = denominator.toGF216 * (pi.x.toGF216 - (pts[j]).x.toGF216)) ⦄ := by
-  unfold body
-  step*
-
-private theorem body_spec_gen
-    {N : Usize} (pts : Slice Pt) (pi : Pt) (p : PolyConst N) (denominator : GF16) (j : Usize)
-    (h_N_pos : 0 < N.val)
     (h_N_le_pts : N ≤ pts.val.length)
     (h_leading : (_ : j < N.val) → pi.x.value ≠ (pts[j]).x.value → p.degree + 1 < N) :
     body pts pi p denominator j ⦃ cf =>
@@ -127,7 +105,7 @@ theorem loop_spec
     have h_leading_for_body :
       (h_jN : j'.val < N) → pi.x.value ≠ (pts[j']).x.value → p'.degree + 1 < N := by
         grind[countNonSkip_accum]
-    have h_body := body_spec_gen pts pi p' d' j' h_N_pos h_N_le_pts h_leading_for_body
+    have h_body := body_spec pts pi p' d' j' h_N_pos h_N_le_pts h_leading_for_body
     apply Aeneas.Std.WP.spec_mono h_body
     intro cf hcf
     cases cf with
@@ -190,36 +168,6 @@ In GF(2¹⁶), subtraction equals addition (`a − b = a ⊕ b`).
 
 
 namespace spqr.encoding.polynomial.PolyConst
-
-private theorem listToGF216Poly_init_one
-    {N : Usize} (a1 : Array GF16 N)
-    (h_len : a1.length = N)
-    (h0 : (a1.val[0]!).value.val = 1)
-    (h_rest : ∀ j, 0 < j → j < N.val → (a1.val[j]!).value.val = 0) :
-    listToGF216Poly a1.val = (1 : GF216[X]) := by
-  apply Polynomial.ext
-  intro m
-  cases m with
-  | zero =>
-    rw [Polynomial.coeff_one_zero, ← getElem!_toGF216_eq_coeff]
-    exact GF16.toGF216_eq_one _ h0
-  | succ n =>
-    have h_one : (1 : GF216[X]).coeff (n + 1) = 0 := by
-      rw [Polynomial.coeff_one]; simp
-    rw [h_one]
-    by_cases hlt : n + 1 < a1.val.length
-    · rw [← getElem!_toGF216_eq_coeff]
-      apply GF16.toGF216_eq_zero
-      exact h_rest (n + 1) (Nat.succ_pos n) (h_len ▸ hlt)
-    · push Not at hlt
-      exact listToGF216Poly_coeff_eq_zero a1.val (n + 1) hlt
-
-private theorem init_leading_zero
-    {N : Usize} (a1 : Array GF16 N)
-    (h_N_ge_two : 2 ≤ N.val)
-    (h_rest : ∀ j, 0 < j → j < N.val → (a1.val[j]!).value.val = 0) :
-    (a1.val[N.val - 1]!).value.val = 0 := by
-  exact h_rest (N.val - 1) (by omega) (by omega)
 
 private lemma listToGF216Poly_replicate_zero_set_one
     (N : Nat) (h_N_pos : 0 < N) :
