@@ -26,6 +26,8 @@ import Spqr.Math.Poly.Horner.Eval
 import Spqr.Math.Poly.Identities.Basic
 import Spqr.Math.Poly.Identities.MultXdiff
 import Spqr.Math.Poly.Lagrange.BasisPoly
+import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
+import Spqr.Math.Poly.Lagrange.CountNonSkip
 import Spqr.Math.Poly.Lagrange.DenomProd
 import Spqr.Math.Poly.Lagrange.InterpolantSum
 import Spqr.Math.Poly.LinearFactors.Basic
@@ -81,6 +83,7 @@ import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
 import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
 import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
 import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
