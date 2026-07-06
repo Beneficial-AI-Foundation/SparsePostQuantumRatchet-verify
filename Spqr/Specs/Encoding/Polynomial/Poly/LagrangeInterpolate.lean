@@ -64,7 +64,7 @@ theorem body_spec
 
 Full inner loop executing `out.coefficients[j] += working.coefficients[j+1]` for all
 `j ∈ 0..out.coefficients.len()`. Provides a closed-form postcondition over all iterations.
-Per-step spec is in `LagrangeInterpolateLoopBoby1`.
+Per-step spec is in `LagrangeInterpolateLoop1`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 @[step]
@@ -134,7 +134,7 @@ theorem body_spec
           template.evalAt (pts[iter.start]!).x = 0) :
     body pts template iter v working ⦃ cf =>
       match cf with
-      | ControlFlow.done v' => v' = v ∧ ¬ (iter.start< iter.end)
+      | ControlFlow.done v' => v' = v ∧ ¬ (iter.start < iter.end)
       | ControlFlow.cont (iter1, v₂, working₂) =>
           iter.start < iter.end ∧
           iter1.start = iter.start.val + 1 ∧
@@ -144,7 +144,7 @@ theorem body_spec
           (∀ (hi : iter.start < pts.length),
             working₂.toGF216Poly * (X - C (GF16.toGF216 (pts[iter.start]).x)) =
               X * C (lagrangeScaleGF216 (pts[iter.start]) pts) * template.toGF216Poly) ∧
-          (∀  j < v₂.length,
+          (∀ j < v₂.length,
             (v₂[j]!).toGF216 = (v[j]!).toGF216 + (working₂.coefficients[j + 1]!).toGF216) ⦄ := by
   unfold body
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
@@ -246,7 +246,7 @@ theorem loop_spec
         iter.start ≤ p.1.start ∧
         p.1.start ≤ iter.end ∧
         p.2.1.length = v.length ∧
-        p.2.2.degree= template.degree ∧
+        p.2.2.degree = template.degree ∧
         ∃ ws : List Poly,
           ws.length = p.1.start - iter.start ∧
           (∀ (k : Nat) (hk : k < ws.length) (hi : iter.start + k < pts.length),
@@ -396,6 +396,8 @@ theorem lagrange_interpolate_spec
     (pts : Slice Pt)
     (h_len : pts.length + 1 ≤ Usize.max) :
     lagrange_interpolate pts ⦃ (result : Poly) =>
+      result.degree = pts.length ∧
+      (pts.length = 0 → result.toGF216Poly = 0) ∧
       result.toGF216Poly = lagrangeInterpolantSum pts pts.length ⦄ := by
   apply WP.spec_mono (lagrange_interpolate_formula pts h_len)
   intro result ⟨h_rlen, h_empty, h_nonempty⟩
@@ -434,25 +436,29 @@ theorem lagrange_interpolate_spec
       change (ws.get ⟨i, hi⟩ ).toGF216Poly.coeff (m + 1) = _
       grind [mul_assoc, Polynomial.coeff_X_mul]
     unfold Poly.toGF216Poly
-    ext m
-    rw [listToGF216Poly_coeff]
-    by_cases hm : m < result.degree
-    · rw[degree] at hm
-      have :(result.coefficients.val ).get ⟨m, hm⟩ = (result.coefficients.val)[m]! := by grind
-      rw [dif_pos hm, this, hws_coeff m hm, List.map_sum_eq_Finset_sum]
-      rw [Finset.sum_congr rfl (fun i _ => h_term_eq m i)]
-      rw [lagrangeInterpolantSum_eq_finset_sum pts.val n (le_refl _)]
-      rw [Polynomial.finset_sum_coeff]
-      apply Finset.sum_bij (fun (a : Fin ws.length) _ => a.val)
-        (fun a _ => by rw [Finset.mem_range]; grind)
-        (fun a₁ _ a₂ _ h => Fin.val_injective h)
-        (fun b hb => by
-          rw [Finset.mem_range] at hb
-          exact ⟨⟨b, by grind⟩, Finset.mem_univ _, rfl⟩)
-        (fun a _ => by grind)
-    · rw[degree] at hm
-      rw [dif_neg hm]
-      exact (lagrangeInterpolantSum_coeff_high pts n m (le_refl _)
-        (by rw[degree] at h_rlen; rw [h_rlen] at hm; push Not at hm; omega)).symm
+    constructor
+    · grind [lagrangeInterpolantSum, Polynomial.finset_sum_coeff, List.map_sum_eq_Finset_sum]
+    · constructor
+      · grind [lagrangeInterpolantSum, Polynomial.finset_sum_coeff, List.map_sum_eq_Finset_sum]
+      · ext m
+        rw [listToGF216Poly_coeff]
+        by_cases hm : m < result.degree
+        · rw [degree] at hm
+          have :(result.coefficients.val ).get ⟨m, hm⟩ = (result.coefficients.val)[m]! := by grind
+          rw [dif_pos hm, this, hws_coeff m hm, List.map_sum_eq_Finset_sum]
+          rw [Finset.sum_congr rfl (fun i _ => h_term_eq m i)]
+          rw [lagrangeInterpolantSum_eq_finset_sum pts.val n (le_refl _)]
+          rw [Polynomial.finset_sum_coeff]
+          apply Finset.sum_bij (fun (a : Fin ws.length) _ => a.val)
+            (fun a _ => by rw [Finset.mem_range]; grind)
+            (fun a₁ _ a₂ _ h => Fin.val_injective h)
+            (fun b hb => by
+              rw [Finset.mem_range] at hb
+              exact ⟨⟨b, by grind⟩, Finset.mem_univ _, rfl⟩)
+            (fun a _ => by grind)
+        · rw[degree] at hm
+          rw [dif_neg hm]
+          exact (lagrangeInterpolantSum_coeff_high pts n m (le_refl _)
+            (by rw[degree] at h_rlen; rw [h_rlen] at hm; push Not at hm; omega)).symm
 
 end spqr.encoding.polynomial.Poly
