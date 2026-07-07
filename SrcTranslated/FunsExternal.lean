@@ -1517,6 +1517,12 @@ axiom libcrux_hmac.hmac_sha256_tag32_length_eq_32
 @[rust_const "libcrux_ml_kem::constants::SHARED_SECRET_SIZE"]
 axiom libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize
 
+/-- Value of the opaque constant (libcrux-ml-kem 0.0.7, `src/constants.rs`, line 14:
+`pub const SHARED_SECRET_SIZE: usize = 32`).  Used by the round-trip spec
+(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.constants.SHARED_SECRET_SIZE_eq_32 :
+  libcrux_ml_kem.constants.SHARED_SECRET_SIZE = ok 32#usize
+
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}::fmt]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>}::fmt] -/
@@ -1561,6 +1567,12 @@ axiom libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encaps_state_len"]
 axiom libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize
 
+/-- Value of the opaque constant function (libcrux-ml-kem 0.0.7, `src/mlkem.rs`,
+line 59: the ML-KEM-768 incremental encapsulation state is 2080 bytes).  Used by
+the round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.encaps_state_len_eq_2080 :
+  libcrux_ml_kem.mlkem768.incremental.encaps_state_len = ok 2080#usize
+
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 407:8-407:111
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2] -/
@@ -1569,6 +1581,13 @@ axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
   :
   Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
+
+/-- `encapsulate2` is panic-free: on fixed-size inputs it always returns a
+ciphertext.  Used by the round-trip spec
+(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2_ok
+    (st : Array Std.U8 2080#usize) (ek : Array Std.U8 1152#usize) :
+    ∃ ct2, libcrux_ml_kem.mlkem768.incremental.encapsulate2 st ek = ok ct2
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
@@ -1580,6 +1599,13 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
   Array Std.U8 64#usize → Result
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes
 
+/-- Key generation from a 64-byte seed is panic-free.  Used by the round-trip
+spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_ok
+    (seed : Array Std.U8 64#usize) :
+    ∃ k, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
+      seed = ok k
+
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1] -/
@@ -1589,6 +1615,12 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
   :
   libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
     Std.U8 64#usize)
+
+/-- The `pk1` accessor is panic-free.  Used by the round-trip spec
+(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_ok
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1 k = ok a
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 275:12-275:49
@@ -1600,6 +1632,12 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
   libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
     Std.U8 1152#usize)
 
+/-- The `pk2` accessor is panic-free.  Used by the round-trip spec
+(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_ok
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2 k = ok a
+
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 283:12-283:54
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk] -/
@@ -1609,6 +1647,12 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
   :
   libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
     Std.U8 2400#usize)
+
+/-- The `sk` accessor is panic-free.  Used by the round-trip spec
+(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_ok
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k = ok a
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
@@ -1630,6 +1674,17 @@ axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
     libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice
     Std.U8))
+
+/-- `encapsulate1` succeeds on well-sized inputs (64-byte header, 2080-byte
+state buffer, 32-byte shared-secret buffer) and preserves the buffer lengths.
+Used by the round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1_ok
+    (hdr : Slice Std.U8) (rand : Array Std.U8 32#usize) (st ss : Slice Std.U8)
+    (h_hdr : hdr.length = 64) (h_st : st.length = 2080) (h_ss : ss.length = 32) :
+    ∃ ct1 st' ss',
+      libcrux_ml_kem.mlkem768.incremental.encapsulate1 hdr rand st ss =
+        ok (core.result.Result.Ok ct1, st', ss') ∧
+      st'.length = 2080 ∧ ss'.length = 32
 
 /-- [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
