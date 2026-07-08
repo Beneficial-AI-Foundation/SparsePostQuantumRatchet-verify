@@ -5,6 +5,9 @@ Authors: Zhang Liao
 -/
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
+import Spqr.Specs.LibcruxMlKem.Incremental.DecapsulateCompressedKey
+import Spqr.Specs.LibcruxMlKem.Incremental.Encapsulate1
+import Spqr.Specs.LibcruxMlKem.Incremental.Encapsulate2
 
 /-! # Round-trip (KEM correctness) property for `spqr::incremental_mlkem768`
 
@@ -29,42 +32,42 @@ The four SPQR functions are thin wrappers around the *incremental* ML-KEM API of
 libcrux (`KeyPairCompressedBytes::from_seed` / `encapsulate1` / `encapsulate2` /
 `decapsulate_compressed_key`), which is opaque in the Lean extraction: each of
 these functions is an axiom with no defining equations, and the RNG's
-`fill_bytes` is an abstract trait field.  Consequently the theorem is stated
-under explicit hypotheses that model the essential behaviour of those opaque
-functions:
+`fill_bytes` is an abstract trait field.
 
-* `h_fill` — the RNG's `fill_bytes` is panic-free and preserves the buffer length;
-* `h_state_len`, `h_ss_size` — the values of the two opaque size constants
-  (`encaps_state_len = 2080`, `SHARED_SECRET_SIZE = 32`);
-* `h_seed`, `h_pk1`, `h_pk2`, `h_sk` — key generation from a 64-byte seed and
-  the key-pair accessors are panic-free;
-* `h_enc1` — `encapsulate1` on well-sized inputs succeeds with an `Ok`
-  ciphertext and preserves the lengths of the state and shared-secret buffers;
+The behaviour of the opaque libcrux functions is assumed via specification
+axioms.  Small panic-freedom and size facts (`from_seed_ok`, `pk1_ok`,
+`pk2_ok`, `sk_ok`, `encaps_state_len_eq_2080`, `SHARED_SECRET_SIZE_eq_32`)
+live in `SrcTranslated/FunsExternal.lean` next to the bare declarations, in
+the style of `libcrux_hmac.hmac_sha256_tag32_length_eq_32` (#243).  The
+per-function specifications of the incremental primitives have their own
+spec files, like the proved specifications in this repository:
+
+* `Spqr/Specs/LibcruxMlKem/Incremental/Encapsulate1.lean` (`encapsulate1_ok`);
+* `Spqr/Specs/LibcruxMlKem/Incremental/Encapsulate2.lean` (`encapsulate2_ok`);
+* `Spqr/Specs/LibcruxMlKem/Incremental/DecapsulateCompressedKey.lean`
+  (`decapsulate_compressed_key_roundtrip`) — **the KEM correctness of the
+  incremental libcrux API itself**: decapsulation with the matching secret key
+  recovers the shared secret produced by the `encapsulate1`/`encapsulate2`
+  chain.  This is the "roundtrip property for decaps" proper, stated over the
+  extracted axioms and independent of any external formalisation.
+
+The theorem keeps two explicit hypotheses that cannot (or should not) be
+global axioms:
+
+* `h_fill` — the RNG's `fill_bytes` is panic-free and preserves the buffer
+  length.  `fill_bytes` is a trait field of the caller-supplied instance on an
+  arbitrary type `R`, so a global axiom about it would be false for a
+  trivially-failing instance — it must remain a hypothesis;
 * `h_fix` — the endianness repair function
   `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275` is the
   identity (returns `None`) on the states considered here: the repair path
   (libcrux issue #1275) only concerns states persisted with a broken encoding,
-  not states freshly produced by `encapsulate1` in the same run;
-* `h_enc2` — `encapsulate2` is panic-free;
-* `h_kem` — **the KEM correctness of the incremental libcrux API itself**: if a
-  key pair `k` stems from `from_seed`, `encapsulate1` was run against (the bytes
-  of) `pk1 k` producing ciphertext `ct1`, state `st'` and shared secret `ss'`,
-  and `encapsulate2` was run on (the bytes of) that state against `pk2 k`
-  producing `ct2`, then `decapsulate_compressed_key` on `sk k`, `ct1`, `ct2`
-  succeeds and returns exactly `ss'`.
+  not states freshly produced by `encapsulate1` in the same run.
 
-`h_kem` is the "roundtrip property for decaps" proper — the correctness
-statement of the incremental Encaps1/Encaps2/Decaps triple, stated here over
-the extracted axioms and independent of any external formalisation.  What this
-file *proves* is the linking theorem: the SPQR wrapper layer (slicing,
+What this file *proves* is the linking theorem: the SPQR wrapper layer (slicing,
 `try_into` conversions, buffer allocation, the endianness-fix dispatch, and all
 `Vec`/`Array`/`Slice` plumbing) faithfully forwards to the primitives, so the
 wrapper-level composition inherits the primitive-level roundtrip.
-
-None of the hypotheses is added as a global axiom: the trust base of the
-project is unchanged.  Promoting (some of) them to documented axioms in
-`FunsExternal.lean` — in the style of `libcrux_hmac.hmac_sha256_tag32_length_eq_32`
-(#243) — is a separate, deliberate decision.
 
 **Source**: src/incremental_mlkem768.rs (test at lines 178-185)
 -/
@@ -93,57 +96,22 @@ noncomputable def round_trip {R : Type} (rngInst : rand.rng.Rng R)
 
 /-- **Round-trip property for the SPQR incremental ML-KEM-768 wrappers**:
 
-Under the modelling hypotheses on the opaque libcrux incremental API (see the
-module docstring; `h_kem` is the correctness of the underlying incremental
-KEM), the composition `generate → encaps1 → encaps2 → decaps` succeeds and the
-decapsulated shared secret equals the encapsulated one. -/
+Under the specification axioms for the opaque libcrux incremental API (see the
+module docstring; `decapsulate_compressed_key_roundtrip` is the correctness of
+the underlying incremental KEM) and the two modelling hypotheses `h_fill` and
+`h_fix`, the composition `generate → encaps1 → encaps2 → decaps` succeeds and
+the decapsulated shared secret equals the encapsulated one. -/
 theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoRngInst : rand_core.CryptoRng R) (rng : R)
     -- The RNG's `fill_bytes` is panic-free and preserves the buffer length.
     (h_fill : ∀ (r : R) (s : Slice Std.U8), ∃ r' s',
       rngInst.rand_coreRngCoreInst.fill_bytes r s = ok (r', s') ∧
       s'.length = s.length)
-    -- Values of the opaque size constants.
-    (h_state_len : encaps_state_len = ok 2080#usize)
-    (h_ss_size : libcrux_ml_kem.constants.SHARED_SECRET_SIZE = ok 32#usize)
-    -- Key generation and the key-pair accessors are panic-free.
-    (h_seed : ∀ (seed : Array Std.U8 64#usize), ∃ k,
-      KeyPairCompressedBytes.from_seed seed = ok k)
-    (h_pk1 : ∀ k, ∃ a, KeyPairCompressedBytes.pk1 k = ok a)
-    (h_pk2 : ∀ k, ∃ a, KeyPairCompressedBytes.pk2 k = ok a)
-    (h_sk : ∀ k, ∃ a, KeyPairCompressedBytes.sk k = ok a)
-    -- `encapsulate1` succeeds on well-sized inputs and preserves buffer lengths.
-    (h_enc1 : ∀ (hdr : Slice Std.U8) (rand : Array Std.U8 32#usize)
-        (st ss : Slice Std.U8),
-      hdr.length = 64 → st.length = 2080 → ss.length = 32 →
-      ∃ ct1 st' ss', encapsulate1 hdr rand st ss = ok (.Ok ct1, st', ss') ∧
-        st'.length = 2080 ∧ ss'.length = 32)
     -- Freshly produced encapsulation states are correctly encoded, so the
     -- endianness repair (libcrux issue #1275) is the identity.
     (h_fix : ∀ es,
       _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-        es = ok none)
-    -- `encapsulate2` is panic-free.
-    (h_enc2 : ∀ (st : Array Std.U8 2080#usize) (ek : Array Std.U8 1152#usize),
-      ∃ ct2, encapsulate2 st ek = ok ct2)
-    -- KEM correctness of the underlying incremental API: decapsulation with the
-    -- matching secret key recovers the shared secret produced by encapsulation.
-    (h_kem : ∀ (seed : Array Std.U8 64#usize) k
-        (hdrA : Array Std.U8 64#usize) (ekA : Array Std.U8 1152#usize)
-        (dkA : Array Std.U8 2400#usize) (hdrS : Slice Std.U8)
-        (rand : Array Std.U8 32#usize) (st ss : Slice Std.U8)
-        (ct1 : Ciphertext1 960#usize) (st' ss' : Slice Std.U8)
-        (stA : Array Std.U8 2080#usize) (ct2 : Ciphertext2 128#usize),
-      KeyPairCompressedBytes.from_seed seed = ok k →
-      KeyPairCompressedBytes.pk1 k = ok hdrA →
-      KeyPairCompressedBytes.pk2 k = ok ekA →
-      KeyPairCompressedBytes.sk k = ok dkA →
-      hdrS.val = hdrA.val →
-      encapsulate1 hdrS rand st ss = ok (.Ok ct1, st', ss') →
-      stA.val = st'.val →
-      encapsulate2 stA ekA = ok ct2 →
-      ∃ ssA, decapsulate_compressed_key dkA ct1 ct2 = ok ssA ∧
-        ssA.val = ss'.val) :
+        es = ok none) :
     round_trip rngInst cryptoRngInst rng ⦃ ss1 ss2 => ss1 = ss2 ⦄ := by
   unfold round_trip generate encaps1 encaps2 decaps
   -- ### `generate`: seed buffer, RNG fill, `from_seed`, and the three accessors.
@@ -154,20 +122,20 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   step*
   rw [h_fb1]
   simp only [step_simps]
-  obtain ⟨k, h_k⟩ := h_seed (seedBack s1)
+  obtain ⟨k, h_k⟩ := KeyPairCompressedBytes.from_seed_ok (seedBack s1)
   rw [h_k]
   simp only [step_simps]
-  obtain ⟨hdrA, h_hdrA⟩ := h_pk1 k
+  obtain ⟨hdrA, h_hdrA⟩ := KeyPairCompressedBytes.pk1_ok k
   rw [h_hdrA]
   simp only [step_simps]
   step as ⟨hdrSl, h_hdrSl⟩
   step as ⟨hdrV, h_hdrV⟩
-  obtain ⟨ekA, h_ekA⟩ := h_pk2 k
+  obtain ⟨ekA, h_ekA⟩ := KeyPairCompressedBytes.pk2_ok k
   rw [h_ekA]
   simp only [step_simps]
   step as ⟨ekSl0, h_ekSl0⟩
   step as ⟨ekV, h_ekV⟩
-  obtain ⟨dkA, h_dkA⟩ := h_sk k
+  obtain ⟨dkA, h_dkA⟩ := KeyPairCompressedBytes.sk_ok k
   rw [h_dkA]
   simp only [step_simps]
   step as ⟨dkSl0, h_dkSl0⟩
@@ -180,10 +148,10 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   step*
   rw [h_fb2]
   simp only [step_simps]
-  rw [h_state_len]
+  rw [encaps_state_len_eq_2080]
   simp only [step_simps]
   step as ⟨stateV, h_stateV1, h_stateV2⟩
-  rw [h_ss_size]
+  rw [libcrux_ml_kem.constants.SHARED_SECRET_SIZE_eq_32]
   simp only [step_simps]
   step as ⟨ssV, h_ssV1, h_ssV2⟩
   step as ⟨hdrS2, h_hdrS2⟩
@@ -193,7 +161,7 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
     rw [h_hdrS2, ← h_hdrV, h_hdrSl]; rfl
   -- `encapsulate1` on the header bytes, the sampled randomness, and the two buffers.
   obtain ⟨c1, st', ss', h_e1, h_st'len, h_ss'len⟩ :=
-    h_enc1 hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩
+    encapsulate1_ok hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩
       (by simp only [Slice.length, h_hdrS2_val]; scalar_tac)
       (by simp only [Slice.length]; scalar_tac)
       (by simp only [Slice.length]; scalar_tac)
@@ -221,7 +189,7 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
       rw [h_ekSl2, ← h_ekV, h_ekSl0]; rfl
     exact Subtype.ext h_val
   rw [h_ekArr]
-  obtain ⟨c2, h_e2⟩ := h_enc2 ⟨↑esSl, by scalar_tac⟩ ekA
+  obtain ⟨c2, h_e2⟩ := encapsulate2_ok ⟨↑esSl, by scalar_tac⟩ ekA
   rw [h_e2]
   simp only [step_simps]
   step as ⟨ct2V, h_ct2V⟩
@@ -274,9 +242,10 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
       rw [h_c2a_val, h_dc2Sl, ← h_ct2V]; rfl
     rw [h]
   rw [h_c2Ct]
-  -- Decapsulation recovers the shared secret of `encapsulate1` (`h_kem`).
+  -- Decapsulation recovers the shared secret of `encapsulate1`
+  -- (`decapsulate_compressed_key_roundtrip`).
   obtain ⟨ssA, h_dec, h_ssA⟩ :=
-    h_kem (seedBack s1) k hdrA ekA dkA hdrS2 (randBack s2)
+    decapsulate_compressed_key_roundtrip (seedBack s1) k hdrA ekA dkA hdrS2 (randBack s2)
       ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩ c1 st' ss'
       ⟨↑esSl, by scalar_tac⟩ c2
       h_k h_hdrA h_ekA h_dkA h_hdrS2_val h_e1 h_esSl h_e2

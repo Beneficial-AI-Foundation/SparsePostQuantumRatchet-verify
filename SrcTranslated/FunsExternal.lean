@@ -1582,13 +1582,6 @@ axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
   Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
 
-/-- `encapsulate2` is panic-free: on fixed-size inputs it always returns a
-ciphertext.  Used by the round-trip spec
-(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
-axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2_ok
-    (st : Array Std.U8 2080#usize) (ek : Array Std.U8 1152#usize) :
-    ∃ ct2, libcrux_ml_kem.mlkem768.incremental.encapsulate2 st ek = ok ct2
-
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed] -/
@@ -1674,17 +1667,6 @@ axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
     libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice
     Std.U8))
-
-/-- `encapsulate1` succeeds on well-sized inputs (64-byte header, 2080-byte
-state buffer, 32-byte shared-secret buffer) and preserves the buffer lengths.
-Used by the round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
-axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1_ok
-    (hdr : Slice Std.U8) (rand : Array Std.U8 32#usize) (st ss : Slice Std.U8)
-    (h_hdr : hdr.length = 64) (h_st : st.length = 2080) (h_ss : ss.length = 32) :
-    ∃ ct1 st' ss',
-      libcrux_ml_kem.mlkem768.incremental.encapsulate1 hdr rand st ss =
-        ok (core.result.Result.Ok ct1, st', ss') ∧
-      st'.length = 2080 ∧ ss'.length = 32
 
 /-- [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
