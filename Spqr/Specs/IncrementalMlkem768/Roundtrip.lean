@@ -45,7 +45,12 @@ the style of `libcrux_hmac.hmac_sha256_tag32_length_eq_32` (#243).  The
 per-function specifications of the incremental primitives have their own
 spec files, like the proved specifications in this repository:
 
-* `Spqr/Specs/LibcruxMlKem/Incremental/Encapsulate1.lean` (`encapsulate1_ok`);
+* `Spqr/Specs/LibcruxMlKem/Incremental/Encapsulate1.lean` — functional spec:
+  pure companions `encapsulate1_ct1!` / `encapsulate1_st!` / `encapsulate1_ss!`
+  with the bridging axiom `encapsulate1_eq` and the buffer-length axioms
+  `encapsulate1_st_length` / `encapsulate1_ss_length`, all conditional on the
+  input-length preconditions (`encapsulate1` genuinely fails on mis-sized
+  slices, so an unconditional bridging axiom would be unfaithful);
 * `Spqr/Specs/LibcruxMlKem/Incremental/Encapsulate2.lean` (`encapsulate2_ok`);
 * `Spqr/Specs/LibcruxMlKem/Incremental/DecapsulateCompressedKey.lean`
   (`decapsulate_compressed_key_roundtrip`) — **the KEM correctness of the
@@ -160,15 +165,21 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   have h_hdrS2_val : hdrS2.val =
       (KeyPairCompressedBytes.pk1! (KeyPairCompressedBytes.from_seed! (seedBack s1))).val := by
     rw [h_hdrS2, ← h_hdrV, h_hdrSl]; rfl
-  -- `encapsulate1` on the header bytes, the sampled randomness, and the two buffers.
-  obtain ⟨⟨re1, st', ss'⟩, h_e1, h_post1⟩ :=
-    WP.spec_imp_exists
-      (encapsulate1_ok hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩
-        (by simp only [Slice.length, h_hdrS2_val]; scalar_tac)
-        (by simp only [Slice.length]; scalar_tac)
-        (by simp only [Slice.length]; scalar_tac))
-  simp only [WP.uncurry'_pair] at h_post1
-  obtain ⟨⟨c1, rfl⟩, h_st'len, h_ss'len⟩ := h_post1
+  -- `encapsulate1` on the header bytes, the sampled randomness, and the two
+  -- buffers: it succeeds and returns its pure companions' values
+  -- (`encapsulate1_eq`), preserving the buffer lengths.
+  have h_hdrS2_len : hdrS2.length = 64 := by
+    simp only [Slice.length, h_hdrS2_val]; scalar_tac
+  have h_stS_len : Slice.length (⟨↑stateV, by scalar_tac⟩ : Slice Std.U8) = 2080 := by
+    simp only [Slice.length]; scalar_tac
+  have h_ssS_len : Slice.length (⟨↑ssV, by scalar_tac⟩ : Slice Std.U8) = 32 := by
+    simp only [Slice.length]; scalar_tac
+  have h_e1 :=
+    encapsulate1_eq hdrS2 (randBack s2) _ _ h_hdrS2_len h_stS_len h_ssS_len
+  have h_st'len :=
+    encapsulate1_st_length hdrS2 (randBack s2) _ _ h_hdrS2_len h_stS_len h_ssS_len
+  have h_ss'len :=
+    encapsulate1_ss_length hdrS2 (randBack s2) _ _ h_hdrS2_len h_stS_len h_ssS_len
   rw [h_e1]
   simp only [step_simps]
   simp only [core.result.Result.expect]
@@ -240,8 +251,11 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
     apply Subtype.ext
     exact h_dkSl2_val
   rw [h_dkArr]
-  have h_c1Ct : ({ value := c1a } : Ciphertext1 960#usize) = c1 := by
-    have h : c1a = c1.value := by
+  have h_c1Ct : ({ value := c1a } : Ciphertext1 960#usize) =
+      encapsulate1_ct1! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
+        ⟨↑ssV, by scalar_tac⟩ := by
+    have h : c1a = (encapsulate1_ct1! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
+        ⟨↑ssV, by scalar_tac⟩).value := by
       apply Subtype.ext
       rw [h_c1a_val, h_dc1Sl, ← h_ct1V]; rfl
     rw [h]
@@ -257,14 +271,14 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   obtain ⟨ssA, h_dec, h_ssA⟩ :=
     WP.spec_imp_exists
       (decapsulate_compressed_key_roundtrip (seedBack s1) hdrS2 (randBack s2)
-        ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩ c1 st' ss'
-        ⟨↑esSl, by scalar_tac⟩ c2
-        h_hdrS2_val h_e1 h_esSl h_e2)
+        _ _ ⟨↑esSl, by scalar_tac⟩ c2
+        h_hdrS2_val h_stS_len h_ssS_len h_esSl h_e2)
   rw [h_dec]
   simp only [step_simps]
   step as ⟨ss2V, h_ss2V⟩
-  -- Both shared secrets carry the bytes of `ss'`.
-  have h_val : ss'.val = ss2V.val := by
+  -- Both shared secrets carry the bytes of `encapsulate1_ss!`.
+  have h_val : (encapsulate1_ss! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
+      ⟨↑ssV, by scalar_tac⟩).val = ss2V.val := by
     rw [← h_ss2V, ← h_ssA]; rfl
   exact Subtype.ext h_val
 
