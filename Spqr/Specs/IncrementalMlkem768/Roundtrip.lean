@@ -35,9 +35,12 @@ these functions is an axiom with no defining equations, and the RNG's
 `fill_bytes` is an abstract trait field.
 
 The behaviour of the opaque libcrux functions is assumed via specification
-axioms.  Small panic-freedom and size facts (`from_seed_ok`, `pk1_ok`,
-`pk2_ok`, `sk_ok`, `encaps_state_len_eq_2080`, `SHARED_SECRET_SIZE_eq_32`)
-live in `SrcTranslated/FunsExternal.lean` next to the bare declarations, in
+axioms.  Key generation and the key-pair accessors have pure companions
+(`from_seed!`, `pk1!`, `pk2!`, `sk!`) with bridging axioms (`from_seed_eq`,
+`pk1_eq`, `pk2_eq`, `sk_eq`) stating that each call succeeds and returns its
+companion's value, and the two size constants have value axioms
+(`encaps_state_len_eq_2080`, `SHARED_SECRET_SIZE_eq_32`); these live in
+`SrcTranslated/FunsExternal.lean` next to the bare declarations, in
 the style of `libcrux_hmac.hmac_sha256_tag32_length_eq_32` (#243).  The
 per-function specifications of the incremental primitives have their own
 spec files, like the proved specifications in this repository:
@@ -122,21 +125,17 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   step*
   rw [h_fb1]
   simp only [step_simps]
-  obtain ⟨k, h_k⟩ := KeyPairCompressedBytes.from_seed_ok (seedBack s1)
-  rw [h_k]
+  rw [KeyPairCompressedBytes.from_seed_eq]
   simp only [step_simps]
-  obtain ⟨hdrA, h_hdrA⟩ := KeyPairCompressedBytes.pk1_ok k
-  rw [h_hdrA]
+  rw [KeyPairCompressedBytes.pk1_eq]
   simp only [step_simps]
   step as ⟨hdrSl, h_hdrSl⟩
   step as ⟨hdrV, h_hdrV⟩
-  obtain ⟨ekA, h_ekA⟩ := KeyPairCompressedBytes.pk2_ok k
-  rw [h_ekA]
+  rw [KeyPairCompressedBytes.pk2_eq]
   simp only [step_simps]
   step as ⟨ekSl0, h_ekSl0⟩
   step as ⟨ekV, h_ekV⟩
-  obtain ⟨dkA, h_dkA⟩ := KeyPairCompressedBytes.sk_ok k
-  rw [h_dkA]
+  rw [KeyPairCompressedBytes.sk_eq]
   simp only [step_simps]
   step as ⟨dkSl0, h_dkSl0⟩
   step as ⟨dkV, h_dkV⟩
@@ -156,8 +155,10 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   step as ⟨ssV, h_ssV1, h_ssV2⟩
   step as ⟨hdrS2, h_hdrS2⟩
   simp only [step_simps, lift, alloc.vec.Vec.deref_mut]
-  -- The header slice seen by `encapsulate1` carries the bytes of `pk1 k`.
-  have h_hdrS2_val : hdrS2.val = hdrA.val := by
+  -- The header slice seen by `encapsulate1` carries the bytes of `pk1!` of the
+  -- generated key pair.
+  have h_hdrS2_val : hdrS2.val =
+      (KeyPairCompressedBytes.pk1! (KeyPairCompressedBytes.from_seed! (seedBack s1))).val := by
     rw [h_hdrS2, ← h_hdrV, h_hdrSl]; rfl
   -- `encapsulate1` on the header bytes, the sampled randomness, and the two buffers.
   obtain ⟨⟨re1, st', ss'⟩, h_e1, h_post1⟩ :=
@@ -187,12 +188,16 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
     scalar_tac
   simp only [h_ekSl2_len, dif_pos]
   simp only [step_simps]
-  have h_ekArr : (⟨↑ekSl2, by scalar_tac⟩ : Array Std.U8 1152#usize) = ekA := by
-    have h_val : ekSl2.val = ekA.val := by
+  have h_ekArr : (⟨↑ekSl2, by scalar_tac⟩ : Array Std.U8 1152#usize) =
+      KeyPairCompressedBytes.pk2! (KeyPairCompressedBytes.from_seed! (seedBack s1)) := by
+    have h_val : ekSl2.val =
+        (KeyPairCompressedBytes.pk2! (KeyPairCompressedBytes.from_seed! (seedBack s1))).val := by
       rw [h_ekSl2, ← h_ekV, h_ekSl0]; rfl
     exact Subtype.ext h_val
   rw [h_ekArr]
-  obtain ⟨c2, h_e2, -⟩ := WP.spec_imp_exists (encapsulate2_ok ⟨↑esSl, by scalar_tac⟩ ekA)
+  obtain ⟨c2, h_e2, -⟩ :=
+    WP.spec_imp_exists (encapsulate2_ok ⟨↑esSl, by scalar_tac⟩
+      (KeyPairCompressedBytes.pk2! (KeyPairCompressedBytes.from_seed! (seedBack s1))))
   rw [h_e2]
   simp only [step_simps]
   step as ⟨ct2V, h_ct2V⟩
@@ -220,7 +225,8 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   obtain ⟨h_c2a_val, h_c2a_len⟩ := h_r2
   simp only [step_simps]
   step as ⟨dkSl2, h_dkSl2⟩
-  have h_dkSl2_val : dkSl2.val = dkA.val := by
+  have h_dkSl2_val : dkSl2.val =
+      (KeyPairCompressedBytes.sk! (KeyPairCompressedBytes.from_seed! (seedBack s1))).val := by
     rw [h_dkSl2, ← h_dkV, h_dkSl0]; rfl
   have h_dkSl2_len : dkSl2.len = 2400#usize := by
     have := Slice.len_val dkSl2
@@ -229,7 +235,8 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   simp only [h_dkSl2_len, dif_pos]
   simp only [step_simps]
   -- The rebuilt arrays are exactly the objects produced upstream.
-  have h_dkArr : (⟨↑dkSl2, by scalar_tac⟩ : Array Std.U8 2400#usize) = dkA := by
+  have h_dkArr : (⟨↑dkSl2, by scalar_tac⟩ : Array Std.U8 2400#usize) =
+      KeyPairCompressedBytes.sk! (KeyPairCompressedBytes.from_seed! (seedBack s1)) := by
     apply Subtype.ext
     exact h_dkSl2_val
   rw [h_dkArr]
@@ -249,10 +256,10 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   -- (`decapsulate_compressed_key_roundtrip`).
   obtain ⟨ssA, h_dec, h_ssA⟩ :=
     WP.spec_imp_exists
-      (decapsulate_compressed_key_roundtrip (seedBack s1) k hdrA ekA dkA hdrS2 (randBack s2)
+      (decapsulate_compressed_key_roundtrip (seedBack s1) hdrS2 (randBack s2)
         ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩ c1 st' ss'
         ⟨↑esSl, by scalar_tac⟩ c2
-        h_k h_hdrA h_ekA h_dkA h_hdrS2_val h_e1 h_esSl h_e2)
+        h_hdrS2_val h_e1 h_esSl h_e2)
   rw [h_dec]
   simp only [step_simps]
   step as ⟨ss2V, h_ss2V⟩

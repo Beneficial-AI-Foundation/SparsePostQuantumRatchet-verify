@@ -1592,12 +1592,31 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
   Array Std.U8 64#usize → Result
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes
 
-/-- Key generation from a 64-byte seed is panic-free.  Used by the round-trip
-spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_ok
+/-- Pure companion of `from_seed`: the key pair deterministically derived from
+a 64-byte seed.  `from_seed` is opaque and `Result`-valued, so this function
+gives its output a name that specifications can mention directly.  Used by the
+round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed!
+    (seed : Array Std.U8 64#usize) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes
+
+/-- Key generation from a 64-byte seed is panic-free and returns exactly
+`from_seed!`.  Used by the round-trip spec
+(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_eq
+    (seed : Array Std.U8 64#usize) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed =
+      ok (libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed!
+        seed)
+
+/-- Key generation from a 64-byte seed is panic-free (consequence of
+`from_seed_eq`). -/
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_ok
     (seed : Array Std.U8 64#usize) :
     ∃ k, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
-      seed = ok k
+      seed = ok k :=
+  ⟨_, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_eq
+    seed⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
@@ -1609,11 +1628,24 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
   libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
     Std.U8 64#usize)
 
-/-- The `pk1` accessor is panic-free.  Used by the round-trip spec
-(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_ok
+/-- Pure companion of `pk1`: the 64-byte public header of a key pair.  Used by
+the round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1!
     (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
-    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1 k = ok a
+    Array Std.U8 64#usize
+
+/-- The `pk1` accessor is panic-free and returns exactly `pk1!`.  Used by the
+round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_eq
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1 k =
+      ok (libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1! k)
+
+/-- The `pk1` accessor is panic-free (consequence of `pk1_eq`). -/
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_ok
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1 k = ok a :=
+  ⟨_, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_eq k⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 275:12-275:49
@@ -1625,11 +1657,24 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
   libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
     Std.U8 1152#usize)
 
-/-- The `pk2` accessor is panic-free.  Used by the round-trip spec
-(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_ok
+/-- Pure companion of `pk2`: the 1152-byte encapsulation key of a key pair.
+Used by the round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2!
     (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
-    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2 k = ok a
+    Array Std.U8 1152#usize
+
+/-- The `pk2` accessor is panic-free and returns exactly `pk2!`.  Used by the
+round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_eq
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2 k =
+      ok (libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2! k)
+
+/-- The `pk2` accessor is panic-free (consequence of `pk2_eq`). -/
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_ok
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2 k = ok a :=
+  ⟨_, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_eq k⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 283:12-283:54
@@ -1641,11 +1686,24 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
   libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes → Result (Array
     Std.U8 2400#usize)
 
-/-- The `sk` accessor is panic-free.  Used by the round-trip spec
-(`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_ok
+/-- Pure companion of `sk`: the 2400-byte decapsulation key of a key pair.
+Used by the round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk!
     (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
-    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k = ok a
+    Array Std.U8 2400#usize
+
+/-- The `sk` accessor is panic-free and returns exactly `sk!`.  Used by the
+round-trip spec (`Spqr/Specs/IncrementalMlkem768/Roundtrip.lean`). -/
+axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_eq
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k =
+      ok (libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk! k)
+
+/-- The `sk` accessor is panic-free (consequence of `sk_eq`). -/
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_ok
+    (k : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) :
+    ∃ a, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k = ok a :=
+  ⟨_, libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_eq k⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
