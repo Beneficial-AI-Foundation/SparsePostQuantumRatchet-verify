@@ -21,6 +21,6 @@ namespace libcrux_ml_kem.mlkem768.incremental
 ciphertext. -/
 axiom encapsulate2_ok
     (st : Array Std.U8 2080#usize) (ek : Array Std.U8 1152#usize) :
-    ∃ ct2, encapsulate2 st ek = ok ct2
+    encapsulate2 st ek ⦃ _ => True ⦄
 
 end libcrux_ml_kem.mlkem768.incremental

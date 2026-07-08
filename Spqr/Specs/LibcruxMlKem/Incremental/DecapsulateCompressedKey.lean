@@ -40,16 +40,15 @@ axiom decapsulate_compressed_key_roundtrip
     (dkA : Array Std.U8 2400#usize) (hdrS : Slice Std.U8)
     (rand : Array Std.U8 32#usize) (st ss : Slice Std.U8)
     (ct1 : Ciphertext1 960#usize) (st' ss' : Slice Std.U8)
-    (stA : Array Std.U8 2080#usize) (ct2 : Ciphertext2 128#usize) :
-    KeyPairCompressedBytes.from_seed seed = ok k →
-    KeyPairCompressedBytes.pk1 k = ok hdrA →
-    KeyPairCompressedBytes.pk2 k = ok ekA →
-    KeyPairCompressedBytes.sk k = ok dkA →
-    hdrS.val = hdrA.val →
-    encapsulate1 hdrS rand st ss = ok (.Ok ct1, st', ss') →
-    stA.val = st'.val →
-    encapsulate2 stA ekA = ok ct2 →
-    ∃ ssA, decapsulate_compressed_key dkA ct1 ct2 = ok ssA ∧
-      ssA.val = ss'.val
+    (stA : Array Std.U8 2080#usize) (ct2 : Ciphertext2 128#usize)
+    (h_seed : KeyPairCompressedBytes.from_seed seed = ok k)
+    (h_pk1 : KeyPairCompressedBytes.pk1 k = ok hdrA)
+    (h_pk2 : KeyPairCompressedBytes.pk2 k = ok ekA)
+    (h_sk : KeyPairCompressedBytes.sk k = ok dkA)
+    (h_hdr : hdrS.val = hdrA.val)
+    (h_enc1 : encapsulate1 hdrS rand st ss = ok (.Ok ct1, st', ss'))
+    (h_st : stA.val = st'.val)
+    (h_enc2 : encapsulate2 stA ekA = ok ct2) :
+    decapsulate_compressed_key dkA ct1 ct2 ⦃ ssA => ssA.val = ss'.val ⦄
 
 end libcrux_ml_kem.mlkem768.incremental

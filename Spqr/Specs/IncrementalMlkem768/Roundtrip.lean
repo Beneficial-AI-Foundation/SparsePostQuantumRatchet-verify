@@ -160,11 +160,14 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   have h_hdrS2_val : hdrS2.val = hdrA.val := by
     rw [h_hdrS2, ← h_hdrV, h_hdrSl]; rfl
   -- `encapsulate1` on the header bytes, the sampled randomness, and the two buffers.
-  obtain ⟨c1, st', ss', h_e1, h_st'len, h_ss'len⟩ :=
-    encapsulate1_ok hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩
-      (by simp only [Slice.length, h_hdrS2_val]; scalar_tac)
-      (by simp only [Slice.length]; scalar_tac)
-      (by simp only [Slice.length]; scalar_tac)
+  obtain ⟨⟨re1, st', ss'⟩, h_e1, h_post1⟩ :=
+    WP.spec_imp_exists
+      (encapsulate1_ok hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩
+        (by simp only [Slice.length, h_hdrS2_val]; scalar_tac)
+        (by simp only [Slice.length]; scalar_tac)
+        (by simp only [Slice.length]; scalar_tac))
+  simp only [WP.uncurry'_pair] at h_post1
+  obtain ⟨⟨c1, rfl⟩, h_st'len, h_ss'len⟩ := h_post1
   rw [h_e1]
   simp only [step_simps]
   simp only [core.result.Result.expect]
@@ -189,7 +192,7 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
       rw [h_ekSl2, ← h_ekV, h_ekSl0]; rfl
     exact Subtype.ext h_val
   rw [h_ekArr]
-  obtain ⟨c2, h_e2⟩ := encapsulate2_ok ⟨↑esSl, by scalar_tac⟩ ekA
+  obtain ⟨c2, h_e2, -⟩ := WP.spec_imp_exists (encapsulate2_ok ⟨↑esSl, by scalar_tac⟩ ekA)
   rw [h_e2]
   simp only [step_simps]
   step as ⟨ct2V, h_ct2V⟩
@@ -245,10 +248,11 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   -- Decapsulation recovers the shared secret of `encapsulate1`
   -- (`decapsulate_compressed_key_roundtrip`).
   obtain ⟨ssA, h_dec, h_ssA⟩ :=
-    decapsulate_compressed_key_roundtrip (seedBack s1) k hdrA ekA dkA hdrS2 (randBack s2)
-      ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩ c1 st' ss'
-      ⟨↑esSl, by scalar_tac⟩ c2
-      h_k h_hdrA h_ekA h_dkA h_hdrS2_val h_e1 h_esSl h_e2
+    WP.spec_imp_exists
+      (decapsulate_compressed_key_roundtrip (seedBack s1) k hdrA ekA dkA hdrS2 (randBack s2)
+        ⟨↑stateV, by scalar_tac⟩ ⟨↑ssV, by scalar_tac⟩ c1 st' ss'
+        ⟨↑esSl, by scalar_tac⟩ c2
+        h_k h_hdrA h_ekA h_dkA h_hdrS2_val h_e1 h_esSl h_e2)
   rw [h_dec]
   simp only [step_simps]
   step as ⟨ss2V, h_ss2V⟩
