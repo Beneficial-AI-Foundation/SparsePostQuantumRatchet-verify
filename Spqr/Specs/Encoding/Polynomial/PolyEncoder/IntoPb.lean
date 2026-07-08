@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import Spqr.Math.Poly.ModByMonic
+import Spqr.Math.Poly.Identities.Basic
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
@@ -252,8 +253,6 @@ the polynomial's coefficients via `Poly::serialize` and pushes the result onto `
 
 namespace spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 
-instance : Inhabited encoding.polynomial.Poly := ⟨⟨alloc.vec.Vec.new _⟩⟩
-
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.into_pb_loop1.body`**:
 
 One step of the polynomial-serialization loop. Retrieves the next `Poly` from the slice iterator,
@@ -279,7 +278,7 @@ theorem body_spec
             serialized.length =
               2 * (iter.slice[iter.i]!).degree ∧
             ∀ k < (iter.slice[iter.i]!).degree,
-                256 * serialized[2 * k]!   + serialized[2 * k +1]! =
+                256 * serialized[2 * k]! + serialized[2 * k +1]! =
                   ((iter.slice[iter.i]!).coefficients[k]!).value.val ⦄ := by
   unfold body
   obtain ⟨opt, iter1', hnext, h_none, h_some⟩ := core.slice.iter.IteratorSliceIter.next_post iter
@@ -345,7 +344,7 @@ theorem loop_spec
         p.2.length = p.1.i ∧
         (∀ j < p.1.i, (p.2[j]!).length = 2 * (iter.slice[j]!).degree ∧
           ∀ k < (iter.slice[j]!).degree,
-            256 * (p.2[j]!)[2 * k]!+ (p.2[j]!)[2 * k + 1]! =
+            256 * (p.2[j]!)[2 * k]! + (p.2[j]!)[2 * k + 1]! =
             ((iter.slice[j]!).coefficients[k]!).value.val))
   · rintro ⟨iter', out'⟩ ⟨h_slice', h_start_le', h_out_len', h_pre'⟩
     simp only [] at h_slice' h_start_le' h_out_len' h_pre' ⊢
@@ -408,11 +407,11 @@ theorem into_pb_spec_bytes
       | .Polys polys =>
         result.pts.val = [] ∧
         result.polys.length = polys.length ∧
-        ∀  j < polys.length,
-           result.polys[j]!.length =2 * (polys.val[j]!).degree ∧
-            ∀ k < (polys.val[j]!).degree,
-                256 * (result.polys[j]!)[2 * k ]! + (result.polys[j]!)[2 * k + 1]! =
-                  ((polys[j]!).coefficients[k]!).value.val ⦄ := by
+        ∀ j < polys.length,
+          result.polys[j]!.length = 2 * (polys.val[j]!).degree ∧
+          ∀ k < (polys.val[j]!).degree,
+            256 * (result.polys[j]!)[2 * k ]! + (result.polys[j]!)[2 * k + 1]! =
+              ((polys[j]!).coefficients[k]!).value.val ⦄ := by
   unfold into_pb
   simp only [alloc.vec.Vec.with_capacity]
   cases h : self.s with
@@ -475,7 +474,7 @@ theorem into_pb_spec
             ∀ k < (polys[j]!).degree,
                  256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! =
                   ((polys[j]!).coefficients[k]! ).value.val ∧
-                (256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! :ℕ ).toGF216 =
+                (256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! : ℕ).toGF216 =
                   ((polys[j]!).coefficients[k]!).value.val.toGF216 ∧
                 natToBinaryPoly (
                   256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! ) =
