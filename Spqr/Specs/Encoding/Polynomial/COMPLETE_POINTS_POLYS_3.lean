@@ -3,6 +3,7 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 import Spqr.Math.Poly.Lagrange.CompletePoints
 
@@ -26,16 +27,21 @@ open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
 
 namespace spqr.encoding.polynomial
 
+instance instInhabitedPolyConst3 : Inhabited (PolyConst 3#usize ) := ⟨PolyConst.ZEROS 3#usize⟩
+
+/-- The result type of `COMPLETE_POINTS_POLYS_3`. We hoist it to avoid re-elaborating
+the `#usize` literal's tactic proof inside the WP binder, where unification would
+resolve it first and leave the tactic with no goals. -/
+abbrev COMPLETE_POINTS_POLYS_3.ResultType := Array (PolyConst 3#usize) 3#usize
+
 /-- **Spec theorem for `encoding.polynomial.COMPLETE_POINTS_POLYS_3`**:
 
 Evaluates successfully (specialisation of `lagrange_polys_for_complete_points` at `N = 3`).
 Each `result[j]` is the `j`-th scaled Lagrange basis polynomial for the complete points
 `0, 1, 2` with `y = GF16.ONE`. -/
-instance instInhabitedPolyConst3 : Inhabited (PolyConst 3#usize) := ⟨PolyConst.ZEROS 3#usize⟩
-
 @[step]
 theorem COMPLETE_POINTS_POLYS_3_spec :
-    COMPLETE_POINTS_POLYS_3 ⦃ (result ) =>
+    COMPLETE_POINTS_POLYS_3 ⦃ (result : COMPLETE_POINTS_POLYS_3.ResultType) =>
       ∀ (j : Nat) (_ : j < 3),
         listToGF216Poly (result.val[j]!).coefficients.val = scaledLagrangeBasis 3#usize j ⦄ := by
   unfold COMPLETE_POINTS_POLYS_3
@@ -55,7 +61,7 @@ theorem COMPLETE_POINTS_POLYS_3_spec :
       trans n
       · exact hx
       · change n = (⟨BitVec.ofNat 16 n⟩ : UScalar .U16).bv.toNat
-        simp [BitVec.toNat_ofNat]
+        simp only
         grind
     · exact hy.trans (gf16_ext GF16.ONE_value)
   have h := result_post2 _ result_post3 (by grind) (by grind)
