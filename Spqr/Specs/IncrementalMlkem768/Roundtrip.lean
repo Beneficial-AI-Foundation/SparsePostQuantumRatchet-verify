@@ -5,6 +5,7 @@ Authors: Zhang Liao
 -/
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
+import Spqr.Specs.IncrementalMlkem768.Decaps
 import Spqr.Specs.LibcruxMlKem.Incremental.DecapsulateCompressedKey
 import Spqr.Specs.LibcruxMlKem.Incremental.Encapsulate1
 import Spqr.Specs.LibcruxMlKem.Incremental.Encapsulate2
@@ -58,6 +59,14 @@ spec files, like the proved specifications in this repository:
   recovers the shared secret produced by the `encapsulate1`/`encapsulate2`
   chain.  This is the "roundtrip property for decaps" proper, stated over the
   extracted axioms and independent of any external formalisation.
+
+The SPQR `decaps` wrapper itself has a *proved* functional specification,
+`decaps_spec` (`Spqr/Specs/IncrementalMlkem768/Decaps.lean`): given the
+fixed-size images of its three vector inputs and the behaviour of
+`decapsulate_compressed_key` on them, `decaps` succeeds and returns exactly
+that shared secret.  The proof below applies `decaps_spec` at the `decaps`
+call site (discharging its hypothesis with
+`decapsulate_compressed_key_roundtrip`) instead of unfolding the wrapper.
 
 The theorem keeps two explicit hypotheses that cannot (or should not) be
 global axioms:
@@ -121,7 +130,7 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
       _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
         es = ok none) :
     round_trip rngInst cryptoRngInst rng ⦃ ss1 ss2 => ss1 = ss2 ⦄ := by
-  unfold round_trip generate encaps1 encaps2 decaps
+  unfold round_trip generate encaps1 encaps2
   -- ### `generate`: seed buffer, RNG fill, `from_seed`, and the three accessors.
   step as ⟨seedP, h_seedS, h_seedBack⟩
   obtain ⟨seedS, seedBack⟩ := seedP
@@ -212,74 +221,33 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
   rw [h_e2]
   simp only [step_simps]
   step as ⟨ct2V, h_ct2V⟩
-  -- ### `decaps`: rebuild the fixed-size arrays and decapsulate.
-  step as ⟨dc1Sl, h_dc1Sl⟩
-  step as ⟨r1, h_r1⟩
-  have h_dc1Sl_len : dc1Sl.length = 960 := by
-    simp only [Slice.length, h_dc1Sl, ← h_ct1V]
-    scalar_tac
-  rcases r1 with c1a | e1
-  swap
-  · simp only [h_dc1Sl_len, ne_eq, not_true_eq_false] at h_r1
-  simp only at h_r1
-  obtain ⟨h_c1a_val, h_c1a_len⟩ := h_r1
-  simp only [step_simps]
-  step as ⟨dc2Sl, h_dc2Sl⟩
-  step as ⟨r2, h_r2⟩
-  have h_dc2Sl_len : dc2Sl.length = 128 := by
-    simp only [Slice.length, h_dc2Sl, ← h_ct2V]
-    scalar_tac
-  rcases r2 with c2a | e2
-  swap
-  · simp only [h_dc2Sl_len, ne_eq, not_true_eq_false] at h_r2
-  simp only at h_r2
-  obtain ⟨h_c2a_val, h_c2a_len⟩ := h_r2
-  simp only [step_simps]
-  step as ⟨dkSl2, h_dkSl2⟩
-  have h_dkSl2_val : dkSl2.val =
-      (KeyPairCompressedBytes.sk! (KeyPairCompressedBytes.from_seed! (seedBack s1))).val := by
-    rw [h_dkSl2, ← h_dkV, h_dkSl0]; rfl
-  have h_dkSl2_len : dkSl2.len = 2400#usize := by
-    have := Slice.len_val dkSl2
-    simp only [Slice.length, h_dkSl2_val] at this
-    scalar_tac
-  simp only [h_dkSl2_len, dif_pos]
-  simp only [step_simps]
-  -- The rebuilt arrays are exactly the objects produced upstream.
-  have h_dkArr : (⟨↑dkSl2, by scalar_tac⟩ : Array Std.U8 2400#usize) =
-      KeyPairCompressedBytes.sk! (KeyPairCompressedBytes.from_seed! (seedBack s1)) := by
-    apply Subtype.ext
-    exact h_dkSl2_val
-  rw [h_dkArr]
-  have h_c1Ct : ({ value := c1a } : Ciphertext1 960#usize) =
-      encapsulate1_ct1! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
-        ⟨↑ssV, by scalar_tac⟩ := by
-    have h : c1a = (encapsulate1_ct1! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
-        ⟨↑ssV, by scalar_tac⟩).value := by
-      apply Subtype.ext
-      rw [h_c1a_val, h_dc1Sl, ← h_ct1V]; rfl
-    rw [h]
-  rw [h_c1Ct]
-  have h_c2Ct : ({ value := c2a } : Ciphertext2 128#usize) = c2 := by
-    have h : c2a = c2.value := by
-      apply Subtype.ext
-      rw [h_c2a_val, h_dc2Sl, ← h_ct2V]; rfl
-    rw [h]
-  rw [h_c2Ct]
+  -- ### `decaps`: apply the functional spec `decaps_spec`
+  -- (`Spqr/Specs/IncrementalMlkem768/Decaps.lean`) at the call site.
+  -- The vectors fed to `decaps` carry the bytes of the objects produced upstream.
+  have h_dkVal : (KeyPairCompressedBytes.sk!
+      (KeyPairCompressedBytes.from_seed! (seedBack s1))).val = dkV.val := by
+    rw [← h_dkV, h_dkSl0]; rfl
+  have h_ct1Val : (encapsulate1_ct1! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
+      ⟨↑ssV, by scalar_tac⟩).value.val = ct1V.val := by
+    rw [← h_ct1V]; rfl
+  have h_ct2Val : c2.value.val = ct2V.val := by
+    rw [← h_ct2V]; rfl
   -- Decapsulation recovers the shared secret of `encapsulate1`
-  -- (`decapsulate_compressed_key_roundtrip`).
+  -- (`decapsulate_compressed_key_roundtrip`); this discharges the hypothesis of
+  -- `decaps_spec`.
   obtain ⟨ssA, h_dec, h_ssA⟩ :=
     WP.spec_imp_exists
       (decapsulate_compressed_key_roundtrip (seedBack s1) hdrS2 (randBack s2)
         _ _ ⟨↑esSl, by scalar_tac⟩ c2
         h_hdrS2_val h_stS_len h_ssS_len h_esSl h_e2)
-  rw [h_dec]
+  obtain ⟨ss2V, h_deq, h_ss2Val, -⟩ :=
+    WP.spec_imp_exists (decaps_spec dkV ct1V ct2V _ _ c2 ssA h_dkVal h_ct1Val h_ct2Val h_dec)
+  rw [h_deq]
   simp only [step_simps]
-  step as ⟨ss2V, h_ss2V⟩
   -- Both shared secrets carry the bytes of `encapsulate1_ss!`.
   have h_val : (encapsulate1_ss! hdrS2 (randBack s2) ⟨↑stateV, by scalar_tac⟩
       ⟨↑ssV, by scalar_tac⟩).val = ss2V.val := by
-    rw [← h_ss2V, ← h_ssA]; rfl
+    rw [h_ss2Val, h_ssA]
   exact Subtype.ext h_val
 
 end spqr.incremental_mlkem768
