@@ -111,6 +111,18 @@ noncomputable def round_trip {R : Type} (rngInst : rand.rng.Rng R)
   let ss2 ← decaps keys.dk ct1 ct2
   ok (ss1, ss2)
 
+
+-- noncomputable def round_trip2 {R : Type} (rngInst : rand.rng.Rng R)
+--     (cryptoRngInst : rand_core.CryptoRng R) (keys : Keys) (rng1 : R) :
+--     Result ((alloc.vec.Vec Std.U8) × (alloc.vec.Vec Std.U8)) := do
+--   let (t, _rng2) ← encaps1 rngInst cryptoRngInst keys.hdr rng1
+--   let (ct1, es, ss1) := t
+--   let ct2 ← encaps2 keys.ek es
+--   let ss2 ← decaps keys.dk ct1 ct2
+--   ok (ss1, ss2)
+
+
+
 /-- **Round-trip property for the SPQR incremental ML-KEM-768 wrappers**:
 
 Under the specification axioms for the opaque libcrux incremental API (see the
@@ -122,14 +134,14 @@ theorem round_trip_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoRngInst : rand_core.CryptoRng R) (rng : R)
     -- The RNG's `fill_bytes` is panic-free and preserves the buffer length.
     (h_fill : ∀ (r : R) (s : Slice Std.U8), ∃ r' s',
-      rngInst.rand_coreRngCoreInst.fill_bytes r s = ok (r', s') ∧
-      s'.length = s.length)
+      rngInst.rand_coreRngCoreInst.fill_bytes r s = ok (r', s') ∧ s'.length = s.length)
     -- Freshly produced encapsulation states are correctly encoded, so the
     -- endianness repair (libcrux issue #1275) is the identity.
     (h_fix : ∀ es,
       _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
         es = ok none) :
     round_trip rngInst cryptoRngInst rng ⦃ ss1 ss2 => ss1 = ss2 ⦄ := by
+  -- sorry
   unfold round_trip generate encaps1 encaps2
   -- ### `generate`: seed buffer, RNG fill, `from_seed`, and the three accessors.
   step as ⟨seedP, h_seedS, h_seedBack⟩
