@@ -1,7 +1,7 @@
 /-
 Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Zhang Liao
+Authors: Liao Zhang
 -/
 import SrcTranslated.Funs
 
