@@ -5,6 +5,7 @@ Authors: Zhang Liao
 -/
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
+import Spqr.Specs.Aeneas.RangeStepBy
 import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state`
@@ -214,13 +215,12 @@ theorem flip_endianness_of_encapsulation_state_spec
       (∀ k, es.length - 32 ≤ k → k < es.length → result[k]! = es[k]!) ⦄ := by
   unfold flip_endianness_of_encapsulation_state
   step*
-  subst fixed_es
-  apply WP.spec_mono
-    (flip_endianness_of_encapsulation_state_loop.loop_spec es _ es (by grind)
-      (by scalar_tac) (by scalar_tac) (by scalar_tac) (by scalar_tac) rfl
-      (fun _ _ _ => rfl) (by scalar_tac))
-  rintro result ⟨h_len, h_swap, h_tail⟩
-  refine ⟨h_len, fun k hk => ?_, fun k hk hk' => h_tail k (by scalar_tac) hk'⟩
-  exact h_swap k (by scalar_tac)
+  case es => exact es
+  case h_len => grind
+  case h_suffix => grind
+  case h_prefix => grind
+  case h_end_le => scalar_tac
+  refine ⟨result_post1, fun k hk => result_post2 k (by scalar_tac),
+    fun k hk hk' => result_post3 k (by scalar_tac) hk'⟩
 
 end spqr.incremental_mlkem768
