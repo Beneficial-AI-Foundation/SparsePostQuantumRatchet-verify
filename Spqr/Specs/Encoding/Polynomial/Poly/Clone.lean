@@ -1,9 +1,10 @@
 /-
 Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Hoang Le Truong
+Authors: Hoang Le Truong, Liao Zhang
 -/
 import Spqr.Math.Poly.Identities.Basic
+import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Clone for Poly}::clone`
 
@@ -24,11 +25,8 @@ private lemma clone_GF16_id (x : GF16) :
 @[step]
 private lemma clone_vec_GF16_spec (v : alloc.vec.Vec GF16) :
     alloc.vec.CloneVec.clone GF16.Insts.CoreCloneClone v ⦃ (r : alloc.vec.Vec GF16) =>
-      r = v ⦄ := by
-  unfold alloc.vec.CloneVec.clone
-  apply WP.spec_mono (Slice.clone_spec (fun x _ => by simp [GF16.Insts.CoreCloneClone.clone]))
-  intro v' h
-  exact h.symm
+      r = v ⦄ :=
+  alloc.vec.CloneVec.clone_spec _ v (fun x _ => by simp [GF16.Insts.CoreCloneClone.clone])
 
 /-- **Spec theorem for `encoding.polynomial.Poly.Insts.CoreCloneClone.clone`**:
 
