@@ -5,6 +5,7 @@ Authors: Zhang Liao
 -/
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
+import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state`
 
@@ -214,14 +215,8 @@ theorem flip_endianness_of_encapsulation_state_spec
       (∀ k < es.length - 32, result[k]! = if k % 2 = 0 then es[k + 1]! else es[k - 1]!) ∧
       (∀ k, es.length - 32 ≤ k → k < es.length → result[k]! = es[k]!) ⦄ := by
   unfold flip_endianness_of_encapsulation_state
-  have h_clone : alloc.vec.CloneVec.clone core.clone.CloneU8 es = ok es := by
-    unfold alloc.vec.CloneVec.clone
-    obtain ⟨s', h_eq, hs⟩ := WP.spec_imp_exists (Slice.clone_spec (fun x _ => rfl))
-    rw [h_eq, ← hs]
-    rfl
-  rw [h_clone]
-  simp only [bind_tc_ok]
   step*
+  subst fixed_es
   apply WP.spec_mono
     (flip_endianness_of_encapsulation_state_loop.loop_spec es _ es (by grind)
       (by scalar_tac) (by scalar_tac) (by scalar_tac) (by scalar_tac) rfl
