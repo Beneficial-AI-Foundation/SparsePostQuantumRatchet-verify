@@ -29,19 +29,19 @@ namespace spqr.encoding.polynomial
 
 instance instInhabitedPolyConst3 : Inhabited (PolyConst 3#usize ) := ⟨PolyConst.ZEROS 3#usize⟩
 
-/-- The result type of `COMPLETE_POINTS_POLYS_3`. We hoist it to avoid re-elaborating
-the `#usize` literal's tactic proof inside the WP binder, where unification would
-resolve it first and leave the tactic with no goals. -/
-abbrev COMPLETE_POINTS_POLYS_3.ResultType := Array (PolyConst 3#usize) 3#usize
-
 /-- **Spec theorem for `encoding.polynomial.COMPLETE_POINTS_POLYS_3`**:
 
 Evaluates successfully (specialisation of `lagrange_polys_for_complete_points` at `N = 3`).
 Each `result[j]` is the `j`-th scaled Lagrange basis polynomial for the complete points
-`0, 1, 2` with `y = GF16.ONE`. -/
+`0, 1, 2` with `y = GF16.ONE`.
+
+**Note on the result binder**: The result is left untyped in the WP binder. Annotating it
+as `Array (PolyConst 3#usize) 3#usize` triggers a "no goals to be solved" error because
+the `3#usize` macro carries an internal tactic proof (`by first | decide | scalar_tac`)
+that Lean's unifier resolves via the known return type before the explicit tactic block executes. -/
 @[step]
 theorem COMPLETE_POINTS_POLYS_3_spec :
-    COMPLETE_POINTS_POLYS_3 ⦃ (result : COMPLETE_POINTS_POLYS_3.ResultType) =>
+    COMPLETE_POINTS_POLYS_3 ⦃ (result) =>
       ∀ (j : Nat) (_ : j < 3),
         listToGF216Poly (result.val[j]!).coefficients.val = scaledLagrangeBasis 3#usize j ⦄ := by
   unfold COMPLETE_POINTS_POLYS_3
