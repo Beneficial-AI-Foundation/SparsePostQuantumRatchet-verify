@@ -194,8 +194,6 @@ theorem loop_spec
 
 end spqr.incremental_mlkem768.flip_endianness_of_encapsulation_state_loop
 
-/-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state` -/
-
 namespace spqr.incremental_mlkem768
 
 /-- **Spec theorem for `incremental_mlkem768.flip_endianness_of_encapsulation_state`**:
