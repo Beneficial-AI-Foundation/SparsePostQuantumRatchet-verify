@@ -37,7 +37,10 @@ import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.RangeStepBy
 import Spqr.Specs.Aeneas.SliceIteratorNext
+import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Aeneas.VecExtendFromSlice
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Authenticator.Authenticator.MacHdr
@@ -94,6 +97,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
 import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.IncrementalMlkem768.Generate
