@@ -41,6 +41,16 @@ open Aeneas Aeneas.Std Result
 
 namespace spqr.incremental_mlkem768.flip_endianness_of_encapsulation_state_loop
 
+/-! # Spec theorem for `flip_endianness_of_encapsulation_state`: loop body
+
+One iteration of the byte-swapping loop.  If the range is exhausted (`start ≥ end`) the body
+returns `done` with the vector unchanged; otherwise it returns `cont`, the iterator advances
+by 2, and the byte pair at `(start, start + 1)` is swapped, all other entries unchanged.  The
+parity preconditions (`start` and `end` even) guarantee `start + 2 ≤ end` whenever
+`start < end`, so the non-saturating `StepBy` iterator spec applies and both indexing
+operations are in bounds.  The proof case-splits on `start < end` and uses the Aeneas step
+specs `IteratorStepBy.next_range_Usize_step_spec` / `_none_step_spec`. -/
+
 /-- **Spec theorem for `flip_endianness_of_encapsulation_state_loop.body`**:
 
 One step of the byte-swapping loop.  Preconditions: the iterator steps by 2, its `start` and
@@ -99,9 +109,8 @@ theorem body_spec
     simp only [bind_tc_ok, h_opt]
     grind
 
-end spqr.incremental_mlkem768.flip_endianness_of_encapsulation_state_loop
 
-/-! # Spec theorem for `flip_endianness_of_encapsulation_state`: loop 0
+/-! # Spec theorem for `flip_endianness_of_encapsulation_state`: loop
 
 The full byte-swapping loop, driving the body to completion.  Loop invariant: `start` is even
 and bounded by `end`, the vector keeps its length, the already-processed prefix `[0, start)`
@@ -109,7 +118,6 @@ holds the swapped bytes of the reference vector `es`, and the unprocessed suffix
 still equals `es`.  The proof lifts `body_spec` via `loop.spec_decr_nat` with measure
 `end - start`. -/
 
-namespace spqr.incremental_mlkem768.flip_endianness_of_encapsulation_state_loop
 
 /-- **Spec theorem for `flip_endianness_of_encapsulation_state_loop`**:
 
