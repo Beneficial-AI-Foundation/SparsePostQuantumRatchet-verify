@@ -53,10 +53,12 @@ specs `IteratorStepBy.next_range_Usize_step_spec` / `_none_step_spec`. -/
 
 /-- **Spec theorem for `flip_endianness_of_encapsulation_state_loop.body`**:
 
-One step of the byte-swapping loop.  Preconditions: the iterator steps by 2, its `start` and
-`end` are even, and `end` does not exceed the vector length.  In the **done** case the vector
-is unchanged and the range is exhausted.  In the **cont** case the iterator advances by 2 and
-the byte pair at `(start, start + 1)` is swapped, all other entries unchanged. -/
+One step of the byte-swapping loop.
+- Preconditions: the iterator steps by 2, its `start` and `end` are even, and `end` does not exceed
+  the vector length.
+- In the **done** case the vector is unchanged and the range is exhausted.
+- In the **cont** case the iterator advances by 2 and the byte pair at `(start, start + 1)` is
+  swapped, all other entries unchanged. -/
 @[step]
 theorem body_spec
     (iter : core.iter.adapters.step_by.StepBy (core.ops.range.Range Usize))
