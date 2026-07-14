@@ -838,11 +838,23 @@ theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_sp
     Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map"]
-axiom core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
-  {T : Type} {B : Type} {F : Type} (opsfunctionFnMutFTupleSharedATBInst :
-  core.ops.function.FnMut F T B) :
-  core.slice.iter.Iter T → F → Result (core.iter.adapters.map.Map
-    (core.slice.iter.Iter T) F)
+def core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
+  {T : Type} {B : Type} {F : Type}
+  (opsfunctionFnMutFTupleSharedATBInst: core.ops.function.FnMut F T B)
+  (iter: core.slice.iter.Iter T)
+  (fn: F): Result (core.iter.adapters.map.Map (core.slice.iter.Iter T) F) :=
+    ok {iter := iter, f:= fn}
+
+@[step]
+theorem sharedAT_map_spec {T : Type} {B : Type} {F : Type} (opsfunctionFnMutFTupleSharedATBInst:
+    core.ops.function.FnMut F T B)
+    (iter: core.slice.iter.Iter T) (fn: F) :
+    core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
+      opsfunctionFnMutFTupleSharedATBInst iter fn
+      ⦃ (map : (core.iter.adapters.map.Map (core.slice.iter.Iter T) F)) =>
+      map.f = fn ∧ map.iter = iter ⦄ := by
+  unfold core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
+  simp [WP.spec_ok]
 
 /-- [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a (T), core::slice::iter::Iter<'a, T>> for &'a ([T])}::into_iter]:
     Source: '/rustc/library/core/src/slice/iter.rs', lines 25:4-25:37
@@ -862,30 +874,6 @@ theorem into_iter_spec {T : Type} (s : Slice T) :
       iter.slice = s ∧ iter.i = 0 ⦄ := by
   unfold SharedASlice.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
   simp [WP.spec_ok]
-
-/-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a ([T])> for core::slice::iter::ChunksExact<'a, T>}::collect]:
-    Source: '/rustc/library/core/src/slice/iter.rs', lines 1892:0-1892:43
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::collect] -/
-@[rust_fun
-  "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::collect"]
-axiom
-  core.slice.iter.ChunksExact.Insts.CoreIterTraitsIteratorIteratorSharedASlice.collect
-  {T : Type} {B : Type} (itertraitscollectFromIteratorBSharedASliceInst :
-  core.iter.traits.collect.FromIterator B (Slice T)) :
-  core.slice.iter.ChunksExact T → Result B
-
-/-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a ([T])> for core::slice::iter::ChunksExact<'a, T>}::map]:
-    Source: '/rustc/library/core/src/slice/iter.rs', lines 1892:0-1892:43
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::map] -/
-@[rust_fun
-  "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::map"]
-axiom
-  core.slice.iter.ChunksExact.Insts.CoreIterTraitsIteratorIteratorSharedASlice.map
-  {T : Type} {B : Type} {F : Type} (opsfunctionFnMutFTupleSharedASliceBInst :
-  core.ops.function.FnMut F (Slice T) B) :
-  core.slice.iter.ChunksExact T → F → Result (core.iter.adapters.map.Map
-    (core.slice.iter.ChunksExact T) F)
-
 
 /-- [core::result::{core::result::Result<T, E>}::ok]:
     Source: '/rustc/library/core/src/result.rs', lines 708:4-711:28
