@@ -176,29 +176,34 @@ theorem core.array.from_fn_loop_length
     l.length = n := by
   induction n generalizing f i l with
   | zero =>
-    simp [core.array.from_fn_loop] at h_ok
+    simp only [from_fn_loop, ok.injEq, List.nil_eq] at h_ok
     subst h_ok; rfl
   | succ k ih =>
     simp only [core.array.from_fn_loop] at h_ok
     match h_call : fnMutInst.call_mut f i with
     | .ok (val, f') =>
-      simp [h_call, bind_ok] at h_ok
+      simp only [h_call] at h_ok
       match h_add : i + 1#usize with
       | .ok i' =>
-        simp [h_add, bind_ok] at h_ok
+        simp only [h_add] at h_ok
         match h_rest : core.array.from_fn_loop fnMutInst f' i' k with
         | .ok rest =>
-          simp [h_rest, bind_ok] at h_ok
+          simp only [bind_tc_ok, uncurry_apply_pair, h_rest, ok.injEq] at h_ok
           subst h_ok
-          simp [ih f' i' rest h_rest (by
-            have := UScalar.add_equiv i (1#usize : Usize)
-            rw [h_add] at this; exact by scalar_tac)]
-        | .fail e => simp [h_rest] at h_ok
-        | .div => simp [h_rest] at h_ok
-      | .fail e => simp [h_add] at h_ok
-      | .div => simp [h_add] at h_ok
-    | .fail e => simp [h_call] at h_ok
-    | .div => simp [h_call] at h_ok
+          simp only [List.length_cons,
+            ih f' i' rest h_rest
+                (by
+                  have := UScalar.add_equiv i (1#usize : Usize)
+                  rw [h_add] at this; exact by scalar_tac)]
+        | .fail e => simp only [bind_tc_ok, uncurry_apply_pair, h_rest, bind_tc_fail,
+          reduceCtorEq] at h_ok
+        | .div => simp only [bind_tc_ok, uncurry_apply_pair, h_rest, bind_tc_div,
+          reduceCtorEq] at h_ok
+      | .fail e => simp only [h_add, bind_tc_fail, bind_tc_ok, uncurry_apply_pair,
+        reduceCtorEq] at h_ok
+      | .div => simp only [h_add, bind_tc_div, bind_tc_ok, uncurry_apply_pair, reduceCtorEq] at h_ok
+    | .fail e => simp only [h_call, bind_tc_fail, reduceCtorEq] at h_ok
+    | .div => simp only [h_call, bind_tc_div, reduceCtorEq] at h_ok
 
 /-- [core::array::from_fn]:
     Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52
