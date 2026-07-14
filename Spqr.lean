@@ -76,6 +76,7 @@ import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_1
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_3
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
