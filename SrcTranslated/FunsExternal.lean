@@ -845,6 +845,17 @@ def core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
   (fn: F): Result (core.iter.adapters.map.Map (core.slice.iter.Iter T) F) :=
     ok {iter := iter, f:= fn}
 
+@[step]
+theorem sharedAT_map_spec {T : Type} {B : Type} {F : Type} (opsfunctionFnMutFTupleSharedATBInst:
+    core.ops.function.FnMut F T B)
+    (iter: core.slice.iter.Iter T) (fn: F) :
+    core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
+      opsfunctionFnMutFTupleSharedATBInst iter fn
+      ⦃ (map : (core.iter.adapters.map.Map (core.slice.iter.Iter T) F)) =>
+      map.f = fn ∧ map.iter = iter ⦄ := by
+  unfold core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
+  simp [WP.spec_ok]
+
 /-- [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a (T), core::slice::iter::Iter<'a, T>> for &'a ([T])}::into_iter]:
     Source: '/rustc/library/core/src/slice/iter.rs', lines 25:4-25:37
     Name pattern: [core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter] -/
