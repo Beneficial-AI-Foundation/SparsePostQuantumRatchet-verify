@@ -277,7 +277,7 @@ theorem core.array.from_fn_loop_const
       | div => exact h.elim
     obtain ⟨i', h_eq, h_val⟩ := h_add
     rw [h_eq]
-    show (do let rest ← core.array.from_fn_loop fnMutInst f i' k; ok (v :: rest))
+    change (do let rest ← core.array.from_fn_loop fnMutInst f i' k; ok (v :: rest))
       = ok (List.replicate (k + 1) v)
     rw [ih f i' (by scalar_tac), bind_tc_ok]
     rfl
