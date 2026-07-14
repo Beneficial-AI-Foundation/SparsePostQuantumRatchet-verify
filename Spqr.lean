@@ -35,6 +35,7 @@ import Spqr.Math.Poly.LinearFactors.Basic
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
+import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.RangeStepBy
@@ -97,6 +98,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
 import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
