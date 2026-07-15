@@ -36,6 +36,48 @@ def MAC_CT_LABEL : List U8 :=
    69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 99#u8, 105#u8, 112#u8,
    104#u8, 101#u8, 114#u8, 116#u8, 101#u8, 120#u8, 116#u8]
 
+@[simp, grind =]
+theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
+
+/-- **Step spec for `core::array::[T; N]::as_slice`** (TODO: relocate). -/
+@[step]
+theorem _root_.core.array.Array.as_slice_spec {T : Type} {N : Usize} (a : Array T N) :
+    core.array.Array.as_slice a ⦃ (s : Slice T) => s.val = a.val ⦄ := by
+  simp [core.array.Array.as_slice, WP.spec_ok]
+
+/-- TODO: relocate -/
+@[step]
+theorem _root_.alloc.slice.Slice.concat_shared_id_spec {T : Type}
+    (cloneInst : core.clone.Clone T) (hclone : ∀ x, cloneInst.clone x = ok x)
+    (sv : Slice (Slice T))
+    (hlen : (sv.val.map (·.val)).flatten.length ≤ Usize.max) :
+    alloc.slice.Slice.concat
+        (Slice.Insts.AllocSliceConcatTVec cloneInst
+          { borrow := Shared0T.Insts.CoreBorrowBorrow.borrow }) sv
+      ⦃ (v : alloc.vec.Vec T) => v.val = (sv.val.map (·.val)).flatten ⦄ := by
+  simp only [alloc.slice.Slice.concat_eq]
+  exact Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec cloneInst hclone sv hlen
+
+
+-- TODO: upstream to Aeneas
+def _root_.Aeneas.Std.Slice.make {α : Type} (l : List α) (h : l.length ≤ Usize.max := by grind) :
+  Slice α := ⟨l, h⟩
+
+@[simp] theorem _root_.Aeneas.Std.Slice.val_make {α : Type} (l : List α) (h) :
+    (Slice.make l h).val = l := rfl
+
+@[simp] theorem _root_.Aeneas.Std.Slice.length_make {α : Type} (l : List α) (h) :
+    (Slice.make l h).length = l.length := rfl
+
+@[simp] theorem _root_.Aeneas.Std.Slice.make_val {α : Type} (s : Slice α) (h) :
+    Slice.make s.val h = s := rfl
+
+theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁ h₂) :
+    Slice.make l₁ h₁ = Slice.make l₂ h₂ ↔ l₁ = l₂ :=
+  Subtype.ext_iff
+
+
+open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**
 • Given the boundedness hypotheses on `self.mac_key` and `ct`, `mac_ct self ep ct` does not panic.
 • The returned `Vec U8` has length `MACSIZE` (= 32 bytes).
@@ -44,19 +86,25 @@ def MAC_CT_LABEL : List U8 :=
 -/
 @[step]
 theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
-    (h_key : self.mac_key.length ≤ U32.max)
-    (h_data : ct.length + 43 ≤ U32.max) :
+    (h_key : self.mac_key.length ≤ U32.max) (h_data : ct.length + 43 ≤ U32.max) :
     mac_ct self ep ct ⦃ (result : alloc.vec.Vec U8) =>
       result.length = MACSIZE.val ∧
-      ∃ data,
-        data.val = MAC_CT_LABEL ++ (core.num.U64.to_be_bytes ep) ++ ct ∧
-        libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
-  simp only [mac_ct, core.array.Array.as_slice, lift, Array.to_slice,
-             alloc.slice.Slice.concat_eq, MACSIZE]
+      let data : Slice U8 := Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct);
+      libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
+  unfold mac_ct
   step*
-  all_goals simp_all only [alloc.vec.Vec.deref, Slice.length, List.length_flatten,
-    List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Array.make]
-  all_goals try scalar_tac
-  exact ⟨rfl, _, by simp [MAC_CT_LABEL], result_post1⟩
+  · simp [*, Array.make]; grind
+  · simp only [*, Array.val_to_slice, Array.make, List.map_cons, List.map_nil,
+      List.flatten_cons, List.flatten_nil, List.append_nil] at *
+    obtain ⟨r, h_eq, h_len⟩ := spec_imp_exists
+      (libcrux_hmac.hmac_sha256_tag32_spec self.mac_key.deref ct_mac_data.deref
+        (by simp [alloc.vec.Vec.deref, Slice.length]; grind)
+        (by simp only [alloc.vec.Vec.deref, Slice.length, *]; scalar_tac))
+    refine exists_imp_spec ⟨r, by rw [MACSIZE, h_eq], by simp [h_len], ?_⟩
+    convert h_eq using 2
+    · rfl
+    · apply Subtype.ext
+      simp [core.num.U64.to_be_bytes, alloc.vec.Vec.deref, *, MAC_CT_LABEL]
+    · simp [MACSIZE]
 
 end spqr.authenticator.Authenticator
