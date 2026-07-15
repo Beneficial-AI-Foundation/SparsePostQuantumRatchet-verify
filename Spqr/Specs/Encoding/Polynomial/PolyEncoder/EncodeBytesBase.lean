@@ -336,7 +336,8 @@ theorem encode_bytes_base_spec (msg : Slice U8)
     apply WP.spec_bind (core.slice.Slice.chunks_exact_spec msg 2#usize (by decide))
     intro ce h_ce
     obtain ⟨h_ce_len, h_ce_count, _⟩ := h_ce
-    simp only [core.slice.iter.IteratorChunksExact.enumerate, bind_tc_ok]
+    simp only [core.iter.traits.iterator.Iterator.enumerate.trait_default,
+      core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
     apply WP.spec_bind
       (encode_bytes_base_loop.loop_spec
         ({ iter := ce, count := 0#usize } :
