@@ -46,7 +46,7 @@ lemma listToGF216Poly_eval (cs : List spqr.encoding.gf.GF16) (a : GF216) :
       ∑ i : Fin cs.length,
         (cs.get i).toGF216 * a ^ i.val := by
   unfold listToGF216Poly
-  simp [eval_finset_sum, eval_mul, eval_C, eval_pow, eval_X]
+  simp [eval_finsetSum, eval_mul, eval_C, eval_pow, eval_X]
 
 /-! ## Polynomial evaluation as finite range sum -/
 

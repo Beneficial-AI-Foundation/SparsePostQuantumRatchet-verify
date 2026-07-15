@@ -319,7 +319,8 @@ theorem add_assign_spec
       result.toGF216Poly = self.toGF216Poly + other.toGF216Poly ⦄ := by
   unfold add_assign
   simp only [alloc.vec.Vec.deref, core.slice.Slice.iter,
-             core.slice.iter.IteratorSliceIter.enumerate, bind_tc_ok]
+             core.iter.traits.iterator.Iterator.enumerate.trait_default,
+             core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
   apply WP.spec_mono (add_assign_loop.loop_spec _ self other.coefficients
     (by simp) (by simp) rfl h_len)
   intro result h

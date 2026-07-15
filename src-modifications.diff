@@ -271,6 +271,18 @@ diff -Naur --no-dereference a/src/lib.rs b/src/lib.rs
                          log::info!("spqr negotiating version down to {v:?}");
                          pqrpb::PqRatchetState {
                              inner: init_inner(
+diff -Naur --no-dereference a/src/proto/pq_ratchet.rs b/src/proto/pq_ratchet.rs
+--- a/src/proto/pq_ratchet.rs
++++ b/src/proto/pq_ratchet.rs
+@@ -3,4 +3,8 @@
+ 
+ #![allow(clippy::derive_partial_eq_without_eq)]
+ 
++// Include prost's output. See build.rs
++#[cfg(not(feature = "extraction"))]
+ include!(concat!(env!("OUT_DIR"), "/signal.proto.pq_ratchet.rs"));
++#[cfg(feature = "extraction")]
++include!(concat!(env!("CARGO_MANIFEST_DIR"), "/generated/signal.proto.pq_ratchet.rs"));
 diff -Naur --no-dereference a/src/v1/chunked/states/serialize.rs b/src/v1/chunked/states/serialize.rs
 --- a/src/v1/chunked/states/serialize.rs
 +++ b/src/v1/chunked/states/serialize.rs
