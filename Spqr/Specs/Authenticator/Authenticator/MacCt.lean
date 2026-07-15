@@ -39,7 +39,7 @@ def MAC_CT_LABEL : List U8 :=
 @[simp, grind =]
 theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
 
-/-- **Step spec for `core::array::[T; N]::as_slice`** (TODO: relocate). -/
+/-- TODO: relocate -/
 @[step]
 theorem _root_.core.array.Array.as_slice_spec {T : Type} {N : Usize} (a : Array T N) :
     core.array.Array.as_slice a ⦃ (s : Slice T) => s.val = a.val ⦄ := by
