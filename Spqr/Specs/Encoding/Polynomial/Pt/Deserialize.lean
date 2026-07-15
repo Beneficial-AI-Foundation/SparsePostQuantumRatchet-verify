@@ -100,8 +100,6 @@ theorem from_be_bytes_spec (a : Array Std.U8 2#usize) :
     simp only [Nat.shiftLeft_eq]
     have h0 : a0.bv.toNat < 2 ^ 8 := a0.bv.isLt
     have h1 : a1.bv.toNat < 2 ^ 8 := a1.bv.isLt
-    simp only at h0
-    simp only at h1
     simp only [UScalarTy.U16_numBits_eq,
     BitVec.toNat_setWidth, UScalar.bv_toNat, Nat.reducePow, Nat.mod_mul_mod,
     UScalarTy.U8_numBits_eq, Bvify.U8.UScalar_bv]

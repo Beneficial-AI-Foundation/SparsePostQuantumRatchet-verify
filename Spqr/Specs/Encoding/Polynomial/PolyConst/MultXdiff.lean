@@ -116,7 +116,21 @@ theorem loop_spec
     intro cf h_cf
     match cf with
     | ControlFlow.done (xp_r, dp_r) => grind
-    | ControlFlow.cont (xp1, dp1, i2) =>  grind
+    | ControlFlow.cont (xp1, dp1, i2) =>
+      obtain ⟨hlt, hi2, hdp, hdprest, hxpif, hxpelse⟩ := h_cf
+      dsimp only
+      refine ⟨⟨by grind, ?_, by grind, ?_, by grind⟩, by grind⟩
+      · intro j hj hj_len
+        rcases eq_or_lt_of_le (show j ≤ i1'.val by omega) with h | h
+        · subst h; exact hdp hj_len
+        · have := h_dp_proc j h; have := hdprest j (by omega); grind
+      · intro j hj hji h_idx
+        by_cases hii : i1' < i
+        · rcases eq_or_lt_of_le (show j ≤ i1'.val by omega) with h | h
+          · subst h; exact (hxpif hii).1 h_idx
+          · have := h_xp_shift j h hji; have := (hxpif hii).2 (j + 1) (by omega); grind
+        · have hxeq := hxpelse hii; subst hxeq
+          exact h_xp_shift j (by scalar_tac) hji h_idx
   · grind
 
 end spqr.encoding.polynomial.PolyConst.mult_xdiff_loop0

@@ -87,15 +87,7 @@ async function main(): Promise<void> {
 
   console.log(chalk.green(`  LLBC generated: ${llbcFile}\n`));
 
-  // ── Step 2: LLBC tweaks ─────────────────────────────────────────────
-  if (config.llbc_tweaks.substitutions.length > 0) {
-    console.log(chalk.bold("Step 2: Applying tweaks to LLBC..."));
-    const matched = applyTweaks(llbcPath, config.llbc_tweaks.substitutions);
-    warnUnmatchedTweaks(config.llbc_tweaks.substitutions, [matched]);
-    console.log(chalk.green(`  Tweaks applied to ${llbcFile} (${matched.size} substitutions matched)\n`));
-  }
-
-  // ── Step 3: Aeneas ──────────────────────────────────────────────────
+  // ── Step 2: Aeneas ──────────────────────────────────────────────────
   console.log(chalk.bold("Step 3: Generating Lean files with Aeneas..."));
 
   const aeneasArgs: string[] = [
@@ -117,7 +109,7 @@ async function main(): Promise<void> {
 
   console.log(chalk.green(`  Lean files generated in ${config.aeneas_args.dest}/\n`));
 
-  // ── Step 4: Lean file tweaks ──────────────────────────────────────────────────
+  // ── Step 3: Lean file tweaks ──────────────────────────────────────────────────
   if (config.tweaks.substitutions.length > 0 && config.tweaks.files.length > 0) {
     console.log(chalk.bold("Step 4: Applying tweaks to Lean files..."));
 
