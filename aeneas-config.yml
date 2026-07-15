@@ -17,7 +17,6 @@ charon:
   preset: "aeneas"
   hide_marker_traits: true
   cargo_args: ["--features", "extraction"]
-  # trait issue means that we can't use start_from_pub
   # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/117
   # start_from_pub: true
   exclude:

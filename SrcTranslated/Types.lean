@@ -26,6 +26,74 @@ namespace spqr
 structure core.borrow.Borrow (Self : Type) (Borrowed : Type) where
   borrow : Self → Result Borrowed
 
+/-- Trait declaration: [core::ops::arith::Add]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 76:0-76:31
+    Name pattern: [core::ops::arith::Add]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::Add"]
+structure core.ops.arith.Add (Self : Type) (Rhs : Type) (Self_Output : Type)
+  where
+  add : Self → Rhs → Result Self_Output
+
+/-- Trait declaration: [core::ops::arith::Sub]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 188:0-188:31
+    Name pattern: [core::ops::arith::Sub]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::Sub"]
+structure core.ops.arith.Sub (Self : Type) (Rhs : Type) (Self_Output : Type)
+  where
+  sub : Self → Rhs → Result Self_Output
+
+/-- Trait declaration: [core::ops::arith::Mul]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 322:0-322:31
+    Name pattern: [core::ops::arith::Mul]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::Mul"]
+structure core.ops.arith.Mul (Self : Type) (Rhs : Type) (Self_Output : Type)
+  where
+  mul : Self → Rhs → Result Self_Output
+
+/-- Trait declaration: [core::ops::arith::Div]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 460:0-460:31
+    Name pattern: [core::ops::arith::Div]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::Div"]
+structure core.ops.arith.Div (Self : Type) (Rhs : Type) (Self_Output : Type)
+  where
+  div : Self → Rhs → Result Self_Output
+
+/-- Trait declaration: [core::ops::arith::AddAssign]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 768:0-768:37
+    Name pattern: [core::ops::arith::AddAssign]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::AddAssign"]
+structure core.ops.arith.AddAssign (Self : Type) (Rhs : Type) where
+  add_assign : Self → Rhs → Result Self
+
+/-- Trait declaration: [core::ops::arith::SubAssign]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 839:0-839:37
+    Name pattern: [core::ops::arith::SubAssign]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::SubAssign"]
+structure core.ops.arith.SubAssign (Self : Type) (Rhs : Type) where
+  sub_assign : Self → Rhs → Result Self
+
+/-- Trait declaration: [core::ops::arith::MulAssign]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 901:0-901:37
+    Name pattern: [core::ops::arith::MulAssign]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::MulAssign"]
+structure core.ops.arith.MulAssign (Self : Type) (Rhs : Type) where
+  mul_assign : Self → Rhs → Result Self
+
+/-- Trait declaration: [core::ops::arith::DivAssign]
+    Source: '/rustc/library/core/src/ops/arith.rs', lines 963:0-963:37
+    Name pattern: [core::ops::arith::DivAssign]
+    Visibility: public -/
+@[rust_trait "core::ops::arith::DivAssign"]
+structure core.ops.arith.DivAssign (Self : Type) (Rhs : Type) where
+  div_assign : Self → Rhs → Result Self
+
 /-- [core::ops::range::RangeFull]
     Source: '/rustc/library/core/src/ops/range.rs', lines 44:0-44:20
     Name pattern: [core::ops::range::RangeFull]
@@ -445,6 +513,14 @@ structure encoding.Chunk where
   index : Std.U16
   data : Array Std.U8 32#usize
 
+/-- Trait declaration: [spqr::encoding::Encoder]
+    Source: 'src/encoding.rs', lines 31:0-37:1
+    Visibility: public -/
+structure encoding.Encoder (Self : Type) where
+  encode_bytes : Slice Std.U8 → Result (core.result.Result Self
+    encoding.EncodingError)
+  next_chunk : Self → Result (encoding.Chunk × Self)
+
 /-- [spqr::encoding::polynomial::PolyDecoder]
     Source: 'src/encoding/polynomial.rs', lines 742:0-761:1
     Visibility: public -/
@@ -466,14 +542,6 @@ structure proto.pq_ratchet.PolynomialDecoder where
   polys : Std.U32
   pts : alloc.vec.Vec (alloc.vec.Vec Std.U8)
   is_complete : Bool
-
-/-- Trait declaration: [spqr::encoding::Encoder]
-    Source: 'src/encoding.rs', lines 31:0-37:1
-    Visibility: public -/
-structure encoding.Encoder (Self : Type) where
-  encode_bytes : Slice Std.U8 → Result (core.result.Result Self
-    encoding.EncodingError)
-  next_chunk : Self → Result (encoding.Chunk × Self)
 
 /-- Trait declaration: [spqr::encoding::Decoder]
     Source: 'src/encoding.rs', lines 40:0-47:1
