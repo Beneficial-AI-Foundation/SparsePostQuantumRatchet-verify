@@ -59,7 +59,7 @@ lemma lagrangeInterpolantSum_coeff_high
     (hj : pts.length ≤ j) :
     (lagrangeInterpolantSum pts n).coeff j = 0 := by
   rw [lagrangeInterpolantSum_eq_finset_sum pts n hn]
-  simp only [Polynomial.finset_sum_coeff]
+  simp only [Polynomial.finsetSum_coeff]
   apply Finset.sum_eq_zero
   intro i hi
   rw [Finset.mem_range] at hi

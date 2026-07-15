@@ -194,7 +194,7 @@ theorem loop1_spec
       · intro k hk hk_gt
         by_cases hk_eq : k = cursor
         · grind
-        · grind [h_frame k (by omega)]
+        · grind [h_frame k (by omega) (by omega), hscaled k]
       · intro hcur
         suffices hsuff :
             ((Prod.snd r_post).val.get ⟨cursor - 1, (by omega)⟩).toGF216 =
