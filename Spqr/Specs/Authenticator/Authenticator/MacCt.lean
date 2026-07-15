@@ -76,14 +76,18 @@ theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁
     Slice.make l₁ h₁ = Slice.make l₂ h₂ ↔ l₁ = l₂ :=
   Subtype.ext_iff
 
+/-- Strengthen any spec's postcondition with the *call identity* `m = ok r`. TODO: relocate -/
+theorem spec_refl {α : Type} {m : Result α} {P : α → Prop} (h : m ⦃ P ⦄) :
+    m ⦃ fun r => P r ∧ m = ok r ⦄ := by
+  obtain ⟨r, h_eq, h_post⟩ := spec_imp_exists h
+  exact exists_imp_spec ⟨r, h_eq, h_post, h_eq⟩
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**
 • Given the boundedness hypotheses on `self.mac_key` and `ct`, `mac_ct self ep ct` does not panic.
 • The returned `Vec U8` has length `MACSIZE` (= 32 bytes).
 • The returned `Vec U8` equals the output of `libcrux_hmac.hmac` on key `self.mac_key`
-  and data `MAC_CT_LABEL ++ ep.to_be_bytes ++ ct`.
--/
+  and data `MAC_CT_LABEL ++ ep.to_be_bytes ++ ct`. -/
 @[step]
 theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
     (h_key : self.mac_key.length ≤ U32.max) (h_data : ct.length + 43 ≤ U32.max) :
@@ -92,19 +96,16 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
       let data : Slice U8 := Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct);
       libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
   unfold mac_ct
+  simp only [MACSIZE]
+  have hmac_refl := fun k d hk hd => spec_refl (libcrux_hmac.hmac_sha256_tag32_spec k d hk hd)
   step*
   · simp [*, Array.make]; grind
-  · simp only [*, Array.val_to_slice, Array.make, List.map_cons, List.map_nil,
-      List.flatten_cons, List.flatten_nil, List.append_nil] at *
-    obtain ⟨r, h_eq, h_len⟩ := spec_imp_exists
-      (libcrux_hmac.hmac_sha256_tag32_spec self.mac_key.deref ct_mac_data.deref
-        (by simp [alloc.vec.Vec.deref, Slice.length]; grind)
-        (by simp only [alloc.vec.Vec.deref, Slice.length, *]; scalar_tac))
-    refine exists_imp_spec ⟨r, by rw [MACSIZE, h_eq], by simp [h_len], ?_⟩
-    convert h_eq using 2
+  · exact h_key
+  · simp [*, Array.make, alloc.vec.Vec.deref, Slice.length]; grind
+  · refine ⟨by simp [*], ?_⟩
+    convert result_post2 using 2
     · rfl
     · apply Subtype.ext
-      simp [core.num.U64.to_be_bytes, alloc.vec.Vec.deref, *, MAC_CT_LABEL]
-    · simp [MACSIZE]
+      simp [core.num.U64.to_be_bytes, alloc.vec.Vec.deref, *, MAC_CT_LABEL, Array.make]
 
 end spqr.authenticator.Authenticator
