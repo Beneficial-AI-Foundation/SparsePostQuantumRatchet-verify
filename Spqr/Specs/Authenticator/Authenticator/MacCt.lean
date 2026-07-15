@@ -124,18 +124,14 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
       result.length = MACSIZE.val ∧
       let data : Slice U8 := Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct);
       libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
-  unfold mac_ct
-  simp only [MACSIZE]
+  unfold mac_ct MACSIZE
   have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
   · simp [*]; grind
   · simp [*]; grind
   · refine ⟨by simp [*], ?_⟩
-    -- match against the HMAC identity `step*` already produced (found by shape, not by name) ...
-    convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result› using 2
-    -- ... leaving only: the key agrees (`rfl`) and the built data equals the spec's data slice.
-    · rfl
-    · apply Subtype.ext
-      simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL]
+    have : (Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct) : Slice U8) = ct_mac_data.deref :=
+      Subtype.ext (by simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL])
+    rwa [this]
 
 end spqr.authenticator.Authenticator
