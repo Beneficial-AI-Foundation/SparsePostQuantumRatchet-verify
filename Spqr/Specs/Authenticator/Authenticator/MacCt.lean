@@ -76,11 +76,23 @@ theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁
     Slice.make l₁ h₁ = Slice.make l₂ h₂ ↔ l₁ = l₂ :=
   Subtype.ext_iff
 
-/-- Strengthen any spec's postcondition with the *call identity* `m = ok r`. TODO: relocate -/
+-- TODO: relocate
+/-- Strengthen any spec's postcondition with the identity `m = ok r`. -/
 theorem spec_refl {α : Type} {m : Result α} {P : α → Prop} (h : m ⦃ P ⦄) :
     m ⦃ fun r => P r ∧ m = ok r ⦄ := by
   obtain ⟨r, h_eq, h_post⟩ := spec_imp_exists h
   exact exists_imp_spec ⟨r, h_eq, h_post, h_eq⟩
+
+-- TODO: relocate
+open Lean Elab Term Meta in
+/-- Given a theorem `m ⦃ fun r => P r ⦄`, generate the theorem `m ⦃ fun r => P r ∧ m = ok r ⦄`  -/
+elab "refl_of% " t:term : term => do
+  let e ← elabTerm t none
+  let ty ← inferType e
+  forallTelescope ty fun xs _ => do
+    let applied := mkAppN e xs
+    let refled ← mkAppM ``spec_refl #[applied]
+    mkLambdaFVars xs refled
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**
@@ -97,7 +109,7 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
       libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
   unfold mac_ct
   simp only [MACSIZE]
-  have hmac_refl := fun k d hk hd => spec_refl (libcrux_hmac.hmac_sha256_tag32_spec k d hk hd)
+  have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
   · simp [*, Array.make]; grind
   · exact h_key
