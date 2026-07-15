@@ -76,6 +76,17 @@ theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁
     Slice.make l₁ h₁ = Slice.make l₂ h₂ ↔ l₁ = l₂ :=
   Subtype.ext_iff
 
+-- TODO: upstream to Aeneas (`Vec.deref` carries the same `val`, hence the same `length`).
+@[simp] theorem _root_.Aeneas.Std.alloc.vec.Vec.deref_val {α : Type} (v : alloc.vec.Vec α) :
+    (alloc.vec.Vec.deref v).val = v.val := rfl
+
+@[simp, scalar_tac_simps] theorem _root_.Aeneas.Std.alloc.vec.Vec.deref_length {α : Type}
+    (v : alloc.vec.Vec α) : (alloc.vec.Vec.deref v).length = v.length := rfl
+
+-- TODO: upstream to Aeneas (`Array.make` currently has no `val`/`length` simp lemmas).
+@[simp, grind =] theorem _root_.Aeneas.Std.Array.val_make {α : Type}
+    (n : Usize) (l : List α) (h) : (Array.make n l h).val = l := rfl
+
 -- TODO: relocate
 /-- Strengthen any spec's postcondition with the identity `m = ok r`. -/
 theorem spec_refl {α : Type} {m : Result α} {P : α → Prop} (h : m ⦃ P ⦄) :
@@ -85,13 +96,19 @@ theorem spec_refl {α : Type} {m : Result α} {P : α → Prop} (h : m ⦃ P ⦄
 
 -- TODO: relocate
 open Lean Elab Term Meta in
-/-- Given a theorem `m ⦃ fun r => P r ⦄`, generate the theorem `m ⦃ fun r => P r ∧ m = ok r ⦄`  -/
-elab "refl_of% " t:term : term => do
+/-- `refl_of% e` turns a spec theorem `∀ xs, m xs ⦃ P xs ⦄` into its reflexive strengthening
+`∀ xs, m xs ⦃ fun r => P xs r ∧ m xs = ok r ⦄`, telescoping the binders and applying `spec_refl`
+under them. Any arity (including none). Errors if `e` is not, after telescoping, a spec. -/
+elab "refl_of% " t:term : term => withRef t do
   let e ← elabTerm t none
-  let ty ← inferType e
-  forallTelescope ty fun xs _ => do
-    let applied := mkAppN e xs
-    let refled ← mkAppM ``spec_refl #[applied]
+  Term.synthesizeSyntheticMVarsNoPostponing
+  let ty ← instantiateMVars (← inferType e)
+  forallTelescope ty fun xs body => do
+    let refled ←
+      try mkAppM ``spec_refl #[mkAppN e xs]
+      catch _ =>
+        throwError "refl_of%: expected a spec `m ⦃ P ⦄`, but the statement concludes \
+          with{indentExpr body}"
     mkLambdaFVars xs refled
 
 open List core.num.U64 in
@@ -111,13 +128,14 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
   simp only [MACSIZE]
   have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
-  · simp [*, Array.make]; grind
-  · exact h_key
-  · simp [*, Array.make, alloc.vec.Vec.deref, Slice.length]; grind
+  · simp [*]; grind
+  · simp [*]; grind
   · refine ⟨by simp [*], ?_⟩
-    convert result_post2 using 2
+    -- match against the HMAC identity `step*` already produced (found by shape, not by name) ...
+    convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result› using 2
+    -- ... leaving only: the key agrees (`rfl`) and the built data equals the spec's data slice.
     · rfl
     · apply Subtype.ext
-      simp [core.num.U64.to_be_bytes, alloc.vec.Vec.deref, *, MAC_CT_LABEL, Array.make]
+      simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL]
 
 end spqr.authenticator.Authenticator
