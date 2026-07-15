@@ -95,7 +95,7 @@ theorem parallel_mult_spec
       ∀ j < result.length, result.val[j]!.toGF216 = a.toGF216 * (into.val[j]!).toGF216 ⦄ := by
   unfold parallel_mult
   step*
-  simp_all
+  simp_all only
   grind
 
 end spqr.encoding.gf

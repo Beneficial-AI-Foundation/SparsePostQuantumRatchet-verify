@@ -35,7 +35,7 @@ lemma listToGF216Poly_coeff (cs : List spqr.encoding.gf.GF16) (m : Nat) :
       then (cs.get ⟨m, hm⟩).toGF216
       else 0 := by
   unfold listToGF216Poly
-  simp only [finset_sum_coeff, coeff_C_mul, coeff_X_pow]
+  simp only [finsetSum_coeff, coeff_C_mul, coeff_X_pow]
   split
   · rename_i hm
     rw [Finset.sum_eq_single_of_mem ⟨m, hm⟩ (Finset.mem_univ _)

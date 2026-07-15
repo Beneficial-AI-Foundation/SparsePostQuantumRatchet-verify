@@ -437,9 +437,9 @@ theorem lagrange_interpolate_spec
       grind [mul_assoc, Polynomial.coeff_X_mul]
     unfold Poly.toGF216Poly
     constructor
-    · grind [lagrangeInterpolantSum, Polynomial.finset_sum_coeff, List.map_sum_eq_Finset_sum]
+    · grind [lagrangeInterpolantSum, Polynomial.finsetSum_coeff, List.map_sum_eq_Finset_sum]
     · constructor
-      · grind [lagrangeInterpolantSum, Polynomial.finset_sum_coeff, List.map_sum_eq_Finset_sum]
+      · grind [lagrangeInterpolantSum, Polynomial.finsetSum_coeff, List.map_sum_eq_Finset_sum]
       · ext m
         rw [listToGF216Poly_coeff]
         by_cases hm : m < result.degree
@@ -448,7 +448,7 @@ theorem lagrange_interpolate_spec
           rw [dif_pos hm, this, hws_coeff m hm, List.map_sum_eq_Finset_sum]
           rw [Finset.sum_congr rfl (fun i _ => h_term_eq m i)]
           rw [lagrangeInterpolantSum_eq_finset_sum pts.val n (le_refl _)]
-          rw [Polynomial.finset_sum_coeff]
+          rw [Polynomial.finsetSum_coeff]
           apply Finset.sum_bij (fun (a : Fin ws.length) _ => a.val)
             (fun a _ => by rw [Finset.mem_range]; grind)
             (fun a₁ _ a₂ _ h => Fin.val_injective h)
