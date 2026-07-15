@@ -3079,53 +3079,18 @@ axiom
   Clause1_IntoIter) :
   I → Result (core.result.Result V E)
 
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::next]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 47:4-47:35
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Result ((Option T) ×
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
-
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::enumerate]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.enumerate
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Result
-    (core.iter.adapters.enumerate.Enumerate
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
-
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map] -/
 @[rust_fun
   "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map"]
-axiom
+def
   alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
-  {T : Type} {A : Type} {B : Type} {F : Type} (coreopsfunctionFnMutFTupleTBInst
-  : core.ops.function.FnMut F T B) :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → F → Result
-    (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter
-    T A) F)
-
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::step_by]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.step_by
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Std.Usize → Result
-    (core.iter.adapters.step_by.StepBy
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+  {T : Type} {A : Type} {B : Type} {F : Type}
+  (coreopsfunctionFnMutFTupleTBInst: core.ops.function.FnMut F T B)
+  (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A)
+  (fn: F): Result (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter T A) F) :=
+    ok {iter:= intoIter, f:= fn}
 
 /-- [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from_iter]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3641:4-3641:67
