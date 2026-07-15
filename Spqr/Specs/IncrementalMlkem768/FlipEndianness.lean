@@ -5,7 +5,6 @@ Authors: Liao Zhang
 -/
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
-import Spqr.Specs.Aeneas.RangeStepBy
 import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state`
@@ -87,7 +86,7 @@ theorem body_spec
   by_cases h_lt : iter.iter.start.val < iter.iter.end.val
   · obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
       WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_range_Usize_step_spec iter h_lt
+        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_some_spec iter h_lt
           (by omega) (by omega))
     simp only [WP.uncurry'_pair] at h_post
     obtain ⟨h_opt, h_start1, h_end1, h_sb1⟩ := h_post
@@ -105,7 +104,7 @@ theorem body_spec
     grind
   · obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
       WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_range_Usize_none_step_spec iter
+        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
           (by omega))
     simp only [WP.uncurry'_pair] at h_post
     obtain ⟨h_opt, h_it⟩ := h_post

@@ -35,12 +35,13 @@ level: on an `iter : Range I32`, `next` returns `(opt, iter')` where:
 @[step]
 theorem IteratorRange_next_I32_spec
     (iter : Range I32) :
-    IteratorRange.next spqr.I32.Insts.CoreIterRangeStep iter ⦃ (opt, iter1) =>
+    IteratorRange.next core.iter.range.StepI32 iter ⦃ (opt, iter1) =>
       match opt with
       | none   => ¬ iter.start.val < iter.end.val ∧ iter1 = iter
       | some v => iter.start.val < iter.end.val ∧ v = iter.start ∧
         iter1.start.val = iter.start.val + 1 ∧ iter1.end = iter.end ⦄ := by
   simp only [IteratorRange.next]
+  unfold core.iter.range.StepI32 core.iter.range.IScalarStep
   simp only [liftFun2, liftFun1, core.clone.impls.CloneI32.clone, bind_tc_ok]
   have h_lt_iff :
       (core.cmp.impls.PartialOrdI32.lt iter.start iter.end = true) =
@@ -49,8 +50,9 @@ theorem IteratorRange_next_I32_spec
   simp only [h_lt_iff]
   by_cases hlt : iter.start.val < iter.end.val
   · rw [if_pos hlt]
-    have hbound : iter.start.val + 1 ≤ I32.max := by scalar_tac
-    step
+    have hfwd : iter.start.val + (1#usize).val ≤ IScalar.max .I32 := by scalar_tac
+    simp only [core.iter.range.IScalarStep.forward_checked, hfwd, reduceDIte,
+      bind_tc_ok, WP.spec_ok]
     grind
   · rw [if_neg hlt]
     grind
