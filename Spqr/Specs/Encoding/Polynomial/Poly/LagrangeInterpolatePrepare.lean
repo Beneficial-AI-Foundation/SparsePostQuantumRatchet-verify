@@ -93,6 +93,7 @@ Invariants: vector length = `offset + 1`, leading coeff = `ONE`, trailing sub-po
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
+set_option maxHeartbeats 400000 in -- required for large proof
 @[step]
 theorem loop_spec
     (pts : Slice Pt)
@@ -149,8 +150,8 @@ theorem loop_spec
                 iter.start (st.1.start - iter.start)).coeff m))
   · rintro ⟨iter', p'⟩ ⟨h_end', h_ge', h_le', h_len', h_off', h_gf16_off', h_frame', h_trail'⟩
     simp only [] at h_end' h_ge' h_le' h_len' h_off' h_gf16_off' h_frame' h_trail' ⊢
-    have h_end_le_pts' : iter'.end.val ≤ pts.length := by grind
-    have h_end_le_offset' : iter'.end.val ≤ offset.val := by grind
+    have h_end_le_pts' : iter'.end.val ≤ pts.length := by scalar_tac
+    have h_end_le_offset' : iter'.end.val ≤ offset.val := by scalar_tac
     have h_offset_lt_len' : offset.val < p'.coefficients.length := by grind
     step*
     split
@@ -173,7 +174,7 @@ theorem loop_spec
       refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
       · rw [h_end1]; exact h_end'
       · omega
-      · grind
+      · scalar_tac
       · grind [degree]
       · grind
       · grind
@@ -218,7 +219,7 @@ theorem loop_spec
               (show offset.val - k + k < p'.coefficients.length by omega)
             rw [expectedTrailingPoly_coeff_eq_zero_of_lt _ _ _ _ _ _ (by omega : k < k + 1)]
             grind
-      · grind
+      · scalar_tac
   · refine ⟨rfl, le_refl _, h_le, rfl, rfl, ?_, ?_, ?_⟩
     · grind
     · intro _ _; rfl
