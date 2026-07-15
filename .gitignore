@@ -24,4 +24,4 @@ dist/
 status.json
 
 # prost-generated code emitted in-tree during extraction builds (--features extraction)
-/src/proto/generated/
+/generated/

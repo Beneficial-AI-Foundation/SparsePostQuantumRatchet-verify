@@ -7,4 +7,4 @@
 #[cfg(not(feature = "extraction"))]
 include!(concat!(env!("OUT_DIR"), "/signal.proto.pq_ratchet.rs"));
 #[cfg(feature = "extraction")]
-include!("generated/signal.proto.pq_ratchet.rs");
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/generated/signal.proto.pq_ratchet.rs"));

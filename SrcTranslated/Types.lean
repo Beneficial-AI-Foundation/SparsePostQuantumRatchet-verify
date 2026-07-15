@@ -257,12 +257,450 @@ structure rand.rng.Rng (Self : Type) where
 structure rand_core.CryptoRng (Self : Type) where
   RngCoreInst : rand_core.RngCore Self
 
+/-- [spqr::proto::pq_ratchet::PolynomialEncoder]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 3:0-13:1
+    Visibility: public -/
+structure proto.pq_ratchet.PolynomialEncoder where
+  idx : Std.U32
+  pts : alloc.vec.Vec (alloc.vec.Vec Std.U8)
+  polys : alloc.vec.Vec (alloc.vec.Vec Std.U8)
+
+/-- [spqr::proto::pq_ratchet::PolynomialDecoder]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 15:0-24:1
+    Visibility: public -/
+structure proto.pq_ratchet.PolynomialDecoder where
+  pts_needed : Std.U32
+  polys : Std.U32
+  pts : alloc.vec.Vec (alloc.vec.Vec Std.U8)
+  is_complete : Bool
+
+/-- [spqr::proto::pq_ratchet::ChainParams]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 362:0-372:1
+    Visibility: public -/
+structure proto.pq_ratchet.ChainParams where
+  max_jump : Std.U32
+  max_ooo_keys : Std.U32
+
+/-- [spqr::proto::pq_ratchet::chain::epoch::EpochDirection]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 351:8-358:9
+    Visibility: public -/
+structure proto.pq_ratchet.chain.epoch.EpochDirection where
+  ctr : Std.U32
+  next : alloc.vec.Vec Std.U8
+  prev : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::chain::Epoch]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 342:4-347:5
+    Visibility: public -/
+structure proto.pq_ratchet.chain.Epoch where
+  send : Option proto.pq_ratchet.chain.epoch.EpochDirection
+  recv : Option proto.pq_ratchet.chain.epoch.EpochDirection
+
+/-- [spqr::proto::pq_ratchet::Chain]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 325:0-338:1
+    Visibility: public -/
+structure proto.pq_ratchet.Chain where
+  direction : Std.I32
+  current_epoch : Std.U64
+  links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch
+  next_root : alloc.vec.Vec Std.U8
+  send_epoch : Std.U64
+  params : Option proto.pq_ratchet.ChainParams
+
 /-- [spqr::proto::pq_ratchet::Authenticator]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 92:0-97:1
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 92:0-97:1
     Visibility: public -/
 structure proto.pq_ratchet.Authenticator where
   root_key : alloc.vec.Vec Std.U8
   mac_key : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 203:8-208:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.Ct2Sent where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 289:8-294:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.Ct2Sampled where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct2Sent
+  sending_ct2 : Option proto.pq_ratchet.PolynomialEncoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 177:8-188:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.Ct1Sent where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  hdr : alloc.vec.Vec Std.U8
+  es : alloc.vec.Vec Std.U8
+  ct1 : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 282:8-287:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct1Sent
+  receiving_ek : Option proto.pq_ratchet.PolynomialDecoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 190:8-201:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  es : alloc.vec.Vec Std.U8
+  ek : alloc.vec.Vec Std.U8
+  ct1 : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 275:8-280:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
+  sending_ct1 : Option proto.pq_ratchet.PolynomialEncoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 266:8-273:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.Ct1Sampled where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct1Sent
+  sending_ct1 : Option proto.pq_ratchet.PolynomialEncoder
+  receiving_ek : Option proto.pq_ratchet.PolynomialDecoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 157:8-164:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.HeaderReceived where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  hdr : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 259:8-264:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.HeaderReceived where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.HeaderReceived
+  receiving_ek : Option proto.pq_ratchet.PolynomialDecoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 150:8-155:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 252:8-257:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.NoHeaderReceived where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
+  receiving_hdr : Option proto.pq_ratchet.PolynomialDecoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 138:8-147:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  dk : alloc.vec.Vec Std.U8
+  ct1 : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 244:8-249:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.EkSentCt1Received where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
+  receiving_ct2 : Option proto.pq_ratchet.PolynomialDecoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 237:8-242:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.Ct1Received where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
+  sending_ek : Option proto.pq_ratchet.PolynomialEncoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkSent]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 129:8-136:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.EkSent where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  dk : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 228:8-235:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.HeaderSent where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.EkSent
+  sending_ek : Option proto.pq_ratchet.PolynomialEncoder
+  receiving_ct1 : Option proto.pq_ratchet.PolynomialDecoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 118:8-127:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.HeaderSent where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  ek : alloc.vec.Vec Std.U8
+  dk : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 221:8-226:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.KeysSampled where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.HeaderSent
+  sending_hdr : Option proto.pq_ratchet.PolynomialEncoder
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 111:8-116:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.KeysUnsampled where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+
+/-- [spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 216:8-219:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.chunked.KeysUnsampled where
+  uc : Option proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
+
+/-- [spqr::proto::pq_ratchet::v1_state::InnerState]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 297:4-322:5
+    Visibility: public -/
+@[discriminant isize]
+inductive proto.pq_ratchet.v1_state.InnerState where
+| KeysUnsampled :
+  proto.pq_ratchet.v1_state.chunked.KeysUnsampled →
+  proto.pq_ratchet.v1_state.InnerState
+| KeysSampled :
+  proto.pq_ratchet.v1_state.chunked.KeysSampled →
+  proto.pq_ratchet.v1_state.InnerState
+| HeaderSent :
+  proto.pq_ratchet.v1_state.chunked.HeaderSent →
+  proto.pq_ratchet.v1_state.InnerState
+| Ct1Received :
+  proto.pq_ratchet.v1_state.chunked.Ct1Received →
+  proto.pq_ratchet.v1_state.InnerState
+| EkSentCt1Received :
+  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received →
+  proto.pq_ratchet.v1_state.InnerState
+| NoHeaderReceived :
+  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived →
+  proto.pq_ratchet.v1_state.InnerState
+| HeaderReceived :
+  proto.pq_ratchet.v1_state.chunked.HeaderReceived →
+  proto.pq_ratchet.v1_state.InnerState
+| Ct1Sampled :
+  proto.pq_ratchet.v1_state.chunked.Ct1Sampled →
+  proto.pq_ratchet.v1_state.InnerState
+| EkReceivedCt1Sampled :
+  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled →
+  proto.pq_ratchet.v1_state.InnerState
+| Ct1Acknowledged :
+  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged →
+  proto.pq_ratchet.v1_state.InnerState
+| Ct2Sampled :
+  proto.pq_ratchet.v1_state.chunked.Ct2Sampled →
+  proto.pq_ratchet.v1_state.InnerState
+
+/-- [spqr::proto::pq_ratchet::V1State]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 99:0-102:1
+    Visibility: public -/
+structure proto.pq_ratchet.V1State where
+  inner_state : Option proto.pq_ratchet.v1_state.InnerState
+
+/-- [spqr::proto::pq_ratchet::pq_ratchet_state::Inner]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 50:4-53:5
+    Visibility: public -/
+@[discriminant isize]
+inductive proto.pq_ratchet.pq_ratchet_state.Inner where
+| V1 : proto.pq_ratchet.V1State → proto.pq_ratchet.pq_ratchet_state.Inner
+
+/-- [spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 39:4-48:5
+    Visibility: public -/
+structure proto.pq_ratchet.pq_ratchet_state.VersionNegotiation where
+  auth_key : alloc.vec.Vec Std.U8
+  direction : Std.I32
+  min_version : Std.I32
+  chain_params : Option proto.pq_ratchet.ChainParams
+
+/-- [spqr::proto::pq_ratchet::PqRatchetState]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 26:0-35:1
+    Visibility: public -/
+structure proto.pq_ratchet.PqRatchetState where
+  version_negotiation : Option
+    proto.pq_ratchet.pq_ratchet_state.VersionNegotiation
+  chain : Option proto.pq_ratchet.Chain
+  inner : Option proto.pq_ratchet.pq_ratchet_state.Inner
+
+/-- [spqr::proto::pq_ratchet::Direction]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 404:0-407:1
+    Visibility: public -/
+@[discriminant i32]
+inductive proto.pq_ratchet.Direction where
+| A2B : proto.pq_ratchet.Direction
+| B2A : proto.pq_ratchet.Direction
+
+/-- [spqr::proto::pq_ratchet::Version]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 375:0-379:1
+    Visibility: public -/
+@[discriminant i32]
+inductive proto.pq_ratchet.Version where
+| V0 : proto.pq_ratchet.Version
+| V1 : proto.pq_ratchet.Version
+
+/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::closure]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
+def proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure (T0 : Type) :=
+  Option proto.pq_ratchet.pq_ratchet_state.Inner × proto.pq_ratchet.V1State
+
+/-- [spqr::proto::pq_ratchet::Chunk]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 56:0-61:1
+    Visibility: public -/
+structure proto.pq_ratchet.Chunk where
+  index : Std.U32
+  data : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_msg::InnerMsg]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 74:4-89:5
+    Visibility: public -/
+@[discriminant isize]
+inductive proto.pq_ratchet.v1_msg.InnerMsg where
+| Hdr : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
+| Ek : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
+| EkCt1Ack : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
+| Ct1Ack : Bool → proto.pq_ratchet.v1_msg.InnerMsg
+| Ct1 : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
+| Ct2 : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
+
+/-- [spqr::proto::pq_ratchet::V1Msg]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 63:0-70:1
+    Visibility: public -/
+structure proto.pq_ratchet.V1Msg where
+  epoch : Std.U64
+  index : Std.U32
+  inner_msg : Option proto.pq_ratchet.v1_msg.InnerMsg
+
+/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
+def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure (T0 : Type) :=
+  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
+
+/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#1]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
+def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
+
+/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#2]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
+def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
+
+/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#3]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
+def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_msg.InnerMsg × Bool
+
+/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#4]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
+def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
+
+/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#5]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
+def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
+
+/-- [spqr::proto::pq_ratchet::v1_state::Unchunked]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 106:4-106:27
+    Visibility: public -/
+@[reducible]
+def proto.pq_ratchet.v1_state.Unchunked := Unit
+
+/-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 166:8-175:9
+    Visibility: public -/
+structure proto.pq_ratchet.v1_state.unchunked.EkReceived where
+  epoch : Std.U64
+  auth : Option proto.pq_ratchet.Authenticator
+  hdr : alloc.vec.Vec Std.U8
+  ek : alloc.vec.Vec Std.U8
+
+/-- [spqr::proto::pq_ratchet::v1_state::Chunked]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 211:4-211:25
+    Visibility: public -/
+@[reducible]
+def proto.pq_ratchet.v1_state.Chunked := Unit
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.KeysUnsampled
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#1]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_1 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.KeysSampled
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#2]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_2 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.HeaderSent
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#3]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_3 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.Ct1Received
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#4]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_4 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#5]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_5 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#6]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_6 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.HeaderReceived
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#7]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_7 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.Ct1Sampled
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#8]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_8 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#9]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_9 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
+
+/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#10]
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
+def proto.pq_ratchet.v1_state.InnerState.merge.closure_10 (T0 : Type) :=
+  Option proto.pq_ratchet.v1_state.InnerState ×
+  proto.pq_ratchet.v1_state.chunked.Ct2Sampled
 
 /-- [spqr::authenticator::Authenticator]
     Source: 'src/authenticator.rs', lines 27:0-30:1
@@ -290,13 +728,6 @@ structure chain.ChainParams where
   max_jump : Std.U32
   max_ooo_keys : Std.U32
 
-/-- [spqr::proto::pq_ratchet::ChainParams]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 362:0-372:1
-    Visibility: public -/
-structure proto.pq_ratchet.ChainParams where
-  max_jump : Std.U32
-  max_ooo_keys : Std.U32
-
 /-- [spqr::chain::KeyHistory]
     Source: 'src/chain.rs', lines 91:0-96:1 -/
 structure chain.KeyHistory where
@@ -314,14 +745,6 @@ structure chain.ChainEpochDirection where
 structure chain.ChainEpoch where
   send : chain.ChainEpochDirection
   recv : chain.ChainEpochDirection
-
-/-- [spqr::proto::pq_ratchet::Direction]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 404:0-407:1
-    Visibility: public -/
-@[discriminant i32]
-inductive proto.pq_ratchet.Direction where
-| A2B : proto.pq_ratchet.Direction
-| B2A : proto.pq_ratchet.Direction
 
 /-- [spqr::chain::Chain]
     Source: 'src/chain.rs', lines 113:0-121:1
@@ -384,38 +807,12 @@ inductive Error where
 | InvalidParams : Str → Error
 | ChainNotAvailable : Error
 
-/-- [spqr::proto::pq_ratchet::chain::epoch::EpochDirection]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 351:8-358:9
-    Visibility: public -/
-structure proto.pq_ratchet.chain.epoch.EpochDirection where
-  ctr : Std.U32
-  next : alloc.vec.Vec Std.U8
-  prev : alloc.vec.Vec Std.U8
-
 /-- [spqr::EpochSecret]
     Source: 'src/lib.rs', lines 51:0-54:1
     Visibility: public -/
 structure EpochSecret where
   epoch : Std.U64
   secret : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::chain::Epoch]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 342:4-347:5
-    Visibility: public -/
-structure proto.pq_ratchet.chain.Epoch where
-  send : Option proto.pq_ratchet.chain.epoch.EpochDirection
-  recv : Option proto.pq_ratchet.chain.epoch.EpochDirection
-
-/-- [spqr::proto::pq_ratchet::Chain]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 325:0-338:1
-    Visibility: public -/
-structure proto.pq_ratchet.Chain where
-  direction : Std.I32
-  current_epoch : Std.U64
-  links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch
-  next_root : alloc.vec.Vec Std.U8
-  send_epoch : Std.U64
-  params : Option proto.pq_ratchet.ChainParams
 
 /-- [spqr::chain::{spqr::chain::Chain}::into_pb::closure]
     Source: 'src/chain.rs', lines 423:21-426:17 -/
@@ -483,14 +880,6 @@ structure encoding.polynomial.PolyEncoder where
   idx : Std.U32
   s : encoding.polynomial.EncoderState
 
-/-- [spqr::proto::pq_ratchet::PolynomialEncoder]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 3:0-13:1
-    Visibility: public -/
-structure proto.pq_ratchet.PolynomialEncoder where
-  idx : Std.U32
-  pts : alloc.vec.Vec (alloc.vec.Vec Std.U8)
-  polys : alloc.vec.Vec (alloc.vec.Vec Std.U8)
-
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::closure#1]
     Source: 'src/encoding/polynomial.rs', lines 641:25-644:21 -/
 @[reducible]
@@ -534,15 +923,6 @@ structure encoding.polynomial.PolyDecoder where
 @[reducible]
 def encoding.polynomial.PolyDecoder.new_with_poly_count.closure := Unit
 
-/-- [spqr::proto::pq_ratchet::PolynomialDecoder]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 15:0-24:1
-    Visibility: public -/
-structure proto.pq_ratchet.PolynomialDecoder where
-  pts_needed : Std.U32
-  polys : Std.U32
-  pts : alloc.vec.Vec (alloc.vec.Vec Std.U8)
-  is_complete : Bool
-
 /-- Trait declaration: [spqr::encoding::Decoder]
     Source: 'src/encoding.rs', lines 40:0-47:1
     Visibility: public -/
@@ -558,14 +938,6 @@ structure incremental_mlkem768.Keys where
   ek : alloc.vec.Vec Std.U8
   dk : alloc.vec.Vec Std.U8
   hdr : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::Version]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 375:0-379:1
-    Visibility: public -/
-@[discriminant i32]
-inductive proto.pq_ratchet.Version where
-| V0 : proto.pq_ratchet.Version
-| V1 : proto.pq_ratchet.Version
 
 /-- [spqr::Params]
     Source: 'src/lib.rs', lines 56:0-62:1
@@ -776,229 +1148,6 @@ inductive v1.chunked.states.States where
   v1.chunked.send_ct.Ct1Acknowledged →
   v1.chunked.states.States
 | Ct2Sampled : v1.chunked.send_ct.Ct2Sampled → v1.chunked.states.States
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 138:8-147:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  dk : alloc.vec.Vec Std.U8
-  ct1 : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 244:8-249:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.EkSentCt1Received where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
-  receiving_ct2 : Option proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 237:8-242:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.Ct1Received where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
-  sending_ek : Option proto.pq_ratchet.PolynomialEncoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkSent]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 129:8-136:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.EkSent where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  dk : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 228:8-235:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.HeaderSent where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.EkSent
-  sending_ek : Option proto.pq_ratchet.PolynomialEncoder
-  receiving_ct1 : Option proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 118:8-127:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.HeaderSent where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  ek : alloc.vec.Vec Std.U8
-  dk : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 221:8-226:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.KeysSampled where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.HeaderSent
-  sending_hdr : Option proto.pq_ratchet.PolynomialEncoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 111:8-116:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.KeysUnsampled where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 216:8-219:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.KeysUnsampled where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 203:8-208:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.Ct2Sent where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 289:8-294:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.Ct2Sampled where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct2Sent
-  sending_ct2 : Option proto.pq_ratchet.PolynomialEncoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 177:8-188:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.Ct1Sent where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  hdr : alloc.vec.Vec Std.U8
-  es : alloc.vec.Vec Std.U8
-  ct1 : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 282:8-287:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct1Sent
-  receiving_ek : Option proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 190:8-201:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  es : alloc.vec.Vec Std.U8
-  ek : alloc.vec.Vec Std.U8
-  ct1 : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 275:8-280:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
-  sending_ct1 : Option proto.pq_ratchet.PolynomialEncoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 266:8-273:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.Ct1Sampled where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.Ct1Sent
-  sending_ct1 : Option proto.pq_ratchet.PolynomialEncoder
-  receiving_ek : Option proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 157:8-164:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.HeaderReceived where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  hdr : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 259:8-264:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.HeaderReceived where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.HeaderReceived
-  receiving_ek : Option proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 150:8-155:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 252:8-257:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.chunked.NoHeaderReceived where
-  uc : Option proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
-  receiving_hdr : Option proto.pq_ratchet.PolynomialDecoder
-
-/-- [spqr::proto::pq_ratchet::v1_state::InnerState]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 297:4-322:5
-    Visibility: public -/
-@[discriminant isize]
-inductive proto.pq_ratchet.v1_state.InnerState where
-| KeysUnsampled :
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled →
-  proto.pq_ratchet.v1_state.InnerState
-| KeysSampled :
-  proto.pq_ratchet.v1_state.chunked.KeysSampled →
-  proto.pq_ratchet.v1_state.InnerState
-| HeaderSent :
-  proto.pq_ratchet.v1_state.chunked.HeaderSent →
-  proto.pq_ratchet.v1_state.InnerState
-| Ct1Received :
-  proto.pq_ratchet.v1_state.chunked.Ct1Received →
-  proto.pq_ratchet.v1_state.InnerState
-| EkSentCt1Received :
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received →
-  proto.pq_ratchet.v1_state.InnerState
-| NoHeaderReceived :
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived →
-  proto.pq_ratchet.v1_state.InnerState
-| HeaderReceived :
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived →
-  proto.pq_ratchet.v1_state.InnerState
-| Ct1Sampled :
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled →
-  proto.pq_ratchet.v1_state.InnerState
-| EkReceivedCt1Sampled :
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled →
-  proto.pq_ratchet.v1_state.InnerState
-| Ct1Acknowledged :
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged →
-  proto.pq_ratchet.v1_state.InnerState
-| Ct2Sampled :
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled →
-  proto.pq_ratchet.v1_state.InnerState
-
-/-- [spqr::proto::pq_ratchet::V1State]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 99:0-102:1
-    Visibility: public -/
-structure proto.pq_ratchet.V1State where
-  inner_state : Option proto.pq_ratchet.v1_state.InnerState
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::Inner]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 50:4-53:5
-    Visibility: public -/
-@[discriminant isize]
-inductive proto.pq_ratchet.pq_ratchet_state.Inner where
-| V1 : proto.pq_ratchet.V1State → proto.pq_ratchet.pq_ratchet_state.Inner
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 39:4-48:5
-    Visibility: public -/
-structure proto.pq_ratchet.pq_ratchet_state.VersionNegotiation where
-  auth_key : alloc.vec.Vec Std.U8
-  direction : Std.I32
-  min_version : Std.I32
-  chain_params : Option proto.pq_ratchet.ChainParams
-
-/-- [spqr::proto::pq_ratchet::PqRatchetState]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 26:0-35:1
-    Visibility: public -/
-structure proto.pq_ratchet.PqRatchetState where
-  version_negotiation : Option
-    proto.pq_ratchet.pq_ratchet_state.VersionNegotiation
-  chain : Option proto.pq_ratchet.Chain
-  inner : Option proto.pq_ratchet.pq_ratchet_state.Inner
 
 /-- [spqr::Send]
     Source: 'src/lib.rs', lines 243:0-247:1
@@ -1217,154 +1366,5 @@ def v1.chunked.states.serialize.Message.deserialize.closure := Unit
     Source: 'src/lib.rs', lines 395:64-395:86 -/
 @[reducible]
 def recv.closure := Unit
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::closure]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
-def proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure (T0 : Type) :=
-  Option proto.pq_ratchet.pq_ratchet_state.Inner × proto.pq_ratchet.V1State
-
-/-- [spqr::proto::pq_ratchet::Chunk]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 56:0-61:1
-    Visibility: public -/
-structure proto.pq_ratchet.Chunk where
-  index : Std.U32
-  data : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_msg::InnerMsg]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 74:4-89:5
-    Visibility: public -/
-@[discriminant isize]
-inductive proto.pq_ratchet.v1_msg.InnerMsg where
-| Hdr : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
-| Ek : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
-| EkCt1Ack : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
-| Ct1Ack : Bool → proto.pq_ratchet.v1_msg.InnerMsg
-| Ct1 : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
-| Ct2 : proto.pq_ratchet.Chunk → proto.pq_ratchet.v1_msg.InnerMsg
-
-/-- [spqr::proto::pq_ratchet::V1Msg]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 63:0-70:1
-    Visibility: public -/
-structure proto.pq_ratchet.V1Msg where
-  epoch : Std.U64
-  index : Std.U32
-  inner_msg : Option proto.pq_ratchet.v1_msg.InnerMsg
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#1]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#2]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#3]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × Bool
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#4]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::closure#5]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_state::Unchunked]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 106:4-106:27
-    Visibility: public -/
-@[reducible]
-def proto.pq_ratchet.v1_state.Unchunked := Unit
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 166:8-175:9
-    Visibility: public -/
-structure proto.pq_ratchet.v1_state.unchunked.EkReceived where
-  epoch : Std.U64
-  auth : Option proto.pq_ratchet.Authenticator
-  hdr : alloc.vec.Vec Std.U8
-  ek : alloc.vec.Vec Std.U8
-
-/-- [spqr::proto::pq_ratchet::v1_state::Chunked]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 211:4-211:25
-    Visibility: public -/
-@[reducible]
-def proto.pq_ratchet.v1_state.Chunked := Unit
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#1]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_1 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.KeysSampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#2]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_2 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.HeaderSent
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#3]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_3 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#4]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_4 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#5]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_5 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#6]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_6 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#7]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_7 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#8]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_8 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#9]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_9 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::closure#10]
-    Source: 'src/proto/generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_10 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled
 
 end spqr

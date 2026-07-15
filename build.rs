@@ -8,10 +8,10 @@ fn main() {
     // Where prost emits the generated Rust.
     //
     // * Normal builds: the standard per-build `$OUT_DIR`
-    // * Verification builds (`--features extraction`): `src/proto/generated/`.
+    // * Verification builds (`--features extraction`): `generated/`.
     let out_dir = if std::env::var_os("CARGO_FEATURE_EXTRACTION").is_some() {
         let dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
-            .join("src/proto/generated");
+            .join("generated");
         std::fs::create_dir_all(&dir).unwrap();
         prost_build.out_dir(&dir);
         dir.to_str().unwrap().to_owned()
