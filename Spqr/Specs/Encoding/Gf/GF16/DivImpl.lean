@@ -7,8 +7,8 @@ import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
 import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.GF16.Mul
-import Spqr.Aux.Aeneas.StdNextStepUsize
-import Spqr.Aux.Aeneas.StdNextCoreIterRangeStep
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 
 /-! # Spec theorem for `spqr::encoding::gf::{impl ops::Div for GF16}::div_impl`
 

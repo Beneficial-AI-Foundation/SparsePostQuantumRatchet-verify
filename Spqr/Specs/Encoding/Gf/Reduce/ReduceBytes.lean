@@ -29,6 +29,8 @@ theorem reduce_bytes_loop_spec
       refine ⟨by scalar_tac, fun j hj => ?_, by scalar_tac⟩
       by_cases hjne : j = i'
       · simp_all [UScalar.cast_val_eq]
+        congr 1
+        omega
       · simp_all; grind
     · grind
   · exact ⟨hi, h_inv⟩
