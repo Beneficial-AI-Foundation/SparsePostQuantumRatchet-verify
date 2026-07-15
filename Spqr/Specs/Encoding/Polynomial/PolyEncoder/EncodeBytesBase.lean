@@ -346,8 +346,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
         (by grind)
         (by
           simp only [show (0#usize : Usize).val = 0 from rfl, Nat.zero_add]
-          have : ce.chunks.length ≤ (msg.val).length := h_ce_count
-          omega))
+          grind))
     intro pts1 h_pts1
     simp only [WP.spec_ok]
     refine ⟨trivial, ?_⟩
