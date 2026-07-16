@@ -8,8 +8,9 @@ import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.StdArraySliceStep
+import Spqr.Auxiliary.Aeneas.ArraySlice
 import Spqr.Auxiliary.Aeneas.SpecRefl
+import Spqr.Specs.Aeneas.SliceConcat
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::mac_ct`

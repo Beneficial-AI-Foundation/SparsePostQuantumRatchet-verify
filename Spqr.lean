@@ -1,7 +1,7 @@
 import Spqr.Auxiliary.Aeneas.Array
+import Spqr.Auxiliary.Aeneas.ArraySlice
 import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.SpecRefl
-import Spqr.Auxiliary.Aeneas.StdArraySliceStep
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
@@ -43,6 +43,7 @@ import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Aeneas.VecClone
 import Spqr.Specs.Aeneas.VecExtendFromSlice

@@ -3,7 +3,7 @@ Copyright 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
+import Aeneas
 
 /-!
 # `Slice` helpers (staged for upstream to Aeneas `Std/Slice.lean`)
