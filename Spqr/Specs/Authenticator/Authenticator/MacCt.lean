@@ -130,8 +130,8 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
   · simp [*]; grind
   · simp [*]; grind
   · refine ⟨by simp [*], ?_⟩
-    have : (Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct) : Slice U8) = ct_mac_data.deref :=
-      Subtype.ext (by simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL])
-    rwa [this]
+    convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result›
+    · rfl
+    · apply Subtype.ext; simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL]
 
 end spqr.authenticator.Authenticator

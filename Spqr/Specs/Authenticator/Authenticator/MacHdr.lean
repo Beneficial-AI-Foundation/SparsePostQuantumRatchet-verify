@@ -61,8 +61,8 @@ theorem mac_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8)
   · simp [*]; grind
   · simp [*]; grind
   · refine ⟨by simp [*], ?_⟩
-    have : (Slice.make (MAC_HDR_LABEL ++ to_be_bytes ep ++ hdr) : Slice U8) = ct_mac_data.deref :=
-      Subtype.ext (by simp [core.num.U64.to_be_bytes, *, MAC_HDR_LABEL])
-    rwa [this]
+    convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result›
+    · rfl
+    · apply Subtype.ext; simp [core.num.U64.to_be_bytes, *, MAC_HDR_LABEL]
 
 end spqr.authenticator.Authenticator
