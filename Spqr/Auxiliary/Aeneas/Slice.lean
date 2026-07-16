@@ -16,6 +16,7 @@ it.
 open Aeneas Aeneas.Std
 
 -- TODO: upstream to Aeneas (`Std/Slice.lean`).
+/-- Make a `Aeneas.Std.Slice` from a `List`, attempt to prove the length requirement. -/
 def _root_.Aeneas.Std.Slice.make {α : Type} (l : List α) (h : l.length ≤ Usize.max := by grind) :
     Slice α := ⟨l, h⟩
 
