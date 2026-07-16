@@ -1,5 +1,10 @@
+import Spqr.Auxiliary.Aeneas.Array
+import Spqr.Auxiliary.Aeneas.Slice
+import Spqr.Auxiliary.Aeneas.SpecRefl
+import Spqr.Auxiliary.Aeneas.StdArraySliceStep
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
 import Spqr.Math.Gf16.Basic

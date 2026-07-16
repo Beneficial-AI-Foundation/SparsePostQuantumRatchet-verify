@@ -5,6 +5,11 @@ Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+import Spqr.Auxiliary.Aeneas.Slice
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.Array
+import Spqr.Auxiliary.Aeneas.StdArraySliceStep
+import Spqr.Auxiliary.Aeneas.SpecRefl
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::mac_ct`
@@ -38,78 +43,6 @@ def MAC_CT_LABEL : List U8 :=
 
 @[simp, grind =]
 theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
-
-/-- TODO: relocate -/
-@[step]
-theorem _root_.core.array.Array.as_slice_spec {T : Type} {N : Usize} (a : Array T N) :
-    core.array.Array.as_slice a ⦃ (s : Slice T) => s.val = a.val ⦄ := by
-  simp [core.array.Array.as_slice, WP.spec_ok]
-
-/-- TODO: relocate -/
-@[step]
-theorem _root_.alloc.slice.Slice.concat_shared_id_spec {T : Type}
-    (cloneInst : core.clone.Clone T) (hclone : ∀ x, cloneInst.clone x = ok x)
-    (sv : Slice (Slice T))
-    (hlen : (sv.val.map (·.val)).flatten.length ≤ Usize.max) :
-    alloc.slice.Slice.concat
-        (Slice.Insts.AllocSliceConcatTVec cloneInst
-          { borrow := Shared0T.Insts.CoreBorrowBorrow.borrow }) sv
-      ⦃ (v : alloc.vec.Vec T) => v.val = (sv.val.map (·.val)).flatten ⦄ := by
-  simp only [alloc.slice.Slice.concat_eq]
-  exact Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec cloneInst hclone sv hlen
-
-
--- TODO: upstream to Aeneas
-def _root_.Aeneas.Std.Slice.make {α : Type} (l : List α) (h : l.length ≤ Usize.max := by grind) :
-  Slice α := ⟨l, h⟩
-
-@[simp] theorem _root_.Aeneas.Std.Slice.val_make {α : Type} (l : List α) (h) :
-    (Slice.make l h).val = l := rfl
-
-@[simp] theorem _root_.Aeneas.Std.Slice.length_make {α : Type} (l : List α) (h) :
-    (Slice.make l h).length = l.length := rfl
-
-@[simp] theorem _root_.Aeneas.Std.Slice.make_val {α : Type} (s : Slice α) (h) :
-    Slice.make s.val h = s := rfl
-
-theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁ h₂) :
-    Slice.make l₁ h₁ = Slice.make l₂ h₂ ↔ l₁ = l₂ :=
-  Subtype.ext_iff
-
--- TODO: upstream to Aeneas (`Vec.deref` carries the same `val`, hence the same `length`).
-@[simp] theorem _root_.Aeneas.Std.alloc.vec.Vec.deref_val {α : Type} (v : alloc.vec.Vec α) :
-    (alloc.vec.Vec.deref v).val = v.val := rfl
-
-@[simp, scalar_tac_simps] theorem _root_.Aeneas.Std.alloc.vec.Vec.deref_length {α : Type}
-    (v : alloc.vec.Vec α) : (alloc.vec.Vec.deref v).length = v.length := rfl
-
--- TODO: upstream to Aeneas (`Array.make` currently has no `val`/`length` simp lemmas).
-@[simp, grind =] theorem _root_.Aeneas.Std.Array.val_make {α : Type}
-    (n : Usize) (l : List α) (h) : (Array.make n l h).val = l := rfl
-
--- TODO: relocate
-/-- Strengthen any spec's postcondition with the identity `m = ok r`. -/
-theorem spec_refl {α : Type} {m : Result α} {P : α → Prop} (h : m ⦃ P ⦄) :
-    m ⦃ fun r => P r ∧ m = ok r ⦄ := by
-  obtain ⟨r, h_eq, h_post⟩ := spec_imp_exists h
-  exact exists_imp_spec ⟨r, h_eq, h_post, h_eq⟩
-
--- TODO: relocate
-open Lean Elab Term Meta in
-/-- `refl_of% e` turns a spec theorem `∀ xs, m xs ⦃ P xs ⦄` into its reflexive strengthening
-`∀ xs, m xs ⦃ fun r => P xs r ∧ m xs = ok r ⦄`, telescoping the binders and applying `spec_refl`
-under them. Any arity (including none). Errors if `e` is not, after telescoping, a spec. -/
-elab "refl_of% " t:term : term => withRef t do
-  let e ← elabTerm t none
-  Term.synthesizeSyntheticMVarsNoPostponing
-  let ty ← instantiateMVars (← inferType e)
-  forallTelescope ty fun xs body => do
-    let refled ←
-      try mkAppM ``spec_refl #[mkAppN e xs]
-      catch _ =>
-        throwError "refl_of%: expected a spec `m ⦃ P ⦄`, but the statement concludes \
-          with{indentExpr body}"
-    mkLambdaFVars xs refled
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**

@@ -5,9 +5,11 @@ Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
--- TODO: depend on a shared helper file instead; `MacCt` currently hosts `Slice.make`, `spec_refl`,
--- `refl_of%`, the `@[step]` array/concat specs, and the `deref`/`val_make` simp lemmas.
-import Spqr.Specs.Authenticator.Authenticator.MacCt
+import Spqr.Auxiliary.Aeneas.Slice
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.Array
+import Spqr.Auxiliary.Aeneas.StdArraySliceStep
+import Spqr.Auxiliary.Aeneas.SpecRefl
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::mac_hdr`
