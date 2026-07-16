@@ -6,7 +6,8 @@ Authors: Liao Zhang
 import SrcTranslated.Funs
 
 /-! # Spec theorem for
-`spqr::serialize::{impl core::cmp::PartialEq<spqr::serialize::Error> for spqr::serialize::Error}::eq`
+`spqr::serialize::{impl core::cmp::PartialEq<spqr::serialize::Error>`
+`for spqr::serialize::Error}::eq`
 
 The derived `PartialEq` for the fieldless enum `serialize::Error` compares the two values by
 reading their discriminants.
