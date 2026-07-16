@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.GF16.New
 import Spqr.Math.Poly.Basic.Defs
+import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
 /-! # Spec theorem for `lagrange_polys_for_complete_points`: loop body 0
 
@@ -249,5 +250,51 @@ theorem lagrange_polys_for_complete_points_spec
   step*
   exact ⟨ones1, fun j hj => ones1_post1 j (Nat.zero_le j) hj,
          fun j hj => result_post1 j (Nat.zero_le j) hj⟩
+
+instance {N : Usize} : Inhabited (PolyConst N) := ⟨PolyConst.ZEROS N⟩
+
+open spqr.math.gf in
+/-- **Scaled-basis form of `lagrange_polys_for_complete_points_spec`**:
+
+For any `0 < N ≤ 65536`, each `result[j]` is the `j`-th scaled Lagrange basis polynomial
+for the complete points `0, 1, …, N−1` with `y = GF16.ONE`.  This identifies the existential
+witness `ones1` of `lagrange_polys_for_complete_points_spec` as `completePoints N`, so the
+per-constant specs (`COMPLETE_POINTS_POLYS_3` etc.) follow by instantiating `N`.
+
+**Note on the result binder**: The result is left untyped in the WP binder. Annotating it
+as `Array (PolyConst N) N` triggers a "no goals to be solved" error because the `#usize`
+macro at use sites carries an internal tactic proof (`by first | decide | scalar_tac`)
+that Lean's unifier resolves via the known return type before the explicit tactic block
+executes. -/
+theorem lagrange_polys_for_complete_points_scaled_spec
+    (N : Usize) (h_N_pos : 0 < N.val) (h_N_bound : N.val ≤ 65536) :
+    lagrange_polys_for_complete_points N ⦃ (result) =>
+      ∀ (j : Nat) (_ : j < N.val),
+        listToGF216Poly (result.val[j]!).coefficients.val =
+          scaledLagrangeBasis N j ⦄ := by
+  step*
+  have h_eq : result = completePoints N := by
+    simp only [global_simps]
+    apply Subtype.ext
+    apply List.ext_getElem (by simp)
+    intro n h1' h2'
+    obtain ⟨hx, hy⟩ := result_post1 n (by grind)
+    simp only [Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
+      List.getElem?_eq_getElem h1', Option.getD_some] at hx hy
+    simp only [List.getElem_map, List.getElem_finRange] at h2' ⊢
+    apply pt_ext
+    · apply gf16_ext
+      apply UScalar.eq_of_val_eq
+      trans n
+      · exact hx
+      · change n = (⟨BitVec.ofNat 16 n⟩ : UScalar .U16).bv.toNat
+        simp [BitVec.toNat_ofNat]
+        grind
+    · exact hy.trans (gf16_ext GF16.ONE_value)
+  have h := result_post2 _ result_post3 (by grind) (by grind)
+  rw [h_eq] at h
+  simp only [global_simps] at h ⊢
+  simp only [List.getElem!_eq_getElem?_getD]
+  grind
 
 end spqr.encoding.polynomial
