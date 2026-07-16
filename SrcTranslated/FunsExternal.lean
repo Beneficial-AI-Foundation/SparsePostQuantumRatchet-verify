@@ -3005,10 +3005,23 @@ axiom
 /-- [spqr::kdf::hkdf_to_slice]:
     Source: 'src/kdf.rs', lines 14:0-18:1
     Visibility: public -/
-axiom kdf.hkdf_to_slice
-  :
-  Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Result
-    (Slice Std.U8)
+opaque kdf.hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
+    Result (Slice Std.U8)
+
+/-- RFC 5869 HKDF-SHA256:
+
+If `okm.length ≤ 255 * 32` then `kdf::hkdf_to_slice(salt, ikm, info, okm)` is panic-free and returns
+a slice of length `okm.length`.
+
+The function `spqr::kdf::hkdf_to_slice` relies on:
+- `hkdf::Hkdf::extract` which implements the RFC5869 HKDF-Extract operation,
+- `hkdf::Hkdf::expand` which implements the RFC5869 HKDF-Expand operation,
+- `sha2::Sha256`, the SHA-256 hasher.
+
+https://datatracker.ietf.org/doc/html/rfc5869 -/
+@[step]
+axiom kdf.hkdf_to_slice_spec (salt ikm info okm : Slice U8) (h : okm.length ≤ 255 * 32) :
+    kdf.hkdf_to_slice salt ikm info okm ⦃ (out : Slice U8) => out.length = okm.length ⦄
 
 /-- [spqr::encoding::gf::mul2_u16]:
     Source: 'src/encoding/gf.rs', lines 216:0-225:1 -/
@@ -3069,48 +3082,46 @@ axiom
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next] -/
 @[rust_fun
   "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next"]
-axiom
+def
   alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Result ((Option T) ×
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
-
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::enumerate]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.enumerate
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Result
-    (core.iter.adapters.enumerate.Enumerate
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+  {T : Type} {A : Type}
+  (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A):
+    Result ((Option T) × (alloc.collections.vec_deque.into_iter.IntoIter T A)) :=
+        let deq: alloc.collections.vec_deque.VecDeque T A := intoIter.inner
+        let len := deq.length
+        -- strictly speaking, we don't need to ITE here.
+        -- If length = 0 then (in `else`) newInner = inner and get? returns none, but
+        -- this way short-circuits computation
+        if (deq.length == 0#usize) then ok (none, intoIter)
+        else
+          do
+            -- "`self[0]`, if it exists, is `buf[head]`. `head < buf.capacity()`, unless `buf.capacity() == 0` when `head == 0`."
+            -- [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#108]
+            -- Therefore, instead of modifying the buffer, the iteration over deq only needs
+            -- to cycle through the head index to yield all elements
+            let newhead ←
+              -- "if `len == 0`, the exact value of `head` is unimportant"  [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#112]
+              if len == 0#usize then ok deq.head
+              else (Usize.wrapping_add deq.head 1#usize) % len -- mod actually never fails, since len !=0
+            let newInner: alloc.collections.vec_deque.VecDeque T A:= {
+              buf := deq.buf,
+              head := newhead,
+              length := len
+            }
+            ok (deq.buf.get? deq.head, {inner:= newInner})
 
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map] -/
 @[rust_fun
   "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map"]
-axiom
+def
   alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
-  {T : Type} {A : Type} {B : Type} {F : Type} (coreopsfunctionFnMutFTupleTBInst
-  : core.ops.function.FnMut F T B) :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → F → Result
-    (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter
-    T A) F)
-
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::step_by]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.step_by
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Std.Usize → Result
-    (core.iter.adapters.step_by.StepBy
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+  {T : Type} {A : Type} {B : Type} {F : Type}
+  (coreopsfunctionFnMutFTupleTBInst: core.ops.function.FnMut F T B)
+  (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A)
+  (fn: F): Result (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter T A) F) :=
+    ok {iter:= intoIter, f:= fn}
 
 /-- [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from_iter]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3641:4-3641:67
