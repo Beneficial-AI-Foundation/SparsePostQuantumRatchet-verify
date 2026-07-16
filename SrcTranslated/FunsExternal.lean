@@ -3079,6 +3079,39 @@ axiom
   Clause1_IntoIter) :
   I → Result (core.result.Result V E)
 
+/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::next]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 47:4-47:35
+    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next] -/
+@[rust_fun
+  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next"]
+def
+  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
+  {T : Type} {A : Type}
+  (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A):
+    Result ((Option T) × (alloc.collections.vec_deque.into_iter.IntoIter T A)) :=
+        let deq: alloc.collections.vec_deque.VecDeque T A := intoIter.inner
+        let len := deq.length
+        -- strictly speaking, we don't need to ITE here.
+        -- If length = 0 then (in `else`) newInner = inner and get? returns none, but
+        -- this way short-circuits computation
+        if (deq.length == 0#usize) then ok (none, intoIter)
+        else
+          do
+            -- "`self[0]`, if it exists, is `buf[head]`. `head < buf.capacity()`, unless `buf.capacity() == 0` when `head == 0`."
+            -- [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#108]
+            -- Therefore, instead of modifying the buffer, the iteration over deq only needs
+            -- to cycle through the head index to yield all elements
+            let newhead ←
+              -- "if `len == 0`, the exact value of `head` is unimportant"  [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#112]
+              if len == 0#usize then ok deq.head
+              else (Usize.wrapping_add deq.head 1#usize) % len -- mod actually never fails, since len !=0
+            let newInner: alloc.collections.vec_deque.VecDeque T A:= {
+              buf := deq.buf,
+              head := newhead,
+              length := len
+            }
+            ok (deq.buf.get? deq.head, {inner:= newInner})
+
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map] -/
