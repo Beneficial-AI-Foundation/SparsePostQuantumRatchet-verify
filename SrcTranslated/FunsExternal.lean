@@ -118,14 +118,186 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_eq
     Slice.Insts.CoreCmpPartialEqArray.eq cmpPartialEqInst s arr =
       Slice.partialEqAux cmpPartialEqInst s.val arr.val := rfl
 
+/-- Implementation helper for `core.array.from_fn`
+    (`[core::array::from_fn]`,
+    Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52).
+
+    Builds the element list by calling the closure at indices
+    `i, i+1, …, i+remaining-1`, threading the mutable closure state
+    through each call. -/
+private def core.array.from_fn_loop
+    {T F : Type}
+    (fnMutInst : core.ops.function.FnMut F Std.Usize T) :
+    F → Std.Usize → Nat → Result (List T)
+  | _, _, 0 => ok []
+  | f, i, n + 1 => do
+    let (val, f') ← fnMutInst.call_mut f i
+    let i' ← i + 1#usize
+    let rest ← core.array.from_fn_loop fnMutInst f' i' n
+    ok (val :: rest)
+
+/-- **Spec theorem for `core.array.from_fn_loop` (base case)**: when the remaining
+count is `0`, the loop immediately returns the empty list `[]`. -/
+@[simp]
+theorem core.array.from_fn_loop_zero
+    {T F : Type}
+    (fnMutInst : core.ops.function.FnMut F Std.Usize T)
+    (f : F) (i : Std.Usize) :
+    core.array.from_fn_loop fnMutInst f i 0 = ok [] := rfl
+
+/-- **Spec theorem for `core.array.from_fn_loop` (inductive case)**: when the remaining
+count is `n + 1`, the loop calls `call_mut f i` to obtain an element `val` and updated
+closure state `f'`, increments the index, recurses on the remaining `n` iterations,
+and conses `val` onto the result. -/
+@[simp]
+theorem core.array.from_fn_loop_succ
+    {T F : Type}
+    (fnMutInst : core.ops.function.FnMut F Std.Usize T)
+    (f : F) (i : Std.Usize) (n : Nat) :
+    core.array.from_fn_loop fnMutInst f i (n + 1) =
+      (do
+        let (val, f') ← fnMutInst.call_mut f i
+        let i' ← i + 1#usize
+        let rest ← core.array.from_fn_loop fnMutInst f' i' n
+        ok (val :: rest)) := rfl
+
+/-- **Spec theorem for `core.array.from_fn_loop` (length)**: when the loop succeeds,
+the resulting list has exactly `n` elements. This is proved by induction on `n`,
+and requires that each index increment stays within `Usize.max`. -/
+theorem core.array.from_fn_loop_length
+    {T F : Type}
+    (fnMutInst : core.ops.function.FnMut F Std.Usize T)
+    (f : F) (i : Std.Usize) (n : Nat) (l : List T)
+    (h_ok : core.array.from_fn_loop fnMutInst f i n = ok l)
+    (h_bound : ↑i + n ≤ Std.Usize.max) :
+    l.length = n := by
+  induction n generalizing f i l with
+  | zero =>
+    simp only [from_fn_loop, ok.injEq, List.nil_eq] at h_ok
+    subst h_ok; rfl
+  | succ k ih =>
+    simp only [core.array.from_fn_loop] at h_ok
+    match h_call : fnMutInst.call_mut f i with
+    | .ok (val, f') =>
+      simp only [h_call] at h_ok
+      match h_add : i + 1#usize with
+      | .ok i' =>
+        simp only [h_add] at h_ok
+        match h_rest : core.array.from_fn_loop fnMutInst f' i' k with
+        | .ok rest =>
+          simp only [bind_tc_ok, uncurry_apply_pair, h_rest, ok.injEq] at h_ok
+          subst h_ok
+          simp only [List.length_cons,
+            ih f' i' rest h_rest
+                (by
+                  have := UScalar.add_equiv i (1#usize : Usize)
+                  rw [h_add] at this; exact by scalar_tac)]
+        | .fail e => simp only [bind_tc_ok, uncurry_apply_pair, h_rest, bind_tc_fail,
+          reduceCtorEq] at h_ok
+        | .div => simp only [bind_tc_ok, uncurry_apply_pair, h_rest, bind_tc_div,
+          reduceCtorEq] at h_ok
+      | .fail e => simp only [h_add, bind_tc_fail, bind_tc_ok, uncurry_apply_pair,
+        reduceCtorEq] at h_ok
+      | .div => simp only [h_add, bind_tc_div, bind_tc_ok, uncurry_apply_pair, reduceCtorEq] at h_ok
+    | .fail e => simp only [h_call, bind_tc_fail, reduceCtorEq] at h_ok
+    | .div => simp only [h_call, bind_tc_div, reduceCtorEq] at h_ok
+
 /-- [core::array::from_fn]:
     Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52
-    Name pattern: [core::array::from_fn] -/
+    Name pattern: [core::array::from_fn]
+
+    Concrete model of Rust's `core::array::from_fn`: creates an array of `N`
+    elements where the element at index `i` is computed by calling the closure
+    `f` with argument `i` (for `i = 0, 1, …, N-1`).  The closure is modelled
+    as `FnMut F Usize T`, so each invocation may update the closure state.
+    The outer `Result` propagates any failure from the closure calls or from
+    the index arithmetic. -/
 @[rust_fun "core::array::from_fn"]
-axiom core.array.from_fn
+def core.array.from_fn
   {T : Type} {F : Type} (N : Std.Usize) (opsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) :
-  F → Result (Array T N)
+  F → Result (Array T N) :=
+  fun f => do
+    let l ← core.array.from_fn_loop opsfunctionFnMutFTupleUsizeTInst f 0#usize N.val
+    match h : decide (l.length = N.val) with
+    | true => ok ⟨l, of_decide_eq_true h⟩
+    | false => fail .panic
+
+/-- Helper lemma: `from_fn_loop` with a stateless closure (state = `Unit`) that always
+returns `(default, ())` produces `List.replicate n default`.  This is used to discharge
+the `hl` hypothesis of `from_fn_spec` for constant-valued closures such as the one in
+`PolyDecoder.new_with_poly_count`. -/
+theorem core.array.from_fn_loop_replicate_default
+    {T : Type} [Inhabited T]
+    (fnMutInst : core.ops.function.FnMut Unit Std.Usize T)
+    (h_const : ∀ (i : Std.Usize), fnMutInst.call_mut () i = ok (default, ()))
+    (i : Std.Usize) (n : Nat) (h_bound : ↑i + n ≤ Std.Usize.max) :
+    core.array.from_fn_loop fnMutInst () i n = ok (List.replicate n default) := by
+  induction n generalizing i with
+  | zero => simp [core.array.from_fn_loop]
+  | succ k ih =>
+    simp only [core.array.from_fn_loop]
+    have h_add : ∃ i', i + (1#usize : Usize) = ok i' ∧ (↑i' : Nat) = ↑i + 1 := by
+      have h := UScalar.add_equiv i (1#usize : Usize)
+      generalize h_eq : i + (1#usize : Usize) = r at h
+      cases r with
+      | ok z => exact ⟨z, rfl, h.2.1⟩
+      | fail e => exact absurd (by scalar_tac) h
+      | div => exact h.elim
+    obtain ⟨i', h_eq, h_val⟩ := h_add
+    have ih_eq := ih i' (by scalar_tac)
+    simp [h_const, h_eq, List.replicate, ih_eq]
+
+
+/-- Helper lemma: `from_fn_loop` with a *state-preserving* closure that always returns
+the same value `v` (independent of the index, leaving the closure state untouched)
+produces `List.replicate n v`.  Unlike `from_fn_loop_replicate_default` this works for
+an arbitrary closure-state type `F` (not just `Unit`), which is needed for closures that
+capture data (such as the message slice in `PolyEncoder.encode_bytes_base`). -/
+theorem core.array.from_fn_loop_const
+    {T F : Type}
+    (fnMutInst : core.ops.function.FnMut F Std.Usize T)
+    (v : T)
+    (h_const : ∀ (g : F) (i : Std.Usize), fnMutInst.call_mut g i = ok (v, g))
+    (f : F) (i : Std.Usize) (n : Nat) (h_bound : ↑i + n ≤ Std.Usize.max) :
+    core.array.from_fn_loop fnMutInst f i n = ok (List.replicate n v) := by
+  induction n generalizing f i with
+  | zero => rfl
+  | succ k ih =>
+    simp only [core.array.from_fn_loop, h_const]
+    have h_add : ∃ i', i + (1#usize : Usize) = ok i' ∧ (↑i' : Nat) = ↑i + 1 := by
+      have h := UScalar.add_equiv i (1#usize : Usize)
+      generalize h_eq : i + (1#usize : Usize) = r at h
+      cases r with
+      | ok z => exact ⟨z, rfl, h.2.1⟩
+      | fail e => exact absurd (by scalar_tac) h
+      | div => exact h.elim
+    obtain ⟨i', h_eq, h_val⟩ := h_add
+    rw [h_eq]
+    change (do let rest ← core.array.from_fn_loop fnMutInst f i' k; ok (v :: rest))
+      = ok (List.replicate (k + 1) v)
+    rw [ih f i' (by scalar_tac), bind_tc_ok]
+    rfl
+
+/-- **Spec theorem for `core::array::from_fn`**: when the loop helper
+`core.array.from_fn_loop` succeeds and produces a list `l` of length `N`,
+the result is an array whose underlying list is `l`.  The per-element
+behaviour is definitional in the `FnMut` instance. -/
+@[step]
+theorem core.array.from_fn_spec
+    {T F : Type} (N : Std.Usize)
+    (fnMutInst : core.ops.function.FnMut F Std.Usize T)
+    (f : F)
+    (l : List T)
+    (hl : core.array.from_fn_loop fnMutInst f 0#usize N.val = ok l)
+    (hlen : l.length = N.val) :
+    core.array.from_fn N fnMutInst f
+      ⦃ (arr : Array T N) => arr.val = l ⦄ := by
+  simp [core.array.from_fn, hl]
+  split
+  · simp_all
+  · simp_all
+
 
 namespace Shared0T.Insts.CoreBorrowBorrow
 /-- [core::borrow::{core::borrow::Borrow<T> for &0 (T)}::borrow]:
@@ -3084,48 +3256,46 @@ axiom
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next] -/
 @[rust_fun
   "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next"]
-axiom
+def
   alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Result ((Option T) ×
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
-
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::enumerate]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::enumerate"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.enumerate
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Result
-    (core.iter.adapters.enumerate.Enumerate
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+  {T : Type} {A : Type}
+  (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A):
+    Result ((Option T) × (alloc.collections.vec_deque.into_iter.IntoIter T A)) :=
+        let deq: alloc.collections.vec_deque.VecDeque T A := intoIter.inner
+        let len := deq.length
+        -- strictly speaking, we don't need to ITE here.
+        -- If length = 0 then (in `else`) newInner = inner and get? returns none, but
+        -- this way short-circuits computation
+        if (deq.length == 0#usize) then ok (none, intoIter)
+        else
+          do
+            -- "`self[0]`, if it exists, is `buf[head]`. `head < buf.capacity()`, unless `buf.capacity() == 0` when `head == 0`."
+            -- [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#108]
+            -- Therefore, instead of modifying the buffer, the iteration over deq only needs
+            -- to cycle through the head index to yield all elements
+            let newhead ←
+              -- "if `len == 0`, the exact value of `head` is unimportant"  [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#112]
+              if len == 0#usize then ok deq.head
+              else (Usize.wrapping_add deq.head 1#usize) % len -- mod actually never fails, since len !=0
+            let newInner: alloc.collections.vec_deque.VecDeque T A:= {
+              buf := deq.buf,
+              head := newhead,
+              length := len
+            }
+            ok (deq.buf.get? deq.head, {inner:= newInner})
 
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map] -/
 @[rust_fun
   "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::map"]
-axiom
+def
   alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.map
-  {T : Type} {A : Type} {B : Type} {F : Type} (coreopsfunctionFnMutFTupleTBInst
-  : core.ops.function.FnMut F T B) :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → F → Result
-    (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter
-    T A) F)
-
-/-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::step_by]:
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
-    Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by] -/
-@[rust_fun
-  "alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::step_by"]
-axiom
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.step_by
-  {T : Type} {A : Type} :
-  alloc.collections.vec_deque.into_iter.IntoIter T A → Std.Usize → Result
-    (core.iter.adapters.step_by.StepBy
-    (alloc.collections.vec_deque.into_iter.IntoIter T A))
+  {T : Type} {A : Type} {B : Type} {F : Type}
+  (coreopsfunctionFnMutFTupleTBInst: core.ops.function.FnMut F T B)
+  (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A)
+  (fn: F): Result (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter T A) F) :=
+    ok {iter:= intoIter, f:= fn}
 
 /-- [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from_iter]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3641:4-3641:67
