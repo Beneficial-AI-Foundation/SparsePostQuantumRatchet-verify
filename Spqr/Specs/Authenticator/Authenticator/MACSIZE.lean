@@ -20,7 +20,7 @@ namespace spqr.authenticator.Authenticator
 • `MACSIZE.val` equals `32`.
 -/
 @[simp]
-theorem MACSIZE_val :
+theorem MACSIZE_spec :
     MACSIZE.val = 32 := by
   simp [MACSIZE]
 

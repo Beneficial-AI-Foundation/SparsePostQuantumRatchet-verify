@@ -47,13 +47,16 @@ theorem MAC_HDR_LABEL_length : MAC_HDR_LABEL.length = 33 := by rfl
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_hdr`**
-• Given the bounds on `self.mac_key` and `hdr`, `mac_hdr self ep hdr` does not panic.
+• Given the boundedness hypotheses on `self.mac_key` and `hdr`,
+  `mac_hdr self ep hdr` does not panic.
 • The returned `Vec U8` has length `MACSIZE` (= 32 bytes).
 • The returned `Vec U8` equals the output of `libcrux_hmac.hmac` on key `self.mac_key`
-  and data `MAC_HDR_LABEL ++ ep.to_be_bytes ++ hdr`. -/
+  and data `MAC_HDR_LABEL ++ ep.to_be_bytes ++ hdr`.
+-/
 @[step]
 theorem mac_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8)
-    (h_key : self.mac_key.length ≤ U32.max) (h_data : hdr.length + 41 ≤ U32.max) :
+    (h_key : self.mac_key.length ≤ U32.max)
+    (h_data : hdr.length + 41 ≤ U32.max) :
     mac_hdr self ep hdr ⦃ (result : alloc.vec.Vec U8) =>
       result.length = MACSIZE.val ∧
       let data : Slice U8 := Slice.make (MAC_HDR_LABEL ++ to_be_bytes ep ++ hdr);

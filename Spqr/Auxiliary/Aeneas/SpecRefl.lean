@@ -8,10 +8,9 @@ import Aeneas
 /-!
 # Reflexive spec strengthening (staged for upstream to the Aeneas WP layer)
 
-`spec_refl` strengthens any spec's postcondition with the *call identity* `m = ok r`, always
-recoverable via `spec_imp_exists`/`exists_imp_spec`. The `refl_of%` elaborator lifts this over the
-binders of a `∀`-quantified spec theorem, so a reflexive spec can be dropped into a proof's local
-context (where `step` prefers it) without per-function boilerplate.
+`spec_refl` strengthens any spec's postcondition with the call identity `m = ok r`. The `refl_of%`
+elaborator lifts this over the binders of a `∀`-quantified spec theorem, so a reflexive spec can be
+dropped into a proof's local context.
 -/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
@@ -25,7 +24,7 @@ theorem spec_refl {α : Type} {m : Result α} {P : α → Prop} (h : m ⦃ P ⦄
   exact exists_imp_spec ⟨r, h_eq, h_post, h_eq⟩
 
 open Lean Elab Term Meta in
-/-- `refl_of% e` turns a spec theorem `∀ xs, m xs ⦃ P xs ⦄` into its reflexive strengthening
+/-- `refl_of% e` turns a spec theorem `e` of the form `∀ xs, m xs ⦃ P xs ⦄` into its strengthening
 `∀ xs, m xs ⦃ fun r => P xs r ∧ m xs = ok r ⦄`, telescoping the binders and applying `spec_refl`
 under them. Any arity (including none). Errors if `e` is not, after telescoping, a spec. -/
 elab "refl_of% " t:term : term => withRef t do

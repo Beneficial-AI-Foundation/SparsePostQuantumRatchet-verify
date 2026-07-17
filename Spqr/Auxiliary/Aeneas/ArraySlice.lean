@@ -5,12 +5,7 @@ Authors: Oliver Butterley
 -/
 import Aeneas
 
-/-!
-# `@[step]` spec for `core::array::[T; N]::as_slice` (staged for upstream to Aeneas)
-
-Viewing a fixed-size array as a slice preserves the underlying elements. Depends only on Aeneas
-(`core.array.Array.as_slice` lives in `Std/Array/ArraySlice.lean`).
--/
+/-! # Staged for upstream to Aeneas `Std/Array/ArraySlice.lean`. -/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 

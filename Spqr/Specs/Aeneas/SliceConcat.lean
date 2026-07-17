@@ -6,15 +6,10 @@ Authors: Oliver Butterley
 import SrcTranslated.Funs
 
 /-!
-# `@[step]` spec for the free `<[T]>::concat`
+# `@[step]` spec for the the standalone `alloc.slice.Slice.concat` function
 
-`step` looks up specs on the free function `alloc.slice.Slice.concat` (it does not pre-normalize the
-head via `concat_eq`), so we give it its own spec delegating to the instance spec
-`Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec` in `FunsExternal`.
-
-This is spqr glue rather than upstream-bound Aeneas: it is stated over the `spqr`-generated
-`AllocSliceConcatTVec` instance and the hand-filled `FunsExternal` concat model, so it lives here
-and not under `Auxiliary/Aeneas/`.
+Eventually this will be upstreamed to Aeneas but only after the `Slice.concat` models have been
+upstreamed.
 -/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP spqr

@@ -1253,7 +1253,6 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_eq
 concatenating a slice of slices yields a `Vec` whose underlying list is the flattened
 concatenation, provided `Clone` is the identity (`hclone`) and the total length fits
 in `Usize` (`hlen`). -/
-@[step]
 theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
     {T : Type} (corecloneCloneInst : core.clone.Clone T)
     (hclone : ∀ x, corecloneCloneInst.clone x = ok x)

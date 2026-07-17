@@ -6,27 +6,24 @@ Authors: Oliver Butterley
 import Aeneas
 
 /-!
-# `Slice` helpers (staged for upstream to Aeneas `Std/Slice.lean`)
-
-`Slice.make`, a smart constructor for a `Slice` from a list, discharging the length obligation with
-`grind` by default, together with the projection/injectivity simp lemmas that let `simp` see through
-it.
--/
+# Staged for upstream to Aeneas `Std/Slice.lean` -/
 
 open Aeneas Aeneas.Std
 
--- TODO: upstream to Aeneas (`Std/Slice.lean`).
-/-- Make a `Aeneas.Std.Slice` from a `List`, attempt to prove the length requirement. -/
+/-- Constructs an `Aeneas.Std.Slice` from a `List`, discharging the `length ≤ Usize.max` obligation
+with grind by default. -/
 def _root_.Aeneas.Std.Slice.make {α : Type} (l : List α) (h : l.length ≤ Usize.max := by grind) :
     Slice α := ⟨l, h⟩
 
-@[simp] theorem _root_.Aeneas.Std.Slice.val_make {α : Type} (l : List α) (h) :
+@[simp, grind =] theorem _root_.Aeneas.Std.Slice.val_make {α : Type} (l : List α) (h) :
     (Slice.make l h).val = l := rfl
 
-@[simp] theorem _root_.Aeneas.Std.Slice.length_make {α : Type} (l : List α) (h) :
-    (Slice.make l h).length = l.length := rfl
+-- Not `@[simp]`: `Slice.length` is reducibly `·.val.length`, so `simp` already normalizes
+-- `(Slice.make l h).length` via `val_make` (flagged by the `simpNF` linter otherwise).
+@[scalar_tac_simps, grind =] theorem _root_.Aeneas.Std.Slice.length_make {α : Type}
+    (l : List α) (h) : (Slice.make l h).length = l.length := rfl
 
-@[simp] theorem _root_.Aeneas.Std.Slice.make_val {α : Type} (s : Slice α) (h) :
+@[simp, grind =] theorem _root_.Aeneas.Std.Slice.make_val {α : Type} (s : Slice α) (h) :
     Slice.make s.val h = s := rfl
 
 theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁ h₂) :

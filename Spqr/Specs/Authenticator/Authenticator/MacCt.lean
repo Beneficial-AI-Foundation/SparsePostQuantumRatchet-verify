@@ -50,10 +50,12 @@ open List core.num.U64 in
 • Given the boundedness hypotheses on `self.mac_key` and `ct`, `mac_ct self ep ct` does not panic.
 • The returned `Vec U8` has length `MACSIZE` (= 32 bytes).
 • The returned `Vec U8` equals the output of `libcrux_hmac.hmac` on key `self.mac_key`
-  and data `MAC_CT_LABEL ++ ep.to_be_bytes ++ ct`. -/
+  and data `MAC_CT_LABEL ++ ep.to_be_bytes ++ ct`.
+-/
 @[step]
 theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
-    (h_key : self.mac_key.length ≤ U32.max) (h_data : ct.length + 43 ≤ U32.max) :
+    (h_key : self.mac_key.length ≤ U32.max)
+    (h_data : ct.length + 43 ≤ U32.max) :
     mac_ct self ep ct ⦃ (result : alloc.vec.Vec U8) =>
       result.length = MACSIZE.val ∧
       let data : Slice U8 := Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct);
