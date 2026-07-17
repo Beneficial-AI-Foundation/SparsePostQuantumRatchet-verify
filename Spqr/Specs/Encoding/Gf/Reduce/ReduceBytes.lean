@@ -1,10 +1,14 @@
 /-
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
+
+/-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes`
+
+Specifies and verifies `reduce_bytes`, which builds the 256-entry GF reduction lookup table. -/
 
 open Aeneas Aeneas.Std Result Polynomial spqr.math.gf
 

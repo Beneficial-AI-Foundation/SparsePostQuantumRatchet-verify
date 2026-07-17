@@ -6,8 +6,11 @@ defaultTargets = ["Spqr", "SrcTranslated"]
 autoImplicit = false
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
-# https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/285
+# Mathlib's header linter hardcodes the required license line ("... the file LICENSE."), which
+# does not match this project's `LICENSE-APACHE`.  We disable it and use our customised version.
+# When the upstream PR lands, re-enable the mathlib version.
 weak.linter.style.header = false
+weak.linter.style.headerAlt.license = "Released under Apache 2.0 license as described in the file LICENSE-APACHE."
 maxRecDepth = 10000
 
 [[require]]
@@ -15,6 +18,11 @@ name = "aeneas"
 git = "https://github.com/AeneasVerif/aeneas.git"
 subDir = "backends/lean"
 rev = "b059c34a"
+
+# Slightly modified copy of Mathlib's header linter (`linter.style.headerAlt`).  Pending the upstream
+# PR which adds a config option and then this will be removed from here.
+[[lean_lib]]
+name = "HeaderLinter"
 
 [[lean_lib]]
 name = "SrcTranslated"
