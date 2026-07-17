@@ -12,7 +12,7 @@ open Aeneas Aeneas.Std
 @[simp, grind =] theorem _root_.Aeneas.Std.Array.val_make {α : Type}
     (n : Usize) (l : List α) (h) : (Array.make n l h).val = l := rfl
 
-@[scalar_tac_simps, grind =] theorem _root_.Aeneas.Std.Array.length_make {α : Type}
+@[scalar_tac(Array.make n l h), grind =] theorem _root_.Aeneas.Std.Array.length_make {α : Type}
     (n : Usize) (l : List α) (h) : (Array.make n l h).length = n.val := h
 
 @[simp, grind =] theorem _root_.Aeneas.Std.Array.make_val {α : Type} {n : Usize} (a : Array α n)
