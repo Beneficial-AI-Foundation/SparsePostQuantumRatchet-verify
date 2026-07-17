@@ -12,6 +12,7 @@ import Aeneas
 elaborator lifts this over the binders of a `∀`-quantified spec theorem, so a reflexive spec can be
 dropped into a proof's local context.
 -/
+-- https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/305
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 

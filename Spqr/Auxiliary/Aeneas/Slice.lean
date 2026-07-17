@@ -7,6 +7,7 @@ import Aeneas
 
 /-!
 # Staged for upstream to Aeneas `Std/Slice.lean` -/
+-- https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/305
 
 open Aeneas Aeneas.Std
 
