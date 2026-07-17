@@ -251,7 +251,7 @@ theorem lagrange_polys_for_complete_points_spec
   exact ⟨ones1, fun j hj => ones1_post1 j (Nat.zero_le j) hj,
          fun j hj => result_post1 j (Nat.zero_le j) hj⟩
 
-instance {N : Usize} : Inhabited (PolyConst N) := ⟨PolyConst.ZEROS N⟩
+instance instInhabitedPolyConst {N : Usize} : Inhabited (PolyConst N) := ⟨PolyConst.ZEROS N⟩
 
 open spqr.math.gf in
 /-- **Scaled-basis form of `lagrange_polys_for_complete_points_spec`**:
