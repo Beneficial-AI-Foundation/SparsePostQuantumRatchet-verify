@@ -3,13 +3,16 @@
 import Aeneas
 import SrcTranslated.Types
 import SrcTranslated.FunsExternal
-open Aeneas Aeneas.Std Result ControlFlow Error
-set_option linter.dupNamespace false
-set_option linter.hashCommand false
-set_option linter.unusedVariables false
+set_option linter.style.headerAlt false
+set_option linter.style.header false
 set_option linter.style.longLine false
 set_option linter.style.setOption false
 set_option linter.style.whitespace false
+set_option linter.dupNamespace false
+set_option linter.hashCommand false
+set_option linter.unusedVariables false
+
+open Aeneas Aeneas.Std Result ControlFlow Error
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
