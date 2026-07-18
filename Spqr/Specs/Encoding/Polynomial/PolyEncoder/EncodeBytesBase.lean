@@ -36,14 +36,14 @@ theorem body_spec
       (core.slice.iter.ChunksExact U8))
     (pts : Array Point 16#usize)
     (h_push_ok : ∀ j < 16, (pts[j]!).value.length + 1 ≤ Usize.max)
-    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length ≥ 2)
+    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length = 2)
     (h_count_bound : iter.iter.chunks ≠ [] → iter.count + 1 ≤ Usize.max) :
     body iter pts ⦃ cf =>
       match cf with
       | ControlFlow.done pts' => pts' = pts
       | ControlFlow.cont (_, pts') =>
           ∃ (i : Usize) (c : Slice U8) (g : GF16),
-            c.length ≥ 2 ∧
+            c.length = 2 ∧
             g.toGF216 = (256 * c[0]! + c[1]!).toGF216 ∧
             pts'[i.val % 16]!.value = (pts[i.val % 16]!).value ++ [g] ∧
             (∀ k, k ≠ i.val % 16 → pts'[k]! = pts[k]!) ⦄ := by
@@ -55,7 +55,7 @@ theorem body_spec
   · simp [WP.spec_ok]
   · rename_i hd tl rest
     simp only [bind_tc_ok]
-    have h_c_len : hd.val.length ≥ 2 := h_chunks_len hd (by rw [rest]; exact .head _)
+    have h_c_len : hd.val.length = 2 := h_chunks_len hd (by rw [rest]; exact .head _)
     have h_count_ok : iter.count.val + 1 ≤ Usize.max :=
       h_count_bound (by rw [rest]; exact List.cons_ne_nil _ _)
     step*
@@ -82,7 +82,7 @@ private theorem body_spec_with_iter
       (core.slice.iter.ChunksExact U8))
     (pts : Array Point 16#usize)
     (h_push_ok : ∀ (j : Nat), j < 16 → (pts[j]!).value.length + 1 ≤ Usize.max)
-    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length ≥ 2)
+    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length = 2)
     (h_count_bound : iter.iter.chunks ≠ [] → iter.count + 1 ≤ Usize.max) :
     body iter pts ⦃ cf =>
       match cf with
@@ -93,7 +93,7 @@ private theorem body_spec_with_iter
           iter'.count.val + iter'.iter.chunks.length =
             iter.count.val + iter.iter.chunks.length ∧
           ∃ (i : Usize) (c : Slice U8) (g : GF16),
-            c.length ≥ 2 ∧
+            c.length = 2 ∧
             g.toGF216 = (256 * c[0]! + c[1]!).toGF216 ∧
             pts'.val[i.val % 16]!.value =
               (pts[i.val % 16]!).value ++ [g] ∧
@@ -104,12 +104,12 @@ private theorem body_spec_with_iter
     core.slice.iter.IteratorChunksExact.next]
   split
   · rename_i h_nil
-    simp only [bind_tc_ok, GF16.new_eq, uncurry_apply_pair, ↓existsAndEq, and_true, ge_iff_le,
+    simp only [bind_tc_ok, GF16.new_eq, uncurry_apply_pair, ↓existsAndEq, and_true,
       List.getElem!_eq_getElem?_getD, ne_eq, exists_and_left, WP.spec_ok, true_and]
     exact h_nil
   · rename_i hd tl rest
     simp only [bind_tc_ok]
-    have h_c_len : hd.val.length ≥ 2 :=
+    have h_c_len : hd.val.length = 2 :=
       h_chunks_len hd (by rw [rest]; exact .head _)
     have h_count_ok : iter.count.val + 1 ≤ Usize.max :=
       h_count_bound (by rw [rest]; exact List.cons_ne_nil _ _)
@@ -156,7 +156,7 @@ theorem loop_spec
     (pts : Array Point 16#usize)
     (h_push_ok : ∀ (j : Nat), j < 16 →
         (pts[j]!).value.length + iter.iter.chunks.length ≤ Usize.max)
-    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length ≥ 2)
+    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length = 2)
     (h_count_chunks : iter.count + iter.iter.chunks.length ≤ Usize.max) :
     encode_bytes_base_loop iter pts ⦃ (pts' : Array Point 16#usize) =>
       (∀ (j : Nat), j < 16 →
@@ -164,7 +164,7 @@ theorem loop_spec
           pts'[j]!.value = pts[j]!.value ++ suffix ∧
           (∀ g ∈ suffix,
             ∃ (c : Slice U8),
-              c.length ≥ 2 ∧
+              c.length = 2 ∧
               g.toGF216 = (256 * c[0]!+ c[1]!).toGF216)) ⦄ := by
   unfold encode_bytes_base_loop
   apply loop.spec_decr_nat
@@ -172,7 +172,7 @@ theorem loop_spec
                   Array Point 16#usize) => p.1.iter.chunks.length)
     (inv := fun (p : core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact U8) ×
                     Array Point 16#usize) =>
-        (∀ c ∈ p.1.iter.chunks, c.length ≥ 2) ∧
+        (∀ c ∈ p.1.iter.chunks, c.length = 2) ∧
         (∀ (j : Nat), j < 16 → (p.2[j]!).value.length + p.1.iter.chunks.length ≤ Usize.max) ∧
         (p.1.count + p.1.iter.chunks.length ≤ Usize.max) ∧
         (∀ (j : Nat), j < 16 →
@@ -180,7 +180,7 @@ theorem loop_spec
             p.2[j]!.value = pts[j]!.value ++ suffix ∧
             (∀ g ∈ suffix,
               ∃ (c : Slice U8),
-                c.length ≥ 2 ∧
+                c.length = 2 ∧
                 g.toGF216 = (256 * c[0]! + c[1]!).toGF216)))
   · rintro ⟨iter', pts'⟩ ⟨h_chunks', h_push', h_count', h_pre'⟩
     simp only [] at h_chunks' h_push' h_count' h_pre' ⊢
@@ -192,7 +192,7 @@ theorem loop_spec
         core.slice.iter.IteratorChunksExact.next,
         h_chunks_cases]
       simp only [bind_tc_ok, GF16.new_eq, uncurry_apply_pair,
-        ge_iff_le, List.length_nil, not_lt_zero, and_false, WP.spec_ok]
+         List.length_nil, not_lt_zero, and_false, WP.spec_ok]
       intro j hj
       simp_all
     | cons hd₀ tl₀ =>
@@ -240,7 +240,7 @@ private theorem call_mut_ok
 `g.toGF216 = ((256 * c[0] + c[1]).toGF216)`, via Euclidean division by 256. -/
 private theorem gf16_representable (g : GF16) :
     ∃ (c : Slice U8),
-      c.length ≥ 2 ∧
+      c.length = 2 ∧
       g.toGF216 = (256 * c[0]! + c[1]!).toGF216 := by
   have hg : g.value.val < 65536 := by scalar_tac
   set hi_n := g.value.val / 256
@@ -280,7 +280,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
         (∀ (j : Nat), j < 16 →
           ∀ g ∈ pts[j]!.value.val,
             ∃ (c : Slice U8),
-              c.length ≥ 2 ∧
+              c.length = 2 ∧
               g.toGF216 = (256 * c[0]! + c[1]!).toGF216)
       | _ => False ⦄ := by
   unfold encode_bytes_base
@@ -351,7 +351,6 @@ theorem encode_bytes_base_spec (msg : Slice U8)
     simp only [WP.spec_ok]
     refine ⟨trivial, ?_⟩
     intro j hj g hg
-    obtain ⟨suffix, h_suffix_eq, h_suffix_valid⟩ := h_pts1 j hj
-    grind
+    exact gf16_representable g
 
 end spqr.encoding.polynomial.PolyEncoder

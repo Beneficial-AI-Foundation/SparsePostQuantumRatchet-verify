@@ -18,24 +18,6 @@ open Aeneas Aeneas.Std
 
 namespace spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
 
-theorem encode_bytes_spec_nat (msg : Slice U8)
-    (h_even : msg.length % 2 = 0)
-    (h_len : msg.length ≤ 2 ^ 16 * 16) :
-    encode_bytes msg ⦃ (result : core.result.Result PolyEncoder encoding.EncodingError) =>
-      match result with
-      | core.result.Result.Ok ⟨idx, EncoderState.Points pts⟩ =>
-        idx = 0#u32 ∧
-        (∀ (j : Nat), j < 16 →
-          ∀ g ∈ pts[j]!.value.val,
-            ∃ (c : Slice U8),
-              c.length ≥ 2 ∧
-              g.toGF216 = (256 * c[0]! + c[1]!).toGF216)
-      | _ => False ⦄ := by
-  unfold encode_bytes
-  step*
-  exact result_post
-
-
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes`**
 (nat-level):
 
@@ -54,9 +36,11 @@ theorem encode_bytes_spec
         (∀ (j : Nat), j < 16 →
           ∀ g ∈ pts[j]!.value.val,
             ∃ (c : Slice U8),
-              c.length ≥ 2 ∧
+              c.length = 2 ∧
               g.toGF216 = (256 * c[0]! + c[1]!).toGF216)
       | _ => False ⦄ := by
-  exact encode_bytes_spec_nat msg h_even h_len
+  unfold encode_bytes
+  step*
+  exact result_post
 
 end spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
