@@ -1,5 +1,5 @@
 /-
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
@@ -10,8 +10,7 @@ import SrcTranslated.Funs
 Orders `Pt` values by comparing x-coordinate `u16` values via `OrdU16.cmp`; y-coordinate is
 ignored. Always returns `some _`.
 
-**Source**: spqr/src/encoding/polynomial.rs (lines 55:4-57:5)
--/
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 open Aeneas Aeneas.Std Result
 
@@ -21,10 +20,7 @@ namespace spqr.encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt
 **Spec theorem for `spqr.encoding.polynomial.Pt.Insts.CoreCmpPartialOrdPt.partial_cmp`**:
 
 Compares two `Pt` values by their x-coordinate `u16` values, returning
-`some (compare self.x.value.val other.x.value.val)`. Always succeeds; y-coordinate is ignored.
-
-**Source**: spqr/src/encoding/polynomial.rs (lines 55:4-57:5)
--/
+`some (compare self.x.value.val other.x.value.val)`. Always succeeds; y-coordinate is ignored. -/
 @[step]
 theorem partial_cmp_spec (self other : Pt) :
     partial_cmp self other ⦃ (result : Option Ordering) =>
