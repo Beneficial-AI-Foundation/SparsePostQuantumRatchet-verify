@@ -10,11 +10,9 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop body 0
 
-Each iteration consumes one 2-byte chunk `c` from `Enumerate<ChunksExact<u8>>`,
-decodes it as `GF16::new((c[0] << 8) | c[1])`, and pushes the result onto
-`pts[count % 16].value`, leaving other slots unchanged.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+One iteration pops the head chunk `chd`, increments count, appends a GF16 element
+with `g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216` to `pts[count % 16].value`,
+and leaves other slots unchanged. -/
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 
@@ -36,8 +34,9 @@ private lemma drop_succ_of_drop_cons {α : Type*} {l : List α} {n : Nat}
   simp only [← key, h]
   grind
 
-/-- Body spec: consuming head chunk `chd` advances chunks to `ctl`, increments count,
-pushes `GF16(256 · chd[0] + chd[1])` onto `pts[count % 16]`, and preserves other slots. -/
+/-- Pops head chunk `chd`, advances chunks to `ctl`, increments count, appends
+`g` with `g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216` to `pts[count % 16].value`,
+and preserves other slots. -/
 private theorem body_spec_chunk
     (iter' : core.iter.adapters.enumerate.Enumerate
       (core.slice.iter.ChunksExact U8))
@@ -103,11 +102,9 @@ private theorem body_spec_chunk
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop 0
 
-After the full loop, each `pts[j].value` gains a suffix of length
-`⌊n/16⌋ + (1 if j < n%16)` (where `n` is the chunk count), whose `m`-th element
-is the big-endian GF(2¹⁶) decode of chunk `j + 16·m`.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+Starting from `count = 0`, the loop produces `pts'[j]!.value = pts[j]!.value ++ suffix` where
+`suffix.length = chunks.length / 16 + (if j < chunks.length % 16 then 1 else 0)` and
+`suffix[m]!.toGF216 = (256 * chunks[j + 16*m]![0]! + chunks[j + 16*m]![1]!).toGF216`. -/
 @[step]
 theorem loop_spec
     (iter : core.iter.adapters.enumerate.Enumerate
@@ -273,11 +270,10 @@ end spqr.encoding.polynomial.PolyEncoder.encode_bytes_base_loop
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyEncoder}::encode_bytes_base`
 
-Validates that `msg.len()` is even and ≤ `2¹⁶ · 16`, then distributes big-endian–decoded
-GF(2¹⁶) elements round-robin across 16 empty `Point` arrays via `chunks_exact(2).enumerate()`,
-returning `Ok(PolyEncoder { idx: 0, s: Points(pts) })`.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+For even-length `msg` with `msg.length ≤ 2 ^ 16 * 16`, returns `Ok(⟨0#u32, Points pts⟩)`.
+Each `pts[j]!.value` has length `msg.length / 2 / 16 + (1 if j < (msg.length / 2) % 16)`,
+and `(listToGF216Poly pts[j]!.value).coeff k =
+(256 * msg[2 * (j + 16 * k)]! + msg[2 * (j + 16 * k) + 1]!.val).toGF216`. -/
 
 namespace spqr.encoding.polynomial.PolyEncoder
 
@@ -310,10 +306,10 @@ private theorem chunks_exact_content (msg : Slice U8)
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.encode_bytes_base`** (nat-level):
 
-Given even-length `msg` with `msg.length ≤ 2¹⁶ · 16`, returns `Ok(PolyEncoder)` with `idx = 0`
-in `Points` state, where for each `j < 16`:
-  • `pts[j].value.length = ⌊n/16⌋ + (1 if j < n%16)` with `n = msg.length / 2`,
-  • the `k`-th coefficient of `pts[j]` equals `(256 · msg[2(j+16k)] + msg[2(j+16k)+1]).toGF216`. -/
+For even `msg` with `msg.length ≤ 2 ^ 16 * 16`, returns `Ok(⟨0#u32, Points pts⟩)` where:
+  • `pts[j]!.value.length = msg.length / 2 / 16 + (1 if j < (msg.length / 2) % 16)`,
+  • `(listToGF216Poly pts[j]!.value).coeff k =
+    (256 * msg[2 * (j + 16 * k)]! + msg[2 * (j + 16 * k) + 1]!.val).toGF216`. -/
 @[step]
 theorem encode_bytes_base_spec (msg : Slice U8)
     (h_even : msg.length % 2 = 0)
