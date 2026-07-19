@@ -22,7 +22,13 @@ namespace spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
 (nat-level):
 
 For an even-length message bounded by `2^16 * 16` bytes, `encode_bytes` returns an encoder with
-`idx = 0` in the `Points` state whose GF(2¹⁶) entries match big-endian–decoded byte pairs.
+`idx = 0` in the `Points` state with:
+
+  • **Validity**: GF(2¹⁶) entries match big-endian–decoded byte pairs.
+  • **Round-robin length**: each point receives the expected share of `msg.length / 2` chunks.
+  • **Round-robin content**: coefficient `k` of `pts[j]` decodes from `msg` bytes at
+    round-robin positions `2·(j + 16·k)` and `2·(j + 16·k) + 1`.
+
 Follows directly from `encode_bytes_base_spec`. -/
 @[step]
 theorem encode_bytes_spec
@@ -34,13 +40,18 @@ theorem encode_bytes_spec
       | core.result.Result.Ok ⟨idx, EncoderState.Points pts⟩ =>
         idx = 0#u32 ∧
         (∀ (j : Nat), j < 16 →
-          ∀ g ∈ pts[j]!.value.val,
-            ∃ (c : Slice U8),
-              c.length = 2 ∧
-              g.toGF216 = (256 * c[0]! + c[1]!).toGF216)
+          pts[j]!.value.length =
+            if j < (msg.length / 2) % 16
+            then msg.length / 2 / 16 + 1
+            else msg.length / 2 / 16) ∧
+        (∀ (j : Nat), j < 16 →
+          ∀ (k : Nat), k < pts[j]!.value.length →
+            2 * (j + 16 * k) + 1 < msg.length ∧
+            (listToGF216Poly pts[j]!.value).coeff k =
+              (256 * msg[2 * (j + 16 * k)]! + (msg[2 * (j + 16 * k) + 1]!).val).toGF216)
       | _ => False ⦄ := by
   unfold encode_bytes
   step*
-  exact result_post
+  grind
 
 end spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
