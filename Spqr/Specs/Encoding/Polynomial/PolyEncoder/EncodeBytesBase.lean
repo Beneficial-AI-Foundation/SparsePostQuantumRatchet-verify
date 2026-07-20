@@ -10,220 +10,273 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop body 0
 
-Message bytes are distributed round-robin across `NUM_POLYS = 16` `Point` arrays. Each 2-byte
-chunk `(c[0], c[1])` is big-endian decoded to a GF(2¹⁶) element via `GF16::new` and appended to
-`pts[i % 16].value`.
-
-The body calls `next` on `Enumerate<ChunksExact<u8>>`, yielding `(i, c)`, then pushes
-`GF16::new(((c[0] as u16) << 8) + (c[1] as u16))` onto `pts[i % 16].value`.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+One iteration pops the head chunk `chd`, increments count, appends a GF16 element
+with `g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216` to `pts[count % 16].value`,
+and leaves other slots unchanged. -/
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 
+private noncomputable instance instInhabitedSliceU8 : Inhabited (Slice U8) := ⟨⟨[], by scalar_tac⟩⟩
+
 namespace spqr.encoding.polynomial.PolyEncoder.encode_bytes_base_loop
 
-/-- **Spec theorem for `encode_bytes_base_loop.body`** (nat-level):
+private lemma getElem!_of_drop_cons {l : List (Slice U8)} {n : Nat}
+    {hd : Slice U8} {tl : List (Slice U8)} (h : l.drop n = hd :: tl) :
+    l[n]! = hd := by
+  have h1 : l[n]! = (l.drop n)[0]! := by rw [List.getElem!_drop]; simp
+  rw [h1, h]
+  simp
 
-Big-endian decode of a 2-byte chunk into GF(2¹⁶), followed by round-robin insertion into `pts`.
+private lemma drop_succ_of_drop_cons {α : Type*} {l : List α} {n : Nat}
+    {hd : α} {tl : List α} (h : l.drop n = hd :: tl) :
+    l.drop (n + 1) = tl := by
+  have key : (l.drop n).drop 1 = l.drop (n + 1) := List.drop_drop
+  simp only [← key, h]
+  grind
 
-  • **done**: `pts' = pts` — iterator exhausted.
-  • **cont**: `g.toGF216 = ((c[0]! * 256) + c[1]!).toGF216` and `g` is pushed onto
-    `pts[i % 16].value`, other entries unchanged. -/
-@[step]
-theorem body_spec
-    (iter : core.iter.adapters.enumerate.Enumerate
+/-- Pops head chunk `chd`, advances chunks to `ctl`, increments count, appends
+`g` with `g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216` to `pts[count % 16].value`,
+and preserves other slots. -/
+private theorem body_spec_chunk
+    (iter' : core.iter.adapters.enumerate.Enumerate
       (core.slice.iter.ChunksExact U8))
-    (pts : Array Point 16#usize)
-    (h_push_ok : ∀ j < 16, (pts[j]!).value.length + 1 ≤ Usize.max)
-    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length ≥ 2)
-    (h_count_bound : iter.iter.chunks ≠ [] → iter.count + 1 ≤ Usize.max) :
-    body iter pts ⦃ cf =>
+    (pts' : Array Point 16#usize)
+    (chd : Slice U8) (ctl : List (Slice U8))
+    (h_chunks : iter'.iter.chunks = chd :: ctl)
+    (h_push_ok : ∀ (j : Nat), j < 16 → (pts'[j]!).value.length + 1 ≤ Usize.max)
+    (h_chunks_len : ∀ c ∈ iter'.iter.chunks, c.length = 2)
+    (h_count_bound : iter'.count.val + 1 ≤ Usize.max) :
+    body iter' pts' ⦃ cf =>
       match cf with
-      | ControlFlow.done pts' => pts' = pts
-      | ControlFlow.cont (_, pts') =>
-          ∃ (i : Usize) (c : Slice U8) (g : GF16),
-            c.length ≥ 2 ∧
-            g.toGF216 = (256 * c[0]! + c[1]!).toGF216 ∧
-            pts'[i.val % 16]!.value = (pts[i.val % 16]!).value ++ [g] ∧
-            (∀ k, k ≠ i.val % 16 → pts'[k]! = pts[k]!) ⦄ := by
-  unfold body
-  simp only [
-    core.iter.adapters.enumerate.IteratorEnumerate.next,
-    core.slice.iter.IteratorChunksExact.next]
-  split
-  · simp [WP.spec_ok]
-  · rename_i hd tl rest
-    simp only [bind_tc_ok]
-    have h_c_len : hd.val.length ≥ 2 := h_chunks_len hd (by rw [rest]; exact .head _)
-    have h_count_ok : iter.count.val + 1 ≤ Usize.max :=
-      h_count_bound (by rw [rest]; exact List.cons_ne_nil _ _)
-    step*
-    · simp_all
-      grind
-    refine ⟨iter.count, hd, g, ?_, ?_, ?_, ?_⟩
-    · exact h_c_len
-    · conv_lhs =>
-        simp[g_post,i7_post,i4_post1,i6_post, i3_post, i2_post, i5_post]
-      congr
-      · rw[Nat.shiftLeft_eq]
-        simp only [Nat.reducePow]
-        have :(↑(hd)[0] * 256) < U16.size := by scalar_tac
-        have := Nat.mod_eq_of_lt this
-        grind
-      · grind
-    · simp_all
-      grind
-    · intro k hk
-      simp_all
-
-private theorem body_spec_with_iter
-    (iter : core.iter.adapters.enumerate.Enumerate
-      (core.slice.iter.ChunksExact U8))
-    (pts : Array Point 16#usize)
-    (h_push_ok : ∀ (j : Nat), j < 16 → (pts[j]!).value.length + 1 ≤ Usize.max)
-    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length ≥ 2)
-    (h_count_bound : iter.iter.chunks ≠ [] → iter.count + 1 ≤ Usize.max) :
-    body iter pts ⦃ cf =>
-      match cf with
-      | ControlFlow.done pts' =>
-          pts' = pts ∧ iter.iter.chunks = []
-      | ControlFlow.cont (iter', pts') =>
-          (∃ hd tl, iter.iter.chunks = hd :: tl ∧ iter'.iter.chunks = tl) ∧
-          iter'.count.val + iter'.iter.chunks.length =
-            iter.count.val + iter.iter.chunks.length ∧
-          ∃ (i : Usize) (c : Slice U8) (g : GF16),
-            c.length ≥ 2 ∧
-            g.toGF216 = (256 * c[0]! + c[1]!).toGF216 ∧
-            pts'.val[i.val % 16]!.value =
-              (pts[i.val % 16]!).value ++ [g] ∧
-            (∀ k, k ≠ i.val % 16 → pts'[k]! = pts[k]!) ⦄ := by
+      | ControlFlow.done _ => False
+      | ControlFlow.cont (iter'', pts'') =>
+          iter''.iter.chunks = ctl ∧
+          iter''.count.val = iter'.count.val + 1 ∧
+          ∃ (g : GF16),
+            g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216 ∧
+            pts''[iter'.count.val % 16]!.value =
+              (pts'[iter'.count.val % 16]!).value ++ [g] ∧
+            (∀ k, k ≠ iter'.count.val % 16 → pts''[k]! = pts'[k]!) ⦄ := by
   unfold body
   simp only [
     core.iter.adapters.enumerate.IteratorEnumerate.next,
     core.slice.iter.IteratorChunksExact.next]
   split
   · rename_i h_nil
-    simp only [bind_tc_ok, GF16.new_eq, uncurry_apply_pair, ↓existsAndEq, and_true, ge_iff_le,
-      List.getElem!_eq_getElem?_getD, ne_eq, exists_and_left, WP.spec_ok, true_and]
-    exact h_nil
+    rw [h_chunks] at h_nil; exact absurd h_nil (List.cons_ne_nil _ _)
   · rename_i hd tl rest
+    have h_hd : hd = chd := by have h := rest.symm.trans h_chunks; injection h
+    have h_tl : tl = ctl := by have h := rest.symm.trans h_chunks; injection h
+    subst h_hd; subst h_tl
     simp only [bind_tc_ok]
-    have h_c_len : hd.val.length ≥ 2 :=
-      h_chunks_len hd (by rw [rest]; exact .head _)
-    have h_count_ok : iter.count.val + 1 ≤ Usize.max :=
-      h_count_bound (by rw [rest]; exact List.cons_ne_nil _ _)
     step*
     · simp_all
-      grind
-    constructor
-    · use hd
-    constructor
     · simp_all
-      omega
-    · refine ⟨iter.count, hd, g, h_c_len, ?_, ?_, ?_⟩
-      · conv_lhs =>
-          simp[g_post,i7_post,i4_post1,i6_post, i3_post, i2_post, i5_post]
-        congr
-        · rw[Nat.shiftLeft_eq]
-          simp only [Nat.reducePow]
-          have :(↑(hd)[0] * 256) < U16.size := by scalar_tac
-          have := Nat.mod_eq_of_lt this
-          grind
-        · grind
-      · simp_all
-        grind
-      · intro k hk
+    · conv_lhs =>
+        simp[i4_post1,i6_post, i3_post, i2_post, i5_post]
+      rw[Nat.shiftLeft_eq]
+      simp only [Nat.reducePow]
+      have :((hd)[0]! * 256) < U16.size := by scalar_tac
+      have := Nat.mod_eq_of_lt this
+      grind
+    · simp_all; grind
+    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, List.Vector.length_val,
+      UScalar.ofNatCore_val_eq, getElem!_pos, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
+      Array.val_to_slice, UScalarTy.U8_numBits_eq, UScalarTy.U16_numBits_eq, Nat.reduceLeDiff,
+      UScalar.cast_val_mod_pow_greater_numBits_eq, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
+      Bvify.U8.UScalar_bv, Slice.getElem!_Nat_eq, List.mem_cons, true_or,
+      Order.lt_two_iff, zero_le, Std.le_refl, Array.set_val_eq, List.getElem!_eq_getElem?_getD,
+      ne_eq, Nat.not_eq, not_false_eq_true, lt_or_lt_iff_ne, or_true, List.set_getElem?_neq,
+      implies_true, and_true, true_and]
+      use g
+      simp_all only
+      constructor
+      · congr 1
+        rw [Nat.shiftLeft_eq]
+        simp only [Nat.reducePow]
+        have : (↑(hd.val)[0]! : Nat) * 256 < U16.size := by scalar_tac
+        grind [Nat.mod_eq_of_lt this]
+      · have h_len : (↑pts' : List Point).length = 16 := by scalar_tac
         simp_all
+        grind
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop 0
 
-The loop `encode_bytes_base_loop` iterates over `Enumerate<ChunksExact<u8>>`, performing
-round-robin distribution of big-endian–decoded GF(2¹⁶) elements into 16 `Point` value vectors.
-
-Each step calls `next` to obtain `(i, c)`, computes `poly = i % 16`, decodes
-`g := GF16::new(((c[0] as u16) << 8) + (c[1] as u16))`, and pushes `g` onto `pts[poly].value`.
-
-**Loop invariant**: remaining chunks are valid 2-byte slices, push overflow is safe, each
-point's value list is a prefix of the final list, and every appended element is a valid
-big-endian GF(2¹⁶) decode.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+Starting from `count = 0`, the loop produces `pts'[j]!.value = pts[j]!.value ++ suffix` where
+`suffix.length = chunks.length / 16 + (if j < chunks.length % 16 then 1 else 0)` and
+`suffix[m]!.toGF216 = (256 * chunks[j + 16*m]![0]! + chunks[j + 16*m]![1]!).toGF216`. -/
 @[step]
 theorem loop_spec
     (iter : core.iter.adapters.enumerate.Enumerate
       (core.slice.iter.ChunksExact U8))
     (pts : Array Point 16#usize)
+    (h_count_zero : iter.count.val = 0)
     (h_push_ok : ∀ (j : Nat), j < 16 →
         (pts[j]!).value.length + iter.iter.chunks.length ≤ Usize.max)
-    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length ≥ 2)
+    (h_chunks_len : ∀ c ∈ iter.iter.chunks, c.length = 2)
     (h_count_chunks : iter.count + iter.iter.chunks.length ≤ Usize.max) :
     encode_bytes_base_loop iter pts ⦃ (pts' : Array Point 16#usize) =>
-      (∀ (j : Nat), j < 16 →
+      ∀ (j : Nat), j < 16 →
         ∃ (suffix : List GF16),
           pts'[j]!.value = pts[j]!.value ++ suffix ∧
-          (∀ g ∈ suffix,
-            ∃ (c : Slice U8),
-              c.length ≥ 2 ∧
-              g.toGF216 = (256 * c[0]!+ c[1]!).toGF216)) ⦄ := by
+          suffix.length = iter.iter.chunks.length / 16 +
+            (if j < iter.iter.chunks.length % 16 then 1 else 0) ∧
+          ∀ (m : Nat), m < suffix.length →
+            j + 16 * m < iter.iter.chunks.length ∧
+            suffix[m]!.toGF216 =
+              (256 * (iter.iter.chunks[j + 16 * m]!)[0]! +
+               (iter.iter.chunks[j + 16 * m]!)[1]!).toGF216 ⦄ := by
   unfold encode_bytes_base_loop
+  set chunks := iter.iter.chunks with h_chunks_def
   apply loop.spec_decr_nat
-    (measure := fun (p : core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact U8) ×
-                  Array Point 16#usize) => p.1.iter.chunks.length)
-    (inv := fun (p : core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact U8) ×
-                    Array Point 16#usize) =>
-        (∀ c ∈ p.1.iter.chunks, c.length ≥ 2) ∧
-        (∀ (j : Nat), j < 16 → (p.2[j]!).value.length + p.1.iter.chunks.length ≤ Usize.max) ∧
-        (p.1.count + p.1.iter.chunks.length ≤ Usize.max) ∧
-        (∀ (j : Nat), j < 16 →
-          ∃ (suffix : List GF16),
-            p.2[j]!.value = pts[j]!.value ++ suffix ∧
-            (∀ g ∈ suffix,
-              ∃ (c : Slice U8),
-                c.length ≥ 2 ∧
-                g.toGF216 = (256 * c[0]! + c[1]!).toGF216)))
-  · rintro ⟨iter', pts'⟩ ⟨h_chunks', h_push', h_count', h_pre'⟩
-    simp only [] at h_chunks' h_push' h_count' h_pre' ⊢
-    cases h_chunks_cases : iter'.iter.chunks with
+    (measure := fun (p : core.iter.adapters.enumerate.Enumerate
+      (core.slice.iter.ChunksExact U8) × Array Point 16#usize) =>
+      p.1.iter.chunks.length)
+    (inv := fun (p : core.iter.adapters.enumerate.Enumerate
+      (core.slice.iter.ChunksExact U8) × Array Point 16#usize) =>
+      let it := p.1
+      let ps := p.2
+      it.iter.chunks = chunks.drop it.count.val ∧
+      it.count.val ≤ chunks.length ∧
+      (∀ c ∈ it.iter.chunks, c.length = 2) ∧
+      (it.count.val + it.iter.chunks.length ≤ Usize.max) ∧
+      (∀ j, j < 16 → (ps[j]!).value.length + it.iter.chunks.length ≤ Usize.max) ∧
+      (∀ j, j < 16 → ∃ sfx : List GF16,
+        ps[j]!.value = pts[j]!.value ++ sfx ∧
+        sfx.length = it.count.val / 16 +
+          (if j < it.count.val % 16 then 1 else 0) ∧
+        ∀ m, m < sfx.length →
+          j + 16 * m < chunks.length ∧
+          sfx[m]!.toGF216 =
+            (256 * (chunks[j + 16 * m]!)[0]! +
+             (chunks[j + 16 * m]!)[1]!).toGF216))
+  · rintro ⟨it, ps⟩ ⟨h_drop, h_le, h_clen, h_cbound, h_pbnd, h_sinv⟩
+    simp only [] at h_drop h_le h_clen h_cbound h_pbnd h_sinv
+    cases h_ch : it.iter.chunks with
     | nil =>
       unfold body
       simp only [
         core.iter.adapters.enumerate.IteratorEnumerate.next,
         core.slice.iter.IteratorChunksExact.next,
-        h_chunks_cases]
-      simp only [bind_tc_ok, GF16.new_eq, uncurry_apply_pair,
-        ge_iff_le, List.length_nil, not_lt_zero, and_false, WP.spec_ok]
+        h_ch, bind_tc_ok]
+      have h_cnt_eq : it.count.val = chunks.length := by
+        have h1 : (chunks.drop it.count.val).length = chunks.length - it.count.val :=
+          List.length_drop
+        grind
       intro j hj
-      simp_all
-    | cons hd₀ tl₀ =>
-      have h_push_one : ∀ (j : Nat), j < 16 →
-          (pts'.val[j]!).value.val.length + 1 ≤ Usize.max := by grind
-      have h_count_ok : iter'.iter.chunks ≠ [] → iter'.count.val + 1 ≤ Usize.max := by grind
-      have h_body := body_spec_with_iter iter' pts' (by grind) h_chunks' h_count_ok
+      obtain ⟨sfx, h_eq, h_len, h_cont⟩ := h_sinv j hj
+      exact ⟨sfx, h_eq, by rw [h_cnt_eq] at h_len; exact h_len, h_cont⟩
+    | cons hd tl =>
+      have h_push' : ∀ j, j < 16 → (ps[j]!).value.length + 1 ≤ Usize.max := by
+        intro j hj
+        have h := h_pbnd j hj
+        rw [h_ch] at h; simp at h; grind
+      have h_cnt_ok : it.count.val + 1 ≤ Usize.max := by
+        rw [h_ch] at h_cbound; simp at h_cbound; omega
+      have h_clen' : ∀ c ∈ it.iter.chunks, c.length = 2 := h_clen
+      have h_body := body_spec_chunk it ps hd tl h_ch h_push'
+        (by rw [h_ch] at h_clen'; grind) h_cnt_ok
       apply WP.spec_mono h_body
       intro cf h_cf
       match cf with
-      | ControlFlow.done pts'' => grind
-      | ControlFlow.cont (iter'', pts'') =>  grind
-  · exact ⟨h_chunks_len, by grind, h_count_chunks,
-           fun j _ => ⟨[], by simp, fun _ h => absurd h (by grind)⟩⟩
+      | ControlFlow.done _ => exact h_cf.elim
+      | ControlFlow.cont ⟨it'', ps''⟩ =>
+        obtain ⟨h_tl, h_cnt, g, h_g, h_slot, h_other⟩ := h_cf
+        set k := it.count.val with hk_def
+        have h_concat : chunks.drop k = hd :: tl := by rw [← h_ch, h_drop]
+        have h_k_lt : k < chunks.length := by
+          have := congr_arg List.length h_concat
+          simp only [List.length_drop, List.length_cons] at this; omega
+        have h_hd_eq : chunks[k]! = hd := getElem!_of_drop_cons h_concat
+        have h_drop_succ : chunks.drop (k + 1) = tl := drop_succ_of_drop_cons h_concat
+        constructor
+        · simp only []
+          refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+          · rw [h_tl, h_cnt, h_drop_succ]
+          · rw [h_cnt]; omega
+          · rw [h_tl]; intro c hc
+            exact h_clen c (by rw [h_ch]; exact List.mem_cons_of_mem _ hc)
+          · have h_cb : it.count.val + (hd :: tl).length ≤ Usize.max := by
+              rw [← h_ch]; exact h_cbound
+            rw [h_cnt, h_tl]; simp at h_cb ⊢; omega
+          · intro j hj
+            by_cases heq : j = k % 16
+            · subst heq
+              have hlen : (ps''[k % 16]!).value.length = (ps[k % 16]!).value.length + 1 := by
+                have := congr_arg (fun v => v.length) h_slot
+                simp only [ Array.getElem!_Nat_eq,
+                  List.getElem!_eq_getElem?_getD] at this
+                grind
+              rw [hlen, h_tl]
+              have h := h_pbnd (k % 16) (by omega)
+              rw [h_ch] at h; simp at h; grind
+            · rw [h_other j heq, h_tl]
+              have h := h_pbnd j hj
+              rw [h_ch] at h; simp at h; grind
+          · intro j hj
+            obtain ⟨sfx, h_sfx_eq, h_sfx_len, h_sfx_cont⟩ := h_sinv j hj
+            by_cases heq : j = k % 16
+            · subst heq
+              refine ⟨sfx ++ [g], ?_, ?_, ?_⟩
+              · rw [h_slot, h_sfx_eq, List.append_assoc]
+              · rw [List.length_append, List.length_cons, List.length_nil,
+                    h_sfx_len, h_cnt]
+                grind
+              · intro m hm
+                rw [List.length_append, List.length_cons, List.length_nil,
+                    h_sfx_len] at hm
+                simp at hm
+                by_cases hm_old : m < sfx.length
+                · have h_get : (sfx ++ [g])[m]! = sfx[m]! := by
+                    simp only [List.getElem!_eq_getElem?_getD]
+                    rw [getElem?_append_of_lt sfx [g] hm_old]
+                  rw [h_get]
+                  exact h_sfx_cont m hm_old
+                · push Not at hm_old
+                  have h_m_eq : m = sfx.length := by omega
+                  subst h_m_eq
+                  constructor
+                  · have h_sfx_len' : sfx.length = k / 16 := by
+                      rw [h_sfx_len]; simp
+                    rw [h_sfx_len']
+                    omega
+                  · have h_get : (sfx ++ [g])[sfx.length]! = g := by
+                      simp only [List.getElem!_eq_getElem?_getD]
+                      rw [List.getElem?_append_right (by omega)]
+                      simp
+                    rw [h_get, h_g]
+                    have h_sfx_len' : sfx.length = k / 16 := by
+                      rw [h_sfx_len]; simp
+                    congr 1; congr 1
+                    · congr 1
+                      · grind
+                    · grind
+            · refine ⟨sfx, ?_, ?_, h_sfx_cont⟩
+              · rw [h_other j heq, h_sfx_eq]
+              · rw [h_sfx_len, h_cnt]; grind
+        · grind
+  · simp only []
+    refine ⟨?_, ?_, h_chunks_len, ?_, ?_, ?_⟩
+    · rw [h_count_zero, List.drop_zero]
+    · rw [h_count_zero]; omega
+    · rw [h_count_zero] at h_count_chunks ⊢
+      simp only [zero_add] at h_count_chunks ⊢
+      exact h_count_chunks
+    · exact h_push_ok
+    · intro j hj
+      exact ⟨[], by simp, by simp [h_count_zero], fun m hm => by simp at hm⟩
 
 end spqr.encoding.polynomial.PolyEncoder.encode_bytes_base_loop
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyEncoder}::encode_bytes_base`
 
-Encodes a byte-slice message `msg` into a `PolyEncoder` by:
-  1. **Validation** — `msg.len()` must be even and ≤ `2^16 * 16`.
-  2. **Initialization** — `from_fn` creates 16 empty `Point`s.
-  3. **Distribution** — `chunks_exact(2).enumerate()` distributes big-endian–decoded GF(2¹⁶)
-     elements round-robin into `pts[i % 16].value`.
-  4. **Construction** — returns `Ok(PolyEncoder { idx: 0, s: Points(pts) })`.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+For even-length `msg` with `msg.length ≤ 2 ^ 16 * 16`, returns `Ok(⟨0#u32, Points pts⟩)`.
+Each `pts[j]!.value` has length `msg.length / 2 / 16 + (1 if j < (msg.length / 2) % 16)`,
+and `(listToGF216Poly pts[j]!.value).coeff k =
+(256 * msg[2 * (j + 16 * k)]! + msg[2 * (j + 16 * k) + 1]!.val).toGF216`. -/
 
 namespace spqr.encoding.polynomial.PolyEncoder
 
-/-- The `from_fn` closure always succeeds, returning a `Point` with an empty value vector. -/
 private theorem call_mut_ok
     (c : PolyEncoder.encode_bytes_base.closure) (i : Usize) :
     PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoint.call_mut
@@ -236,52 +289,45 @@ private theorem call_mut_ok
   obtain ⟨z, hz⟩ := h_div
   simp only [hz, bind_tc_ok, alloc.vec.Vec.with_capacity]
 
-/-- Any GF(2¹⁶) element `g` has a 2-byte slice `c` with
-`g.toGF216 = ((256 * c[0] + c[1]).toGF216)`, via Euclidean division by 256. -/
-private theorem gf16_representable (g : GF16) :
-    ∃ (c : Slice U8),
-      c.length ≥ 2 ∧
-      g.toGF216 = (256 * c[0]! + c[1]!).toGF216 := by
-  have hg : g.value.val < 65536 := by scalar_tac
-  set hi_n := g.value.val / 256
-  set lo_n := g.value.val % 256
-  have h_hi : hi_n < 256 := Nat.div_lt_of_lt_mul (by omega)
-  have h_lo : lo_n < 256 := Nat.mod_lt _ (by omega)
-  let hi : U8 := ⟨BitVec.ofNat 8 hi_n⟩
-  let lo : U8 := ⟨BitVec.ofNat 8 lo_n⟩
-  refine ⟨⟨[hi, lo], by scalar_tac⟩, by simp, ?_⟩
-  change g.toGF216 = (256 *hi.val  + lo.val).toGF216
-  have h_hi_val : hi.val = hi_n := by
-    simp [hi, UScalar.val, BitVec.toNat_ofNat, Nat.mod_eq_of_lt h_hi]
-  have h_lo_val : lo.val = lo_n := by
-    simp [lo, UScalar.val, BitVec.toNat_ofNat, Nat.mod_eq_of_lt h_lo]
-  rw [h_hi_val, h_lo_val]
-  change g.value.val.toGF216 = (256 * hi_n + lo_n).toGF216
-  congr 1
-  omega
+private theorem chunks_exact_content (msg : Slice U8)
+    (ce : core.slice.iter.ChunksExact U8)
+    (h_content : ∀ j, j < ce.chunks.length →
+        ce.chunks[j]!.val = (msg.val.drop (2 * j)).take 2)
+    (i : Nat) (hi : i < ce.chunks.length) :
+    (ce.chunks[i]!)[0]! = msg[2 * i]! ∧
+    (ce.chunks[i]!)[1]! = msg[2 * i + 1]! := by
+  have h_ci := h_content i hi
+  simp only [Slice.getElem!_Nat_eq] at *
+  rw [h_ci]
+  constructor
+  · rw [List.getElem!_take_of_lt 2 0 _ (by omega), List.getElem!_drop]; simp
+  · rw [List.getElem!_take_of_lt 2 1 _ (by omega), List.getElem!_drop]
+
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.encode_bytes_base`** (nat-level):
 
-For even-length `msg` with `msg.len ≤ 2^16 * 16`, returns a `PolyEncoder` in `Points` state
-with `idx = 0` and every element in `pts[j].value` being a valid big-endian GF(2¹⁶) decode.
-
-Composes `call_once_spec` (empty points) and `loop_spec` (round-robin distribution).
-
-**Source**: spqr/src/encoding/polynomial.rs -/
+For even `msg` with `msg.length ≤ 2 ^ 16 * 16`, returns `Ok(⟨0#u32, Points pts⟩)` where:
+  • `pts[j]!.value.length = msg.length / 2 / 16 + (1 if j < (msg.length / 2) % 16)`,
+  • `(listToGF216Poly pts[j]!.value).coeff k =
+    (256 * msg[2 * (j + 16 * k)]! + msg[2 * (j + 16 * k) + 1]!.val).toGF216`. -/
 @[step]
 theorem encode_bytes_base_spec (msg : Slice U8)
     (h_even : msg.length % 2 = 0)
     (h_len : msg.length ≤ 2 ^ 16 * 16) :
-    encode_bytes_base msg ⦃ (result : core.result.Result PolyEncoder
-        encoding.EncodingError) =>
+    encode_bytes_base msg ⦃ (result : core.result.Result PolyEncoder encoding.EncodingError) =>
       match result with
       | core.result.Result.Ok ⟨idx, EncoderState.Points pts⟩ =>
         idx = 0#u32 ∧
         (∀ (j : Nat), j < 16 →
-          ∀ g ∈ pts[j]!.value.val,
-            ∃ (c : Slice U8),
-              c.length ≥ 2 ∧
-              g.toGF216 = (256 * c[0]! + c[1]!).toGF216)
+          pts[j]!.value.length =
+            if j < (msg.length / 2) % 16
+            then msg.length / 2 / 16 + 1
+            else msg.length / 2 / 16) ∧
+        (∀ (j : Nat), j < 16 →
+          ∀ (k : Nat), k < pts[j]!.value.length →
+            2 * (j + 16 * k) + 1 < msg.length ∧
+            (listToGF216Poly pts[j]!.value).coeff k =
+            (256 * msg[2 * (j + 16 * k)]! + (msg[2 * (j + 16 * k) + 1]!).val).toGF216)
       | _ => False ⦄ := by
   unfold encode_bytes_base
   step*
@@ -332,9 +378,9 @@ theorem encode_bytes_base_spec (msg : Slice U8)
         simp only [Usize.max, Usize.numBits]
         cases System.Platform.numBits_eq <;> simp_all
       grind
-    apply WP.spec_bind (core.slice.Slice.chunks_exact_spec msg 2#usize (by decide))
+    apply WP.spec_bind (core.slice.Slice.chunks_exact_spec_with_content msg 2#usize (by decide))
     intro ce h_ce
-    obtain ⟨h_ce_len, h_ce_count, _⟩ := h_ce
+    obtain ⟨h_ce_len, h_ce_count, h_ce_rem, h_ce_content⟩ := h_ce
     simp only [core.iter.traits.iterator.Iterator.enumerate.trait_default,
       core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
     apply WP.spec_bind
@@ -342,6 +388,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
         ({ iter := ce, count := 0#usize } :
           core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact U8))
         pts
+        (by rfl)
         (by grind)
         (by grind)
         (by
@@ -349,9 +396,53 @@ theorem encode_bytes_base_spec (msg : Slice U8)
           grind))
     intro pts1 h_pts1
     simp only [WP.spec_ok]
-    refine ⟨trivial, ?_⟩
-    intro j hj g hg
-    obtain ⟨suffix, h_suffix_eq, h_suffix_valid⟩ := h_pts1 j hj
-    grind
+    simp only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
+      Slice.length, Slice.getElem!_Nat_eq, true_and]
+    have h_suffix : ∀ (j : Nat), j < 16 →
+        ∃ (suffix : List GF16),
+          pts1[j]!.value = pts[j]!.value ++ suffix ∧
+          suffix.length = ce.chunks.length / 16 +
+            (if j < ce.chunks.length % 16 then 1 else 0) ∧
+          ∀ (m : Nat), m < suffix.length →
+            j + 16 * m < ce.chunks.length ∧
+            suffix[m]!.toGF216 =
+              (256 * (ce.chunks[j + 16 * m]!)[0]! +
+               (ce.chunks[j + 16 * m]!)[1]!).toGF216 := by
+      intro j hj
+      exact h_pts1 j hj
+    constructor
+    · intro j hj
+      obtain ⟨suffix, h_eq, h_len_suf, _⟩ := h_suffix j hj
+      have h_empty := h_pts_empty j hj
+      have h_empty' : (pts[j]!).value.val = [] := by
+        rw [Array.getElem!_Nat_eq]; exact h_empty
+      have h_val_eq : pts1[j]!.value.val = suffix := by
+        have := h_eq; simp at this; grind
+      change pts1[j]!.value.val.length = _
+      rw [h_val_eq, h_len_suf]
+      split <;> grind
+    · intro j hj k hk
+      obtain ⟨suffix, h_eq, h_len_suf, h_content⟩ := h_suffix j hj
+      have h_empty := h_pts_empty j hj
+      have h_empty' : (pts[j]!).value.val = [] := by
+        rw [Array.getElem!_Nat_eq]; exact h_empty
+      have h_val_eq : pts1[j]!.value.val = suffix := by
+        have := h_eq; simp  at this; grind
+      have hk' : k < suffix.length := by
+        have := congr_arg List.length h_val_eq
+        simp_all
+      obtain ⟨h_chunk_bound, h_enc⟩ := h_content k hk'
+      have h_bound : 2 * (j + 16 * k) + 1 < msg.val.length := by
+        have h_even' : msg.val.length % 2 = 0 := by
+          have := h_even; simp only [Slice.length] at this; exact this
+        grind
+      refine ⟨h_bound, ?_⟩
+      simp only [← List.getElem!_eq_getElem?_getD]
+      simp only [Array.getElem!_Nat_eq] at h_val_eq
+      simp only [h_val_eq, ← getElem!_toGF216_eq_coeff]
+      rw [h_enc]
+      have h_bytes := chunks_exact_content msg ce h_ce_content (j + 16 * k) h_chunk_bound
+      simp only [Slice.getElem!_Nat_eq] at h_bytes ⊢
+      rw [h_bytes.1, h_bytes.2]
 
 end spqr.encoding.polynomial.PolyEncoder
