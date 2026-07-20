@@ -5,6 +5,12 @@ Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+import Spqr.Auxiliary.Aeneas.Slice
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.Array
+import Spqr.Auxiliary.Aeneas.ArraySlice
+import Spqr.Auxiliary.Aeneas.SpecRefl
+import Spqr.Specs.Aeneas.SliceConcat
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::mac_ct`
@@ -36,6 +42,10 @@ def MAC_CT_LABEL : List U8 :=
    69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 99#u8, 105#u8, 112#u8,
    104#u8, 101#u8, 114#u8, 116#u8, 101#u8, 120#u8, 116#u8]
 
+@[simp, grind =]
+theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
+
+open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**
 • Given the boundedness hypotheses on `self.mac_key` and `ct`, `mac_ct self ep ct` does not panic.
 • The returned `Vec U8` has length `MACSIZE` (= 32 bytes).
@@ -48,15 +58,16 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
     (h_data : ct.length + 43 ≤ U32.max) :
     mac_ct self ep ct ⦃ (result : alloc.vec.Vec U8) =>
       result.length = MACSIZE.val ∧
-      ∃ data,
-        data.val = MAC_CT_LABEL ++ (core.num.U64.to_be_bytes ep) ++ ct ∧
-        libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
-  simp only [mac_ct, core.array.Array.as_slice, lift, Array.to_slice,
-             alloc.slice.Slice.concat_eq, MACSIZE]
+      let data : Slice U8 := Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct);
+      libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
+  unfold mac_ct MACSIZE
+  have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
-  all_goals simp_all only [alloc.vec.Vec.deref, Slice.length, List.length_flatten,
-    List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, Array.make]
-  all_goals try scalar_tac
-  exact ⟨rfl, _, by simp [MAC_CT_LABEL], result_post1⟩
+  · simp [*]; grind
+  · simp [*]; grind
+  · refine ⟨by simp [*], ?_⟩
+    convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result›
+    · rfl
+    · apply Subtype.ext; simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL]
 
 end spqr.authenticator.Authenticator
