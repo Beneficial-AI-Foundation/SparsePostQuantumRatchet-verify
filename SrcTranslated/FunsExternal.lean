@@ -1428,7 +1428,6 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_eq
 concatenating a slice of slices yields a `Vec` whose underlying list is the flattened
 concatenation, provided `Clone` is the identity (`hclone`) and the total length fits
 in `Usize` (`hlen`). -/
-@[step]
 theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
     {T : Type} (corecloneCloneInst : core.clone.Clone T)
     (hclone : ∀ x, corecloneCloneInst.clone x = ok x)
@@ -1693,9 +1692,7 @@ axiom libcrux_hmac.hmac_sha256_tag32_spec
     (hkey : key.length ≤ U32.max)
     (hdata : data.length ≤ U32.max) :
     libcrux_hmac.hmac .Sha256 key data (some 32#usize)
-      ⦃ (r : alloc.vec.Vec U8) =>
-        libcrux_hmac.hmac .Sha256 key data (some 32#usize) = ok r ∧
-        r.length = 32 ⦄
+      ⦃ (r : alloc.vec.Vec U8) => r.length = 32 ⦄
 
 /-- [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
