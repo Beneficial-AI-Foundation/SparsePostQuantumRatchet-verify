@@ -5,8 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 
-/-!
-# Spec theorem for `spqr::encoding::polynomial::const_polys_to_polys::{FnMut}::call_mut`
+/-! # Spec theorem for `spqr::encoding::polynomial::const_polys_to_polys::{FnMut}::call_mut`
 
 Aeneas extraction of the closure `|x| x.to_poly()` inside `const_polys_to_polys`
 (src/encoding/polynomial.rs, line 466). The `call_mut` method takes a unit closure state `c`
@@ -17,10 +16,11 @@ with the unchanged state. Postconditions (coefficient preservation, polynomial i
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 
-namespace spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
+namespace spqr.encoding.polynomial.const_polys_to_polys
+namespace closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
 
-/--
-**Spec theorem for `encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut`**:
+/-- **Spec theorem for `encoding.polynomial.const_polys_to_polys.
+closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut`**:
 
 Always succeeds. Delegates to `PolyConst.to_poly` and returns the result with the closure
 state unchanged. Guarantees:
@@ -40,4 +40,5 @@ theorem call_mut_spec
   unfold call_mut
   step*
 
-end spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
+end closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
+end spqr.encoding.polynomial.const_polys_to_polys
