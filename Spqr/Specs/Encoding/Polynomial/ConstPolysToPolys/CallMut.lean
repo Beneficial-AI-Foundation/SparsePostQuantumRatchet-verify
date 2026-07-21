@@ -14,7 +14,7 @@ with the unchanged state. Postconditions (coefficient preservation, polynomial i
 `GF216[X]`, closure unchanged) are inherited directly from `to_poly_spec`.
 -/
 
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
+open Aeneas Aeneas.Std Result
 
 namespace spqr.encoding.polynomial.const_polys_to_polys
 namespace closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
