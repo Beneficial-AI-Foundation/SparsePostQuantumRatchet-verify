@@ -22,14 +22,15 @@ namespace Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt
 
 /-- **Spec theorem for `PolyDecoder.new_with_poly_count.closure.call_mut`**:
 
-Succeeds whenever `SortedSet.new` succeeds and returns the closure state
-unchanged: `result.2 = c`. -/
+Always succeeds. Returns a fresh empty `SortedSet Pt` with the closure state
+unchanged: `result.1 = alloc.vec.Vec.new Pt` and `result.2 = c`. -/
 @[step]
 theorem call_mut_spec
     (c : PolyDecoder.new_with_poly_count.closure)
     (tupled_args : Usize) :
     call_mut c tupled_args ⦃ (result : (sorted_vec.SortedSet Pt) ×
     PolyDecoder.new_with_poly_count.closure) =>
+      result.1 = alloc.vec.Vec.new Pt ∧
       result.2 = c ⦄ := by
   unfold call_mut
   simp [sorted_vec.SortedSet.new]

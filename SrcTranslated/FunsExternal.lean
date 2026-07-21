@@ -1973,8 +1973,8 @@ def sorted_vec.SortedSet.new
 @[simp, step_simps]
 theorem sorted_vec.SortedSet.new_spec
     {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
-    sorted_vec.SortedSet.new corecmpOrdInst
-      ⦃ (s : sorted_vec.SortedSet T) => s = alloc.vec.Vec.new T ⦄ := by
+    sorted_vec.SortedSet.new corecmpOrdInst ⦃ (s : sorted_vec.SortedSet T) =>
+      s = alloc.vec.Vec.new T ⦄ := by
   simp [sorted_vec.SortedSet.new]
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::with_capacity]:
