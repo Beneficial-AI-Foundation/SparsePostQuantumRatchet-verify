@@ -116,6 +116,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+import Spqr.Specs.Encoding.Polynomial.Pt.Eq
 import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.IncrementalMlkem768.FlipEndianness
