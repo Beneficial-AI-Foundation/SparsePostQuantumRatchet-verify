@@ -285,7 +285,8 @@ The cursor never moves backwards and, on success, `decode_varint` consumed `n` b
 (`1 ≤ n ≤ 10`, all within the buffer, so the starting cursor is in bounds and the final
 cursor is at most `from.len()`), the returned value is the LEB128 decoding of those bytes
 truncated to 64 bits, byte `n-1` is the terminator (high bit clear), and bytes `0, …, n-2`
-are continuation bytes (high bit set). -/
+are continuation bytes (high bit set). On failure the error is `MsgDecode` and the cursor is
+returned unchanged. -/
 @[step]
 theorem decode_varint_spec
     (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
@@ -300,15 +301,13 @@ theorem decode_varint_spec
               v.val = varintVal from1.val at1.val n % 2 ^ 64 ∧
               from1.val[at1.val + n - 1]!.val < 128 ∧
               ∀ k < n - 1, 128 ≤ from1.val[at1.val + k]!.val
-         | .Err _ => True) ⦄ := by
+         | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
   unfold decode_varint
   by_cases hge : at1 ≥ alloc.vec.Vec.len from1
   · simp only [hge, ↓reduceIte]
     exact ⟨by scalar_tac, by simp⟩
   · simp only [hge, ↓reduceIte, core.cmp.min, MAX_VARINT_BYTES_LEN]
     step*
-    -- `step*` closes the `done1 = false` (`Err`) branch; in the `Ok` branch the loop
-    -- postcondition instantiates the existential with `n := i3.val`.
     have hd : done1 = true := by assumption
     obtain ⟨h1, h2, h3⟩ := out_post3 hd
     exact ⟨by scalar_tac, by scalar_tac, i3.val, at2_post, h1, by scalar_tac, by scalar_tac,
