@@ -10,17 +10,11 @@ import Spqr.Code.Funs
 `decode_varint` reads a LEB128-style variable-length integer from the byte buffer `from`
 starting at cursor `at`, advancing the cursor past the bytes it consumed.
 
-The Rust source carries the postcondition
-
-```
-#[hax_lib::ensures(|res| *at <= *future(at) &&
-  if res.is_ok() { *at < from.len() && *future(at) <= from.len() } else { true })]
-```
-
-We prove this cursor contract and, beyond it, functional correctness: on success the returned
-value is the LEB128 decoding (`varintVal`) of the `n` consumed bytes — 7 payload bits per byte,
-least-significant septet first, truncated to 64 bits — where byte `n-1` is the terminator (high
-bit clear) and all earlier bytes are continuation bytes (high bit set).
+We prove the cursor contract — the cursor never moves backwards, and on success it started
+inside the buffer and ends within bounds — and, beyond it, functional correctness: on success
+the returned value is the LEB128 decoding (`varintVal`) of the `n` consumed bytes — 7 payload
+bits per byte, least-significant septet first, truncated to 64 bits — where byte `n-1` is the
+terminator (high bit clear) and all earlier bytes are continuation bytes (high bit set).
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 151-182)
 -/
@@ -287,11 +281,11 @@ theorem decode_varint_loop_spec
 
 /-- **Spec theorem for `spqr::v1::chunked::states::serialize::decode_varint`**:
 
-The cursor is monotone (`at ≤ future(at)`) and, on success, `decode_varint` consumed `n` bytes
-(`1 ≤ n ≤ 10`, all within the buffer, so in particular `at < from.len()` and
-`future(at) ≤ from.len()`, the Rust `#[hax_lib::ensures]` contract), the returned value is
-the LEB128 decoding of those bytes truncated to 64 bits, byte `n-1` is the terminator (high
-bit clear), and bytes `0, …, n-2` are continuation bytes (high bit set). -/
+The cursor never moves backwards and, on success, `decode_varint` consumed `n` bytes
+(`1 ≤ n ≤ 10`, all within the buffer, so the starting cursor is in bounds and the final
+cursor is at most `from.len()`), the returned value is the LEB128 decoding of those bytes
+truncated to 64 bits, byte `n-1` is the terminator (high bit clear), and bytes `0, …, n-2`
+are continuation bytes (high bit set). -/
 @[step]
 theorem decode_varint_spec
     (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
