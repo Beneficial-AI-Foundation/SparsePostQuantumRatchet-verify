@@ -19,7 +19,9 @@ Builds a fresh `PolyDecoder` from `len_bytes` and an ignored `_polys` parameter.
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial
 
-instance : Inhabited (sorted_vec.SortedSet Pt) := ⟨alloc.vec.Vec.new Pt⟩
+@[nolint defsWithUnderscore]
+instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) :=
+  ⟨alloc.vec.Vec.new Pt⟩
 
 namespace spqr.encoding.polynomial.PolyDecoder
 
