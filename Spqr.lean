@@ -112,6 +112,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
