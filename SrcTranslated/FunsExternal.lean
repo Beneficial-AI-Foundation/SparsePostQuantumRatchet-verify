@@ -1466,16 +1466,16 @@ def Str.Insts.AllocBorrowToOwnedString.to_owned : Str → Result String :=
 /-- `ByteArray.toList` agrees with the underlying array's `toList`. -/
 theorem ByteArray.toList_eq_data_toList (bs : ByteArray) :
     bs.toList = bs.data.toList := by
-  have loop_eq : ∀ (i : Nat) (r : List UInt8), i ≤ bs.size →
-      ByteArray.toList.loop bs i r = r.reverse ++ bs.data.toList.drop i := by
+  obtain ⟨data⟩ := bs
+  have loop_eq : ∀ (i : Nat) (r : List UInt8), i ≤ data.size →
+      ByteArray.toList.loop ⟨data⟩ i r = r.reverse ++ data.toList.drop i := by
     intro i r hi
-    fun_induction ByteArray.toList.loop bs i r with
+    fun_induction ByteArray.toList.loop ⟨data⟩ i r with
     | case1 i r h ih =>
-      have hlen : i < bs.data.toList.length := h
-      rw [ih (by omega), List.drop_eq_getElem_cons (i := i) (l := bs.data.toList) hlen,
+      have hlen : i < data.toList.length := h
+      rw [ih (Nat.succ_le_of_lt h), List.drop_eq_getElem_cons (i := i) (l := data.toList) hlen,
         List.reverse_cons, List.append_assoc, List.singleton_append]
-      congr 2
-      show bs.data[i]! = bs.data.toList[i]
+      simp only [ByteArray.get!]
       rw [getElem!_pos, Array.getElem_toList]
     | case2 i r h =>
       rw [List.drop_eq_nil_of_le (Nat.le_of_not_lt h), List.append_nil]
@@ -1489,10 +1489,8 @@ theorem Str.Insts.AllocBorrowToOwnedString.to_owned_eq (s : String)
     Str.Insts.AllocBorrowToOwnedString.to_owned (toStr s h) = ok s := by
   have hbytes :
       (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
-    show (⟨⟨(s.toByteArray.toList.map _).map _⟩⟩ : ByteArray) = s.toByteArray
-    rw [List.map_map]
-    simp only [Function.comp_def, UScalar.val, BitVec.toNat_ofFin, UInt8.ofNat_toNat,
-      List.map_id', ByteArray.toList_eq_data_toList]
+    simp only [toStr, List.map_map, Function.comp_def, UScalar.val, BitVec.toNat_ofFin,
+      UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
   simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
 
 /-- **Spec theorem for `str::to_owned`**: on a string slice built from a Lean `String` by
