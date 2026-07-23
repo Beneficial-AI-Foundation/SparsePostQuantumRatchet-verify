@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
 import SrcTranslated.Funs
+import Spqr.Specs.Aeneas.StrToOwned
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<`
@@ -15,10 +16,10 @@ import SrcTranslated.Funs
 `From<MessageType> for u8` conversion and is used by `Message::deserialize` to decode the
 message-type tag byte.
 
-The spec below is restricted to in-range inputs (`value ≤ 6`): in the out-of-range branch the
-extracted code builds the error string via the external function
-`Str.Insts.AllocBorrowToOwnedString.to_owned`, which is an opaque axiom in
-`SrcTranslated/FunsExternal.lean`, so no unconditional success spec can be proven for it.
+The out-of-range branch builds the error string via the external function
+`Str.Insts.AllocBorrowToOwnedString.to_owned`, an opaque axiom in
+`SrcTranslated/FunsExternal.lean`; its behavior is given by the spec axiom `to_owned_spec`
+in `Spqr.Specs.Aeneas.StrToOwned`, which lets the spec below cover the full input range.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 109:4-120:5)
 -/
@@ -30,30 +31,46 @@ namespace spqr.v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU
 /-- **Spec theorem for
 `v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from`**:
 
-• For any in-range tag byte (`value ≤ 6`) the call succeeds (no panic / no error).
-• The result is `Ok` of the variant whose discriminant is `value`:
-  `0 ↦ None`, `1 ↦ Hdr`, `2 ↦ Ek`, `3 ↦ EkCt1Ack`, `4 ↦ Ct1Ack`, `5 ↦ Ct1`, `6 ↦ Ct2`,
-  i.e. `try_from` is a left inverse of `From<MessageType> for u8` on the valid tag range. -/
+• The call always succeeds (no panic / no error) for any input byte.
+• For an in-range tag byte (`value ≤ 6`) the result is `Ok` of the variant whose discriminant
+  is `value`: `0 ↦ None`, `1 ↦ Hdr`, `2 ↦ Ek`, `3 ↦ EkCt1Ack`, `4 ↦ Ct1Ack`, `5 ↦ Ct1`,
+  `6 ↦ Ct2`, i.e. `try_from` is a left inverse of `From<MessageType> for u8` on that range.
+• For an out-of-range byte (`value > 6`) the result is
+  `Err "Expected a number between 0 and 6"`. -/
 @[step]
-theorem try_from_spec (value : Std.U8) (h : value.val ≤ 6) :
+theorem try_from_spec (value : Std.U8) :
     try_from value ⦃ (result : core.result.Result v1.chunked.states.serialize.MessageType
         String) =>
-      result = .Ok (match value.val with
-        | 0 => .None
-        | 1 => .Hdr
-        | 2 => .Ek
-        | 3 => .EkCt1Ack
-        | 4 => .Ct1Ack
-        | 5 => .Ct1
-        | _ => .Ct2) ⦄ := by
+      result = match value.val with
+        | 0 => .Ok .None
+        | 1 => .Ok .Hdr
+        | 2 => .Ok .Ek
+        | 3 => .Ok .EkCt1Ack
+        | 4 => .Ok .Ct1Ack
+        | 5 => .Ok .Ct1
+        | 6 => .Ok .Ct2
+        | _ => .Err "Expected a number between 0 and 6" ⦄ := by
   unfold try_from
+  generalize hp : ((match value.val with
+    | 0 => .Ok .None
+    | 1 => .Ok .Hdr
+    | 2 => .Ok .Ek
+    | 3 => .Ok .EkCt1Ack
+    | 4 => .Ok .Ct1Ack
+    | 5 => .Ok .Ct1
+    | 6 => .Ok .Ct2
+    | _ => .Err "Expected a number between 0 and 6" :
+    core.result.Result v1.chunked.states.serialize.MessageType String)) = expected
   split <;>
     first
-    | (simp only [WP.spec_ok]; rfl)
-    | (exfalso
+    | (simp only [WP.spec_ok]; subst hp; rfl)
+    | (simp only [Str.Insts.AllocBorrowToOwnedString.to_owned_eq, bind_tc_ok, WP.spec_ok]
+       subst hp
        rcases value with ⟨bv⟩
        simp_all only [UScalar.val, UScalar.mk.injEq, BitVec.toNat_eq, UScalarTy.U8_numBits_eq,
          Nat.reducePow, BitVec.toNat_ofNat, Nat.reduceMod, imp_false]
-       omega)
+       obtain ⟨k, hk⟩ : ∃ k, bv.toNat = k + 7 := ⟨bv.toNat - 7, by omega⟩
+       rw [hk]
+       rfl)
 
 end spqr.v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String
