@@ -46,7 +46,6 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceChunksExact
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Aeneas.SliceIteratorNext
-import Spqr.Specs.Aeneas.StrToOwned
 import Spqr.Specs.Aeneas.VecClone
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE

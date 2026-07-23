@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
 import SrcTranslated.Funs
-import Spqr.Specs.Aeneas.StrToOwned
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<`
@@ -17,9 +16,9 @@ import Spqr.Specs.Aeneas.StrToOwned
 message-type tag byte.
 
 The out-of-range branch builds the error string via the external function
-`Str.Insts.AllocBorrowToOwnedString.to_owned`, an opaque axiom in
-`SrcTranslated/FunsExternal.lean`; its behavior is given by the spec axiom `to_owned_spec`
-in `Spqr.Specs.Aeneas.StrToOwned`, which lets the spec below cover the full input range.
+`Str.Insts.AllocBorrowToOwnedString.to_owned`, modeled in `SrcTranslated/FunsExternal.lean` as
+UTF-8 decoding of the slice's bytes; the spec theorem `to_owned_eq` proved there shows the call
+succeeds and returns the same string, which lets the spec below cover the full input range.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 109:4-120:5)
 -/
