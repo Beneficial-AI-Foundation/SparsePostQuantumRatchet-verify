@@ -1,9 +1,9 @@
 /-
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import Spqr.Code.Funs
+import SrcTranslated.Funs
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_varint`
 
@@ -212,12 +212,12 @@ theorem decode_varint_loop_spec
     (hmaxlen : at1.val + max_i.val ≤ from1.length) :
     decode_varint_loop from1 at1 0#u64 0#usize false max_i ⦃
       (p : Std.U64 × Std.Usize × Bool) =>
-        p.2.1.val ≤ max_i.val ∧
-        p.1.val = varintVal from1.val at1.val p.2.1.val % 2 ^ 64 ∧
-        (p.2.2 = true →
-          1 ≤ p.2.1.val ∧
-          from1.val[at1.val + p.2.1.val - 1]!.val < 128 ∧
-          ∀ k < p.2.1.val - 1, 128 ≤ from1.val[at1.val + k]!.val) ⦄ := by
+      p.2.1.val ≤ max_i.val ∧
+      p.1.val = varintVal from1.val at1.val p.2.1.val % 2 ^ 64 ∧
+      (p.2.2 = true →
+        1 ≤ p.2.1.val ∧
+        from1.val[at1.val + p.2.1.val - 1]!.val < 128 ∧
+        ∀ k < p.2.1.val - 1, 128 ≤ from1.val[at1.val + k]!.val) ⦄ := by
   unfold decode_varint_loop
   apply loop.spec_decr_nat
     (measure := fun (p : Std.U64 × Std.Usize × Bool) => max_i.val - p.2.1.val)
@@ -290,18 +290,17 @@ returned unchanged. -/
 @[step]
 theorem decode_varint_spec
     (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
-    decode_varint from1 at1 ⦃
-      (p : (core.result.Result Std.U64 Error) × Std.Usize) =>
-        at1.val ≤ p.2.val ∧
-        (match p.1 with
-         | .Ok v =>
-            at1.val < from1.length ∧
-            ∃ n, p.2.val = at1.val + n ∧ 1 ≤ n ∧ n ≤ 10 ∧
-              at1.val + n ≤ from1.length ∧
-              v.val = varintVal from1.val at1.val n % 2 ^ 64 ∧
-              from1.val[at1.val + n - 1]!.val < 128 ∧
-              ∀ k < n - 1, 128 ≤ from1.val[at1.val + k]!.val
-         | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
+    decode_varint from1 at1 ⦃ (p : (core.result.Result Std.U64 Error) × Std.Usize) =>
+      at1.val ≤ p.2.val ∧
+      (match p.1 with
+       | .Ok v =>
+          at1.val < from1.length ∧
+          ∃ n, p.2.val = at1.val + n ∧ 1 ≤ n ∧ n ≤ 10 ∧
+            at1.val + n ≤ from1.length ∧
+            v.val = varintVal from1.val at1.val n % 2 ^ 64 ∧
+            from1.val[at1.val + n - 1]!.val < 128 ∧
+            ∀ k < n - 1, 128 ≤ from1.val[at1.val + k]!.val
+       | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
   unfold decode_varint
   by_cases hge : at1 ≥ alloc.vec.Vec.len from1
   · simp only [hge, ↓reduceIte]
