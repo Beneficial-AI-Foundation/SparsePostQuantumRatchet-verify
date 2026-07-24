@@ -1448,10 +1448,53 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
     Source: '/rustc/library/alloc/src/str.rs', lines 210:4-210:32
-    Name pattern: [alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned] -/
+    Name pattern: [alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned]
+
+    In Rust, `str::to_owned` copies the bytes of a `&str` into a freshly allocated `String`
+    (`String::from_utf8_unchecked(self.as_bytes().to_owned())`). It never fails: its only
+    failure mode is allocation failure, which aborts the process instead of returning. We model
+    it by decoding the slice's bytes as UTF-8 (a Lean `String` is a `ByteArray` of valid UTF-8
+    bytes plus the validity proof); the `fail` branch is unreachable on any `Str` produced by
+    `toStr`, in particular on the string literals appearing in the extracted code. -/
 @[rust_fun
   "alloc::str::{alloc::borrow::ToOwned<str, alloc::string::String>}::to_owned"]
-axiom Str.Insts.AllocBorrowToOwnedString.to_owned : Str → Result String
+def Str.Insts.AllocBorrowToOwnedString.to_owned : Str → Result String :=
+  fun s =>
+    let bytes : ByteArray := ⟨⟨s.val.map (fun b => UInt8.ofNat b.val)⟩⟩
+    if h : bytes.IsValidUTF8 then ok ⟨bytes, h⟩ else fail .panic
+
+/-- `ByteArray.toList` agrees with the underlying array's `toList`. -/
+theorem ByteArray.toList_eq_data_toList (bs : ByteArray) :
+    bs.toList = bs.data.toList := by
+  obtain ⟨data⟩ := bs
+  have loop_eq : ∀ (i : Nat) (r : List UInt8), i ≤ data.size →
+      ByteArray.toList.loop ⟨data⟩ i r = r.reverse ++ data.toList.drop i := by
+    intro i r hi
+    fun_induction ByteArray.toList.loop ⟨data⟩ i r with
+    | case1 i r h ih =>
+      have hlen : i < data.toList.length := h
+      rw [ih (Nat.succ_le_of_lt h), List.drop_eq_getElem_cons (i := i) (l := data.toList) hlen,
+        List.reverse_cons, List.append_assoc, List.singleton_append]
+      simp only [ByteArray.get!]
+      rw [getElem!_pos, Array.getElem_toList]
+    | case2 i r h =>
+      rw [List.drop_eq_nil_of_le (Nat.le_of_not_lt h), List.append_nil]
+  unfold ByteArray.toList
+  rw [loop_eq 0 [] (Nat.zero_le _), List.drop_zero, List.reverse_nil, List.nil_append]
+
+/-- **Spec theorem for `str::to_owned`**: on a string slice built from a Lean `String` by
+`toStr`, the call always succeeds and the resulting owned `String` has the same contents. -/
+@[step]
+theorem Str.Insts.AllocBorrowToOwnedString.to_owned_spec (s : String)
+    (h : s.toByteArray.size ≤ U32.max) :
+    Str.Insts.AllocBorrowToOwnedString.to_owned (toStr s h) ⦃ (result : String) =>
+      result = s ⦄ := by
+  have hbytes :
+      (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
+    simp only [toStr, List.map_map, Function.comp_def, UScalar.val, BitVec.toNat_ofFin,
+      UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
+  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
+  step*
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::truncate]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1696:4-1696:42
