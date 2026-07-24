@@ -88,6 +88,7 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallOnce
+import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
@@ -132,6 +133,7 @@ import Spqr.Specs.Serialize.Error.From
 import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
+import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
