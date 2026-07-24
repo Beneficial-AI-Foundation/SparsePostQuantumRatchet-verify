@@ -1482,17 +1482,6 @@ theorem ByteArray.toList_eq_data_toList (bs : ByteArray) :
   unfold ByteArray.toList
   rw [loop_eq 0 [] (Nat.zero_le _), List.drop_zero, List.reverse_nil, List.nil_append]
 
-/-- **Spec theorem for `str::to_owned`** (equational form): on a string slice built from a Lean
-`String` by `toStr`, the call succeeds and returns that same string. -/
-private lemma Str.Insts.AllocBorrowToOwnedString.to_owned_eq (s : String)
-    (h : s.toByteArray.size ≤ U32.max) :
-    Str.Insts.AllocBorrowToOwnedString.to_owned (toStr s h) = ok s := by
-  have hbytes :
-      (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
-    simp only [toStr, List.map_map, Function.comp_def, UScalar.val, BitVec.toNat_ofFin,
-      UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
-  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
-
 /-- **Spec theorem for `str::to_owned`**: on a string slice built from a Lean `String` by
 `toStr`, the call always succeeds and the resulting owned `String` has the same contents. -/
 @[step]
@@ -1500,7 +1489,12 @@ theorem Str.Insts.AllocBorrowToOwnedString.to_owned_spec (s : String)
     (h : s.toByteArray.size ≤ U32.max) :
     Str.Insts.AllocBorrowToOwnedString.to_owned (toStr s h) ⦃ (result : String) =>
       result = s ⦄ := by
-  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned_eq, WP.spec_ok]
+  have hbytes :
+      (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
+    simp only [toStr, List.map_map, Function.comp_def, UScalar.val, BitVec.toNat_ofFin,
+      UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
+  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
+  step*
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::truncate]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1696:4-1696:42
