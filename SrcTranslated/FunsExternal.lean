@@ -1484,7 +1484,7 @@ theorem ByteArray.toList_eq_data_toList (bs : ByteArray) :
 
 /-- **Spec theorem for `str::to_owned`** (equational form): on a string slice built from a Lean
 `String` by `toStr`, the call succeeds and returns that same string. -/
-theorem Str.Insts.AllocBorrowToOwnedString.to_owned_eq (s : String)
+private lemma Str.Insts.AllocBorrowToOwnedString.to_owned_eq (s : String)
     (h : s.toByteArray.size ≤ U32.max) :
     Str.Insts.AllocBorrowToOwnedString.to_owned (toStr s h) = ok s := by
   have hbytes :
