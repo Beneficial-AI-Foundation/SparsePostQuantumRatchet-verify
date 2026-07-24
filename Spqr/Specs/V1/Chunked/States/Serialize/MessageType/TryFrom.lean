@@ -63,13 +63,7 @@ theorem try_from_spec (value : Std.U8) :
   split <;>
     first
     | (simp only [WP.spec_ok]; subst hp; rfl)
-    | (simp only [Str.Insts.AllocBorrowToOwnedString.to_owned_eq, bind_tc_ok, WP.spec_ok]
-       subst hp
-       rcases value with ⟨bv⟩
-       simp_all only [UScalar.val, UScalar.mk.injEq, BitVec.toNat_eq, UScalarTy.U8_numBits_eq,
-         Nat.reducePow, BitVec.toNat_ofNat, Nat.reduceMod, imp_false]
-       obtain ⟨k, hk⟩ : ∃ k, bv.toNat = k + 7 := ⟨bv.toNat - 7, by omega⟩
-       rw [hk]
-       rfl)
+    | step*
+      grind
 
 end spqr.v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String
