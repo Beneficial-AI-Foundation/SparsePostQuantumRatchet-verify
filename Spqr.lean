@@ -46,6 +46,7 @@ import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceChunksExact
 import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Aeneas.VecClone
 import Spqr.Specs.Aeneas.VecExtendFromSlice
