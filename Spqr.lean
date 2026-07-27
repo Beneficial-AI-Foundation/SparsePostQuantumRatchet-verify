@@ -88,6 +88,7 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
+import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallOnce
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
