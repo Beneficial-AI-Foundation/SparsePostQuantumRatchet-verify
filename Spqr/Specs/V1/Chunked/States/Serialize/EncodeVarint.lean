@@ -222,8 +222,9 @@ theorem encode_varint_loop_spec
         rw [h_a, h9'] at ha_big
         have hmul : 128 * 128 ^ 9 ≤ a.val :=
           (Nat.le_div_iff_mul_le (by positivity)).mp ha_big
-        rw [show (128 : ℕ) * 128 ^ 9 = 1180591620717411303424 from by norm_num] at hmul
-        scalar_tac
+        -- `128 ^ 10 = 2 ^ 70` exceeds `U64.size = 2 ^ 64`, so `hmul` is impossible.
+        have hsize : a.val < 2 ^ 64 := by scalar_tac
+        exact absurd (hsize.trans_le (by norm_num)) (Nat.not_lt.mpr hmul)
       have h_end_val : iter''.end.val = iter'.end.val := by rw [h_end'']
       dsimp only
       refine ⟨by omega, by omega, ?_, ⟨tail ++ [b], ?_, ?_, ?_⟩, by omega⟩
