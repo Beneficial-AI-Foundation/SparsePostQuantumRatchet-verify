@@ -46,6 +46,7 @@ import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceChunksExact
 import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Aeneas.VecClone
 import Spqr.Specs.Aeneas.VecExtendFromSlice
@@ -90,6 +91,7 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallOnce
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
+import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.SliceIterMapCollect
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
@@ -114,6 +116,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
@@ -137,4 +140,5 @@ import Spqr.Specs.Util.IsNonZero
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
+import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
