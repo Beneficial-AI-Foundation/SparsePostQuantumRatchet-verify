@@ -75,7 +75,19 @@ theorem varintBytes_length_le_ten {a : ℕ} (h : a < 2 ^ 64) : (varintBytes a).l
 example : varintBytes 0x012C = [0xAC, 0x02] := by
   rw [varintBytes_of_ge (by norm_num), varintBytes_of_lt (by norm_num)]
 
-/-! ## Bit-twiddling lemma -/
+/-! ## Bit-twiddling lemmas -/
+
+/-- Both `push`es of the loop body emit the same byte `(a & 0x7F) as u8`; its value is the
+low septet `a % 128`. -/
+private theorem cast_and_127_val_eq_mod {a i : Std.U64} (hi : i.val = (a &&& 127#u64).val) :
+    (UScalar.cast .U8 i).val = a.val % 128 := by
+  have h : i.val = a.val % 128 := by
+    have h127 : i.val = a.val &&& 127 := by
+      rw [hi, UScalar.val_and]
+      scalar_tac
+    rw [h127, show (127 : ℕ) = 2 ^ 7 - 1 from rfl, Nat.and_two_pow_sub_one_eq_mod]
+  rw [UScalar.cast_val_eq, h, show UScalarTy.U8.numBits = 8 from rfl]
+  omega
 
 /-- Setting the continuation bit on a 7-bit payload is addition: for `b < 128`,
 `0x80 ||| b = 128 + b`.  The bit ranges are disjoint, so the OR splits cleanly with
@@ -127,30 +139,18 @@ theorem encode_varint_loop_body_spec
     by_cases ha : a < 128#u64
     · simp only [ha, ↓reduceIte]
       step*
-      have hi : i.val = a.val % 128 := by
-        have h : i.val = a.val &&& 127 := by
-          rw [i_post1, UScalar.val_and]
-          scalar_tac
-        rw [h, show (127 : ℕ) = 2 ^ 7 - 1 from rfl, Nat.and_two_pow_sub_one_eq_mod]
       have hb : byte.val = a.val % 128 := by
-        rw [byte_post, UScalar.cast_val_eq, hi,
-          show UScalarTy.U8.numBits = 8 from rfl]
-        omega
+        rw [byte_post]
+        exact cast_and_127_val_eq_mod i_post1
       right
       refine ⟨hlt, by scalar_tac, byte, into1_post, ?_⟩
       have halt : a.val < 128 := by scalar_tac
       omega
     · simp only [ha, ↓reduceIte]
       step*
-      have hi : i.val = a.val % 128 := by
-        have h : i.val = a.val &&& 127 := by
-          rw [i_post1, UScalar.val_and]
-          scalar_tac
-        rw [h, show (127 : ℕ) = 2 ^ 7 - 1 from rfl, Nat.and_two_pow_sub_one_eq_mod]
       have hb : byte.val = a.val % 128 := by
-        rw [byte_post, UScalar.cast_val_eq, hi,
-          show UScalarTy.U8.numBits = 8 from rfl]
-        omega
+        rw [byte_post]
+        exact cast_and_127_val_eq_mod i_post1
       have hblt : byte.val < 128 := by omega
       have hi1 : i1.val = a.val % 128 + 128 := by
         have h : i1.val = 128 ||| byte.val := by
