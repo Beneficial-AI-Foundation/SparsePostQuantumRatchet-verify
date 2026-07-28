@@ -117,6 +117,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
@@ -138,6 +139,7 @@ import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
+import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
