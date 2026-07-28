@@ -33,14 +33,36 @@ axiom Usize.Insts.CoreCmpEq.assert_fields_are_eq : Std.Usize → Result Unit
 /-- [core::iter::traits::iterator::Iterator::map]:
     Source: '/rustc/library/core/src/iter/traits/iterator.rs', lines 831:4-834:34
     Name pattern: [core::iter::traits::iterator::Iterator::map]
-    Visibility: public -/
+    Visibility: public
+
+    Concrete model of Rust's `Iterator::map`: the adapter is lazy, so `map`
+    merely packages the underlying iterator together with the closure as a
+    `Map { iter: self, f }` value (computation happens on demand in `next`).
+    The outer `Result` is always `ok` (the call never panics). -/
 @[rust_fun "core::iter::traits::iterator::Iterator::map"]
-axiom core.iter.traits.iterator.Iterator.map.default
+def core.iter.traits.iterator.Iterator.map.default
   {Self : Type} {B : Type} {F : Type} {Clause0_Item : Type} (IteratorInst :
   core.iter.traits.iterator.Iterator Self Clause0_Item)
   (opsfunctionFnMutFTupleClause0_ItemBInst : core.ops.function.FnMut F
   Clause0_Item B) :
-  Self → F → Result (core.iter.adapters.map.Map Self F)
+  Self → F → Result (core.iter.adapters.map.Map Self F) :=
+  fun self f => ok { iter := self, f := f }
+
+/-- **Spec theorem for `Iterator::map`**: the call always succeeds and returns the
+`Map` adapter that stores the underlying iterator `self` and the closure `fn`
+unchanged (mapping is performed lazily by the adapter's `next`). -/
+@[step]
+theorem core.iter.traits.iterator.Iterator.map.default_spec
+    {Self : Type} {B : Type} {F : Type} {Clause0_Item : Type}
+    (IteratorInst : core.iter.traits.iterator.Iterator Self Clause0_Item)
+    (opsfunctionFnMutFTupleClause0_ItemBInst :
+      core.ops.function.FnMut F Clause0_Item B)
+    (self : Self) (fn : F) :
+    core.iter.traits.iterator.Iterator.map.default IteratorInst
+      opsfunctionFnMutFTupleClause0_ItemBInst self fn
+      ⦃ (m : core.iter.adapters.map.Map Self F) =>
+      m.iter = self ∧ m.f = fn ⦄ := by
+  simp [core.iter.traits.iterator.Iterator.map.default, WP.spec_ok]
 
 /-- [prost::encoding::bool::merge]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 268:12-268:130
