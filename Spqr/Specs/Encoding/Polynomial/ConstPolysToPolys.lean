@@ -3,7 +3,6 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallOnce
 import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.SliceIterMapCollect
 
@@ -50,7 +49,7 @@ The function always succeeds and, for each index `j < N`:
       `result[j].toGF216Poly = listToGF216Poly cps[j].coefficients.val`. -/
 @[step]
 theorem const_polys_to_polys_spec {N : Usize} (cps : Array (PolyConst N) N) :
-    const_polys_to_polys cps ⦃ result =>
+    const_polys_to_polys cps ⦃ (result : alloc.vec.Vec Poly) =>
       result.length = N.val ∧
       (∀ j < N.val,
         ∀ (hj : j < result.length) (hjc : j < cps.length),
