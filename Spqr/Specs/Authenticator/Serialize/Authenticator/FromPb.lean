@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
+import Spqr.Specs.Aeneas.VecClone
 
 /-!
 # Spec theorem for `spqr::authenticator::serialize::Authenticator::from_pb`
@@ -33,7 +34,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.Authenticator) :
     from_pb pb ⦃ (result : authenticator.Authenticator) =>
       result.root_key = pb.root_key ∧
       result.mac_key = pb.mac_key ⦄ := by
-  unfold from_pb alloc.vec.CloneVec.clone
+  unfold from_pb
   step*
 
 end spqr.authenticator.serialize.Authenticator
