@@ -408,9 +408,6 @@ theorem body_spec_inbounds
   obtain ⟨iter1, hnext, h_iter1_i, h_iter1_slice, h_iter1_count⟩ :=
     EnumerateSliceIter_next_Pt_some iter h_in_bounds' h_count_bound
   rw [hnext]
-  simp only [bind_tc_ok]
-  have h_lt_pts : iter.iter.i < pts.val.length := h_in_bounds
-  have h_cast_val := usize_cast_u16_val iter.count h_count
   step*
 
 /-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points_loop.body`**:
@@ -496,26 +493,10 @@ theorem loop_spec
     apply WP.spec_mono h_body
     intro cf h_cf
     match cf with
-    | ControlFlow.done (core.result.Result.Ok p) =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_not_lt, h_sum⟩ := h_cf
-      exact ⟨fun j hj => h_pre' j (by grind) hj, h_sum⟩
-    | ControlFlow.done (core.result.Result.Err ()) =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_i_lt, h_neq⟩ := h_cf
-      exact ⟨iter'.iter.i, h_i_lt, by grind⟩
-    | ControlFlow.cont iter'' =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_i_lt, h_val_eq, h_iter_i, h_iter_slice, h_iter_count⟩ := h_cf
-      constructor
-      · exact ⟨h_iter_slice, by grind, by grind, by omega, fun j hj hj_lt => by
-          by_cases hj_lt' : j < iter'.iter.i
-          · exact h_pre' j hj_lt' hj_lt
-          · have hj_eq : j = iter'.iter.i := by omega
-            subst hj_eq
-            exact h_val_eq.trans h_count_eq'⟩
-      · grind
-  · exact ⟨h_slice_eq, h_i_le, h_count, h_count_eq, h_pre⟩
+    | ControlFlow.done (core.result.Result.Ok p) => grind
+    | ControlFlow.done (core.result.Result.Err ()) => grind
+    | ControlFlow.cont iter'' => grind
+  · grind
 
 end spqr.encoding.polynomial.Poly.from_complete_points_loop
 
@@ -547,8 +528,7 @@ theorem from_complete_points_spec
           C ((pts.val[j]!).y.toGF216) * scaledLagrangeBasis (Slice.len pts) j
       | core.result.Result.Err () =>
           ∃ (j : Nat) (hj : j < pts.val.length), (pts[j]).x.value.val ≠ j ⦄ := by
-  have h_pts_len : pts.val.length ≤ UScalar.max .U16 := by
-    grind
+  have h_pts_len : pts.val.length ≤ UScalar.max .U16 := by grind
   unfold from_complete_points
   simp only [core.slice.Slice.iter,
              core.iter.traits.iterator.Iterator.enumerate.trait_default,
@@ -593,11 +573,8 @@ theorem from_complete_points_spec_Not
     apply WP.spec_mono h_body
     intro cf h_cf
     match cf with
-    | ControlFlow.done (core.result.Result.Ok _) =>
-      exact h_cf.elim
-    | ControlFlow.done (core.result.Result.Err ()) =>
-      simp only at h_cf ⊢
-      exact ⟨iter'.iter.i, h_in_bounds, by rw [h_count_eq'] at h_cf; exact h_cf⟩
+    | ControlFlow.done (core.result.Result.Ok _) => grind
+    | ControlFlow.done (core.result.Result.Err ()) => grind
     | ControlFlow.cont iter'' =>
       simp only  at h_cf ⊢
       obtain ⟨h_val_eq, h_iter_i, h_iter_slice, h_iter_count⟩ := h_cf
