@@ -138,7 +138,6 @@ import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
