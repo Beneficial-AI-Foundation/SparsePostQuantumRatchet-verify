@@ -413,8 +413,6 @@ theorem body_spec_inbounds
   have h_cast_val := usize_cast_u16_val iter.count h_count
   step*
 
-/-! ## Spec theorem for the loop body -/
-
 /-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points_loop.body`**:
 `Ok` ⇒ Lagrange sum via `scaledLagrangeBasis`; `Err` ⇒ validation mismatch;
 `cont` ⇒ validation passes and iterator advances. -/
@@ -499,15 +497,15 @@ theorem loop_spec
     intro cf h_cf
     match cf with
     | ControlFlow.done (core.result.Result.Ok p) =>
-      simp only [] at h_cf ⊢
+      simp only  at h_cf ⊢
       obtain ⟨h_not_lt, h_sum⟩ := h_cf
       exact ⟨fun j hj => h_pre' j (by grind) hj, h_sum⟩
     | ControlFlow.done (core.result.Result.Err ()) =>
-      simp only [] at h_cf ⊢
+      simp only  at h_cf ⊢
       obtain ⟨h_i_lt, h_neq⟩ := h_cf
       exact ⟨iter'.iter.i, h_i_lt, by grind⟩
     | ControlFlow.cont iter'' =>
-      simp only [] at h_cf ⊢
+      simp only  at h_cf ⊢
       obtain ⟨h_i_lt, h_val_eq, h_iter_i, h_iter_slice, h_iter_count⟩ := h_cf
       constructor
       · exact ⟨h_iter_slice, by grind, by grind, by omega, fun j hj hj_lt => by
@@ -598,10 +596,10 @@ theorem from_complete_points_spec_Not
     | ControlFlow.done (core.result.Result.Ok _) =>
       exact h_cf.elim
     | ControlFlow.done (core.result.Result.Err ()) =>
-      simp only [] at h_cf ⊢
+      simp only at h_cf ⊢
       exact ⟨iter'.iter.i, h_in_bounds, by rw [h_count_eq'] at h_cf; exact h_cf⟩
     | ControlFlow.cont iter'' =>
-      simp only [] at h_cf ⊢
+      simp only  at h_cf ⊢
       obtain ⟨h_val_eq, h_iter_i, h_iter_slice, h_iter_count⟩ := h_cf
       constructor
       · refine ⟨h_iter_slice, ?_, ?_, ?_, ?_⟩
