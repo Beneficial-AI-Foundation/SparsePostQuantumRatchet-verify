@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec Theorem for `Pt::serialize`
 
@@ -56,23 +57,6 @@ natural language specs:
 • Together with `Pt::deserialize`, the encoding is invertible:
     `Pt::deserialize(pt.serialize()) = ok pt`
 -/
-
-/-- `RangeFull` indexing on a slice is the identity: `slice[..] = slice`. -/
-private theorem rangeFull_index_eq {T : Type}
-    (r : core.ops.range.RangeFull) (s : Slice T) :
-    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index r s =
-    ok s := by
-  rfl
-
-@[simp, step_simps]
-private theorem array_index_rangeFull_ok {T : Type} {N : Usize}
-    (a : Array T N) :
-    core.array.Array.index
-      (core.ops.index.IndexSlice
-        (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice T))
-      a () =
-    ok a.to_slice :=
-  rangeFull_index_eq () a.to_slice
 
 /- **Spec for `U16::to_be_bytes`**:
 The two-byte big-endian encoding of a `u16` value `x` satisfies
