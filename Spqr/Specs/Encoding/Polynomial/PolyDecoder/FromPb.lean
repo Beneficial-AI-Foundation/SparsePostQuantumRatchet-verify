@@ -8,6 +8,7 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Math.List
 import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 
 /-!
 # Spec theorem for `PolyDecoder::from_pb`: loop body 1
@@ -167,8 +168,6 @@ or deserializes slot `i` by allocating a fresh `SortedSet`, running the inner 4-
 **Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
-
-instance : Inhabited (sorted_vec.SortedSet Pt) := ⟨alloc.vec.Vec.new Pt⟩
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0.body`**:
 
