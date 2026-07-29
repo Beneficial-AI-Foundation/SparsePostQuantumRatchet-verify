@@ -2013,12 +2013,29 @@ axiom sorted_vec.SortedSet.Insts.CoreCloneClone.clone
 
 /-- [sorted_vec::{core::ops::deref::Deref<alloc::vec::Vec<T>> for sorted_vec::SortedVec<T>}::deref]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 309:2-309:30
-    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref] -/
+    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref]
+
+    Concrete model of Rust's `<SortedVec<T> as Deref>::deref`: returns the
+    inner `Vec<T>`.  Since `SortedVec T` is definitionally equal to
+    `alloc.vec.Vec T` in the Lean model, `deref` is simply the identity
+    function. The outer `Result` is always `ok` (the call never panics). -/
 @[rust_fun
   "sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref"]
-axiom sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
-  {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
-  sorted_vec.SortedVec T → Result (alloc.vec.Vec T)
+def sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+  {T : Type} (_corecmpOrdInst : core.cmp.Ord T) :
+  sorted_vec.SortedVec T → Result (alloc.vec.Vec T) :=
+  fun sv => ok sv
+
+/-- **Spec theorem for `<SortedVec<T> as Deref>::deref`**: since `SortedVec T`
+    is modelled as `alloc.vec.Vec T`, `deref` is the identity. -/
+@[simp, step_simps, step]
+theorem sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedVec T) :
+    sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref corecmpOrdInst s
+      ⦃ (v : alloc.vec.Vec T) => v = s ⦄ := by
+  simp [sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref]
+
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::new]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 347:2-347:22
@@ -2061,12 +2078,29 @@ axiom sorted_vec.SortedSet.push
 
 /-- [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<T>> for sorted_vec::SortedSet<T>}::deref]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 543:2-543:36
-    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedSet<@T>, sorted_vec::SortedVec<@T>>}::deref] -/
+    Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedSet<@T>, sorted_vec::SortedVec<@T>>}::deref]
+
+    Concrete model of Rust's `<SortedSet<T> as Deref<Target = SortedVec<T>>>::deref`:
+    returns the inner `SortedVec<T>`.  Since `SortedSet T` is definitionally
+    equal to `SortedVec T` in the Lean model, this is the identity function.
+    The outer `Result` is always `ok` (the call never panics). -/
 @[rust_fun
   "sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedSet<@T>, sorted_vec::SortedVec<@T>>}::deref"]
-axiom sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
-  {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
-  sorted_vec.SortedSet T → Result (sorted_vec.SortedVec T)
+def sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+  {T : Type} (_corecmpOrdInst : core.cmp.Ord T) :
+  sorted_vec.SortedSet T → Result (sorted_vec.SortedVec T) :=
+  fun s => ok s
+
+/-- **Spec theorem for `<SortedSet<T> as Deref>::deref`**: the call always
+    succeeds and returns the set itself (since `SortedSet T` and `SortedVec T`
+    are definitionally equal in the Lean model). -/
+@[simp, step_simps, step]
+theorem sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref_spec
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedSet T) :
+    sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref corecmpOrdInst s
+      ⦃ (v : sorted_vec.SortedVec T) => v = s ⦄ := by
+  simp [sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref]
 
 /-- [thiserror::display::{thiserror::display::AsDisplay<'a, &'a (T)> for &1 (T)}::as_display]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.12/src/display.rs', lines 20:4-20:43

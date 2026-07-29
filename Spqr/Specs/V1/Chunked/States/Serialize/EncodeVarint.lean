@@ -66,6 +66,11 @@ theorem varintBytes_length_le : ∀ (n a : ℕ), 1 ≤ n → a < 2 ^ (7 * n) →
       simp only [List.length_cons]
       omega
 
+/-- A `u16` value encodes in at most 3 bytes: `2 ^ 16 ≤ 2 ^ (7 * 3)`. -/
+theorem varintBytes_length_le_three {a : ℕ} (h : a < 2 ^ 16) : (varintBytes a).length ≤ 3 :=
+  varintBytes_length_le 3 a (by omega)
+    (lt_of_lt_of_le h (by norm_num))
+
 /-- A `u64` value encodes in at most 10 bytes. -/
 theorem varintBytes_length_le_ten {a : ℕ} (h : a < 2 ^ 64) : (varintBytes a).length ≤ 10 :=
   varintBytes_length_le 10 a (by omega)
