@@ -282,6 +282,7 @@ namespace spqr.encoding.polynomial.PolyDecoder
 Serializes a `PolyDecoder` into a `proto.pq_ratchet.PolynomialDecoder`. The result preserves
 `pts_needed`, sets `polys = 16`, preserves `is_complete`, and contains 16 byte vectors each
 faithfully encoding their sorted set's points in 4-byte big-endian format. -/
+@[step]
 theorem into_pb_spec
     (self : encoding.polynomial.PolyDecoder)
     (h_cast : self.pts_needed.val ≤ U32.max)

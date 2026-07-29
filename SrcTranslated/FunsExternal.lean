@@ -2016,10 +2016,9 @@ axiom sorted_vec.SortedSet.Insts.CoreCloneClone.clone
     Name pattern: [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref]
 
     Concrete model of Rust's `<SortedVec<T> as Deref>::deref`: returns the
-    inner `Vec<T>`.  Since `SortedVec` is an opaque (axiomatised) type we
-    cannot inspect its contents, so we model the result by returning the
-    `default` inhabitant of `alloc.vec.Vec T` (i.e. the empty vector).
-    The outer `Result` is always `ok` (the call never panics). -/
+    inner `Vec<T>`.  Since `SortedVec T` is definitionally equal to
+    `alloc.vec.Vec T` in the Lean model, `deref` is simply the identity
+    function. The outer `Result` is always `ok` (the call never panics). -/
 @[rust_fun
   "sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<@T>, alloc::vec::Vec<@T>>}::deref"]
 def sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
