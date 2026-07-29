@@ -11,8 +11,25 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
-/-! # Spec theorem for `Poly::from_complete_points`: loop body 0
--/
+/-! # Specification for `Poly::from_complete_points`
+
+This file verifies the Rust function `Poly::from_complete_points` from
+`src/encoding/polynomial.rs`. That function:
+
+1. **Validates indices**: iterates over `pts.iter().enumerate()`, checking that
+   each point's x-coordinate equals its position (`pt.x.value == i as u16`).
+   Returns `Err(())` on the first mismatch.
+
+2. **Selects precomputed Lagrange basis polynomials**: matches on `pts.len()`
+   against the admissible sizes `{0, 1, 3, 5, 30, 34, 36}` and loads the
+   corresponding `COMPLETE_POINTS_POLYS_N` constant arrays, converting them
+   to `Vec<Poly>` via `const_polys_to_polys`.
+
+3. **Computes the Lagrange sum**: calls `Poly::lagrange_sum(pts, &polys)` to
+   build the interpolation polynomial
+   `p = Σⱼ pts[j].y · scaledLagrangeBasis(len, j)` in `GF(2¹⁶)[X]`.
+
+**Source**: `src/encoding/polynomial.rs` -/
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open core.iter.adapters.enumerate core.slice.iter
@@ -92,11 +109,20 @@ private lemma usize_cast_u16_val (x : Usize) (h : x.val ≤ UScalar.max .U16) :
     (UScalar.cast UScalarTy.U16 x).val = x.val :=
   UScalar.cast_inBounds_spec UScalarTy.U16 x h
 
-/-! ## Common postcondition abbreviation -/
+/-- Shared postcondition for the `body_spec` helpers (an `abbrev` so `step*` unfolds it):
 
-/-- Postcondition for body_spec helpers. Transparent via `abbrev` so `step*` sees through it.
-    `Ok` ⇒ Lagrange sum over `scaledLagrangeBasis`; `Err` ⇒ validation mismatch;
-    `cont` ⇒ iterator advances. -/
+This captures the three possible outcomes of one iteration of the
+`for (i, pt) in pts.iter().enumerate()` loop:
+
+- **`done (Ok p)`** — the iterator was exhausted (`none` branch) and the
+  Lagrange sum was successfully computed. The polynomial `p` satisfies
+  `p.toGF216Poly = Σⱼ C(pts[j].y.toGF216) * scaledLagrangeBasis(len, j)`.
+
+- **`done (Err ())`** — the current point failed index validation:
+  `pts[i].x.value ≠ i`, so the function returns early with `Err(())`.
+
+- **`cont iter'`** — the current point passed validation (`pts[i].x.value = i`),
+  the iterator advanced by one, and the loop continues. -/
 private abbrev bodyPost
     (pts : Slice Pt) (iter : Enumerate (Iter Pt)) :
     ControlFlow (Enumerate (Iter Pt)) (core.result.Result Poly Unit) → Prop :=
@@ -132,8 +158,13 @@ private lemma absurd_some_out_of_bounds
   case isTrue h_lt => exact absurd h_lt h_out
   case isFalse => simp at hnext
 
-/-! ## Spec helper: the `some` (validation) branch -/
 
+/-! ## Spec helper: the `some` (validation) branch
+
+Body spec for the `some` case: the iterator is still in bounds, so we get the current
+`(index, point)` pair.  The proof unfolds `body`, applies the `EnumerateSliceIter_next_Pt_some`
+lemma for the iterator step, then resolves the `if pt.x.value != i as u16` comparison
+with `step*`. -/
 private theorem body_spec_some_case
     (pts : Slice Pt)
     (iter : Enumerate (Iter Pt))
@@ -155,8 +186,11 @@ private theorem body_spec_some_case
     grind
   · grind
 
-/-! ## Spec helpers: the `none` (computation) branch by size -/
+/-! ## Spec helpers: the `none` (computation) branch by size
 
+Empty slice case (`pts.len() == 0`): the Lagrange sum over zero points
+is trivially the zero polynomial.  The `match` arm `0 => vec![]` produces
+an empty `polys` vector, and `lagrange_sum` returns the zero accumulator. -/
 private theorem body_spec_none_0
     (pts : Slice Pt)
     (iter : Enumerate (Iter Pt))
@@ -194,7 +228,10 @@ private theorem body_spec_none_0
     · grind
     · simp_all
 
-/-- `scaledLagrangeBasis 1#usize 0 = 1`: single-point case reduces to constant `1`. -/
+/-- For a single point, `scaledLagrangeBasis 1#usize 0` is the constant `1`.
+This is the base case: with only one evaluation point at `x = 0`, the
+Lagrange basis polynomial is `L₀(X) = 1` (no other points to interpolate
+against), so `scaledLagrangeBasis(1, 0) = 1`. -/
 private lemma scaledLagrangeBasis_one_zero :
     scaledLagrangeBasis (1#usize) 0 = 1 := by
   simp only [global_simps]
@@ -206,6 +243,13 @@ private lemma scaledLagrangeBasis_one_zero :
             List.length_finRange, List.get_eq_getElem, Nat.toGF216,
             spqr.math.gf.natToBinaryPoly_one]
 
+/-- Non-empty admissible sizes (`N ∈ {1, 3, 5, 30, 34, 36}`): when the
+iterator is exhausted, the code enters the `match pts.len() as u64`
+and selects the precomputed `COMPLETE_POINTS_POLYS_N`.  This theorem
+unfolds the `body`, applies `const_polys_to_polys` for the matched
+size, and verifies that the resulting `lagrange_sum` equals the
+mathematical Lagrange interpolation formula:
+  `p.toGF216Poly = Σⱼ C(pts[j].y.toGF216) * scaledLagrangeBasis(N, j)`. -/
 private theorem body_spec_none_N
     (N : Nat)
     (pts : Slice Pt)
@@ -381,9 +425,18 @@ private theorem body_spec_none_N
           have := (polys_post2 x (by omega) (by omega) (by grind)).2
           have := a_post x (by grind); simp_all
 
-/-! ## Spec theorem: in-bounds body (no size restriction) -/
+/-! ## Spec theorem: in-bounds body (no size restriction)
 
-/-- Body spec when iterator is in-bounds. No admissible-size restriction needed. -/
+Body spec for an in-bounds iterator; needs no admissible-size assumption.
+When we already know the iterator hasn't been exhausted
+(`iter.i < pts.length`), the body can only do one of two things:
+- **`done (Err ())`**: the current point fails validation (`pts[i].x ≠ i`).
+- **`cont iter'`**: validation passes and the iterator advances.
+
+The `done (Ok _)` branch (Lagrange computation) is impossible here because
+the `none` case of `next` cannot fire while the iterator is in bounds.
+This simpler spec is useful for `from_complete_points_spec_of_invalid_index`
+where we don't need an admissible-size assumption. -/
 theorem body_spec_inbounds
     (pts : Slice Pt)
     (iter : Enumerate (Iter Pt))
@@ -410,9 +463,17 @@ theorem body_spec_inbounds
   rw [hnext]
   step*
 
-/-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points_loop.body`**:
-`Ok` ⇒ Lagrange sum via `scaledLagrangeBasis`; `Err` ⇒ validation mismatch;
-`cont` ⇒ validation passes and iterator advances. -/
+/-- **Full body spec for `encoding.polynomial.Poly.from_complete_points_loop.body`**:
+
+Combines the `some` case (§ 4) and the `none` case (§ 5) into one theorem.
+Requires an admissible-size assumption for the `none` branch (needed to
+evaluate the `match pts.len()` and compute the Lagrange sum).
+
+Three-way postcondition on `ControlFlow`:
+- **`done (Ok p)`** — iterator exhausted; `p` is the Lagrange interpolation
+  polynomial: `p.toGF216Poly = Σⱼ C(pts[j].y) * scaledLagrangeBasis(len,j)`.
+- **`done (Err ())`** — index validation failed at position `iter.i`.
+- **`cont iter'`** — validation passed, iterator advanced by one step. -/
 @[step]
 theorem body_spec
     (pts : Slice Pt)
@@ -436,8 +497,7 @@ theorem body_spec
             (pts[iter.iter.i]).x.value.val = iter.count ∧
             iter'.iter.i = iter.iter.i + 1 ∧
             iter'.iter.slice = pts ∧
-            iter'.count.val = iter.count.val + 1
-    ⦄ := by
+            iter'.count.val = iter.count.val + 1 ⦄ := by
   by_cases h_in : iter.iter.i < iter.iter.slice.val.length
   · exact body_spec_some_case pts iter h_count h_slice_eq h_in
   · rcases h_len_ok with h | h | h | h | h | h | h
@@ -451,9 +511,8 @@ theorem body_spec
 
 /-! # Spec theorem for `Poly::from_complete_points`: loop 0
 
-Drives the iterator-based validation/computation loop to completion.
-Validates `pts[i].x.value == i as u16` then computes the Lagrange sum
-using precomputed basis polynomials for admissible sizes `{0,1,3,5,30,34,36}`.
+Runs the loop to completion: validates `pts[i].x.value == i as u16`,
+then computes the Lagrange sum for admissible sizes `{0,1,3,5,30,34,36}`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 @[step]
@@ -500,20 +559,26 @@ theorem loop_spec
 
 end spqr.encoding.polynomial.Poly.from_complete_points_loop
 
+
 /-! # Spec theorem for `spqr::encoding::polynomial::{Poly}::from_complete_points`
 
-Top-level wrapper: sets up `SliceIter` + `Enumerate` at index 0, then delegates to
-`from_complete_points_loop`. Postcondition inherited from the loop spec.
-Admissible sizes: `{0,1,3,5,30,34,36}`. Requires `pts.val.length ≤ UScalar.max .U16`
-for faithful `Usize → U16` casts.
+Top-level wrapper: builds the enumerated slice iterator at index 0 and
+delegates to `from_complete_points_loop`, inheriting its postcondition.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.Poly
 
 /-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points`**:
-`Ok p` ⇒ all slots validated and `p` is the Lagrange sum via `scaledLagrangeBasis`;
-`Err ()` ⇒ some `pts[j].x.value.val ≠ j`. -/
+
+Given a point slice `pts` of admissible length (`∈ {0,1,3,5,30,34,36}`):
+- **`Ok p`** ⇒ every index is valid (`pts[j].x.value = j` for all `j`) AND
+  the polynomial `p` is the Lagrange interpolation through those points:
+  `p.toGF216Poly = Σⱼ C(pts[j].y.toGF216) * scaledLagrangeBasis(len, j)`.
+- **`Err ()`** ⇒ at least one index failed validation (`∃ j, pts[j].x.value ≠ j`).
+
+This is the primary correctness theorem for the decoder's polynomial
+reconstruction step. -/
 @[step]
 theorem from_complete_points_spec
     (pts : Slice Pt)
@@ -538,11 +603,21 @@ theorem from_complete_points_spec
     (by intro j hj; grind)
 
 
-/-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points` (non-admissible sizes)**:
-Non-admissible sizes panic on the `none` branch, so success implies `Err ()`.
-Requires `h_pts_len` (length fits `U16`) and `h_exists` (a validation failure exists). -/
+/-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points` (error path)**:
+
+If some index fails validation (`∃ j, pts[j].x.value ≠ j`), the function
+returns `Err ()`.  This theorem needs only that the length fits in `U16`;
+**no admissible-size assumption** is required, because the loop will detect
+the invalid index and return early before reaching the `match pts.len()`
+computation branch.
+
+The proof uses `body_spec_inbounds` (which doesn't need admissible sizes)
+and a loop invariant that tracks:
+- The "all valid so far" prefix property for indices `< iter.i`.
+- A witness `k ≥ iter.i` with `pts[k].x.value ≠ k`, guaranteeing the
+  loop will eventually hit the mismatch and return `Err`. -/
 @[step]
-theorem from_complete_points_spec_Not
+theorem from_complete_points_spec_of_invalid_index
     (pts : Slice Pt)
     (h_pts_len : pts.length ≤ UScalar.max .U16)
     (h_exists : ∃ (j : Nat) (hj : j < pts.length), (pts[j]).x.value.val ≠ j) :
