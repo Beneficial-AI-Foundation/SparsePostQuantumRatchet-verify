@@ -41,6 +41,7 @@ import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.GF16New
+import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.RangeIteratorNext
@@ -141,6 +142,7 @@ import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
+import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
