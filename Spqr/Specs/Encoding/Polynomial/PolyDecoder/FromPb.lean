@@ -358,6 +358,7 @@ theorem body_spec
             (∀ (k : Nat), k ≠ iter.start →
               out_pts'.val[k]! = out_pts.val[k]!) ∧
             vs n = v_final ∧
+            (vs 0).val = [] ∧
             4 * n ≤ (v[iter.start]!).length ∧
             (v[iter.start.val]!).length < 4 * (n + 1) ∧
             ∀ (k : Nat), k < n →
@@ -408,7 +409,7 @@ theorem body_spec
       UScalar.ofNatCore_val_eq, getElem?_pos, List.getElem_set_self, Option.getD_some, true_and]
       rename_i ha hb hc hd he hf hg
       use v2
-      exact ⟨hc, v2_post2, by grind, by grind, by grind⟩
+      exact ⟨hc, v2_post2, by grind, by grind, by grind, by grind⟩
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
     rw [h_opt_eq]
     exact ⟨rfl, h_lt⟩
@@ -434,6 +435,7 @@ theorem loop_spec
           (vs : Nat → sorted_vec.SortedSet Pt),
           out_pts.val[j]! = v_final ∧
           vs n = v_final ∧
+          (vs 0).val = [] ∧
           4 * n ≤ (v.val[j]!).val.length ∧
           (v.val[j]!).val.length < 4 * (n + 1) ∧
           ∀ (k : Nat), k < n →
@@ -460,6 +462,7 @@ theorem loop_spec
           (vs : Nat → sorted_vec.SortedSet Pt),
           result.val[j]! = v_final ∧
           vs n = v_final ∧
+          (vs 0).val = [] ∧
           4 * n ≤ (v[j]!).length ∧
           (v[j]!).length < 4 * (n + 1) ∧
           ∀ (k : Nat), k < n →
@@ -494,6 +497,7 @@ theorem loop_spec
             (vs : Nat → sorted_vec.SortedSet Pt),
             p.2.val[j]! = v_final ∧
             vs n = v_final ∧
+            (vs 0).val = [] ∧
             4 * n ≤ (v.val[j]!).val.length ∧
             (v.val[j]!).val.length < 4 * (n + 1) ∧
             ∀ (k : Nat), k < n →
@@ -532,7 +536,7 @@ theorem loop_spec
     | ControlFlow.cont (iter'', out_pts'') =>
       simp only  at h_cf ⊢
       obtain ⟨h_lt, h_start1, h_end1, v_final, n, vs,
-              h_slot, h_other, h_vs_n, h_n_lo, h_n_hi, h_chain⟩ := h_cf
+              h_slot, h_other, h_vs_n, h_vs0, h_n_lo, h_n_hi, h_chain⟩ := h_cf
       have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
       refine ⟨⟨by rw [h_end1]; exact h_end',
               by omega,
@@ -540,15 +544,15 @@ theorem loop_spec
               fun j hj => ?_⟩,
               by grind⟩
       by_cases hj_lt : j < iter'.start.val
-      · obtain ⟨vf, nn, vss, h_slot', h_vs_nn, h_nn_lo, h_nn_hi, h_chain'⟩ :=
+      · obtain ⟨vf, nn, vss, h_slot', h_vs_nn, h_vss0, h_nn_lo, h_nn_hi, h_chain'⟩ :=
           h_inv' j hj_lt
-        refine ⟨vf, nn, vss, ?_, h_vs_nn, h_nn_lo, h_nn_hi, h_chain'⟩
+        refine ⟨vf, nn, vss, ?_, h_vs_nn, h_vss0, h_nn_lo, h_nn_hi, h_chain'⟩
         have hj_ne : j ≠ iter'.start.val := by omega
         rw [← h_slot']
         grind
       · have hj_eq : j = iter'.start.val := by omega
         subst hj_eq
-        exact ⟨v_final, n, vs, h_slot, h_vs_n, h_n_lo, h_n_hi, by grind⟩
+        exact ⟨v_final, n, vs, h_slot, h_vs_n, h_vs0, h_n_lo, h_n_hi, by grind⟩
   · exact ⟨rfl, le_refl _, h_start_le, h_pre⟩
 
 end spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
@@ -602,6 +606,7 @@ theorem from_pb_spec
               (vs : Nat → sorted_vec.SortedSet Pt),
               decoder.pts.val[j]! = v_final ∧
               vs n = v_final ∧
+              (vs 0).val = [] ∧
               4 * n ≤ (pb.pts[j]!).length ∧
               (pb.pts[j]!).length < 4 * (n + 1) ∧
               ∀ (k : Nat), k < n →
