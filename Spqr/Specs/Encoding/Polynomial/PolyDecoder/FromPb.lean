@@ -553,30 +553,25 @@ theorem loop_spec
 
 end spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
 
-/-!
-# Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::from_pb`
+/-! # Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::from_pb`
 
 Reconstructs a `PolyDecoder` from its protobuf representation. Validates `pb.pts.len() == 16`
 and `len() % 4 == 0` for each slot, then deserializes all 16 slots of big-endian 4-byte chunks
 into `[SortedSet<Pt>; 16]`, and casts `pb.pts_needed : u32` to `usize`.
 
-**Source**: spqr/src/encoding/polynomial.rs (lines 815:4-854:5)
--/
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.PolyDecoder
 
-set_option maxHeartbeats 4000000 in
--- heavy simp
+set_option maxHeartbeats 400000 in
+-- heavy grind
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb`** (byte-level):
 
 Tri-branch postcondition: (1) bad length → `Err`, (2) bad chunking → `Err`, (3) valid →
 `Ok decoder` with `pts_needed`, `is_complete` preserved and per-slot chain witnesses for the
 decoded points.
 
-`SortedSet.with_capacity` is now a concrete definition (returns empty set).
-
-**Source**: spqr/src/encoding/polynomial.rs (lines 815:4-854:5)
--/
+`SortedSet.with_capacity` is now a concrete definition (returns empty set). -/
 @[step]
 theorem from_pb_spec
     (pb : proto.pq_ratchet.PolynomialDecoder)
