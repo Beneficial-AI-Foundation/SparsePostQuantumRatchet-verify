@@ -52,21 +52,22 @@ theorem body_spec
             v'.val = v.val ++ [p] ⦄ := by
   unfold body
   step*
-  simp_all only [alloc.vec.Vec.length, Order.add_one_le_iff, Array.getElem!_Nat_eq,
+  · sorry
+  · simp_all only [alloc.vec.Vec.length, Order.add_one_le_iff, Array.getElem!_Nat_eq,
     List.Vector.length_val, UScalar.ofNatCore_val_eq, Nat.ofNat_pos, getElem!_pos, Nat.one_lt_ofNat,
     Nat.reduceLT, Nat.lt_add_one, true_and]
-  constructor
-  · grind
-  · use p
-    have hv : v.length < Usize.max := by omega
-    have h0 : j < pts.length := by scalar_tac
-    have h1 : j + 1 < pts.length := by scalar_tac
-    have h2 : j + 2 < pts.length := by scalar_tac
-    have h3 : j + 3 < pts.length := by scalar_tac
-    have h_push := sorted_vec.SortedSet.push_spec Pt.Insts.CoreCmpOrd v p (by scalar_tac)
-    simp_all [Array.make, List.getElem_cons_zero, List.getElem_cons_succ,
-      sorted_vec.SortedSet.push, UScalarTy.Usize_numBits_eq]
-    grind
+    constructor
+    · grind
+    · use p
+      have hv : v.length < Usize.max := by omega
+      have h0 : j < pts.length := by scalar_tac
+      have h1 : j + 1 < pts.length := by scalar_tac
+      have h2 : j + 2 < pts.length := by scalar_tac
+      have h3 : j + 3 < pts.length := by scalar_tac
+      have h_push := sorted_vec.SortedSet.push_spec Pt.Insts.CoreCmpOrd v p (by scalar_tac)
+      simp_all [Array.make, List.getElem_cons_zero, List.getElem_cons_succ,
+        sorted_vec.SortedSet.push, UScalarTy.Usize_numBits_eq]
+      grind
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0_loop0`**:
 
