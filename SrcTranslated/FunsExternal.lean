@@ -2095,7 +2095,7 @@ theorem sorted_vec.SortedSet.with_capacity_spec
       result is `(i, some old_element, list_with_replacement)`.
     - Otherwise the element is inserted at its sorted position `i`:
       result is `(i, none, list_with_insertion)`. -/
-private def sorted_vec.SortedSet.sortedInsert {T : Type}
+def sorted_vec.SortedSet.sortedInsert {T : Type}
     (cmpOrdInst : core.cmp.Ord T) :
     List T → T → Nat → Result (Nat × Option T × List T)
   | [], x, i => ok (i, none, [x])
@@ -2108,6 +2108,60 @@ private def sorted_vec.SortedSet.sortedInsert {T : Type}
       let (idx, opt, rest') ←
         sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)
       ok (idx, opt, a :: rest')
+
+/-- Spec lemma for `sortedInsert`: if `sortedInsert cmpOrdInst list x i` succeeds
+    with result `(idx, opt, newList)`, then there exists `k` such that `idx = i + k`,
+    `k ≤ list.length`, and `newList` is `list` with `x` either inserted at position `k`
+    (when `opt = none`) or replacing the element at position `k` (when `opt = some _`). -/
+theorem sorted_vec.SortedSet.sortedInsert_spec {T : Type}
+    (cmpOrdInst : core.cmp.Ord T)
+    (list : List T) (x : T) (i : Nat)
+    {idx : Nat} {opt : Option T} {newList : List T}
+    (h : sorted_vec.SortedSet.sortedInsert cmpOrdInst list x i =
+         ok (idx, opt, newList)) :
+    ∃ k, idx = i + k ∧ k ≤ list.length ∧
+      (newList = list.take k ++ [x] ++ list.drop k ∨
+       (k < list.length ∧
+        newList = list.take k ++ [x] ++ list.drop (k + 1))) := by
+  induction list generalizing i idx opt newList with
+  | nil =>
+    simp only [sortedInsert, ok.injEq, Prod.mk.injEq] at h
+    obtain ⟨rfl, rfl, rfl⟩ := h
+    exact ⟨0, by omega, by omega, Or.inl (by simp)⟩
+  | cons a rest ih =>
+    simp only [sortedInsert] at h
+    rcases h_cmp : cmpOrdInst.cmp a x with ord | e | _
+    · -- cmp = ok ord
+      simp only [h_cmp, bind_tc_ok] at h
+      rcases ord with _ | _ | _
+      · -- Ordering.lt: recursive case
+        simp only [] at h
+        rcases h_rec : sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)
+          with ⟨idx', opt', rest'⟩ | e' | _
+        · -- recursive call succeeded
+          simp only [h_rec, bind_tc_ok, ok.injEq, Prod.mk.injEq] at h
+          obtain ⟨rfl, rfl, rfl⟩ := h
+          obtain ⟨k, hk_idx, hk_le, hk_prop⟩ := ih (i + 1) h_rec
+          refine ⟨k + 1, by omega, by grind, ?_⟩
+          rcases hk_prop with h_ins | ⟨h_lt, h_rep⟩
+          · exact Or.inl (by simp [h_ins])
+          · exact Or.inr ⟨by grind, by simp [h_rep]⟩
+        · -- recursive call failed
+          simp only [h_rec, bind_tc_fail, reduceCtorEq] at h
+        · -- recursive call diverged
+          simp only [h_rec, bind_tc_div, reduceCtorEq] at h
+      · -- Ordering.eq: replace in place
+        simp only [ok.injEq, Prod.mk.injEq] at h
+        obtain ⟨rfl, rfl, rfl⟩ := h
+        exact ⟨0, by omega, by omega, Or.inr ⟨by simp, by simp⟩⟩
+      · -- Ordering.gt: insert before
+        simp only [ok.injEq, Prod.mk.injEq] at h
+        obtain ⟨rfl, rfl, rfl⟩ := h
+        exact ⟨0, by omega, by omega, Or.inl (by simp)⟩
+    · -- cmp = fail
+      simp only [h_cmp, bind_tc_fail, reduceCtorEq] at h
+    · -- cmp = div
+      simp only [h_cmp, bind_tc_div, reduceCtorEq] at h
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::push]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 392:2-392:58
