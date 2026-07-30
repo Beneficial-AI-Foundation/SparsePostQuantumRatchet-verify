@@ -2139,7 +2139,7 @@ theorem sorted_vec.SortedSet.sortedInsert_spec {T : Type}
         rcases h_rec : sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)
           with ⟨idx', opt', rest'⟩ | e' | _
         · -- recursive call succeeded
-          simp only [h_rec, bind_tc_ok, ok.injEq, Prod.mk.injEq] at h
+          simp only [h_rec, bind_tc_ok] at h
           obtain ⟨rfl, rfl, rfl⟩ := h
           obtain ⟨k, hk_idx, hk_le, hk_prop⟩ := ih (i + 1) h_rec
           refine ⟨k + 1, by omega, by grind, ?_⟩
