@@ -577,6 +577,7 @@ decoded points.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 815:4-854:5)
 -/
+@[step]
 theorem from_pb_spec
     (pb : proto.pq_ratchet.PolynomialDecoder)
     (h_pts_overflow : ∀ (j : Nat), j < pb.pts.length →
