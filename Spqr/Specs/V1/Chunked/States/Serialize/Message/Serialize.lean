@@ -20,13 +20,13 @@ followed, for the chunk-carrying payload variants (`Hdr`, `Ek`, `EkCt1Ack`, `Ct1
 by the chunk block `[varint(chunk.index)] ++ [chunk_data (32 bytes)]` — the same block
 `encode_chunk` emits.  The `None` and `Ct1Ack` variants carry no chunk.
 
-We prove functional correctness: the resulting bytes are exactly
-`messageBytes self index.val`, the pure model of the layout above.  The theorem needs no
-precondition: serialization starts from an empty buffer, so the intermediate lengths are
-bounded by `1 + 10 + 10 + 1 = 22` and every overflow guard (the pushes, the varints, and
-`encode_chunk`'s `+ 42` entry bound) is discharged numerically.  This subsumes the
-`hax_lib::ensures` of the source (`res.len() > 0 && res[0] == Version::V1.into()`): the model
-starts with the literal version byte `1`.
+We prove functional correctness: the resulting bytes are exactly `messageBytes self index.val`,
+the pure model of the layout above.  The theorem needs no precondition: serialization starts
+from an empty buffer, so the intermediate lengths are bounded by `1 + 10 + 10 + 1 = 22` and
+every overflow guard (the pushes, the varints, and `encode_chunk`'s `+ 42` entry bound) is
+discharged numerically.  This subsumes the `hax_lib::ensures` of the source
+(`res.len() > 0 && res[0] == Version::V1.into()`): the model starts with the literal version
+byte `1`.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 221-245)
 -/
@@ -49,13 +49,12 @@ def payloadTag (p : v1.chunked.states.MessagePayload) : ℕ :=
   | .Ct1 _ => 5
   | .Ct2 _ => 6
 
-/-- The chunk block of a payload: `varintBytes (chunk.index) ++ chunk.data` for the
-chunk-carrying variants, empty for `None` and `Ct1Ack`. -/
+/-- The chunk block of a payload: `chunkBytes` (i.e. `varintBytes (chunk.index) ++ chunk.data`)
+for the chunk-carrying variants, empty for `None` and `Ct1Ack`. -/
 def payloadChunkBytes (p : v1.chunked.states.MessagePayload) : List ℕ :=
   match p with
   | .None | .Ct1Ack _ => []
-  | .Hdr c | .Ek c | .EkCt1Ack c | .Ct1 c | .Ct2 c =>
-      varintBytes c.index.val ++ c.data.val.map UScalar.val
+  | .Hdr c | .Ek c | .EkCt1Ack c | .Ct1 c | .Ct2 c => chunkBytes c
 
 /-- Pure model of `Message::serialize`: version byte `1`, LEB128 epoch, LEB128 index,
 message-type tag, then the payload's chunk block (if any). -/
@@ -73,15 +72,19 @@ overflow guard can fire) and the output bytes are exactly `messageBytes self ind
 in particular the output is nonempty and starts with the version byte `1`, which is the
 source's `hax_lib::ensures`. -/
 @[step]
-theorem Message.serialize_spec (self : v1.chunked.states.Message) (index : Std.U32) :
-    Message.serialize self index ⦃ (out : alloc.vec.Vec Std.U8) =>
+theorem Message.serialize_spec (self : v1.chunked.states.Message) (index : U32) :
+    Message.serialize self index ⦃ (out : alloc.vec.Vec U8) =>
       out.val.map UScalar.val = messageBytes self index.val ⦄ := by
   unfold Message.serialize
   simp only [core.convert.IntoFrom.into, U8.Insts.CoreConvertFromVersion.from,
     alloc.vec.Vec.with_capacity, bind_tc_ok]
   step*
+  -- The overflow side-goals (the buffer holds ≤ 22 bytes, far below `usize::MAX`) close
+  -- numerically; the per-variant postcondition goals close by unfolding the pure model.
+  -- The `simp_all` is terminal and stays flexible: the seven payload branches each need a
+  -- different closing simp set, so explicit `simp_all only` lists would be impractically long.
+  all_goals try scalar_tac
   all_goals
-    simp_all [messageBytes, payloadTag, payloadChunkBytes, List.map_append]
-  all_goals scalar_tac
+    simp_all [messageBytes, payloadTag, payloadChunkBytes, chunkBytes, List.map_append]
 
 end spqr.v1.chunked.states.serialize
