@@ -85,7 +85,7 @@ set_option maxHeartbeats 400000 in
 /-- **Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
 
-On success (`Ok (msg, index, at)`), the consumed prefix `from[0 .. at)` is a well-formed
+On success (`Ok (msg, index, at1)`), the consumed prefix `from[0 .. at)` is a well-formed
 message encoding: the version byte `1`, a varint block decoding to `msg.epoch ≠ 0`, a varint
 block decoding to `index`, the tag byte `payloadTag msg.payload`, and — for chunk-carrying
 payloads — a chunk block carrying the returned chunk; the cursor `at` lands right after the
@@ -100,6 +100,8 @@ theorem Message.deserialize_spec
       match p with
       | .Ok (msg, index, at1) =>
         0 < msg.epoch.val ∧ at1.val ≤ from1.length ∧
+        -- `0 < from1.length` is implied by `1 + n₁ + n₂ < from1.length` below, but is kept
+        -- outside the `∃` so the `[0]!` access next to it is meaningful on its own.
         0 < from1.length ∧ from1.val[0]!.val = 1 ∧
         ∃ n₁ n₂, varintBlockAt from1.val 1 n₁ msg.epoch.val ∧
           varintBlockAt from1.val (1 + n₁) n₂ index.val ∧
@@ -119,7 +121,7 @@ theorem Message.deserialize_spec
   -- The `Vec::is_empty` guard: turn `¬isEmpty` into `0 < length`.  `simp_all` is terminal
   -- and bridges the Bool/Prop gap together with `b_post`.
   case hbound => simp_all [List.length_pos_iff]
-  match hr : r with
+  match r with
   | .Err e =>
     simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
       core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
@@ -127,7 +129,7 @@ theorem Message.deserialize_spec
   | .Ok epochV =>
     obtain ⟨h1lt, n₁, hat1, hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩ := r_post2
     step*
-    match hr1 : r1 with
+    match r1 with
     | .Err e =>
       simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
         core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
@@ -135,7 +137,7 @@ theorem Message.deserialize_spec
     | .Ok idx64 =>
       obtain ⟨hatlt, n₂, hat2, hn₂1, hn₂10, hn₂len, hidx64, hterm₂, hcont₂⟩ := r1_post2
       step*
-      match hr2 : r2 with
+      match r2 with
       | .Err _ =>
         simp only [core.result.Result.map_err_Err,
           closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError,
@@ -143,11 +145,40 @@ theorem Message.deserialize_spec
           CoreOpsTryTraitFromResidualResultInfallible.from_residual,
           core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
       | .Ok idx =>
-        obtain ⟨hle, hidx⟩ := r2_post
+        obtain ⟨_, hidx⟩ := r2_post
         simp only [core.result.Result.map_err_Ok, bind_tc_ok]
         step*
         split at r4_post
-        · -- tag 0: None
+        -- The eight tag branches fall into three groups closed by multi-tag `case`:
+        -- the five chunk-carrying tags (1 Hdr, 2 Ek, 3 EkCt1Ack, 5 Ct1, 6 Ct2) produce
+        -- syntactically identical goals — the script below never names the payload
+        -- constructor — as do the two chunk-less tags (0 None, 4 Ct1Ack).
+        case h_2 | h_3 | h_4 | h_6 | h_7 =>
+          -- tags 1, 2, 3, 5, 6: a chunk block follows
+          subst r4_post
+          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+          step*
+          match r6 with
+          | .Err e =>
+            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+            exact r6_post2
+          | .Ok c =>
+            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
+            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
+              by scalar_tac, ?_, n₃, ?_, by omega⟩
+            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
+            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
+            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
+              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
+            · simp only [payloadTag]
+              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
+                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
+              assumption
+            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
+              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
+        case h_1 | h_5 =>
+          -- tags 0 (None) and 4 (Ct1Ack): no chunk block, the cursor stops after the tag byte
           subst r4_post
           simp only [core.result.Result.map_err_Ok, bind_tc_ok]
           step*
@@ -161,136 +192,8 @@ theorem Message.deserialize_spec
             rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
               getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
             assumption
-        · -- tag 1: Hdr
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          match hr6 : r6 with
-          | .Err e =>
-            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-            exact r6_post2
-          | .Ok c =>
-            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
-            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
-              by scalar_tac, ?_, n₃, ?_, by omega⟩
-            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-            · simp only [payloadTag]
-              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-              assumption
-            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
-              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
-        · -- tag 2: Ek
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          match hr6 : r6 with
-          | .Err e =>
-            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-            exact r6_post2
-          | .Ok c =>
-            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
-            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
-              by scalar_tac, ?_, n₃, ?_, by omega⟩
-            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-            · simp only [payloadTag]
-              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-              assumption
-            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
-              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
-        · -- tag 3: EkCt1Ack
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          match hr6 : r6 with
-          | .Err e =>
-            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-            exact r6_post2
-          | .Ok c =>
-            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
-            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
-              by scalar_tac, ?_, n₃, ?_, by omega⟩
-            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-            · simp only [payloadTag]
-              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-              assumption
-            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
-              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
-        · -- tag 4: Ct1Ack
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          refine ⟨by scalar_tac, by scalar_tac, by omega, ?_, n₁, n₂, ?_, ?_,
-            by scalar_tac, ?_, by omega⟩
-          · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-          · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-          · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-            exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-          · simp only [payloadTag]
-            rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-              getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-            assumption
-        · -- tag 5: Ct1
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          match hr6 : r6 with
-          | .Err e =>
-            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-            exact r6_post2
-          | .Ok c =>
-            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
-            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
-              by scalar_tac, ?_, n₃, ?_, by omega⟩
-            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-            · simp only [payloadTag]
-              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-              assumption
-            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
-              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
-        · -- tag 6: Ct2
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          match hr6 : r6 with
-          | .Err e =>
-            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-            exact r6_post2
-          | .Ok c =>
-            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
-            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
-              by scalar_tac, ?_, n₃, ?_, by omega⟩
-            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-            · simp only [payloadTag]
-              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-              assumption
-            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
-              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
-        · -- tag > 6: decode error
+        case h_8 =>
+          -- tag > 6: decode error
           subst r4_post
           simp only [core.result.Result.map_err_Err,
             closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError,
