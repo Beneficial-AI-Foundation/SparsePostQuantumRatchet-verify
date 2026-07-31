@@ -17,7 +17,7 @@ returned closure state and keeping only the `Pt`. Postcondition inherited from
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
+open Aeneas Aeneas.Std Result spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyEncoder.point_at.closure_1
 namespace Insts.CoreOpsFunctionFnOnceTuplePairUsizeSharedGF16Pt
@@ -31,7 +31,7 @@ theorem call_once_spec
     (c : PolyEncoder.point_at.closure_1)
     (p : Usize × GF16)
     (h : p.1.val < 2 ^ 16) :
-    call_once c p⦃ (result : Pt) =>
+    call_once c p ⦃ (result : Pt) =>
       result.x.toGF216 = p.1.val.toGF216 ∧
       result.y = p.2 ⦄ := by
   unfold call_once
