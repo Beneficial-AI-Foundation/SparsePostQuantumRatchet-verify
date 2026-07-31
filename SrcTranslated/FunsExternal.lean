@@ -2061,20 +2061,349 @@ theorem sorted_vec.SortedSet.new_spec
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::with_capacity]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 351:2-351:49
-    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::with_capacity] -/
+    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::with_capacity]
+
+    Concrete model of Rust's `SortedSet::with_capacity(capacity)`: returns an
+    empty `SortedSet` with pre-allocated space for `capacity` elements.
+    Since `SortedSet T = SortedVec T = alloc.vec.Vec T` and we do not track
+    capacity in the Lean model, this is identical to `SortedSet::new()`.
+    The outer `Result` is always `ok` (the call never panics: its only failure
+    mode is allocation failure, which aborts rather than returning). -/
 @[rust_fun "sorted_vec::{sorted_vec::SortedSet<@T>}::with_capacity"]
-axiom sorted_vec.SortedSet.with_capacity
-  {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
-  Std.Usize → Result (sorted_vec.SortedSet T)
+def sorted_vec.SortedSet.with_capacity
+  {T : Type} (_corecmpOrdInst : core.cmp.Ord T) :
+  Std.Usize → Result (sorted_vec.SortedSet T) :=
+  fun _ => ok (alloc.vec.Vec.new T)
+
+
+/-- **Spec theorem for `SortedSet::with_capacity`**: the call always succeeds
+    and returns the empty set (empty `Vec`), ignoring the capacity hint. -/
+@[simp, step_simps, step]
+theorem sorted_vec.SortedSet.with_capacity_spec
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T) (n : Std.Usize) :
+    sorted_vec.SortedSet.with_capacity corecmpOrdInst n
+      ⦃ (s : sorted_vec.SortedSet T) => s = alloc.vec.Vec.new T ⦄ := by
+  simp [sorted_vec.SortedSet.with_capacity]
+
+/-- Helper: sorted insertion into a sorted list, modelling `SortedVec::replace`
+    (sorted-vec 0.8.6, `src/lib.rs`, lines 362-376).
+
+    Scans the list left-to-right (modelling binary search on sorted data) using
+    the `Ord` instance's `cmp` method to find the correct position for `x`.
+    Returns `(index, displaced_option, updated_list)`:
+    - If an equal element exists at position `i`, it is replaced:
+      result is `(i, some old_element, list_with_replacement)`.
+    - Otherwise the element is inserted at its sorted position `i`:
+      result is `(i, none, list_with_insertion)`. -/
+def sorted_vec.SortedSet.sortedInsert {T : Type}
+    (cmpOrdInst : core.cmp.Ord T) :
+    List T → T → Nat → Result (Nat × Option T × List T)
+  | [], x, i => ok (i, none, [x])
+  | a :: rest, x, i => do
+    let ord ← cmpOrdInst.cmp a x
+    match ord with
+    | .gt => ok (i, none, x :: a :: rest)
+    | .eq => ok (i, some a, x :: rest)
+    | .lt => do
+      let (idx, opt, rest') ←
+        sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)
+      ok (idx, opt, a :: rest')
+
+/-- Spec lemma for `sortedInsert`: if `sortedInsert cmpOrdInst list x i` succeeds
+    with result `(idx, opt, newList)`, then there exists `k` such that `idx = i + k`,
+    `k ≤ list.length`, and `newList` is `list` with `x` either inserted at position `k`
+    (when `opt = none`) or replacing the element at position `k` (when `opt = some _`). -/
+theorem sorted_vec.SortedSet.sortedInsert_spec {T : Type}
+    (cmpOrdInst : core.cmp.Ord T)
+    (list : List T) (x : T) (i : Nat)
+    {idx : Nat} {opt : Option T} {newList : List T}
+    (h : sorted_vec.SortedSet.sortedInsert cmpOrdInst list x i =
+         ok (idx, opt, newList)) :
+    ∃ k, idx = i + k ∧ k ≤ list.length ∧
+      (newList = list.take k ++ [x] ++ list.drop k ∨
+       (k < list.length ∧
+        newList = list.take k ++ [x] ++ list.drop (k + 1))) := by
+  induction list generalizing i idx opt newList with
+  | nil =>
+    simp only [sortedInsert, ok.injEq, Prod.mk.injEq] at h
+    obtain ⟨rfl, rfl, rfl⟩ := h
+    exact ⟨0, by omega, by omega, Or.inl (by simp)⟩
+  | cons a rest ih =>
+    simp only [sortedInsert] at h
+    rcases h_cmp : cmpOrdInst.cmp a x with ord | e | _
+    · -- cmp = ok ord
+      simp only [h_cmp, bind_tc_ok] at h
+      rcases ord with _ | _ | _
+      · -- Ordering.lt: recursive case
+        simp only [] at h
+        rcases h_rec : sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)
+          with ⟨idx', opt', rest'⟩ | e' | _
+        · -- recursive call succeeded
+          simp only [h_rec, bind_tc_ok] at h
+          obtain ⟨rfl, rfl, rfl⟩ := h
+          obtain ⟨k, hk_idx, hk_le, hk_prop⟩ := ih (i + 1) h_rec
+          refine ⟨k + 1, by omega, by grind, ?_⟩
+          rcases hk_prop with h_ins | ⟨h_lt, h_rep⟩
+          · exact Or.inl (by simp [h_ins])
+          · exact Or.inr ⟨by grind, by simp [h_rep]⟩
+        · -- recursive call failed
+          simp only [h_rec, bind_tc_fail, reduceCtorEq] at h
+        · -- recursive call diverged
+          simp only [h_rec, bind_tc_div, reduceCtorEq] at h
+      · -- Ordering.eq: replace in place
+        simp only [ok.injEq, Prod.mk.injEq] at h
+        obtain ⟨rfl, rfl, rfl⟩ := h
+        exact ⟨0, by omega, by omega, Or.inr ⟨by simp, by simp⟩⟩
+      · -- Ordering.gt: insert before
+        simp only [ok.injEq, Prod.mk.injEq] at h
+        obtain ⟨rfl, rfl, rfl⟩ := h
+        exact ⟨0, by omega, by omega, Or.inl (by simp)⟩
+    · -- cmp = fail
+      simp only [h_cmp, bind_tc_fail, reduceCtorEq] at h
+    · -- cmp = div
+      simp only [h_cmp, bind_tc_div, reduceCtorEq] at h
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::push]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 392:2-392:58
-    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::push] -/
+    Name pattern: [sorted_vec::{sorted_vec::SortedSet<@T>}::push]
+
+    Concrete model of Rust's `SortedSet::push`: inserts an element into the
+    sorted set.  The method first compares the element with the last element
+    of the underlying vector to determine the appropriate action:
+
+    Rust source (sorted-vec 0.8.6, `src/lib.rs`, lines 388-417):
+    ```rust
+    pub fn push(&mut self, element: T) -> (usize, Option<T>) {
+      if let Some(last) = self.vec.last() {
+        let cmp = element.cmp(last);
+        if cmp == std::cmp::Ordering::Greater {
+          self.set.vec.push(element);
+          return (self.vec.len() - 1, None);
+        } else if cmp == std::cmp::Ordering::Equal {
+          let original = self.set.vec.pop();
+          self.set.vec.push(element);
+          return (self.vec.len() - 1, original);
+        } else {
+          return self.replace(element);
+        }
+      } else {
+        self.set.vec.push(element);
+        return (0, None);
+      }
+    }
+    ```
+
+    The model covers all four branches:
+
+    - **Empty** (`vec.last() = None`): pushes the element and returns `(0, None)`.
+    - **Greater** (`element > last`): appends to the back (O(1) fast path) and
+      returns `(old_length, None)`.
+    - **Equal** (`element == last`): replaces the last element (pop + push) and
+      returns `(old_length - 1, Some(last))`.
+    - **Less** (`element < last`): falls back to `replace` (modelled by
+      `sortedInsert`, a linear scan matching binary search on sorted data)
+      which either inserts at the sorted position or replaces an equal element.
+
+    Fails if the vector would overflow `Usize.max`. -/
 @[rust_fun "sorted_vec::{sorted_vec::SortedSet<@T>}::push"]
-axiom sorted_vec.SortedSet.push
+def sorted_vec.SortedSet.push
   {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
   sorted_vec.SortedSet T → T → Result ((Std.Usize × (Option T)) ×
-    (sorted_vec.SortedSet T))
+    (sorted_vec.SortedSet T)) :=
+  fun s x =>
+    if hroom : s.val.length + 1 ≤ Usize.max then
+      match hm : s.val.getLast? with
+      | none =>
+        -- Container is empty: push the element and return (0, None)
+        ok ((0#usize, none),
+            ⟨s.val ++ [x], by
+              simp only [List.length_append, List.length_cons, List.length_nil, zero_add]
+              scalar_tac⟩)
+      | some last => do
+        -- Non-empty: compare element with last
+        let ord ← corecmpOrdInst.cmp x last
+        match ord with
+        | .gt =>
+          -- element > last: push to back, O(1) fast path
+          ok ((⟨s.val.length, by scalar_tac⟩, none),
+              ⟨s.val ++ [x], by
+                simp only [List.length_append, List.length_cons, List.length_nil, zero_add]
+                scalar_tac⟩)
+        | .eq =>
+          -- element == last: pop last, push element (replace last with element)
+          ok ((⟨s.val.length - 1, by
+                have := s.property
+                have : s.val ≠ [] := by intro h; simp [h] at hm
+                scalar_tac⟩, some last),
+              ⟨s.val.dropLast ++ [x], by
+                have := s.property
+                simp only [List.length_append, List.length_cons, List.length_nil,
+                  List.length_dropLast, zero_add]; omega⟩)
+        | .lt =>
+          -- element < last: fall back to replace (sorted insert via binary search)
+          match sorted_vec.SortedSet.sortedInsert corecmpOrdInst s.val x 0 with
+          | .ok (idx, opt, newList) =>
+            dite (newList.length ≤ Usize.max ∧ idx ≤ Usize.max)
+              (fun hbnd => ok ((⟨idx, by have := hbnd.2; grind⟩, opt), ⟨newList, hbnd.1⟩))
+              (fun _ => fail .panic)
+          | .fail e => fail e
+          | .div => div
+    else
+      fail .panic
+
+/-- **Spec theorem for `SortedSet::push` (empty case)**:
+    when the set is empty (`getLast? = none`), the call pushes the element
+    and returns `(0, none)` together with the set `s ++ [x]` (which equals
+    `[x]` since `s` is empty). -/
+@[step]
+theorem sorted_vec.SortedSet.push_spec_empty
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedSet T) (x : T)
+    (h : s.val.length + 1 ≤ Usize.max)
+    (hempty : s.val.getLast? = none) :
+    sorted_vec.SortedSet.push corecmpOrdInst s x ⦃ ((n, o), s') =>
+      n.val = 0 ∧
+      o = none ∧
+      s'.val = s.val ++ [x] ⦄ := by
+  unfold sorted_vec.SortedSet.push
+  simp only [dif_pos h]
+  split
+  · next h_none =>
+    have he : s.val = [] := by
+      cases hs : s.val with
+      | nil => rfl
+      | cons _ _ => simp [hs, List.getLast?] at h_none
+    simp [he, WP.spec_ok]
+  · next last h_some => simp [h_some] at hempty
+
+/-- **Spec theorem for `SortedSet::push` (greater case)**:
+    when the set is non-empty and the new element compares as `Greater`
+    than the last element (`cmp x last = ok .gt`), the call appends `x`
+    to the back (O(1) fast path) and returns `(old_length, none)` together
+    with the set extended by `x`.  The `none` indicates no duplicate was
+    displaced. -/
+@[step]
+theorem sorted_vec.SortedSet.push_spec_gt
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedSet T) (x : T)
+    (h : s.val.length + 1 ≤ Usize.max)
+    (last : T) (hlast : s.val.getLast? = some last)
+    (hcmp : corecmpOrdInst.cmp x last = ok .gt) :
+    sorted_vec.SortedSet.push corecmpOrdInst s x ⦃ ((n, o), s') =>
+      n.val = s.val.length ∧
+      o = none ∧
+      s'.val = s.val ++ [x] ⦄ := by
+  unfold sorted_vec.SortedSet.push
+  simp only [dif_pos h]
+  split
+  · next h_none => simp [h_none] at hlast
+  · next last' h_some =>
+    have : last' = last := by
+      have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
+    subst this
+    simp only [hcmp, bind_tc_ok, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
+
+/-- **Spec theorem for `SortedSet::push` (equal case)**:
+    when the set is non-empty and the new element compares as `Equal`
+    to the last element (`cmp x last = ok .eq`), the call replaces the
+    last element with `x` (pop + push) and returns
+    `(old_length - 1, some last)` together with the set where the last
+    element has been replaced.  The `some last` carries the displaced
+    duplicate. -/
+@[step]
+theorem sorted_vec.SortedSet.push_spec_eq
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedSet T) (x : T)
+    (h : s.val.length + 1 ≤ Usize.max)
+    (last : T) (hlast : s.val.getLast? = some last)
+    (hcmp : corecmpOrdInst.cmp x last = ok .eq) :
+    sorted_vec.SortedSet.push corecmpOrdInst s x ⦃ ((n, o), s') =>
+      n.val = s.val.length - 1 ∧
+      o = some last ∧
+      s'.val = s.val.dropLast ++ [x] ⦄ := by
+  unfold sorted_vec.SortedSet.push
+  simp only [dif_pos h]
+  split
+  · next h_none => simp [h_none] at hlast
+  · next last' h_some =>
+    have : last' = last := by
+      have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
+    subst this
+    simp only [hcmp, bind_tc_ok, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
+
+/-- **Spec theorem for `SortedSet::push` (less case)**:
+    when the set is non-empty and the new element compares as `Less`
+    than the last element (`cmp x last = ok .lt`), the call falls back
+    to `sortedInsert` (modelling binary search on sorted data).  The
+    result is `(idx, opt)` together with the updated list `newList`,
+    where `idx` is the insertion/replacement position, `opt` is `none`
+    for a fresh insertion or `some old_elem` for a replacement, and
+    `newList` is the updated element list. -/
+@[step]
+theorem sorted_vec.SortedSet.push_spec_lt
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedSet T) (x : T)
+    (h : s.val.length + 1 ≤ Usize.max)
+    (last : T) (hlast : s.val.getLast? = some last)
+    (hcmp : corecmpOrdInst.cmp x last = ok .lt)
+    (idx : Nat) (opt : Option T) (newList : List T)
+    (hsorted : sorted_vec.SortedSet.sortedInsert corecmpOrdInst s.val x 0 =
+      ok (idx, opt, newList))
+    (hbnd : newList.length ≤ Usize.max ∧ idx ≤ Usize.max) :
+    sorted_vec.SortedSet.push corecmpOrdInst s x ⦃ ((n, o), s') =>
+      n.val = idx ∧
+      o = opt ∧
+      s'.val = newList ⦄ := by
+  unfold sorted_vec.SortedSet.push
+  simp only [dif_pos h]
+  split
+  · next h_none => simp [h_none] at hlast
+  · next last' h_some =>
+    have : last' = last := by
+      have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
+    subst this
+    simp only [hcmp, bind_tc_ok, hsorted, dif_pos hbnd, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
+
+/-- **Spec theorem for `SortedSet::push` (Greater / empty combined)**:
+    when the set is either empty or the new element compares as `Greater`
+    than the last element (the O(1) fast path), the call succeeds and
+    returns `(old_length, none)` together with the set extended by `x`.
+    The `none` indicates no duplicate was displaced.
+
+    The hypothesis `hcmp` asserts that every `last` returned by `getLast?`
+    compares as less than `x` (i.e., `cmp x last = ok .gt`). This is
+    trivially satisfied when the set is empty (vacuous) and must be
+    established by the caller when the set is non-empty.
+
+    See also `push_spec_empty`, `push_spec_gt`, `push_spec_eq`, and
+    `push_spec_lt` for per-branch spec theorems that match every case
+    of the definition. -/
+@[step]
+theorem sorted_vec.SortedSet.push_spec
+    {T : Type} (corecmpOrdInst : core.cmp.Ord T)
+    (s : sorted_vec.SortedSet T) (x : T)
+    (h : s.val.length + 1 ≤ Usize.max)
+    (hcmp : ∀ last, s.val.getLast? = some last →
+      corecmpOrdInst.cmp x last = ok .gt) :
+    sorted_vec.SortedSet.push corecmpOrdInst s x ⦃ ((n, o), s') =>
+      n.val = s.val.length ∧
+      o = none ∧
+      s'.val = s.val ++ [x] ⦄ := by
+  unfold sorted_vec.SortedSet.push
+  simp only [dif_pos h]
+  split
+  · next hlast =>
+    have he : s.val = [] := by
+      cases hs : s.val with
+      | nil => rfl
+      | cons _ _ => simp [hs, List.getLast?] at hlast
+    simp [he, WP.spec_ok]
+  · next last hlast =>
+    simp only [hcmp last hlast, bind_tc_ok, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
 
 /-- [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<T>> for sorted_vec::SortedSet<T>}::deref]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 543:2-543:36
