@@ -42,7 +42,6 @@ theorem call_mut_spec
       result.2 = c ⦄ := by
   unfold call_mut
   obtain ⟨x, y⟩ := tupled_args
-  simp only [] at h ⊢
   step*
 
 end closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
