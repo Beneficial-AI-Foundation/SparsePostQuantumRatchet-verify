@@ -15,22 +15,10 @@ import Spqr.Math.Poly.Lagrange.BasisPoly
 /-!
 # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 
-Each iteration of the `add_chunk` loop body constructs an evaluation point from a two-byte pair
-in the chunk data and inserts it into the appropriate polynomial's sorted point set.  The point's
-x-coordinate is derived from the chunk index (evaluation point index) and the y-coordinate is the
-big-endian encoding of two consecutive data bytes into a GF(2¹⁶) element.
-
-The iteration index `i` determines which of the 16 polynomials receives the point via the routing
-`(chunk_index * 16 + i) % 16 = i`, and the x-coordinate is assigned as
-`(chunk_index * 16 + i) / 16 = chunk_index`.  When all chunks have been processed, each polynomial
-holds points with x-coordinates `0, 1, …, n−1`, which is exactly the `completePoints` format
-required by `from_complete_points` for Lagrange interpolation over GF(2¹⁶).
-
-A helper lemma establishes the key connection to the Lagrange polynomial identity framework:
-polynomial routing (`chunk_point_routing`).
-The downstream identities — Horner-scheme factorisation (`poly_identity_from`), template polynomial
-construction (`mult_xdiff_result_eq`), and basis degree bounds (`natDegree_lagrangeBasisPoly_le`) —
-are proved separately in the interpolation modules where the complete point list is available.
+Each iteration builds an evaluation point from a two-byte pair and inserts it into the
+polynomial's sorted set. Routing: `(chunk_index * 16 + i) % 16 = i` selects the polynomial,
+`(chunk_index * 16 + i) / 16 = chunk_index` gives the x-coordinate. After all chunks,
+each polynomial holds the `completePoints` format for Lagrange interpolation.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 879:4–904:5)
 -/
@@ -43,12 +31,8 @@ private instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) 
 namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
 
 /-- **Sorted insert totality**: `sortedInsert` always succeeds for any list, element, and starting
-index, returning a triple of the insertion index, an optional replaced element, and the new list.
-
-• The proof proceeds by induction on the list, case-splitting on the comparison result at each
-  element.
-• This totality guarantee is required by the `body_spec_0` proof to discharge the `sortedInsert`
-  branch without a `fail` case. -/
+index. By induction on the list with case-split on comparison. Needed by `body_spec_0` to
+discharge the `sortedInsert` branch. -/
 private theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
     ∃ idx opt newList,
       sorted_vec.SortedSet.sortedInsert Pt.Insts.CoreCmpOrd list x i =
@@ -70,11 +54,8 @@ private theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
     · simp [h_eq] at h_cmp
     · simp [h_eq] at h_cmp
 
-/-- **Byte shift identity**: shifting a `U8` value left by 8 bits modulo `U16.size` equals
-multiplication by 256.
-
-• Since `b.val ≤ 255`, we have `b.val * 256 ≤ 65280 < 65536 = U16.size`, so the modular
-  reduction is the identity. -/
+/-- **Byte shift identity**: `b.val <<< 8 % U16.size = b.val * 256` for `U8`, since
+`b.val * 256 ≤ 65280 < 65536`. -/
 private theorem u8_shl8_mod_u16_size (b : U8) :
     b.val <<< 8 % U16.size = b.val * 256 := by
   have hb : b.val ≤ 255 := by scalar_tac
@@ -86,16 +67,8 @@ private theorem u8_shl8_mod_u16_size (b : U8) :
 
 /-! ## Lagrange polynomial identity properties -/
 
-/-- **Chunk point routing**: when `i < 16`, the total index `chunk_index * 16 + i` decomposes as
-
-• `(chunk_index * 16 + i) % 16 = i` — the polynomial routing index.
-• `(chunk_index * 16 + i) / 16 = chunk_index` — the evaluation point index.
-
-This routing is the key structural property connecting `add_chunk` to the Lagrange interpolation
-framework: iteration `i` contributes an evaluation point at x-coordinate `chunk_index` to
-polynomial `i`.  When all chunks `0, 1, …, n−1` have been processed, polynomial `i` holds points
-with x-coordinates `0, 1, …, n−1`, which is exactly the `completePoints` format required by
-`from_complete_points`. -/
+/-- **Chunk point routing**: when `i < 16`, `(chunk_index * 16 + i) % 16 = i` (polynomial index)
+and `(chunk_index * 16 + i) / 16 = chunk_index` (x-coordinate). -/
 private lemma chunk_point_routing (chunk_index i : Nat) (h : i < 16) :
     (chunk_index * 16 + i) % 16 = i ∧
     (chunk_index * 16 + i) / 16 = chunk_index := by
@@ -105,18 +78,9 @@ set_option maxHeartbeats 8000000 in
 -- haevy grind
 /-- **Spec theorem for `body` (base case)**:
 
-• Takes a `chunk`, an iterator range `iter`, and a `PolyDecoder` state `self`.
-• On `ControlFlow.done`: returns the unchanged state and asserts the iterator is exhausted.
-• On `ControlFlow.cont`: advances the iterator by one, preserves `pts_needed` and `is_complete`,
-  and constructs a point `p` from the chunk data at the current iteration index.
-• The point's x-coordinate is derived from the chunk index via integer division, and the
-  y-coordinate is the big-endian encoding of two consecutive chunk data bytes.
-• The point is either discarded (state unchanged) or inserted into the sorted point set at
-  polynomial index `(chunk_index * 16 + i) % 16`.
-
-The proof unfolds `body` and `sorted_vec.SortedSet.push`, then proceeds by case analysis on the
-iterator range and the various insertion branches (`getLast?`, ordering comparison, and
-`sortedInsert`).
+On `done`: state unchanged, iterator exhausted. On `cont`: advances iterator, preserves
+`pts_needed`/`is_complete`, builds point `p` from chunk data (x via division, y via big-endian
+encoding), and either discards or inserts it into `pts[(chunk_index * 16 + i) % 16]`.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 882:12–903:13)
 -/
@@ -187,9 +151,9 @@ theorem body_spec_base
     have h_shl : ∀ (b : U8), b.val <<< 8 % U16.size = b.val * 256 := u8_shl8_mod_u16_size
     step*
     · split
-      · -- Branch 1: poly_idx < necessary_points, push with hroom true
+      · -- poly_idx < necessary_points, push (hroom true)
         split
-        · -- getLast? = none (empty set)
+        · -- getLast? = none
           step*
           constructor
           · exact h_lt
@@ -223,10 +187,10 @@ theorem body_spec_base
                       · grind
                       · grind
                       · grind
-        · -- getLast? = some last
+        · -- getLast? = some
           step*
           split
-          · -- Ordering.gt
+          · -- gt
             step*
             constructor
             · exact h_lt
@@ -272,7 +236,7 @@ theorem body_spec_base
                             · exact hgt hr
                           exact h_absurd _ _
                             (by assumption) (by assumption) (by assumption)
-          · -- Ordering.eq
+          · -- eq
             step*
             · constructor
               · exact h_lt
@@ -321,7 +285,7 @@ theorem body_spec_base
                               · exact hgt hr
                             exact h_absurd _ _
                               (by assumption) (by assumption) (by assumption)
-          · -- Ordering.lt (sortedInsert)
+          · -- lt (sortedInsert)
             obtain ⟨idx_si, opt_si, newList_si, h_si⟩ :=
               sortedInsert_always_ok ss.val (Pt.mk x y) 0
             simp only [h_si]
@@ -394,11 +358,11 @@ theorem body_spec_base
                             · exact hgt hr
                           exact h_absurd _ _
                             (by assumption) (by assumption) (by assumption)
-      · -- Branch 2: overflow impossible (hroom false)
+      · -- overflow impossible (hroom false)
         step*
         have := h_push_cap (↑iter.start % 16) (by omega)
         grind
-    · -- Branch 3: second push path (¬ poly_idx < np, len < np)
+    · -- second push path (¬ poly_idx < np, len < np)
       have h_len := h_push_cap (↑iter.start % 16) (by omega)
       split
       · split
@@ -616,7 +580,7 @@ theorem body_spec_base
                           exact h_absurd _ _
                             (by assumption) (by assumption) (by assumption)
       · grind
-    · -- Branch 4: skip (self unchanged)
+    · -- skip (self unchanged)
       constructor
       · exact h_lt
       · constructor
@@ -642,33 +606,8 @@ theorem body_spec_base
 
 /-- **Spec theorem for `body` (Lagrange-enriched)**:
 
-• Takes a `chunk`, an iterator range `iter`, and a `PolyDecoder` state `self`.
-• Strengthens `body_spec_0` with explicit Lagrange polynomial identity properties.
-• On `ControlFlow.done`: returns the unchanged state when the iterator is exhausted.
-• On `ControlFlow.cont`: advances the iterator and inserts a point into the appropriate
-  polynomial's sorted set.
-
-In addition to all of `body_spec_0`'s postconditions, this theorem establishes:
-
-• `poly < 16` — the polynomial routing index is bounded, ensuring the point is directed to a
-  valid polynomial in the 16-polynomial array.
-• `poly_idx = chunk.index.val` — the evaluation point index equals the chunk index, the key
-  structural property connecting `add_chunk` to the Lagrange interpolation framework.
-
-When all chunks `0, 1, …, n−1` have been processed, polynomial `i` holds points with
-x-coordinates `0, 1, …, n−1`, which is exactly the `completePoints` format required by
-`from_complete_points` for computing the Lagrange interpolation sum
-  `p.toGF216Poly = Σⱼ C(pts[j].y.toGF216) * scaledLagrangeBasis(len, j)`.
-
-The four downstream Lagrange identities (`poly_identity_from`,
-`coeff_zero_eq_zero_of_X_mul_identity`, `mult_xdiff_result_eq`,
-`natDegree_lagrangeBasisPoly_le`) are not included in this postcondition because they concern
-the interpolation computation that happens after all points have been collected, not the point
-insertion step verified here.  They are proved in `Poly/LagrangeInterpolate.lean`,
-`Poly/LagrangeInterpolatePrepare.lean`, and `Poly/LagrangeInterpolateComplete.lean`.
-
-The proof applies `WP.spec_mono` to `body_spec_0` and discharges the additional Lagrange
-properties using `chunk_point_routing`.
+Strengthens `body_spec_base` with `poly < 16` and `poly_idx = chunk.index.val` via
+`chunk_point_routing`. Downstream Lagrange identities are proved in the interpolation modules.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 882:12–903:13)
 -/
@@ -741,19 +680,9 @@ end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loo
 
 /-! # Spec theorem for `PolyDecoder::add_chunk`: loop 0
 
-Drives the `add_chunk` body to completion over the range `[iter.start, iter.end)`.  The loop
-iterates a `Range<usize>` with step 1; the proof uses `loop.spec_decr_nat` with measure
-`iter.end − iter.start`.
-
-Each iteration `j` (with `i = iter.start + j`) computes `total_idx = chunk.index * 16 + i`,
-`poly = total_idx % 16`, `poly_idx = total_idx / 16`, builds a point
-`Pt { x = GF16::new(poly_idx), y = GF16::new((data[2i] << 8) + data[2i+1]) }`,
-and conditionally pushes it onto `self.pts[poly]` via `SortedSet::push`.
-
-The loop invariant tracks: the iterator end is unchanged, `pts_needed` and `is_complete` are
-preserved, the push capacity is maintained (with room proportional to the remaining iteration
-count), and there is a chain of intermediate decoder states `selfs 0 = self, …, selfs n =
-current` with per-step point-insertion witnesses matching the body specification.
+Iterates `body` over `[iter.start, iter.end)` using `loop.spec_decr_nat`. Each step builds
+a point and conditionally pushes it onto `pts[poly]`. The invariant preserves iterator end,
+`pts_needed`, `is_complete`, push capacity, and a chain of intermediate states.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 882:8-903:9)
 -/
@@ -817,21 +746,9 @@ private theorem body_pts_length_le
 
 /-- **Spec theorem for `PolyDecoder::add_chunk_loop`** (loop 0):
 
-• Iterates the body over `[iter.start, iter.end)` with `iter.end ≤ 16`.
-• Returns a decoder whose `pts_needed` and `is_complete` fields are unchanged.
-• Witnesses the iteration via a chain of `n = iter.end − iter.start` intermediate states
-  `selfs 0 = self, …, selfs n = result` where each step `j` constructs a point `p` with
-  - `p.x.value.val = (chunk.index * 16 + iter.start + j) / 16`
-  - `p.y.value.val = chunk.data[(iter.start + j) * 2] * 256 +
-                      chunk.data[(iter.start + j) * 2 + 1]`
-  and either leaves the decoder unchanged or pushes `p` onto `pts[poly]` (with
-  `poly = (chunk.index * 16 + iter.start + j) % 16`) via `SortedSet::push`, with the
-  same push semantics as `body_spec`.
-
-The precondition `h_push_cap` reserves `iter.end − iter.start + 1` capacity slots per sorted
-set; since each iteration can grow one sorted set by at most one element, the capacity bound
-decreases in tandem with the remaining iteration count, maintaining the body's
-`length + 1 ≤ Usize.max` requirement at every step.
+Iterates over `[iter.start, iter.end)` with `iter.end ≤ 16`, preserving `pts_needed` and
+`is_complete`. Witnesses via a chain `selfs 0 = self, …, selfs n = result` where each step
+builds a point and conditionally pushes it onto the appropriate sorted set.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 882:8-903:9) -/
 @[step]
@@ -1009,20 +926,9 @@ end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loo
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Decoder for PolyDecoder}::add_chunk`
 
-Processes a single 32-byte `Chunk` by iterating its 16 two-byte pairs (`i = 0 .. 15`), computing
-`total_idx = chunk.index * 16 + i`, `poly = total_idx % 16`, `poly_idx = total_idx / 16`, and
-building the point `Pt { x = GF16::new(poly_idx), y = GF16::new((data[2i] << 8) | data[2i+1]) }`.
-If `poly_idx < necessary_points(i)` or the sorted set `pts[poly]` has fewer entries than
-`necessary_points(i)`, the point is pushed onto `pts[poly]` via `SortedSet::push`; otherwise it
-is discarded.
-
-The by-value `add_chunk` introduces no additional logic beyond the delegation: it calls
-`add_chunk_loop` with the fixed range `0..16`, so its postcondition is inherited from the
-corresponding `loop_spec`.
-
-Key invariants preserved:
-- `pts_needed` is unchanged (matching the Rust `#[hax_lib::ensures]` annotation).
-- `is_complete` is unchanged.
+Processes a 32-byte `Chunk` by iterating its 16 two-byte pairs, building points and
+conditionally pushing them onto `pts[poly]`. Delegates to `add_chunk_loop` with range `0..16`.
+Preserves `pts_needed` and `is_complete`.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 879:4-904:5)
 -/
@@ -1033,29 +939,9 @@ namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk`**:
 
-• Takes a `PolyDecoder` `self` and a `Chunk` `chunk` (a 32-byte buffer with a 16-bit chunk index).
-• Delegates immediately to `add_chunk_loop` with the fixed range `{start := 0, end := 16}`:
-    `add_chunk_loop { start := 0#usize, «end» := 16#usize } self chunk`
-  which iterates over all 16 two-byte pairs in the chunk data.
-• Returns the resulting `PolyDecoder` after conditionally inserting up to 16 points into the
-  sorted sets `pts[0], …, pts[15]`.
-
-• The function preserves `pts_needed` (matching the Rust ensures `future(self).pts_needed ==
-  self.pts_needed`) and `is_complete`.
-• The result is witnessed by a chain of 16 intermediate decoder states
-  `selfs 0 = self, selfs 1, …, selfs 16 = result`, where each step `j` (`0 ≤ j < 16`) computes:
-  - `total_idx = chunk.index * 16 + j`
-  - `poly = total_idx % 16`
-  - `poly_idx = total_idx / 16`
-  - `x = GF16::new(poly_idx)`, `y = GF16::new((data[2j] << 8) + data[2j + 1])`
-  and either leaves the decoder unchanged or pushes `Pt { x, y }` onto `pts[poly]` via
-  `SortedSet::push`, with the same push semantics as `body_spec` (append, replace-last, or
-  sorted-insert).
-
-The proof unfolds `add_chunk` to expose the underlying `add_chunk_loop` call and applies the
-already-registered `loop_spec` via `WP.spec_mono`, discharging the trivial preconditions
-(`iter.end ≤ 16`, `iter.start ≤ iter.end`) with `scalar_tac` and propagating `h_overflow` and
-`h_push_cap` to the loop spec's overflow/capacity requirements.
+Delegates to `add_chunk_loop` with range `0..16`. Preserves `pts_needed` and `is_complete`.
+Witnessed by 16 intermediate states, each building a point and conditionally pushing it onto
+the appropriate sorted set. Proof via `WP.spec_mono` on `loop_spec`.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 879:4-904:5)
 -/
