@@ -29,6 +29,7 @@ namespace spqr.encoding.polynomial
 The coefficient of `listToGF216Poly cs` at position `m` is `cs[m].toGF216` when `m < cs.length`,
 and `0` otherwise.
 -/
+@[gf216_simp]
 lemma listToGF216Poly_coeff (cs : List spqr.encoding.gf.GF16) (m : Nat) :
     (listToGF216Poly cs).coeff m =
       if hm : m < cs.length

@@ -3,6 +3,7 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+import Spqr.Math.Attr
 import Mathlib.Algebra.Field.ZMod
 import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Algebra.Order.Ring.Star
@@ -107,12 +108,13 @@ lemma natToBinaryPoly_coeff (n m : ℕ) :
       simp [hmi])
 
 /-- `natToBinaryPoly 0 = 0`. -/
-@[simp]
+@[simp, gf216_simp]
 lemma natToBinaryPoly_zero : natToBinaryPoly 0 = 0 := by
   ext m
   simp [natToBinaryPoly_coeff]
 
 /-- XOR of natural numbers corresponds to addition in `BinaryPoly`. -/
+@[gf216_simp]
 lemma natToBinaryPoly_xor (a b : ℕ) :
     natToBinaryPoly (a ^^^ b) = natToBinaryPoly a + natToBinaryPoly b := by
   ext m
@@ -173,6 +175,7 @@ lemma natToBinaryPoly_inj : Function.Injective natToBinaryPoly := by
     · exact (Bool.eq_false_iff.mpr ha).trans (Bool.eq_false_iff.mpr hb).symm
 
 /-- `natToBinaryPoly 1 = 1`. -/
+@[gf216_simp]
 lemma natToBinaryPoly_one : natToBinaryPoly 1 = 1 := by
   ext m; simp only [natToBinaryPoly_coeff, coeff_one]
   cases m with
@@ -193,7 +196,9 @@ available on elements of `BinaryPoly`.
 -/
 
 /-- In characteristic `2`, negation is the identity on `BinaryPoly`. -/
+@[gf216_simp]
 lemma BinaryPoly.neg_eq (a : BinaryPoly) : -a = a := CharTwo.neg_eq a
 
 /-- In characteristic `2`, subtraction in `BinaryPoly` agrees with addition. -/
+@[gf216_simp]
 lemma BinaryPoly.sub_eq_add (a b : BinaryPoly) : a - b = a + b := CharTwo.sub_eq_add a b

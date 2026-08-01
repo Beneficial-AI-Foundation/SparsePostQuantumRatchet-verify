@@ -7,6 +7,7 @@ import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
+import Spqr.Math.Attr
 import Spqr.Math.Gf16.Basic
 import Spqr.Math.Gf16.Field
 import Spqr.Math.Gf16.Irreducible

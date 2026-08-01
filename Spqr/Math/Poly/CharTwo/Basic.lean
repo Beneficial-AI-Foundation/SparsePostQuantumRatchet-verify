@@ -43,6 +43,7 @@ In `GF216Poly`, every element is its own negation.
 This is a consequence of characteristic 2: `a + a = 0` implies `-a = a`.  This parallels
 `BinaryPoly.neg_eq` from `Spqr.Math.Gf`, now lifted from `BinaryPoly` to `GF216Poly`.
 -/
+@[gf216_simp]
 lemma GF216Poly.neg_eq (a : GF216[X]) : -a = a := by
   have h : a + a = 0 := by
     ext n; simp only [coeff_add, coeff_zero]
@@ -58,6 +59,7 @@ Direct consequence of `GF216Poly.neg_eq`: `a - b = a + (-b) = a + b`. This mirro
 `BinaryPoly.sub_eq_add` from `Spqr.Math.Gf`, and is the algebraic reason that `GF16::sub` in
 the Rust implementation is identical to `GF16::add` (both are XOR).
 -/
+@[gf216_simp]
 lemma GF216Poly.sub_eq_add (a b : GF216[X]) : a - b = a + b := by
   rw [sub_eq_add_neg, GF216Poly.neg_eq]
 

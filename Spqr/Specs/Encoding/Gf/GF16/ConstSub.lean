@@ -56,7 +56,7 @@ theorem const_sub_spec_poly (self other : GF16) :
         natToBinaryPoly self.value - natToBinaryPoly other.value ⦄ := by
   unfold const_sub
   step*
-  simp_all only [UScalar.val_xor, natToBinaryPoly_xor, BinaryPoly.sub_eq_add]
+  simp_all only [gf216_simp]
 
 /-- **Spec theorem for `spqr.encoding.gf.GF16.const_sub`**:
 
