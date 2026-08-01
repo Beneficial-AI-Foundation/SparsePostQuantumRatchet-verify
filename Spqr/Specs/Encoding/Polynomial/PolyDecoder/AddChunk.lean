@@ -7,13 +7,8 @@ import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
-import Spqr.Math.Poly.Aeneas.PolyIdentity
-import Spqr.Math.Poly.Identities.Basic
-import Spqr.Math.Poly.Identities.MultXdiff
-import Spqr.Math.Poly.Lagrange.BasisPoly
 
-/-!
-# Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
+/-! # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 
 Each iteration builds an evaluation point from a two-byte pair and inserts it into the
 polynomial's sorted set. Routing: `(chunk_index * 16 + i) % 16 = i` selects the polynomial,
@@ -30,9 +25,6 @@ private instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) 
 
 namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
 
-/-- **Sorted insert totality**: `sortedInsert` always succeeds for any list, element, and starting
-index. By induction on the list with case-split on comparison. Needed by `body_spec_0` to
-discharge the `sortedInsert` branch. -/
 private theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
     ∃ idx opt newList,
       sorted_vec.SortedSet.sortedInsert Pt.Insts.CoreCmpOrd list x i =
@@ -54,8 +46,6 @@ private theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
     · simp [h_eq] at h_cmp
     · simp [h_eq] at h_cmp
 
-/-- **Byte shift identity**: `b.val <<< 8 % U16.size = b.val * 256` for `U8`, since
-`b.val * 256 ≤ 65280 < 65536`. -/
 private theorem u8_shl8_mod_u16_size (b : U8) :
     b.val <<< 8 % U16.size = b.val * 256 := by
   have hb : b.val ≤ 255 := by scalar_tac
@@ -65,10 +55,6 @@ private theorem u8_shl8_mod_u16_size (b : U8) :
   have : U16.size = 65536 := by scalar_tac
   omega
 
-/-! ## Lagrange polynomial identity properties -/
-
-/-- **Chunk point routing**: when `i < 16`, `(chunk_index * 16 + i) % 16 = i` (polynomial index)
-and `(chunk_index * 16 + i) / 16 = chunk_index` (x-coordinate). -/
 private lemma chunk_point_routing (chunk_index i : Nat) (h : i < 16) :
     (chunk_index * 16 + i) % 16 = i ∧
     (chunk_index * 16 + i) / 16 = chunk_index := by
@@ -80,15 +66,12 @@ set_option maxHeartbeats 8000000 in
 
 On `done`: state unchanged, iterator exhausted. On `cont`: advances iterator, preserves
 `pts_needed`/`is_complete`, builds point `p` from chunk data (x via division, y via big-endian
-encoding), and either discards or inserts it into `pts[(chunk_index * 16 + i) % 16]`.
-
-**Source**: spqr/src/encoding/polynomial.rs (lines 882:12–903:13)
--/
+encoding), and either discards or inserts it into `pts[(chunk_index * 16 + i) % 16]`. -/
 @[step]
 theorem body_spec_base
     (chunk : encoding.Chunk)
     (iter : core.ops.range.Range Usize)
-    (self : encoding.polynomial.PolyDecoder)
+    (self : PolyDecoder)
     (h_end_le_16 : iter.end.val ≤ 16)
     (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
     (h_push_cap : ∀ (k : Nat), k < 16 →
@@ -615,7 +598,7 @@ Strengthens `body_spec_base` with `poly < 16` and `poly_idx = chunk.index.val` v
 theorem body_spec
     (chunk : encoding.Chunk)
     (iter : core.ops.range.Range Usize)
-    (self : encoding.polynomial.PolyDecoder)
+    (self : PolyDecoder)
     (h_end_le_16 : iter.end.val ≤ 16)
     (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
     (h_push_cap : ∀ (k : Nat), k < 16 →
@@ -676,23 +659,8 @@ theorem body_spec
     have h_routing := chunk_point_routing chunk.index.val iter.start.val h_i_lt_16
     exact ⟨h1, h2, h3, h4, h5, Nat.mod_lt _ (by omega), h_routing.2, p, hp_x, hp_y, h_upd⟩
 
-end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
-
-/-! # Spec theorem for `PolyDecoder::add_chunk`: loop 0
-
-Iterates `body` over `[iter.start, iter.end)` using `loop.spec_decr_nat`. Each step builds
-a point and conditionally pushes it onto `pts[poly]`. The invariant preserves iterator end,
-`pts_needed`, `is_complete`, push capacity, and a chain of intermediate states.
-
-**Source**: spqr/src/encoding/polynomial.rs (lines 882:8-903:9)
--/
-
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
-
-namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
-
 private theorem body_pts_length_le
-    (self1 self' : encoding.polynomial.PolyDecoder) (p : Pt) (poly : Nat)
+    (self1 self' : PolyDecoder) (p : Pt) (poly : Nat)
     (h_update :
       self1 = self' ∨
       ((∀ (k : Nat), k ≠ poly →
@@ -750,12 +718,12 @@ Iterates over `[iter.start, iter.end)` with `iter.end ≤ 16`, preserving `pts_n
 `is_complete`. Witnesses via a chain `selfs 0 = self, …, selfs n = result` where each step
 builds a point and conditionally pushes it onto the appropriate sorted set.
 
-**Source**: spqr/src/encoding/polynomial.rs (lines 882:8-903:9) -/
+**Source**: spqr/src/encoding/polynomial.rs -/
 @[step]
 theorem loop_spec
     (chunk : encoding.Chunk)
     (iter : core.ops.range.Range Usize)
-    (self : encoding.polynomial.PolyDecoder)
+    (self : PolyDecoder)
     (h_end_le_16 : iter.end.val ≤ 16)
     (h_start_le : iter.start ≤ iter.end)
     (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
@@ -930,10 +898,7 @@ Processes a 32-byte `Chunk` by iterating its 16 two-byte pairs, building points 
 conditionally pushing them onto `pts[poly]`. Delegates to `add_chunk_loop` with range `0..16`.
 Preserves `pts_needed` and `is_complete`.
 
-**Source**: spqr/src/encoding/polynomial.rs (lines 879:4-904:5)
--/
-
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
+**Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
@@ -941,10 +906,7 @@ namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
 Delegates to `add_chunk_loop` with range `0..16`. Preserves `pts_needed` and `is_complete`.
 Witnessed by 16 intermediate states, each building a point and conditionally pushing it onto
-the appropriate sorted set. Proof via `WP.spec_mono` on `loop_spec`.
-
-**Source**: spqr/src/encoding/polynomial.rs (lines 879:4-904:5)
--/
+the appropriate sorted set. Proof via `WP.spec_mono` on `loop_spec`. -/
 @[step]
 theorem add_chunk_spec
     (self : PolyDecoder) (chunk : encoding.Chunk)
