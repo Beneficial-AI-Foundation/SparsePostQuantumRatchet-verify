@@ -29,8 +29,6 @@ the returned `epoch` (nonzero) and `index`; the next byte is the tag of the retu
 (`payloadTag`, the same model used by `Message.serialize_spec`); and for chunk-carrying
 variants a chunk block follows whose index/data are the returned chunk's, with the cursor
 landing right after it — all within the buffer.  On failure the error is `Error::MsgDecode`.
-This subsumes the source's `hax_lib::ensures`
-(`msg.epoch > 0 && at <= from.len()` on the `Ok` path).
 
 The blocks are characterized by `varintBlockAt` and `chunkBlockAt`, the same predicates
 `decode_varint_spec` and `decode_chunk_spec` are stated in terms of, so the layout claimed here
@@ -39,8 +37,7 @@ down to a single value for a given buffer, so a future roundtrip theorem against
 `Message.serialize_spec`'s `messageBytes` can identify each block it produced — bearing in mind
 they admit non-canonical LEB128, exactly as `decode_varint` does.
 
-**Precondition.** `from.len() + 32 ≤ usize::MAX`, inherited from `decode_chunk_spec` (the
-extraction drops the source's `hax_lib::assume!` making `*at += 32` fallible there).
+**Precondition.** `from.len() + 32 ≤ usize::MAX`, inherited from `decode_chunk_spec`.
 
 **Axioms.** As for `decode_chunk_spec`, the axiom closure picks up the opaque
 `core::fmt::Formatter` type and two `native_decide` instances — extraction artifacts of the
@@ -70,7 +67,7 @@ On success (`Ok (msg, index, at1)`), the consumed prefix `from[0 .. at)` is a we
 message encoding: the version byte `1`, a varint block decoding to `msg.epoch ≠ 0`, a varint
 block decoding to `index`, the tag byte `payloadTag msg.payload`, and — for chunk-carrying
 payloads — a chunk block carrying the returned chunk; the cursor `at` lands right after the
-consumed bytes, within the buffer (`at ≤ from.len()`, the source's `hax_lib::ensures`).
+consumed bytes, within the buffer (`at ≤ from.len()`).
 On failure the error is `Error::MsgDecode`. -/
 @[step]
 theorem Message.deserialize_spec
