@@ -12,38 +12,27 @@ import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`
 
-`Message::deserialize` parses the wire encoding produced by `Message::serialize`:
+`Message::deserialize` parses the encoding produced by `Message::serialize`:
 
-  `[version (1 byte)] ++ [varint(epoch)] ++ [varint(index)] ++ [message_type (1 byte)]`
+  `[version = 1] ++ [varint(epoch)] ++ [varint(index)] ++ [tag byte]`
 
-followed, for the chunk-carrying payload variants, by the chunk block
-`[varint(chunk.index)] ++ [chunk_data (32 bytes)]`.  It rejects (with `Error::MsgDecode`)
-an empty buffer, a wrong version byte, a zero epoch, an index that does not fit in a `u32`,
-a tag byte outside `0..=6`, and any varint/chunk decoding failure.  Trailing bytes after the
-consumed prefix are deliberately allowed (forward compatibility), which is why the returned
-cursor matters: it marks the end of the message inside the buffer.
+plus, for the chunk-carrying tags, a chunk block `[varint(chunk.index)] ++ [32 data bytes]`.
+Trailing bytes past the consumed prefix are allowed (forward compatibility), so the returned
+cursor is what marks the end of the message.
 
-We prove that on success the consumed prefix `from[0 .. at)` has exactly the layout above:
-byte `0` is the version byte `1`; two well-formed LEB128 blocks follow whose decodings are
-the returned `epoch` (nonzero) and `index`; the next byte is the tag of the returned payload
-(`payloadTag`, the same model used by `Message.serialize_spec`); and for chunk-carrying
-variants a chunk block follows whose index/data are the returned chunk's, with the cursor
-landing right after it — all within the buffer.  On failure the error is `Error::MsgDecode`.
+We prove that on success `from[0 .. at)` has exactly that layout, with the two varint blocks
+decoding to the returned `epoch` (nonzero) and `index`, the tag byte equal to
+`payloadTag msg.payload` (the model `Message.serialize_spec` also uses), and the cursor landing
+right after the last block, within the buffer.  Every failure is `Error::MsgDecode`.
 
-The blocks are characterized by `varintBlockAt` and `chunkBlockAt`, the same predicates
-`decode_varint_spec` and `decode_chunk_spec` are stated in terms of, so the layout claimed here
-is literally what those specs establish.  Their byte-level conjuncts pin each block's length
-down to a single value for a given buffer, so a future roundtrip theorem against
-`Message.serialize_spec`'s `messageBytes` can identify each block it produced — bearing in mind
-they admit non-canonical LEB128, exactly as `decode_varint` does.
+The blocks are stated via `varintBlockAt` and `chunkBlockAt`, so the layout claimed here is
+literally what `decode_varint_spec` and `decode_chunk_spec` establish.
 
 **Precondition.** `from.len() + 32 ≤ usize::MAX`, inherited from `decode_chunk_spec`.
 
-**Axioms.** As for `decode_chunk_spec`, the axiom closure picks up the opaque
-`core::fmt::Formatter` type and two `native_decide` instances — extraction artifacts of the
-string literals in `decode_chunk`'s `.expect("correct size")` and `MessageType::try_from`'s
-out-of-range error message (Aeneas's `toStr` discharges the literal-length side condition
-with `by decide +native`) — not proof debt of this theorem.
+**Axioms.** Same closure as `decode_chunk_spec`, all extraction artifacts rather than proof
+debt: the opaque `core::fmt::Formatter` and two `native_decide` instances behind the string
+literals in `decode_chunk`'s `.expect` and `MessageType::try_from`'s error message.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 247-278)
 -/
@@ -58,6 +47,7 @@ open core.result.Result.Insts Message.deserialize
 set_option maxHeartbeats 400000 in
 -- required because the proof steps through the whole function once per tag branch
 -- (eight of them, five containing a `decode_chunk` call)
+
 /-- **Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
 
