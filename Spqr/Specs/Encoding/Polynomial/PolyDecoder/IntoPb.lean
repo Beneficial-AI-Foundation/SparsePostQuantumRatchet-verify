@@ -19,7 +19,8 @@ One step of the inner point-serialization loop. Given `pts : SortedSet<Pt>`, a r
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
-private instance : Inhabited (sorted_vec.SortedSet Pt) :=   ⟨alloc.vec.Vec.new _⟩
+private instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) :=
+  ⟨alloc.vec.Vec.new _⟩
 
 private instance : Inhabited Pt := ⟨{ x := ⟨0#u16⟩, y := ⟨0#u16⟩ }⟩
 
