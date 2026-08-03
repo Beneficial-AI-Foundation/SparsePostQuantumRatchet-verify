@@ -55,8 +55,6 @@ namespace spqr.v1.chunked.states.serialize
 -- Shorten the `?`-desugaring (`from_residual`) and `map_err`-closure names used in the proof.
 open core.result.Result.Insts Message.deserialize
 
-/-! ## Spec theorem -/
-
 set_option maxHeartbeats 400000 in
 -- required because the proof steps through the whole function once per tag branch
 -- (eight of them, five containing a `decode_chunk` call)
