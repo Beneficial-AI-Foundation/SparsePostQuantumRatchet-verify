@@ -34,6 +34,15 @@ open Aeneas Aeneas.Std Result
 
 namespace spqr.v1.chunked.states.serialize
 
+/-! ## Pure model -/
+
+/-- Wire encoding of a `Chunk`, as natural-number byte values:
+`varintBytes (chunk.index) ++ chunk.data` — the block `encode_chunk` appends. -/
+def chunkBytes (c : encoding.Chunk) : List ℕ :=
+  varintBytes c.index.val ++ c.data.val.map UScalar.val
+
+/-! ## Spec theorem -/
+
 /-- **Spec theorem for `spqr::v1::chunked::states::serialize::encode_chunk`**:
 
 Under the no-overflow precondition `into.len() + 42 ≤ usize::MAX`, `encode_chunk c into`
