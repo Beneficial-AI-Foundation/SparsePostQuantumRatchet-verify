@@ -149,6 +149,7 @@ import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
+import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
