@@ -28,12 +28,6 @@ right after the last block, within the buffer.  Every failure is `Error::MsgDeco
 The blocks are stated via `varintBlockAt` and `chunkBlockAt`, so the layout claimed here is
 literally what `decode_varint_spec` and `decode_chunk_spec` establish.
 
-**Precondition.** `from.len() + 32 ≤ usize::MAX`, inherited from `decode_chunk_spec`.
-
-**Axioms.** Same closure as `decode_chunk_spec`, all extraction artifacts rather than proof
-debt: the opaque `core::fmt::Formatter` and two `native_decide` instances behind the string
-literals in `decode_chunk`'s `.expect` and `MessageType::try_from`'s error message.
-
 **Source**: src/v1/chunked/states/serialize.rs (lines 247-278)
 -/
 
@@ -45,18 +39,16 @@ namespace spqr.v1.chunked.states.serialize
 open core.result.Result.Insts Message.deserialize
 
 set_option maxHeartbeats 400000 in
--- required because the proof steps through the whole function once per tag branch
--- (eight of them, five containing a `decode_chunk` call)
+-- the default budget is not enough: the tag `match` is proved branch by branch (eight of them,
+-- five applying `decode_chunk_spec`), each closing its goal with its own `scalar_tac`/`omega`s
 
 /-- **Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
 
-On success (`Ok (msg, index, at1)`), the consumed prefix `from[0 .. at)` is a well-formed
-message encoding: the version byte `1`, a varint block decoding to `msg.epoch ≠ 0`, a varint
-block decoding to `index`, the tag byte `payloadTag msg.payload`, and — for chunk-carrying
-payloads — a chunk block carrying the returned chunk; the cursor `at` lands right after the
-consumed bytes, within the buffer (`at ≤ from.len()`).
-On failure the error is `Error::MsgDecode`. -/
+On success (`Ok (msg, index, at)`) the prefix `from[0 .. at)` is the layout above — version
+byte `1`, a varint block decoding to `msg.epoch ≠ 0`, a varint block decoding to `index`, the
+tag byte `payloadTag msg.payload`, then a chunk block carrying the returned chunk for the
+chunk-carrying payloads — and `at ≤ from.len()`.  On failure the error is `Error::MsgDecode`. -/
 @[step]
 theorem Message.deserialize_spec
     (from1 : alloc.vec.Vec Std.U8)
