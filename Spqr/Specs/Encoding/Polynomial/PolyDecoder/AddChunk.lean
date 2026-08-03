@@ -60,6 +60,19 @@ private lemma chunk_point_routing (chunk_index i : Nat) (h : i < 16) :
     (chunk_index * 16 + i) / 16 = chunk_index := by
   constructor <;> omega
 
+/-- Every call to `Pt.Insts.CoreCmpOrd.cmp` returns one of `lt`, `eq`, or `gt`.
+    Use this to close goals where all three cases have been refuted. -/
+private theorem Pt_cmp_exhaustive (a b : Pt)
+    (hgt : Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False)
+    (heq : Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False)
+    (hlt : Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) :
+    False := by
+  obtain ⟨r, hr, -⟩ := WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
+  cases r
+  · exact hlt hr
+  · exact heq hr
+  · exact hgt hr
+
 set_option maxHeartbeats 8000000 in
 -- haevy grind
 /-- **Spec theorem for `body` (base case)**:
@@ -205,19 +218,7 @@ theorem body_spec_base
                           grind
                         · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
                         · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · have h_absurd : ∀ (a b : Pt),
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                              False := by
-                            intro a b hgt heq hlt
-                            obtain ⟨r, hr, -⟩ :=
-                              WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                            cases r
-                            · exact hlt hr
-                            · exact heq hr
-                            · exact hgt hr
-                          exact h_absurd _ _
+                        · exact Pt_cmp_exhaustive _ _
                             (by assumption) (by assumption) (by assumption)
           · -- eq
             step*
@@ -254,19 +255,7 @@ theorem body_spec_base
                             grind
                           · exfalso
                             grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                          · have h_absurd : ∀ (a b : Pt),
-                                (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                                (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                                (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                                False := by
-                              intro a b hgt heq hlt
-                              obtain ⟨r, hr, -⟩ :=
-                                WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                              cases r
-                              · exact hlt hr
-                              · exact heq hr
-                              · exact hgt hr
-                            exact h_absurd _ _
+                          · exact Pt_cmp_exhaustive _ _
                               (by assumption) (by assumption) (by assumption)
           · -- lt (sortedInsert)
             obtain ⟨idx_si, opt_si, newList_si, h_si⟩ :=
@@ -327,19 +316,7 @@ theorem body_spec_base
                             List.getElem!_eq_getElem?_getD, List.append_assoc, List.cons_append,
                             List.nil_append, Array.set_val_eq]
                           exact ⟨k, by grind, by grind⟩
-                        · have h_absurd : ∀ (a b : Pt),
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                              False := by
-                            intro a b hgt heq hlt
-                            obtain ⟨r, hr, -⟩ :=
-                              WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                            cases r
-                            · exact hlt hr
-                            · exact heq hr
-                            · exact hgt hr
-                          exact h_absurd _ _
+                        · exact Pt_cmp_exhaustive _ _
                             (by assumption) (by assumption) (by assumption)
       · -- overflow impossible (hroom false)
         step*
@@ -380,19 +357,7 @@ theorem body_spec_base
                       · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
                       · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
                       · grind
-                      · have h_absurd : ∀ (a b : Pt),
-                            (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                            (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                            (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                            False := by
-                          intro a b hgt heq hlt
-                          obtain ⟨r, hr, -⟩ :=
-                            WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                          cases r
-                          · exact hlt hr
-                          · exact heq hr
-                          · exact hgt hr
-                        exact h_absurd _ _
+                      · exact Pt_cmp_exhaustive _ _
                           (by assumption) (by assumption) (by assumption)
         · step*
           split
@@ -427,20 +392,8 @@ theorem body_spec_base
                           grind
                         · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
                         · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · have h_absurd : ∀ (a b : Pt),
-                            (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                            (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                            (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                            False := by
-                              intro a b hgt heq hlt
-                              obtain ⟨r, hr, -⟩ :=
-                                WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                              cases r
-                              · exact hlt hr
-                              · exact heq hr
-                              · exact hgt hr
-                          exact h_absurd _ _
-                                (by assumption) (by assumption) (by assumption)
+                        · exact Pt_cmp_exhaustive _ _
+                            (by assumption) (by assumption) (by assumption)
           · step*
             constructor
             · exact h_lt
@@ -472,19 +425,7 @@ theorem body_spec_base
                         · simp_all
                           grind
                         · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · have h_absurd : ∀ (a b : Pt),
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                              False := by
-                            intro a b hgt heq hlt
-                            obtain ⟨r, hr, -⟩ :=
-                              WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                            cases r
-                            · exact hlt hr
-                            · exact heq hr
-                            · exact hgt hr
-                          exact h_absurd _ _
+                        · exact Pt_cmp_exhaustive _ _
                             (by assumption) (by assumption) (by assumption)
           · obtain ⟨idx_si, opt_si, newList_si, h_si⟩ :=
               sortedInsert_always_ok ss.val (Pt.mk x y) 0
@@ -548,19 +489,7 @@ theorem body_spec_base
                             UScalar.cast_val_eq, Nat.reducePow, zero_add, List.append_assoc,
                             List.cons_append, List.nil_append, Array.set_val_eq]
                           exact ⟨k, by grind, by grind⟩
-                        · have h_absurd : ∀ (a b : Pt),
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.gt → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.eq → False) →
-                              (Pt.Insts.CoreCmpOrd.cmp a b = ok Ordering.lt → False) →
-                              False := by
-                            intro a b hgt heq hlt
-                            obtain ⟨r, hr, -⟩ :=
-                              WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
-                            cases r
-                            · exact hlt hr
-                            · exact heq hr
-                            · exact hgt hr
-                          exact h_absurd _ _
+                        · exact Pt_cmp_exhaustive _ _
                             (by assumption) (by assumption) (by assumption)
       · grind
     · -- skip (self unchanged)
