@@ -32,11 +32,8 @@ open PolyEncoder.point_at.closure_1  core.iter.adapters.map.Map
 
 namespace spqr.encoding.polynomial.PolyEncoder.point_at_loop
 
-/-- Default `Inhabited` instance for `Poly` (empty coefficient vector). -/
-instance : Inhabited encoding.polynomial.Poly := ⟨⟨alloc.vec.Vec.new _⟩⟩
-
 /-- Default `Inhabited` instance for `Point` (empty value vector). -/
-instance : Inhabited encoding.polynomial.Point := ⟨⟨alloc.vec.Vec.new _⟩⟩
+instance instInhabitedPoint_spqr : Inhabited encoding.polynomial.Point := ⟨⟨alloc.vec.Vec.new _⟩⟩
 
 /-! ## Helper lemmas for the enumerate-map-collect pipeline -/
 
