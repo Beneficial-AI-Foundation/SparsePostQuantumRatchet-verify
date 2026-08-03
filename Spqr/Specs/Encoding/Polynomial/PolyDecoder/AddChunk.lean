@@ -7,6 +7,7 @@ import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 
 /-! # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 
@@ -14,6 +15,10 @@ Each iteration builds an evaluation point from a two-byte pair and inserts it in
 polynomial's sorted set. Routing: `(chunk_index * 16 + i) % 16 = i` selects the polynomial,
 `(chunk_index * 16 + i) / 16 = chunk_index` gives the x-coordinate. After all chunks,
 each polynomial holds the `completePoints` format for Lagrange interpolation.
+
+The postcondition is **conditional**: when `poly_idx < np ∨ pts[poly].len() < np` (where
+`np = necessary_points(poly)`), the point is inserted; otherwise the state is unchanged.
+This enables compositional reasoning over sequences of `add_chunk` calls.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 879:4–904:5)
 -/
@@ -24,27 +29,6 @@ private instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) 
   ⟨alloc.vec.Vec.new Pt⟩
 
 namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
-
-private theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
-    ∃ idx opt newList,
-      sorted_vec.SortedSet.sortedInsert Pt.Insts.CoreCmpOrd list x i =
-      ok (idx, opt, newList) := by
-  induction list generalizing i with
-  | nil => exact ⟨i, none, [x], rfl⟩
-  | cons a rest ih =>
-    simp only [sorted_vec.SortedSet.sortedInsert]
-    have h_cmp := Pt.Insts.CoreCmpOrd.cmp_spec a x
-    rcases h_eq : Pt.Insts.CoreCmpOrd.cmp a x with ord | e | _
-    · simp only [bind_tc_ok]
-      rcases ord with _ | _ | _
-      · simp only []
-        obtain ⟨idx', opt', newList', h_rec⟩ := ih (i + 1)
-        simp only [h_rec, bind_tc_ok]
-        exact ⟨idx', opt', a :: newList', rfl⟩
-      · exact ⟨i, some a, x :: rest, rfl⟩
-      · exact ⟨i, none, x :: a :: rest, rfl⟩
-    · simp [h_eq] at h_cmp
-    · simp [h_eq] at h_cmp
 
 private theorem u8_shl8_mod_u16_size (b : U8) :
     b.val <<< 8 % U16.size = b.val * 256 := by
@@ -73,13 +57,24 @@ private theorem Pt_cmp_exhaustive (a b : Pt)
   · exact heq hr
   · exact hgt hr
 
+/-- Helper: prove `if c then P else Q` when `c` holds and `P` holds. -/
+private theorem ite_of_pos {c : Prop} [Decidable c] {P Q : Prop} (hc : c) (hp : P) :
+    (if c then P else Q) :=
+  Eq.mpr (if_pos hc) hp
+
+/-- Helper: prove `if c then P else Q` when `¬c` holds and `Q` holds. -/
+private theorem ite_of_neg {c : Prop} [Decidable c] {P Q : Prop} (hc : ¬c) (hq : Q) :
+    (if c then P else Q) :=
+  Eq.mpr (if_neg hc) hq
+
 set_option maxHeartbeats 8000000 in
 -- haevy grind
 /-- **Spec theorem for `body` (base case)**:
 
 On `done`: state unchanged, iterator exhausted. On `cont`: advances iterator, preserves
 `pts_needed`/`is_complete`, builds point `p` from chunk data (x via division, y via big-endian
-encoding), and either discards or inserts it into `pts[(chunk_index * 16 + i) % 16]`. -/
+encoding), and **conditionally** inserts it into `pts[(chunk_index * 16 + i) % 16]`:
+inserted when `poly_idx < np ∨ pts[poly].len() < np`, unchanged otherwise. -/
 @[step]
 theorem body_spec_base
     (chunk : encoding.Chunk)
@@ -103,35 +98,34 @@ theorem body_spec_base
           let total_idx := chunk.index.val * 16 + i
           let poly := total_idx % 16
           let poly_idx := total_idx / 16
+          let np := self.pts_needed.val / 16 +
+            (if poly < self.pts_needed.val % 16 then 1 else 0)
           ∃ (p : Pt),
             p.x.value.val = poly_idx ∧
             p.y.value.val = (chunk.data.val[i * 2]!).val * 256 + (chunk.data.val[i * 2 + 1]!).val ∧
-            (self1 = self ∨
-             ((∀ (k : Nat), k ≠ poly →
-                 self1.pts.val[k]! = self.pts.val[k]!) ∧
-              match (self.pts.val[poly]!).val.getLast? with
-              | none =>
-                  (self1.pts.val[poly]!).val =
-                    (self.pts.val[poly]!).val ++ [p]
-              | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt =>
-                    (self1.pts.val[poly]!).val =
-                      (self.pts.val[poly]!).val ++ [p]
-                | ok Ordering.eq =>
-                    (self1.pts.val[poly]!).val =
-                      (self.pts.val[poly]!).val.dropLast ++ [p]
-                | ok Ordering.lt =>
-                    ∃ (j : Nat),
-                      j ≤ (self.pts.val[poly]!).val.length ∧
-                      ((self1.pts.val[poly]!).val =
-                          (self.pts.val[poly]!).val.take j ++ [p] ++
-                          (self.pts.val[poly]!).val.drop j ∨
-                       (j < (self.pts.val[poly]!).val.length ∧
-                        (self1.pts.val[poly]!).val =
-                          (self.pts.val[poly]!).val.take j ++ [p] ++
-                          (self.pts.val[poly]!).val.drop (j + 1)))
-                | _ => False)) ⦄ := by
+            (if poly_idx < np ∨ (self.pts.val[poly]!).val.length < np
+             then
+               (∀ (k : Nat), k ≠ poly → self1.pts.val[k]! = self.pts.val[k]!) ∧
+               match (self.pts.val[poly]!).val.getLast? with
+               | none =>
+                   (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val ++ [p]
+               | some last =>
+                 match Pt.Insts.CoreCmpOrd.cmp p last with
+                 | ok Ordering.gt =>
+                     (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val ++ [p]
+                 | ok Ordering.eq =>
+                     (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val.dropLast ++ [p]
+                 | ok Ordering.lt =>
+                     ∃ (j : Nat),
+                       j ≤ (self.pts.val[poly]!).val.length ∧
+                       ((self1.pts.val[poly]!).val = (self.pts.val[poly]!).val.take j ++ [p] ++
+                           (self.pts.val[poly]!).val.drop j ∨
+                        (j < (self.pts.val[poly]!).val.length ∧
+                         (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val.take j ++ [p] ++
+                           (self.pts.val[poly]!).val.drop (j + 1)))
+                 | _ => False
+             else
+               self1 = self) ⦄ := by
   unfold body sorted_vec.SortedSet.push
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
@@ -170,19 +164,20 @@ theorem body_spec_base
                   Nat.reduceAdd, List.length_nil]
                   scalar_tac
                 · simp_all
-                · right
-                  constructor
-                  · intro k hk
-                    simp_all
-                  · split
-                    · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                · refine Eq.mpr (if_pos ?_) ?_
+                  · left; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                  · constructor
+                    · intro k hk
                       simp_all
                     · split
-                      · simp_all
-                        grind
-                      · grind
-                      · grind
-                      · grind
+                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                        simp_all
+                      · split
+                        · simp_all
+                          grind
+                        · grind
+                        · grind
+                        · grind
         · -- getLast? = some
           step*
           split
@@ -206,20 +201,21 @@ theorem body_spec_base
                     Nat.reduceAdd]
                     scalar_tac
                   · simp_all
-                  · right
-                    constructor
-                    · intro k hk
-                      simp_all
-                    · split
-                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                  · refine Eq.mpr (if_pos ?_) ?_
+                    · left; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                    · constructor
+                      · intro k hk
                         simp_all
                       · split
-                        · simp_all
-                          grind
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · exact Pt_cmp_exhaustive _ _
-                            (by assumption) (by assumption) (by assumption)
+                        · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                          simp_all
+                        · split
+                          · simp_all
+                            grind
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · exact Pt_cmp_exhaustive _ _
+                              (by assumption) (by assumption) (by assumption)
           · -- eq
             step*
             · constructor
@@ -241,25 +237,26 @@ theorem body_spec_base
                       Nat.reduceAdd]
                       scalar_tac
                     · simp_all
-                    · right
-                      constructor
-                      · intro k hk
-                        simp_all
-                      · split
-                        · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                    · refine Eq.mpr (if_pos ?_) ?_
+                      · left; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                      · constructor
+                        · intro k hk
                           simp_all
                         · split
-                          · exfalso
-                            grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                          · simp_all
-                            grind
-                          · exfalso
-                            grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                          · exact Pt_cmp_exhaustive _ _
-                              (by assumption) (by assumption) (by assumption)
+                          · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                            simp_all
+                          · split
+                            · exfalso
+                              grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                            · simp_all
+                              grind
+                            · exfalso
+                              grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                            · exact Pt_cmp_exhaustive _ _
+                                (by assumption) (by assumption) (by assumption)
           · -- lt (sortedInsert)
             obtain ⟨idx_si, opt_si, newList_si, h_si⟩ :=
-              sortedInsert_always_ok ss.val (Pt.mk x y) 0
+              PolyDecoder.from_pb_loop0_loop0.sortedInsert_always_ok ss.val (Pt.mk x y) 0
             simp only [h_si]
             have hbnd : newList_si.length ≤ Usize.max ∧ idx_si ≤ Usize.max := by
               have h_spec := sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd
@@ -292,32 +289,33 @@ theorem body_spec_base
                     Nat.reduceAdd]
                     scalar_tac
                   · simp_all
-                  · right
-                    constructor
-                    · intro k hk; simp_all
-                    · split
-                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
-                        simp_all
+                  · refine Eq.mpr (if_pos ?_) ?_
+                    · left; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                    · constructor
+                      · intro k hk; simp_all
                       · split
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · have h_spec := sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd
-                              ss.val (Pt.mk x y) 0 h_si
-                          obtain ⟨k, _, hk_le, hk_prop⟩ := h_spec
-                          simp_all only [List.Vector.length_val, UScalar.ofNatCore_val_eq,
-                            getElem!_pos, Order.add_one_le_iff, not_true_eq_false, reduceCtorEq,
-                            false_and, implies_true,  and_self,
-                            UScalarTy.U16_numBits_eq, UScalarTy.Usize_numBits_eq,
-                            System.Platform.sixteen_le_numBits,
-                            UScalar.cast_val_mod_pow_greater_numBits_eq, UScalarTy.U8_numBits_eq,
-                            Nat.reduceLeDiff, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
-                            Bvify.U8.UScalar_bv, UScalar.lt_equiv, Nat.mul_add_mod_self_right,
-                            UScalar.cast_val_eq, Nat.reducePow, zero_add,
-                            List.getElem!_eq_getElem?_getD, List.append_assoc, List.cons_append,
-                            List.nil_append, Array.set_val_eq]
-                          exact ⟨k, by grind, by grind⟩
-                        · exact Pt_cmp_exhaustive _ _
-                            (by assumption) (by assumption) (by assumption)
+                        · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                          simp_all
+                        · split
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · have h_spec := sorted_vec.SortedSet.sortedInsert_spec
+                              Pt.Insts.CoreCmpOrd ss.val (Pt.mk x y) 0 h_si
+                            obtain ⟨k, _, hk_le, hk_prop⟩ := h_spec
+                            simp_all only [List.Vector.length_val, UScalar.ofNatCore_val_eq,
+                              getElem!_pos, Order.add_one_le_iff, not_true_eq_false, reduceCtorEq,
+                              false_and, implies_true,  and_self,
+                              UScalarTy.U16_numBits_eq, UScalarTy.Usize_numBits_eq,
+                              System.Platform.sixteen_le_numBits,
+                              UScalar.cast_val_mod_pow_greater_numBits_eq, UScalarTy.U8_numBits_eq,
+                              Nat.reduceLeDiff, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
+                              Bvify.U8.UScalar_bv, UScalar.lt_equiv, Nat.mul_add_mod_self_right,
+                              UScalar.cast_val_eq, Nat.reducePow, zero_add,
+                              List.getElem!_eq_getElem?_getD, List.append_assoc, List.cons_append,
+                              List.nil_append, Array.set_val_eq]
+                            exact ⟨k, by grind, by grind⟩
+                          · exact Pt_cmp_exhaustive _ _
+                              (by assumption) (by assumption) (by assumption)
       · -- overflow impossible (hroom false)
         step*
         have := h_push_cap (↑iter.start % 16) (by omega)
@@ -347,18 +345,19 @@ theorem body_spec_base
                   add_pos_iff, Nat.div_pos_iff, Nat.ofNat_pos, true_and]
                   scalar_tac
                 · simp_all
-                · right
-                  constructor
-                  · intro k hk; simp_all
-                  · split
-                    · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
-                      simp_all
+                · refine Eq.mpr (if_pos ?_) ?_
+                  · right; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                  · constructor
+                    · intro k hk; simp_all
                     · split
-                      · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                      · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                      · grind
-                      · exact Pt_cmp_exhaustive _ _
-                          (by assumption) (by assumption) (by assumption)
+                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                        simp_all
+                      · split
+                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                        · grind
+                        · exact Pt_cmp_exhaustive _ _
+                            (by assumption) (by assumption) (by assumption)
         · step*
           split
           · step*
@@ -381,19 +380,20 @@ theorem body_spec_base
                     Nat.reduceAdd]
                     scalar_tac
                   · simp_all
-                  · right
-                    constructor
-                    · intro k hk; simp_all
-                    · split
-                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
-                        simp_all
+                  · refine Eq.mpr (if_pos ?_) ?_
+                    · right; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                    · constructor
+                      · intro k hk; simp_all
                       · split
-                        · simp_all
-                          grind
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · exact Pt_cmp_exhaustive _ _
-                            (by assumption) (by assumption) (by assumption)
+                        · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                          simp_all
+                        · split
+                          · simp_all
+                            grind
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · exact Pt_cmp_exhaustive _ _
+                              (by assumption) (by assumption) (by assumption)
           · step*
             constructor
             · exact h_lt
@@ -414,21 +414,22 @@ theorem body_spec_base
                     Nat.reduceAdd]
                     scalar_tac
                   · simp_all
-                  · right
-                    constructor
-                    · intro k hk; simp_all
-                    · split
-                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
-                        simp_all
+                  · refine Eq.mpr (if_pos ?_) ?_
+                    · right; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                    · constructor
+                      · intro k hk; simp_all
                       · split
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · simp_all
-                          grind
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · exact Pt_cmp_exhaustive _ _
-                            (by assumption) (by assumption) (by assumption)
+                        · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                          simp_all
+                        · split
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · simp_all
+                            grind
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · exact Pt_cmp_exhaustive _ _
+                              (by assumption) (by assumption) (by assumption)
           · obtain ⟨idx_si, opt_si, newList_si, h_si⟩ :=
-              sortedInsert_always_ok ss.val (Pt.mk x y) 0
+              PolyDecoder.from_pb_loop0_loop0.sortedInsert_always_ok ss.val (Pt.mk x y) 0
             simp only [h_si]
             have hbnd : newList_si.length ≤ Usize.max ∧ idx_si ≤ Usize.max := by
               have h_spec := sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd
@@ -462,35 +463,36 @@ theorem body_spec_base
                     Nat.reduceAdd]
                     scalar_tac
                   · simp_all
-                  · right
-                    constructor
-                    · intro k hk; simp_all
-                    · split
-                      · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
-                        simp_all
+                  · refine Eq.mpr (if_pos ?_) ?_
+                    · right; simp_all [Nat.mod_eq_of_lt h_i_lt_16]
+                    · constructor
+                      · intro k hk; simp_all
                       · split
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
-                        · have h_spec := sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd
-                              ss.val (Pt.mk x y) 0 h_si
-                          obtain ⟨k, _, hk_le, hk_prop⟩ := h_spec
-                          simp_all only [List.Vector.length_val, UScalar.ofNatCore_val_eq,
-                          getElem!_pos,
-                            Order.add_one_le_iff, not_true_eq_false, reduceCtorEq, false_and,
-                            implies_true,  and_self,
-                            UScalarTy.U16_numBits_eq, UScalarTy.Usize_numBits_eq,
-                            System.Platform.sixteen_le_numBits,
-                            UScalar.cast_val_mod_pow_greater_numBits_eq, UScalarTy.U8_numBits_eq,
-                            Nat.reduceLeDiff, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
-                            Bvify.U8.UScalar_bv, UScalar.lt_equiv, not_lt,
-                            Nat.mul_add_mod_self_right,
-                            alloc.vec.Vec.len, Usize.ofNatCore_val_eq,
-                            List.getElem!_eq_getElem?_getD,
-                            UScalar.cast_val_eq, Nat.reducePow, zero_add, List.append_assoc,
-                            List.cons_append, List.nil_append, Array.set_val_eq]
-                          exact ⟨k, by grind, by grind⟩
-                        · exact Pt_cmp_exhaustive _ _
-                            (by assumption) (by assumption) (by assumption)
+                        · have hlen : (↑iter.start % 16) < self.pts.val.length := by scalar_tac
+                          simp_all
+                        · split
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · grind [Pt.Insts.CoreCmpOrd.cmp_spec]
+                          · have h_spec := sorted_vec.SortedSet.sortedInsert_spec
+                              Pt.Insts.CoreCmpOrd ss.val (Pt.mk x y) 0 h_si
+                            obtain ⟨k, _, hk_le, hk_prop⟩ := h_spec
+                            simp_all only [List.Vector.length_val, UScalar.ofNatCore_val_eq,
+                            getElem!_pos,
+                              Order.add_one_le_iff, not_true_eq_false, reduceCtorEq, false_and,
+                              implies_true,  and_self,
+                              UScalarTy.U16_numBits_eq, UScalarTy.Usize_numBits_eq,
+                              System.Platform.sixteen_le_numBits,
+                              UScalar.cast_val_mod_pow_greater_numBits_eq, UScalarTy.U8_numBits_eq,
+                              Nat.reduceLeDiff, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
+                              Bvify.U8.UScalar_bv, UScalar.lt_equiv, not_lt,
+                              Nat.mul_add_mod_self_right,
+                              alloc.vec.Vec.len, Usize.ofNatCore_val_eq,
+                              List.getElem!_eq_getElem?_getD,
+                              UScalar.cast_val_eq, Nat.reducePow, zero_add, List.append_assoc,
+                              List.cons_append, List.nil_append, Array.set_val_eq]
+                            exact ⟨k, by grind, by grind⟩
+                          · exact Pt_cmp_exhaustive _ _
+                              (by assumption) (by assumption) (by assumption)
       · grind
     · -- skip (self unchanged)
       constructor
@@ -511,7 +513,8 @@ theorem body_spec_base
               Usize.ofNatCore_val_eq, UScalar.cast_val_eq, Nat.reducePow, Nat.mod_succ_eq_iff_lt,
               Nat.succ_eq_add_one, Nat.reduceAdd]
               scalar_tac
-            · simp_all
+            · refine ⟨by simp_all, ?_⟩
+              exact ite_of_neg (by push Not; simp_all [Nat.mod_eq_of_lt h_i_lt_16]) (by simp_all)
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
     rw [h_opt_eq]
     exact ⟨rfl, h_lt⟩
@@ -546,38 +549,37 @@ theorem body_spec
           let total_idx := chunk.index.val * 16 + i
           let poly := total_idx % 16
           let poly_idx := total_idx / 16
+          let np := self.pts_needed.val / 16 +
+            (if poly < self.pts_needed.val % 16 then 1 else 0)
           -- Lagrange polynomial identity properties:
           poly < 16 ∧
           poly_idx = chunk.index.val ∧
           ∃ (p : Pt),
             p.x.value.val = poly_idx ∧
             p.y.value.val = (chunk.data.val[i * 2]!).val * 256 + (chunk.data.val[i * 2 + 1]!).val ∧
-            (self1 = self ∨
-             ((∀ (k : Nat), k ≠ poly →
-                 self1.pts.val[k]! = self.pts.val[k]!) ∧
-              match (self.pts.val[poly]!).val.getLast? with
-              | none =>
-                  (self1.pts.val[poly]!).val =
-                    (self.pts.val[poly]!).val ++ [p]
-              | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt =>
-                    (self1.pts.val[poly]!).val =
-                      (self.pts.val[poly]!).val ++ [p]
-                | ok Ordering.eq =>
-                    (self1.pts.val[poly]!).val =
-                      (self.pts.val[poly]!).val.dropLast ++ [p]
-                | ok Ordering.lt =>
-                    ∃ (j : Nat),
-                      j ≤ (self.pts.val[poly]!).val.length ∧
-                      ((self1.pts.val[poly]!).val =
-                          (self.pts.val[poly]!).val.take j ++ [p] ++
-                          (self.pts.val[poly]!).val.drop j ∨
-                       (j < (self.pts.val[poly]!).val.length ∧
-                        (self1.pts.val[poly]!).val =
-                          (self.pts.val[poly]!).val.take j ++ [p] ++
-                          (self.pts.val[poly]!).val.drop (j + 1)))
-                | _ => False)) ⦄ := by
+            (if poly_idx < np ∨ (self.pts.val[poly]!).val.length < np
+             then
+               (∀ (k : Nat), k ≠ poly → self1.pts.val[k]! = self.pts.val[k]!) ∧
+               match (self.pts.val[poly]!).val.getLast? with
+               | none =>
+                   (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val ++ [p]
+               | some last =>
+                 match Pt.Insts.CoreCmpOrd.cmp p last with
+                 | ok Ordering.gt =>
+                     (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val ++ [p]
+                 | ok Ordering.eq =>
+                     (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val.dropLast ++ [p]
+                 | ok Ordering.lt =>
+                     ∃ (j : Nat),
+                       j ≤ (self.pts.val[poly]!).val.length ∧
+                       ((self1.pts.val[poly]!).val = (self.pts.val[poly]!).val.take j ++ [p] ++
+                           (self.pts.val[poly]!).val.drop j ∨
+                        (j < (self.pts.val[poly]!).val.length ∧
+                         (self1.pts.val[poly]!).val = (self.pts.val[poly]!).val.take j ++ [p] ++
+                           (self.pts.val[poly]!).val.drop (j + 1)))
+                 | _ => False
+             else
+               self1 = self) ⦄ := by
   apply WP.spec_mono (body_spec_base chunk iter self h_end_le_16 h_overflow h_push_cap)
   intro cf hcf
   match cf with
@@ -590,40 +592,38 @@ theorem body_spec
 
 private theorem body_pts_length_le
     (self1 self' : PolyDecoder) (p : Pt) (poly : Nat)
+    (cond : Prop) [Decidable cond]
     (h_update :
-      self1 = self' ∨
-      ((∀ (k : Nat), k ≠ poly →
-          self1.pts.val[k]! = self'.pts.val[k]!) ∧
-       match (self'.pts.val[poly]!).val.getLast? with
-       | none =>
-           (self1.pts.val[poly]!).val =
-             (self'.pts.val[poly]!).val ++ [p]
-       | some last =>
-         match Pt.Insts.CoreCmpOrd.cmp p last with
-         | ok Ordering.gt =>
-             (self1.pts.val[poly]!).val =
-               (self'.pts.val[poly]!).val ++ [p]
-         | ok Ordering.eq =>
-             (self1.pts.val[poly]!).val =
-               (self'.pts.val[poly]!).val.dropLast ++ [p]
-         | ok Ordering.lt =>
-             ∃ (m : Nat),
-               m ≤ (self'.pts.val[poly]!).val.length ∧
-               ((self1.pts.val[poly]!).val =
-                   (self'.pts.val[poly]!).val.take m ++ [p] ++
-                   (self'.pts.val[poly]!).val.drop m ∨
-                (m < (self'.pts.val[poly]!).val.length ∧
-                 (self1.pts.val[poly]!).val =
-                   (self'.pts.val[poly]!).val.take m ++ [p] ++
-                   (self'.pts.val[poly]!).val.drop (m + 1)))
-         | _ => False))
+      if cond then
+        (∀ (k : Nat), k ≠ poly →
+            self1.pts.val[k]! = self'.pts.val[k]!) ∧
+        match (self'.pts.val[poly]!).val.getLast? with
+        | none =>
+            (self1.pts.val[poly]!).val = (self'.pts.val[poly]!).val ++ [p]
+        | some last =>
+          match Pt.Insts.CoreCmpOrd.cmp p last with
+          | ok Ordering.gt =>
+              (self1.pts.val[poly]!).val = (self'.pts.val[poly]!).val ++ [p]
+          | ok Ordering.eq =>
+              (self1.pts.val[poly]!).val = (self'.pts.val[poly]!).val.dropLast ++ [p]
+          | ok Ordering.lt =>
+              ∃ (m : Nat),
+                m ≤ (self'.pts.val[poly]!).val.length ∧
+                ((self1.pts.val[poly]!).val = (self'.pts.val[poly]!).val.take m ++ [p] ++
+                    (self'.pts.val[poly]!).val.drop m ∨
+                 (m < (self'.pts.val[poly]!).val.length ∧
+                  (self1.pts.val[poly]!).val = (self'.pts.val[poly]!).val.take m ++ [p] ++
+                    (self'.pts.val[poly]!).val.drop (m + 1)))
+          | _ => False
+      else
+        self1 = self')
     (k : Nat) :
     (self1.pts.val[k]!).val.length ≤
       (self'.pts.val[k]!).val.length + 1 := by
-  rcases h_update with h_eq | ⟨h_frame, h_push⟩
-  · subst h_eq
-    omega
-  · by_cases hk : k = poly
+  by_cases hc : cond
+  · rw [if_pos hc] at h_update
+    obtain ⟨h_frame, h_push⟩ := h_update
+    by_cases hk : k = poly
     · subst hk
       split at h_push
       · -- none (empty): append
@@ -640,12 +640,16 @@ private theorem body_pts_length_le
             grind
         · exact absurd h_push id
     · rw [h_frame k hk]; omega
+  · rw [if_neg hc] at h_update
+    subst h_update
+    omega
 
 /-- **Spec theorem for `PolyDecoder::add_chunk_loop`** (loop 0):
 
 Iterates over `[iter.start, iter.end)` with `iter.end ≤ 16`, preserving `pts_needed` and
 `is_complete`. Witnesses via a chain `selfs 0 = self, …, selfs n = result` where each step
-builds a point and conditionally pushes it onto the appropriate sorted set.
+builds a point and conditionally pushes it onto the appropriate sorted set. The insertion
+condition `poly_idx < np ∨ pts[poly].len() < np` pins down exactly when each push occurs.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 @[step]
@@ -670,6 +674,8 @@ theorem loop_spec
           let total_idx := chunk.index.val * 16 + i
           let poly := total_idx % 16
           let poly_idx := total_idx / 16
+          let np := self.pts_needed.val / 16 +
+            (if poly < self.pts_needed.val % 16 then 1 else 0)
           (selfs (j + 1)).pts_needed = self.pts_needed ∧
           (selfs (j + 1)).is_complete = self.is_complete ∧
           poly < 16 ∧
@@ -677,32 +683,32 @@ theorem loop_spec
           ∃ (p : Pt),
             p.x.value.val = poly_idx ∧
             p.y.value.val = (chunk.data[i * 2]!) * 256 + (chunk.data[i * 2 + 1]!) ∧
-            (selfs (j + 1) = selfs j ∨
-             ((∀ (k : Nat), k ≠ poly →
-                 (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
-              match ((selfs j).pts.val[poly]!).val.getLast? with
-              | none =>
-                  ((selfs (j + 1)).pts.val[poly]!).val =
-                    ((selfs j).pts.val[poly]!).val ++ [p]
-              | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt =>
+            (if poly_idx < np ∨ ((selfs j).pts.val[poly]!).val.length < np
+             then
+               (∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
+               match ((selfs j).pts.val[poly]!).val.getLast? with
+               | none =>
+                  ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
+               | some last =>
+                 match Pt.Insts.CoreCmpOrd.cmp p last with
+                 | ok Ordering.gt =>
+                    ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
+                 | ok Ordering.eq =>
                     ((selfs (j + 1)).pts.val[poly]!).val =
-                      ((selfs j).pts.val[poly]!).val ++ [p]
-                | ok Ordering.eq =>
-                    ((selfs (j + 1)).pts.val[poly]!).val =
-                      ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
-                | ok Ordering.lt =>
-                    ∃ (m : Nat),
-                      m ≤ ((selfs j).pts.val[poly]!).val.length ∧
-                      (((selfs (j + 1)).pts.val[poly]!).val =
-                          ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                          ((selfs j).pts.val[poly]!).val.drop m ∨
-                       (m < ((selfs j).pts.val[poly]!).val.length ∧
-                        ((selfs (j + 1)).pts.val[poly]!).val =
-                          ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                          ((selfs j).pts.val[poly]!).val.drop (m + 1)))
-                | _ => False)) ⦄ := by
+                    ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
+                 | ok Ordering.lt =>
+                     ∃ (m : Nat),
+                       m ≤ ((selfs j).pts.val[poly]!).val.length ∧
+                       (((selfs (j + 1)).pts.val[poly]!).val =
+                           ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
+                           ((selfs j).pts.val[poly]!).val.drop m ∨
+                        (m < ((selfs j).pts.val[poly]!).val.length ∧
+                         ((selfs (j + 1)).pts.val[poly]!).val =
+                           ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
+                           ((selfs j).pts.val[poly]!).val.drop (m + 1)))
+                 | _ => False
+             else
+               selfs (j + 1) = selfs j) ⦄ := by
   unfold add_chunk_loop
   apply loop.spec_decr_nat
     (measure := fun (p : core.ops.range.Range Usize × PolyDecoder) => p.1.end - p.1.start)
@@ -723,6 +729,8 @@ theorem loop_spec
           let total_idx := chunk.index.val * 16 + i
           let poly := total_idx % 16
           let poly_idx := total_idx / 16
+          let np := self.pts_needed.val / 16 +
+            (if poly < self.pts_needed.val % 16 then 1 else 0)
           (selfs (j + 1)).pts_needed = self.pts_needed ∧
           (selfs (j + 1)).is_complete = self.is_complete ∧
           poly < 16 ∧
@@ -732,32 +740,36 @@ theorem loop_spec
             p.y.value.val =
               (chunk.data.val[i * 2]!).val * 256 +
               (chunk.data.val[i * 2 + 1]!).val ∧
-            (selfs (j + 1) = selfs j ∨
-             ((∀ (k : Nat), k ≠ poly →
-                 (selfs (j + 1)).pts.val[k]! = (selfs j).pts.val[k]!) ∧
-              match ((selfs j).pts.val[poly]!).val.getLast? with
-              | none =>
-                  ((selfs (j + 1)).pts.val[poly]!).val =
-                    ((selfs j).pts.val[poly]!).val ++ [p]
-              | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt =>
-                    ((selfs (j + 1)).pts.val[poly]!).val =
-                      ((selfs j).pts.val[poly]!).val ++ [p]
-                | ok Ordering.eq =>
-                    ((selfs (j + 1)).pts.val[poly]!).val =
-                      ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
-                | ok Ordering.lt =>
-                    ∃ (m : Nat),
-                      m ≤ ((selfs j).pts.val[poly]!).val.length ∧
-                      (((selfs (j + 1)).pts.val[poly]!).val =
-                          ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                          ((selfs j).pts.val[poly]!).val.drop m ∨
-                       (m < ((selfs j).pts.val[poly]!).val.length ∧
-                        ((selfs (j + 1)).pts.val[poly]!).val =
-                          ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                          ((selfs j).pts.val[poly]!).val.drop (m + 1)))
-                | _ => False)))
+            (if poly_idx < np ∨
+                ((selfs j).pts.val[poly]!).val.length < np
+             then
+               (∀ (k : Nat), k ≠ poly →
+                   (selfs (j + 1)).pts.val[k]! = (selfs j).pts.val[k]!) ∧
+               match ((selfs j).pts.val[poly]!).val.getLast? with
+               | none =>
+                   ((selfs (j + 1)).pts.val[poly]!).val =
+                     ((selfs j).pts.val[poly]!).val ++ [p]
+               | some last =>
+                 match Pt.Insts.CoreCmpOrd.cmp p last with
+                 | ok Ordering.gt =>
+                     ((selfs (j + 1)).pts.val[poly]!).val =
+                       ((selfs j).pts.val[poly]!).val ++ [p]
+                 | ok Ordering.eq =>
+                     ((selfs (j + 1)).pts.val[poly]!).val =
+                       ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
+                 | ok Ordering.lt =>
+                     ∃ (m : Nat),
+                       m ≤ ((selfs j).pts.val[poly]!).val.length ∧
+                       (((selfs (j + 1)).pts.val[poly]!).val =
+                           ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
+                           ((selfs j).pts.val[poly]!).val.drop m ∨
+                        (m < ((selfs j).pts.val[poly]!).val.length ∧
+                         ((selfs (j + 1)).pts.val[poly]!).val =
+                           ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
+                           ((selfs j).pts.val[poly]!).val.drop (m + 1)))
+                 | _ => False
+             else
+               selfs (j + 1) = selfs j))
   · rintro ⟨iter', self'⟩ ⟨h_end', h_orig_le, h_le', h_pn', h_ic', h_cap',
             n, selfs', h_s0, h_sn, h_n, h_chain⟩
     simp only [] at h_end' h_orig_le h_le' h_pn' h_ic' h_cap' h_s0 h_sn h_n h_chain ⊢
@@ -788,7 +800,7 @@ theorem loop_spec
       · intro k hk
         have h_old := h_cap' k hk
         have h_len_le := body_pts_length_le self1 self' p
-          ((chunk.index.val * 16 + iter'.start.val) % 16) h_update k
+          ((chunk.index.val * 16 + iter'.start.val) % 16) _ h_update k
         rw [h_start1, h_end1, h_end_val]
         rw [h_end_val] at h_old
         grind
@@ -813,7 +825,7 @@ theorem loop_spec
           refine ⟨by rw [h_pn1]; exact h_pn',
                   by rw [h_ic1]; exact h_ic',
                   h_poly_lt, h_poly_idx_eq,
-                  p, h_px, h_py, h_update⟩
+                  p, h_px, h_py, (by grind)⟩
   · refine ⟨rfl, le_refl _, h_start_le, rfl, rfl, ?_,
             0, fun _ => self, rfl, rfl, by dsimp; omega, fun j hj => by omega⟩
     intro k hk
@@ -835,7 +847,7 @@ namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
 Delegates to `add_chunk_loop` with range `0..16`. Preserves `pts_needed` and `is_complete`.
 Witnessed by 16 intermediate states, each building a point and conditionally pushing it onto
-the appropriate sorted set. Proof via `WP.spec_mono` on `loop_spec`. -/
+the appropriate sorted set. The insertion condition pins down when each push occurs. -/
 @[step]
 theorem add_chunk_spec
     (self : PolyDecoder) (chunk : encoding.Chunk)
@@ -851,6 +863,8 @@ theorem add_chunk_spec
           let total_idx := chunk.index.val * 16 + j
           let poly := total_idx % 16
           let poly_idx := total_idx / 16
+          let np := self.pts_needed.val / 16 +
+            (if poly < self.pts_needed.val % 16 then 1 else 0)
           (selfs (j + 1)).pts_needed = self.pts_needed ∧
           (selfs (j + 1)).is_complete = self.is_complete ∧
           poly < 16 ∧
@@ -858,29 +872,32 @@ theorem add_chunk_spec
           ∃ (p : Pt),
             p.x.value.val = poly_idx ∧
             p.y.value.val = (chunk.data[j * 2]!) * 256 + (chunk.data[j * 2 + 1]!) ∧
-            (selfs (j + 1) = selfs j ∨
-             ((∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
-              match ((selfs j).pts.val[poly]!).val.getLast? with
-              | none =>
-                  ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
-              | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt =>
-                    ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
-                | ok Ordering.eq =>
-                    ((selfs (j + 1)).pts.val[poly]!).val =
-                    ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
-                | ok Ordering.lt =>
-                    ∃ (m : Nat),
-                      m ≤ ((selfs j).pts.val[poly]!).val.length ∧
-                      (((selfs (j + 1)).pts.val[poly]!).val =
-                          ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                          ((selfs j).pts.val[poly]!).val.drop m ∨
-                       (m < ((selfs j).pts.val[poly]!).val.length ∧
-                        ((selfs (j + 1)).pts.val[poly]!).val =
-                          ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                          ((selfs j).pts.val[poly]!).val.drop (m + 1)))
-                | _ => False)) ⦄ := by
+            (if poly_idx < np ∨ ((selfs j).pts.val[poly]!).val.length < np
+             then
+               (∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
+               match ((selfs j).pts.val[poly]!).val.getLast? with
+               | none =>
+                   ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
+               | some last =>
+                 match Pt.Insts.CoreCmpOrd.cmp p last with
+                 | ok Ordering.gt =>
+                     ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
+                 | ok Ordering.eq =>
+                     ((selfs (j + 1)).pts.val[poly]!).val =
+                     ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
+                 | ok Ordering.lt =>
+                     ∃ (m : Nat),
+                       m ≤ ((selfs j).pts.val[poly]!).val.length ∧
+                       (((selfs (j + 1)).pts.val[poly]!).val =
+                           ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
+                           ((selfs j).pts.val[poly]!).val.drop m ∨
+                        (m < ((selfs j).pts.val[poly]!).val.length ∧
+                         ((selfs (j + 1)).pts.val[poly]!).val =
+                           ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
+                           ((selfs j).pts.val[poly]!).val.drop (m + 1)))
+                 | _ => False
+             else
+               selfs (j + 1) = selfs j) ⦄ := by
   unfold add_chunk
   apply WP.spec_mono (add_chunk_loop.loop_spec chunk
     { start := 0#usize, «end» := 16#usize } self
