@@ -32,11 +32,12 @@ landing right after it — all within the buffer.  On failure the error is `Erro
 This subsumes the source's `hax_lib::ensures`
 (`msg.epoch > 0 && at <= from.len()` on the `Ok` path).
 
-The varint blocks are characterized by `varintBlockAt`, which repeats the byte-level
-conjuncts of `decode_varint_spec` (terminator byte has its high bit clear, continuation
-bytes have it set).  These pin the block length down to a single value for a given buffer,
-so a future roundtrip theorem against `Message.serialize_spec`'s `messageBytes` can identify
-each block it produced.
+The blocks are characterized by `varintBlockAt` and `chunkBlockAt`, the same predicates
+`decode_varint_spec` and `decode_chunk_spec` are stated in terms of, so the layout claimed here
+is literally what those specs establish.  Their byte-level conjuncts pin each block's length
+down to a single value for a given buffer, so a future roundtrip theorem against
+`Message.serialize_spec`'s `messageBytes` can identify each block it produced — bearing in mind
+they admit non-canonical LEB128, exactly as `decode_varint` does.
 
 **Precondition.** `from.len() + 32 ≤ usize::MAX`, inherited from `decode_chunk_spec` (the
 extraction drops the source's `hax_lib::assume!` making `*at += 32` fallible there).
@@ -56,26 +57,6 @@ namespace spqr.v1.chunked.states.serialize
 
 -- Shorten the `?`-desugaring (`from_residual`) and `map_err`-closure names used in the proof.
 open core.result.Result.Insts Message.deserialize
-
-/-! ## Pure layout predicates -/
-
-/-- `varintBlockAt bytes start n v`: bytes `start, …, start + n - 1` lie inside `bytes` and
-form a well-formed LEB128 block decoding (truncated to 64 bits) to `v`: byte `n - 1` is the
-terminator (high bit clear) and bytes `0, …, n - 2` are continuation bytes (high bit set).
-These are exactly the success conjuncts of `decode_varint_spec`. -/
-def varintBlockAt (bytes : List Std.U8) (start n v : ℕ) : Prop :=
-  1 ≤ n ∧ n ≤ 10 ∧ start + n ≤ bytes.length ∧
-  v = varintVal bytes start n % 2 ^ 64 ∧
-  bytes[start + n - 1]!.val < 128 ∧
-  ∀ k < n - 1, 128 ≤ bytes[start + k]!.val
-
-/-- `chunkBlockAt bytes start n c`: bytes `start, …, start + n + 31` lie inside `bytes` and
-form a chunk block — a LEB128 block of `n` bytes decoding to `c.index` followed by the 32
-payload bytes `c.data`.  These are exactly the success conjuncts of `decode_chunk_spec`. -/
-def chunkBlockAt (bytes : List Std.U8) (start n : ℕ) (c : encoding.Chunk) : Prop :=
-  varintBlockAt bytes start n c.index.val ∧
-  start + n + 32 ≤ bytes.length ∧
-  c.data.val = bytes.slice (start + n) (start + n + 32)
 
 /-! ## Spec theorem -/
 
@@ -164,8 +145,10 @@ theorem Message.deserialize_spec
               core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
             exact r6_post2
           | .Ok c =>
-            obtain ⟨n₃, hat4, hn₃1, hn₃10, hat4len, hcidx, hterm₃, hcont₃, hcdata⟩ := r6_post2
-            refine ⟨by scalar_tac, hat4len, by omega, ?_, n₁, n₂, ?_, ?_,
+            -- `chunkBlockAt`'s varint block is not in tail position, hence the inner `⟨…⟩`.
+            obtain ⟨n₃, hat4, ⟨hn₃1, hn₃10, _, hcidx, hterm₃, hcont₃⟩, hat4len, hcdata⟩ :=
+              r6_post2
+            refine ⟨by scalar_tac, by scalar_tac, by omega, ?_, n₁, n₂, ?_, ?_,
               by scalar_tac, ?_, n₃, ?_, by omega⟩
             · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
             · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
