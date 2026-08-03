@@ -276,7 +276,7 @@ private theorem map_collect_eq_point_at
               (core.iter.traits.iterator.IteratorSliceIter GF16))
             Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt))
         m.iter := by
-        sorry
+  sorry
 
 /-! ## Spec theorem for the point_at loop body -/
 
