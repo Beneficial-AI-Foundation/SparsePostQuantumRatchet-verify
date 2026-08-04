@@ -49,6 +49,15 @@ attribute [local step] UScalar.cast_inBounds_spec
 
 namespace spqr.v1.chunked.states.serialize
 
+/-- `chunkBlockAt bytes start n c`: bytes `start, …, start + n + 31` lie inside `bytes` and
+form a chunk block — a LEB128 block of `n` bytes decoding to `c.index` (`varintBlockAt`)
+followed by the 32 payload bytes `c.data`.  These are exactly the success conjuncts of
+`decode_chunk_spec` below. -/
+def chunkBlockAt (bytes : List Std.U8) (start n : ℕ) (c : encoding.Chunk) : Prop :=
+  varintBlockAt bytes start n c.index.val ∧
+  start + n + 32 ≤ bytes.length ∧
+  c.data.val = bytes.slice (start + n) (start + n + 32)
+
 /-- **Spec theorem for `spqr::v1::chunked::states::serialize::decode_chunk`**:
 
 The cursor never moves backwards and, on success, `decode_chunk` consumed a varint of `n` bytes
@@ -57,10 +66,11 @@ The cursor never moves backwards and, on success, `decode_chunk` consumed a vari
 the decoded value fits in a `u16`, since `c.index` does — and the chunk payload is exactly
 `from[at + n .. at + n + 32]`.  On failure the error is `MsgDecode`.
 
-The two byte-level conjuncts — byte `n-1` is the terminator (high bit clear) and bytes
-`0, …, n-2` are continuation bytes (high bit set) — are inherited verbatim from
-`decode_varint_spec`.  They are what pins `n` down to a single value for a given buffer, so a
-future roundtrip theorem against `encode_chunk` can identify the varint block it produced. -/
+The varint block is characterized by the shared `varintBlockAt` predicate, so the byte-level
+conjuncts — byte `n-1` is the terminator (high bit clear) and bytes `0, …, n-2` are
+continuation bytes (high bit set) — are literally the ones `decode_varint_spec` establishes.
+They are what pins `n` down to a single value for a given buffer, so a future roundtrip
+theorem against `encode_chunk` can identify the varint block it produced. -/
 @[step]
 theorem decode_chunk_spec
     (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize)
@@ -69,12 +79,7 @@ theorem decode_chunk_spec
       at1.val ≤ p.2.val ∧
       (match p.1 with
        | .Ok c =>
-          ∃ n, p.2.val = at1.val + n + 32 ∧ 1 ≤ n ∧ n ≤ 10 ∧
-            p.2.val ≤ from1.length ∧
-            c.index.val = varintVal from1.val at1.val n % 2 ^ 64 ∧
-            from1.val[at1.val + n - 1]!.val < 128 ∧
-            (∀ k < n - 1, 128 ≤ from1.val[at1.val + k]!.val) ∧
-            c.data.val = from1.val.slice (at1.val + n) (at1.val + n + 32)
+          ∃ n, p.2.val = at1.val + n + 32 ∧ chunkBlockAt from1.val at1.val n c
        | .Err e => e = Error.MsgDecode) ⦄ := by
   unfold decode_chunk
   step
@@ -96,8 +101,8 @@ theorem decode_chunk_spec
       exact absurd (by scalar_tac : s.length = 32) r1_post
     | .Ok a =>
       obtain ⟨ha, _halen⟩ := r1_post
-      refine ⟨by scalar_tac, n, by scalar_tac, hn1, hn10, by scalar_tac, by rw [i1_post, hval],
-        hterm, hcont, ?_⟩
+      refine ⟨by scalar_tac, n, by scalar_tac,
+        ⟨hn1, hn10, hnlen, by rw [i1_post, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
       rw [ha, s_post1, at3_post, hat2]
 
 end spqr.v1.chunked.states.serialize

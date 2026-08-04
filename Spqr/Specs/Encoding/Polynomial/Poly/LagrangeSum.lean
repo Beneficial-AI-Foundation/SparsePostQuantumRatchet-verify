@@ -80,6 +80,7 @@ theorem loop_spec
     (h_sum : out.toGF216Poly = ∑ j ∈ Finset.range iter.start,
       C ((pts[j]!).y.toGF216) * (polys[j]!).toGF216Poly) :
     lagrange_sum_loop iter pts polys out ⦃ (result : Poly) =>
+      result.degree < Usize.max ∧
       result.toGF216Poly = ∑ j ∈ Finset.range (max iter.start iter.end),
         C ((pts[j]!).y.toGF216) * (polys[j]!).toGF216Poly ⦄ := by
   unfold lagrange_sum_loop
@@ -151,6 +152,7 @@ theorem lagrange_sum_spec
     (h_len_le : pts.length ≤ polys.length)
     (h_polys : ∀ i < pts.length, (polys[i]!).degree + 2 ≤ Usize.max) :
     lagrange_sum pts polys ⦃ (result : Poly) =>
+      result.degree < Usize.max ∧
       result.toGF216Poly =
         ∑ j ∈ Finset.range pts.length, C ((pts[j]!).y.toGF216) * (polys[j]!).toGF216Poly ⦄ := by
   unfold lagrange_sum
