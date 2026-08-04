@@ -4,8 +4,6 @@ import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
-import Spqr.Auxiliary.Aeneas.TrySimps
-import Spqr.Auxiliary.Aeneas.TrySimpsAttr
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
