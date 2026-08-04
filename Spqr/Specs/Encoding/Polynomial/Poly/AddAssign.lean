@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 import Spqr.Math.Poly.Coeff.ListOps
 import Spqr.Math.Poly.Eval
+import Spqr.Specs.Aeneas.EnumerateSliceIterNext
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::add_assign`
@@ -17,36 +18,6 @@ open Aeneas Aeneas.Std Result ControlFlow spqr.encoding.gf Polynomial spqr.encod
 open  core.iter.adapters.enumerate core.slice.iter
 
 namespace spqr.encoding.polynomial.Poly.add_assign_loop
-
-lemma usize_checked_add_one_val (x : Usize)
-    (h : x.val + 1 ≤ Usize.max) :
-    ∃ (y : Usize), (x + 1#usize : Result Usize) = ok y ∧ y.val = x.val + 1 := by
-  have h_add : x.val + (1#usize : Usize).val ≤ Usize.max := by scalar_tac
-  have h_spec := Usize.add_spec h_add
-  revert h_spec
-  generalize (x + 1#usize : Result Usize) = res
-  intro h_spec
-  match res with
-  | .ok z => exact ⟨z, rfl, by simp_all [WP.spec_ok]⟩
-  | .fail e => simp_all
-  | .div => simp_all
-
-lemma EnumerateSliceIter_next_post
-    (iter : Enumerate (Iter GF16))
-    (h_bound : iter.iter.i < iter.iter.slice.length → iter.count.val + 1 ≤ Usize.max) :
-    ∃ (opt : Option (Usize × GF16))
-      (iter' : Enumerate (Iter GF16)),
-      IteratorEnumerate.next
-        (core.iter.traits.iterator.IteratorSliceIter GF16) iter =
-          ok (opt, iter') := by
-  simp only [IteratorEnumerate.next,
-    IteratorSliceIter.next]
-  split
-  · have h_add_bound : iter.count.val + 1 ≤ Usize.max := h_bound (by scalar_tac)
-    obtain ⟨count', h_add_eq, _⟩ := usize_checked_add_one_val iter.count h_add_bound
-    rw [h_add_eq]
-    exact ⟨_, _, rfl⟩
-  · exact ⟨_, _, rfl⟩
 
 /-- **Spec theorem for `encoding.polynomial.Poly.add_assign_loop.body`**:
 
@@ -62,7 +33,6 @@ Requires `self.degree < Usize.max`.
 @[step]
 theorem body_spec
     (iter : Enumerate (Iter GF16)) (self : Poly)
-    (h_self_len : self.degree < Usize.max)
     (h_count_bound : iter.iter.i < iter.iter.slice.length → iter.count.val + 1 ≤ Usize.max) :
     body iter self ⦃ cf =>
       match cf with
@@ -76,17 +46,16 @@ theorem body_spec
               (∀ k ≠ i.val, self'.coefficients.val[k]! = self.coefficients.val[k]!)) ∧
             (¬ i.val < self.degree → self'.coefficients.val = self.coefficients.val ++ [v]) ⦄ := by
   unfold body
-  obtain ⟨opt, iter1, hnext⟩ := EnumerateSliceIter_next_post iter h_count_bound
-  rw [hnext]
-  simp only [bind_tc_ok, degree]
+  step as ⟨opt, iter1, hnext⟩
+  simp only [degree]
   cases opt with
   | none => simp [WP.spec_ok]
   | some p =>
     obtain ⟨i, v⟩ := p
+    obtain ⟨h_lt, h_i, h_v, h_slice, h_idx, h_cnt⟩ := hnext
     step*
-    · simp_all only [alloc.vec.Vec.set_val_eq, degree]
-      refine ⟨ i, v, by grind⟩
-    · simp_all [degree]
+    simp_all only [alloc.vec.Vec.set_val_eq]
+    refine ⟨i, v, by grind⟩
 
 /-! # Spec theorem for `Poly::add_assign`: loop 0
 
@@ -142,30 +111,6 @@ lemma step_invariant_preservation
   rw [h_take_len, hv]
   ring
 
-lemma enumerate_sliceiter_next_some
-    (iter : Enumerate (Iter GF16))
-    (h_lt : iter.iter.i < iter.iter.slice.length)
-    (h_count : iter.count = iter.iter.i)
-    (h_bound : iter.iter.slice.length ≤ Usize.max) :
-    ∃ (iter1 : Enumerate (Iter GF16)),
-      IteratorEnumerate.next
-        (core.iter.traits.iterator.IteratorSliceIter GF16) iter =
-          ok (some (iter.count, iter.iter.slice.val[iter.iter.i]), iter1) ∧
-      iter1.iter.slice = iter.iter.slice ∧
-      iter1.iter.i = iter.iter.i + 1 ∧
-      iter1.count.val = iter.iter.i + 1 := by
-  simp only [
-    IteratorEnumerate.next,
-    IteratorSliceIter.next]
-  have h_lt' : iter.iter.i < (↑iter.iter.slice.len : Nat) := by scalar_tac
-  rw [dif_pos h_lt']
-  have h_add_bound : iter.count.val + 1 ≤ Usize.max := by
-    rw [h_count]
-    omega
-  obtain ⟨count', h_add_eq, h_add_val⟩ := usize_checked_add_one_val iter.count h_add_bound
-  rw [h_add_eq]
-  exact ⟨_, rfl, rfl, rfl, by rw [h_add_val, h_count]⟩
-
 private theorem body_cont_spec
     (iter' : Enumerate (Iter GF16)) (self' : Poly)
     (h_count' : iter'.count = iter'.iter.i)
@@ -188,14 +133,17 @@ private theorem body_cont_spec
                 self''.coefficients[i].toGF216 = self'.coefficients[i]!.toGF216 + v.toGF216) ∧
               (∀ k ≠ i, self''.coefficients[k]! = self'.coefficients[k]!)) ∧
             (¬ i < self'.degree → self''.coefficients = self'.coefficients ++ [v])) ⦄ := by
-  obtain ⟨iter1, h_next, h_iter1_slice, h_iter1_i, h_iter1_count⟩ :=
-    enumerate_sliceiter_next_some iter' h_lt h_count' h_bound'
   unfold body
-  rw [h_next]
+  step as ⟨opt, iter1, hnext⟩
   simp only [degree]
-  step*
-  simp_all only [alloc.vec.Vec.set_val_eq,  ne_eq, true_and, not_lt]
-  grind
+  cases opt with
+  | none => exact absurd h_lt hnext.1
+  | some p =>
+    obtain ⟨i, v⟩ := p
+    obtain ⟨h_lt', h_i, h_v, h_slice, h_idx, h_cnt⟩ := hnext
+    step*
+    simp_all only [alloc.vec.Vec.set_val_eq, ne_eq, true_and, not_lt]
+    grind
 
 private theorem body_test_done_spec
     (iter' : Enumerate (Iter GF16)) (self' : Poly)
@@ -205,11 +153,12 @@ private theorem body_test_done_spec
       | ControlFlow.done result => result = self'
       | ControlFlow.cont _ => False ⦄ := by
   unfold body
-  simp only [IteratorEnumerate.next, IteratorSliceIter.next]
-  split
-  · rename_i h_lt
+  step as ⟨opt, iter1, hnext⟩
+  cases opt with
+  | none => simp [WP.spec_ok]
+  | some p =>
+    obtain ⟨h_lt, -⟩ := hnext
     exact absurd h_lt h_not_lt
-  · simp [WP.spec_ok]
 
 /-- **Spec theorem for `encoding.polynomial.Poly.add_assign_loop`**:
 
