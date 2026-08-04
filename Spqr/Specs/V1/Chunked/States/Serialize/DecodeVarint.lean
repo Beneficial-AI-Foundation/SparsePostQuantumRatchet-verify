@@ -35,6 +35,18 @@ def varintVal (bytes : List Std.U8) (start : ℕ) : ℕ → ℕ
   | 0 => 0
   | n + 1 => varintVal bytes start n + (bytes[start + n]!.val % 128) * 2 ^ (7 * n)
 
+/-- `varintBlockAt bytes start n v`: bytes `start, …, start + n - 1` lie inside `bytes` and
+form a well-formed LEB128 block decoding (truncated to 64 bits) to `v`: byte `n - 1` is the
+terminator (high bit clear) and bytes `0, …, n - 2` are continuation bytes (high bit set).
+These are exactly the success conjuncts of `decode_varint_spec` below, and they pin `n` down
+to a single value for a given buffer, so a caller can identify the block it consumed.  Note
+they admit non-canonical encodings (`1` as `0x81 0x00`), as `decode_varint` itself does. -/
+def varintBlockAt (bytes : List Std.U8) (start n v : ℕ) : Prop :=
+  1 ≤ n ∧ n ≤ 10 ∧ start + n ≤ bytes.length ∧
+  v = varintVal bytes start n % 2 ^ 64 ∧
+  bytes[start + n - 1]!.val < 128 ∧
+  ∀ k < n - 1, 128 ≤ bytes[start + k]!.val
+
 theorem varintVal_lt (bytes : List Std.U8) (start : ℕ) (n : ℕ) :
     varintVal bytes start n < 2 ^ (7 * n) := by
   induction n with
@@ -281,12 +293,11 @@ theorem decode_varint_loop_spec
 
 /-- **Spec theorem for `spqr::v1::chunked::states::serialize::decode_varint`**:
 
-The cursor never moves backwards and, on success, `decode_varint` consumed `n` bytes
-(`1 ≤ n ≤ 10`, all within the buffer, so the starting cursor is in bounds and the final
-cursor is at most `from.len()`), the returned value is the LEB128 decoding of those bytes
-truncated to 64 bits, byte `n-1` is the terminator (high bit clear), and bytes `0, …, n-2`
-are continuation bytes (high bit set). On failure the error is `MsgDecode` and the cursor is
-returned unchanged. -/
+The cursor never moves backwards and, on success, `decode_varint` consumed a well-formed
+LEB128 block of `n` bytes decoding to the returned value — `varintBlockAt`, which also bounds
+`1 ≤ n ≤ 10` and keeps the block inside the buffer, so the starting cursor is in bounds and
+the final cursor is at most `from.len()`. On failure the error is `MsgDecode` and the cursor
+is returned unchanged. -/
 @[step]
 theorem decode_varint_spec
     (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
@@ -295,11 +306,7 @@ theorem decode_varint_spec
       (match p.1 with
        | .Ok v =>
           at1.val < from1.length ∧
-          ∃ n, p.2.val = at1.val + n ∧ 1 ≤ n ∧ n ≤ 10 ∧
-            at1.val + n ≤ from1.length ∧
-            v.val = varintVal from1.val at1.val n % 2 ^ 64 ∧
-            from1.val[at1.val + n - 1]!.val < 128 ∧
-            ∀ k < n - 1, 128 ≤ from1.val[at1.val + k]!.val
+          ∃ n, p.2.val = at1.val + n ∧ varintBlockAt from1.val at1.val n v.val
        | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
   unfold decode_varint
   by_cases hge : at1 ≥ alloc.vec.Vec.len from1
