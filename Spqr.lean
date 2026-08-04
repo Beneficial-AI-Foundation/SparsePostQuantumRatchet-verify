@@ -56,6 +56,7 @@ import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Authenticator.Authenticator.MacHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+import Spqr.Specs.Encoding.Decoder.New
 import Spqr.Specs.Encoding.EncodingError.From
 import Spqr.Specs.Encoding.Gf.GF16.Add
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
@@ -117,6 +118,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
 import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
@@ -130,8 +132,10 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallMut
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallOnce
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.SliceIterEnumMapCollect
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.Eq
@@ -150,6 +154,7 @@ import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
+import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
 import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
