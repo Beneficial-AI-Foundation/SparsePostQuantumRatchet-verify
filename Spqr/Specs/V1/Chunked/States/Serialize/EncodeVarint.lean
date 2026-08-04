@@ -130,10 +130,7 @@ theorem encode_varint_loop_body_spec
           a'.val = a.val / 128 ∧
           ∃ b : U8, into'.val = into.val ++ [b] ∧ b.val = a.val % 128 + 128 ⦄ := by
   unfold encode_varint_loop.body
-  obtain ⟨⟨opt, iter1⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1, h_none, h_some⟩
   by_cases hlt : iter.start.val < iter.end.val
   · obtain ⟨h_opt, h_start, h_end⟩ := h_some hlt
     rw [h_opt]

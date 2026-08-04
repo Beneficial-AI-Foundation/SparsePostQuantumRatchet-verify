@@ -54,12 +54,10 @@ theorem body_spec
                 ((out'[iter.start]!).coefficients[k]!).value.val =
                   256 * (v[iter.start]!)[2 * k]!  + (v[iter.start]!)[2 * k + 1]!) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
-  · step*
+  · obtain ⟨rfl, h_start1, h_end1⟩ := h_some h_lt
+    step*
     · simp_all [alloc.vec.Vec.deref]
     · simp_all [alloc.vec.Vec.deref]
     · simp_all only [ne_eq, List.length_eq_zero_iff,
@@ -188,10 +186,7 @@ theorem body_spec
             v1 = v ++ [g] ∧
             g.value.val = pts[2 * iter.start.val]! * 256 + pts[2 * iter.start.val + 1]! ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -323,10 +318,7 @@ theorem body_spec
                   ((v.val[iter.start.val]!).val[2 * k]!).val * 256 +
                   ((v.val[iter.start.val]!).val[2 * k + 1]!).val) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
