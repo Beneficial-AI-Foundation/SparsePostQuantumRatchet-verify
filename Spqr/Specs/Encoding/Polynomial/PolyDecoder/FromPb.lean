@@ -26,7 +26,7 @@ namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
 
 /-- `sortedInsert` with `Pt.Insts.CoreCmpOrd` always returns `ok`, because
     `Pt.Insts.CoreCmpOrd.cmp` always succeeds. -/
-private theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
+theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
     ∃ idx opt newList,
       sorted_vec.SortedSet.sortedInsert Pt.Insts.CoreCmpOrd list x i =
       ok (idx, opt, newList) := by
