@@ -154,3 +154,4 @@ import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
