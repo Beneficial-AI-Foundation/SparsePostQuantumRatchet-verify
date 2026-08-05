@@ -34,10 +34,10 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
     from_pb pb ⦃ (result : core.result.Result v1.unchunked.send_ek.KeysUnsampled Error) =>
       match pb.auth with
       | none => result = .Err Error.StateDecode
-      | some a => ∃ st, result = .Ok st ∧
-          st.epoch = pb.epoch ∧
-          st.auth.root_key = a.root_key ∧
-          st.auth.mac_key = a.mac_key ⦄ := by
+      | some a =>
+        result = .Ok {
+          epoch := pb.epoch,
+          auth := { root_key := a.root_key, mac_key := a.mac_key } } ⦄ := by
   unfold from_pb
   match pb.auth with
   | none =>
@@ -45,9 +45,10 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
       core.result.Result.Insts.CoreOpsTry.branch,
       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
       core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-  | some a =>
+  | some a' =>
     simp only [core.option.Option.as_ref, core.option.Option.ok_or,
       core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
     step*
+    simp only [← a_post1, ← a_post2]
 
 end spqr.v1.unchunked.send_ek.serialize.KeysUnsampled
