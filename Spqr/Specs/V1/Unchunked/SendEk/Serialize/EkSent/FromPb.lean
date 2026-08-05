@@ -36,11 +36,10 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.EkSent) :
       if pb.dk.length = 2400 then
         match pb.auth with
         | none => result = .Err Error.StateDecode
-        | some a => ∃ st, result = .Ok st ∧
-            st.epoch = pb.epoch ∧
-            st.dk = pb.dk ∧
-            st.auth.root_key = a.root_key ∧
-            st.auth.mac_key = a.mac_key
+        | some a =>
+          result = .Ok {
+            epoch := pb.epoch,
+            auth := { root_key := a.root_key, mac_key := a.mac_key }, dk := pb.dk }
       else result = .Err Error.StateDecode ⦄ := by
   unfold from_pb
   by_cases hdk : pb.dk.length = 2400
@@ -52,10 +51,11 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.EkSent) :
         core.result.Result.Insts.CoreOpsTry.branch,
         core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
         core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-    | some a =>
+    | some a' =>
       simp only [core.option.Option.as_ref, core.option.Option.ok_or,
         core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
       step*
+      simp only [← a_post1, ← a_post2]
   · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.dk = 2400#usize)]
     simp only [hdk, reduceIte, WP.spec_ok]
 
