@@ -11,4 +11,10 @@
  ["defsWithUnderscore",
   "spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop.countNonSkip"],
  ["defsWithUnderscore",
-  "spqr.encoding.polynomial.PolyEncoder.into_pb_loop0.instInhabitedPoint_spqr"]]
+  "spqr.encoding.polynomial.PolyEncoder.into_pb_loop0.instInhabitedPoint_spqr"],
+ ["defsWithUnderscore",
+  "spqr.encoding.polynomial.PolyEncoder.into_pb_loop0.instInhabitedPoint"],
+ ["defsWithUnderscore",
+  "spqr.encoding.polynomial.PolyEncoder.point_at_loop.instInhabitedPoint_spqr"],
+ ["defsWithUnderscore",
+  "spqr.encoding.polynomial.PolyEncoder.point_at_loop.instInhabitedPoint"]]

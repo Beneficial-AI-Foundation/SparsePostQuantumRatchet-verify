@@ -1,0 +1,164 @@
+/-
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE-APACHE.
+Authors: Liao Zhang
+-/
+import SrcTranslated.Funs
+import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
+import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
+import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
+import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+
+/-! # Spec theorem for
+`spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`
+
+`Message::deserialize` parses the encoding produced by `Message::serialize`:
+
+  `[version = 1] ++ [varint(epoch)] ++ [varint(index)] ++ [tag byte]`
+
+plus, for the chunk-carrying tags, a chunk block `[varint(chunk.index)] ++ [32 data bytes]`.
+Trailing bytes past the consumed prefix are allowed (forward compatibility), so the returned
+cursor is what marks the end of the message.
+
+We prove that on success `from[0 .. at)` has exactly that layout, with the two varint blocks
+decoding to the returned `epoch` (nonzero) and `index`, the tag byte equal to
+`payloadTag msg.payload` (the model `Message.serialize_spec` also uses), and the cursor landing
+right after the last block, within the buffer.  Every failure is `Error::MsgDecode`.
+
+The blocks are stated via `varintBlockAt` and `chunkBlockAt`, so the layout claimed here is
+literally what `decode_varint_spec` and `decode_chunk_spec` establish.
+
+**Source**: src/v1/chunked/states/serialize.rs (lines 247-278)
+-/
+
+open Aeneas Aeneas.Std Result
+
+namespace spqr.v1.chunked.states.serialize
+
+-- Shorten the `?`-desugaring (`from_residual`) and `map_err`-closure names used in the proof.
+open core.result.Result.Insts Message.deserialize
+
+set_option maxHeartbeats 400000 in
+-- the default budget is not enough: the tag `match` is proved branch by branch (eight of them,
+-- five applying `decode_chunk_spec`), each closing its goal with its own `scalar_tac`/`omega`s
+
+/-- **Spec theorem for
+`spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
+
+On success (`Ok (msg, index, at)`) the prefix `from[0 .. at)` is the layout above — version
+byte `1`, a varint block decoding to `msg.epoch ≠ 0`, a varint block decoding to `index`, the
+tag byte `payloadTag msg.payload`, then a chunk block carrying the returned chunk for the
+chunk-carrying payloads — and `at ≤ from.len()`.  On failure the error is `Error::MsgDecode`. -/
+@[step]
+theorem Message.deserialize_spec
+    (from1 : alloc.vec.Vec Std.U8)
+    (hlen : from1.length + 32 ≤ Std.Usize.max) :
+    Message.deserialize from1 ⦃ (p : core.result.Result
+        (v1.chunked.states.Message × Std.U32 × Std.Usize) Error) =>
+      match p with
+      | .Ok (msg, index, at1) =>
+        0 < msg.epoch.val ∧ at1.val ≤ from1.length ∧
+        -- `0 < from1.length` is implied by `1 + n₁ + n₂ < from1.length` below, but is kept
+        -- outside the `∃` so the `[0]!` access next to it is meaningful on its own.
+        0 < from1.length ∧ from1.val[0]!.val = 1 ∧
+        ∃ n₁ n₂, varintBlockAt from1.val 1 n₁ msg.epoch.val ∧
+          varintBlockAt from1.val (1 + n₁) n₂ index.val ∧
+          1 + n₁ + n₂ < from1.length ∧
+          from1.val[1 + n₁ + n₂]!.val = payloadTag msg.payload ∧
+          match msg.payload with
+          | .None => at1.val = 2 + n₁ + n₂
+          | .Ct1Ack b => b = true ∧ at1.val = 2 + n₁ + n₂
+          | .Hdr c | .Ek c | .EkCt1Ack c | .Ct1 c | .Ct2 c =>
+            ∃ n₃, chunkBlockAt from1.val (2 + n₁ + n₂) n₃ c ∧
+              at1.val = 2 + n₁ + n₂ + n₃ + 32
+      | .Err e => e = Error.MsgDecode ⦄ := by
+  unfold Message.deserialize
+  simp only [core.convert.IntoFrom.into, U8.Insts.CoreConvertFromVersion.from,
+    core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+  step*
+  -- The `Vec::is_empty` guard: turn `¬isEmpty` into `0 < length`.  `simp_all` is terminal
+  -- and bridges the Bool/Prop gap together with `b_post`.
+  case hbound => simp_all [List.length_pos_iff]
+  match r with
+  | .Err e =>
+    simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+      core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+    exact r_post2.1
+  | .Ok epochV =>
+    obtain ⟨h1lt, n₁, hat1, hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩ := r_post2
+    step*
+    match r1 with
+    | .Err e =>
+      simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+      exact r1_post2.1
+    | .Ok idx64 =>
+      obtain ⟨hatlt, n₂, hat2, hn₂1, hn₂10, hn₂len, hidx64, hterm₂, hcont₂⟩ := r1_post2
+      step*
+      match r2 with
+      | .Err _ =>
+        simp only [core.result.Result.map_err_Err,
+          closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError,
+          closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once,
+          CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+          core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+      | .Ok idx =>
+        obtain ⟨_, hidx⟩ := r2_post
+        simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+        step*
+        split at r4_post
+        -- The eight tag branches fall into three groups closed by multi-tag `case`:
+        -- the five chunk-carrying tags (1 Hdr, 2 Ek, 3 EkCt1Ack, 5 Ct1, 6 Ct2) produce
+        -- syntactically identical goals — the script below never names the payload
+        -- constructor — as do the two chunk-less tags (0 None, 4 Ct1Ack).
+        case h_2 | h_3 | h_4 | h_6 | h_7 =>
+          -- tags 1, 2, 3, 5, 6: a chunk block follows
+          subst r4_post
+          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+          step*
+          match r6 with
+          | .Err e =>
+            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+            exact r6_post2
+          | .Ok c =>
+            -- `chunkBlockAt`'s varint block is not in tail position, hence the inner `⟨…⟩`.
+            obtain ⟨n₃, hat4, ⟨hn₃1, hn₃10, _, hcidx, hterm₃, hcont₃⟩, hat4len, hcdata⟩ :=
+              r6_post2
+            refine ⟨by scalar_tac, by scalar_tac, by omega, ?_, n₁, n₂, ?_, ?_,
+              by scalar_tac, ?_, n₃, ?_, by omega⟩
+            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
+            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
+            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
+              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
+            · simp only [payloadTag]
+              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
+                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
+              assumption
+            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
+              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
+        case h_1 | h_5 =>
+          -- tags 0 (None) and 4 (Ct1Ack): no chunk block, the cursor stops after the tag byte
+          subst r4_post
+          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+          step*
+          refine ⟨by scalar_tac, by scalar_tac, by omega, ?_, n₁, n₂, ?_, ?_,
+            by scalar_tac, ?_, by omega⟩
+          · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
+          · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
+          · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
+            exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
+          · simp only [payloadTag]
+            rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
+              getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
+            assumption
+        case h_8 =>
+          -- tag > 6: decode error
+          subst r4_post
+          simp only [core.result.Result.map_err_Err,
+            closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError,
+            closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once,
+            CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+            core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+
+end spqr.v1.chunked.states.serialize
