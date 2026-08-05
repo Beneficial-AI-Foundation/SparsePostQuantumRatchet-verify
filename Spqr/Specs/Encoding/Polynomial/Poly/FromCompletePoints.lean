@@ -130,6 +130,7 @@ private abbrev bodyPost
     match cf with
     | ControlFlow.done (core.result.Result.Ok p) =>
         ¬ (iter.iter.i < pts.val.length) ∧
+        p.degree < Usize.max ∧
         p.toGF216Poly = ∑ j ∈ Finset.range pts.val.length,
           C ((pts.val[j]!).y.toGF216) * scaledLagrangeBasis (Slice.len pts) j
     | ControlFlow.done (core.result.Result.Err ()) =>
@@ -289,16 +290,18 @@ private theorem body_spec_none_N
         grind [degree]
       · constructor
         · grind
-        · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-          rw [p_post]; apply Finset.sum_congr rfl; intro x hx
-          simp only [Finset.mem_range] at hx
-          simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
-          have hx_lt_polys : x < (↑polys : List Poly).length := by grind
-          simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
-          have hx0 : x = 0 := by omega
-          subst hx0
-          apply (polys_post2 0 (by omega) (by omega) (by omega)).2.trans
-          simp_all [scaledLagrangeBasis_one_zero.symm]
+        · constructor
+          · grind
+          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
+            rw [p_post2]; apply Finset.sum_congr rfl; intro x hx
+            simp only [Finset.mem_range] at hx
+            simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
+            have hx_lt_polys : x < (↑polys : List Poly).length := by grind
+            simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
+            have hx0 : x = 0 := by omega
+            subst hx0
+            apply (polys_post2 0 (by omega) (by omega) (by omega)).2.trans
+            simp_all [scaledLagrangeBasis_one_zero.symm]
     · have h_len_N : Slice.len pts = 3#usize := by simp [Slice.len, hN, Usize.ofNatCore]
       step as ⟨ s, hs⟩
       have : s = 3#uscalar := by simp [hs, h_len_N]; simp [UScalar.cast]; grind
@@ -316,14 +319,16 @@ private theorem body_spec_none_N
         grind [degree]
       · constructor
         · grind
-        · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-          rw [p_post]; apply Finset.sum_congr rfl; intro x hx
-          simp only [Finset.mem_range] at hx
-          simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
-          have hx_lt_polys : x < (↑polys : List Poly).length := by grind
-          simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
-          have := (polys_post2 x (by omega) (by omega) (by grind)).2
-          have := a_post x (by grind); simp_all
+        · constructor
+          · grind
+          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
+            rw [p_post2]; apply Finset.sum_congr rfl; intro x hx
+            simp only [Finset.mem_range] at hx
+            simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
+            have hx_lt_polys : x < (↑polys : List Poly).length := by grind
+            simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
+            have := (polys_post2 x (by omega) (by omega) (by grind)).2
+            have := a_post x (by grind); simp_all
     · have h_len_N : Slice.len pts = 5#usize := by simp [Slice.len, hN, Usize.ofNatCore]
       step as ⟨ s, hs⟩
       have : s = 5#uscalar := by simp [hs, h_len_N]; simp [UScalar.cast]; grind
@@ -341,14 +346,16 @@ private theorem body_spec_none_N
         grind [degree]
       · constructor
         · grind
-        · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-          rw [p_post]; apply Finset.sum_congr rfl; intro x hx
-          simp only [Finset.mem_range] at hx
-          simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
-          have hx_lt_polys : x < (↑polys : List Poly).length := by grind
-          simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
-          have := (polys_post2 x (by omega) (by omega) (by grind)).2
-          have := a_post x (by grind); simp_all
+        · constructor
+          · grind
+          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
+            rw [p_post2]; apply Finset.sum_congr rfl; intro x hx
+            simp only [Finset.mem_range] at hx
+            simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
+            have hx_lt_polys : x < (↑polys : List Poly).length := by grind
+            simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
+            have := (polys_post2 x (by omega) (by omega) (by grind)).2
+            have := a_post x (by grind); simp_all
     · have h_len_N : Slice.len pts = 30#usize := by simp [Slice.len, hN, Usize.ofNatCore]
       step as ⟨ s, hs⟩
       have : s = 30#uscalar := by simp [hs, h_len_N]; simp [UScalar.cast]; grind
@@ -366,14 +373,16 @@ private theorem body_spec_none_N
         grind [degree]
       · constructor
         · grind
-        · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-          rw [p_post]; apply Finset.sum_congr rfl; intro x hx
-          simp only [Finset.mem_range] at hx
-          simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
-          have hx_lt_polys : x < (↑polys : List Poly).length := by grind
-          simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
-          have := (polys_post2 x (by omega) (by omega) (by grind)).2
-          have := a_post x (by grind); simp_all
+        · constructor
+          · grind
+          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
+            rw [p_post2]; apply Finset.sum_congr rfl; intro x hx
+            simp only [Finset.mem_range] at hx
+            simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
+            have hx_lt_polys : x < (↑polys : List Poly).length := by grind
+            simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
+            have := (polys_post2 x (by omega) (by omega) (by grind)).2
+            have := a_post x (by grind); simp_all
     · have h_len_N : Slice.len pts = 34#usize := by simp [Slice.len, hN, Usize.ofNatCore]
       step as ⟨ s, hs⟩
       have : s = 34#uscalar := by simp [hs, h_len_N]; simp [UScalar.cast]; grind
@@ -391,14 +400,16 @@ private theorem body_spec_none_N
         grind [degree]
       · constructor
         · grind
-        · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-          rw [p_post]; apply Finset.sum_congr rfl; intro x hx
-          simp only [Finset.mem_range] at hx
-          simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
-          have hx_lt_polys : x < (↑polys : List Poly).length := by grind
-          simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
-          have := (polys_post2 x (by omega) (by omega) (by grind)).2
-          have := a_post x (by grind); simp_all
+        · constructor
+          · grind
+          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
+            rw [p_post2]; apply Finset.sum_congr rfl; intro x hx
+            simp only [Finset.mem_range] at hx
+            simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
+            have hx_lt_polys : x < (↑polys : List Poly).length := by grind
+            simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
+            have := (polys_post2 x (by omega) (by omega) (by grind)).2
+            have := a_post x (by grind); simp_all
     · have h_len_N : Slice.len pts = 36#usize := by simp [Slice.len, hN, Usize.ofNatCore]
       step as ⟨ s, hs⟩
       have : s = 36#uscalar := by simp [hs, h_len_N]; simp [UScalar.cast]; grind
@@ -416,14 +427,16 @@ private theorem body_spec_none_N
         grind [degree]
       · constructor
         · grind
-        · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-          rw [p_post]; apply Finset.sum_congr rfl; intro x hx
-          simp only [Finset.mem_range] at hx
-          simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
-          have hx_lt_polys : x < (↑polys : List Poly).length := by grind
-          simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
-          have := (polys_post2 x (by omega) (by omega) (by grind)).2
-          have := a_post x (by grind); simp_all
+        · constructor
+          · grind
+          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
+            rw [p_post2]; apply Finset.sum_congr rfl; intro x hx
+            simp only [Finset.mem_range] at hx
+            simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]; congr 1
+            have hx_lt_polys : x < (↑polys : List Poly).length := by grind
+            simp only [List.getElem?_eq_getElem hx_lt_polys, Option.getD_some]
+            have := (polys_post2 x (by omega) (by omega) (by grind)).2
+            have := a_post x (by grind); simp_all
 
 /-! ## Spec theorem: in-bounds body (no size restriction)
 
@@ -487,6 +500,7 @@ theorem body_spec
       match cf with
       | ControlFlow.done (core.result.Result.Ok p) =>
           ¬ (iter.iter.i < pts.length) ∧
+          p.degree < Usize.max ∧
           p.toGF216Poly = ∑ j ∈ Finset.range pts.length,
             C ((pts.val[j]!).y.toGF216) * scaledLagrangeBasis (Slice.len pts) j
       | ControlFlow.done (core.result.Result.Err ()) =>
@@ -533,6 +547,7 @@ theorem loop_spec
       match result with
       | core.result.Result.Ok p =>
           (∀ (j : Nat) (hj : j < pts.length), (pts[j]).x.value.val = j) ∧
+          p.degree < Usize.max ∧
           p.toGF216Poly = ∑ j ∈ Finset.range pts.length,
             C ((pts.val[j]!).y.toGF216) * scaledLagrangeBasis (Slice.len pts) j
       | core.result.Result.Err () =>
@@ -589,6 +604,7 @@ theorem from_complete_points_spec
       match result with
       | core.result.Result.Ok p =>
           (∀ (j : Nat) (hj : j < pts.length), (pts[j]).x.value.val = j) ∧
+          p.degree < Usize.max ∧
           p.toGF216Poly = ∑ j ∈ Finset.range pts.length,
           C ((pts.val[j]!).y.toGF216) * scaledLagrangeBasis (Slice.len pts) j
       | core.result.Result.Err () =>
