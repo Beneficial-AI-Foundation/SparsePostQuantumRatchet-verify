@@ -44,7 +44,7 @@ theorem body_spec
     (h_out_overflow : out.length + 2 ≤ Usize.max)
     (h_admissible : ∀ pts, self.s = .Points pts →
         ∀ (j : Nat), j < 16 →
-          let len := (pts.val[j]!).value.val.length
+          let len := (pts[j]!).value.length
           len = 0 ∨ len = 1 ∨ len = 3 ∨ len = 5 ∨
           len = 30 ∨ len = 34 ∨ len = 36)
     (h_coeff_polys : ∀ polys, self.s = .Polys polys →
@@ -64,8 +64,8 @@ theorem body_spec
             self1.idx = self.idx ∧
             match self.s with
             | .Points pts =>
-                if idx < (pts.val[iter.start.val]!).value.length then
-                  g = (pts.val[iter.start.val]!).value.val[idx.val]! ∧
+                if idx < (pts[iter.start]!).value.length then
+                  g = (pts[iter.start]!).value[idx.val]! ∧
                   self1 = self
                 else
                   match self1.s with
@@ -80,7 +80,7 @@ theorem body_spec
                       g.toGF216 = (polys'[iter.start.val]!).toGF216Poly.eval (idx.val.toGF216)
                   | .Points _ => False
             | .Polys polys =>
-                g.toGF216 = (polys.val[iter.start.val]!).toGF216Poly.eval (idx.val.toGF216) ∧
+                g.toGF216 =(polys[iter.start.val]!).toGF216Poly.eval (idx.val.toGF216) ∧
                 self1 = self ⦄ := by
   unfold body
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
@@ -204,7 +204,7 @@ theorem loop_spec
         (∀ polys, self.s = .Polys polys → p.2.1 = self) ∧
         (∀ pts, p.2.1.s = .Points pts →
           ∀ (j : Nat), j < 16 →
-            let len := (pts.val[j]!).value.val.length
+            let len := (pts[j]!).value.length
             len = 0 ∨ len = 1 ∨ len = 3 ∨ len = 5 ∨
             len = 30 ∨ len = 34 ∨ len = 36) ∧
         (∀ (j : Nat), iter.start ≤ j → j < p.1.start →
@@ -217,32 +217,32 @@ theorem loop_spec
             Nat.toGF216 (256 * p.2.2.val[out.length + 2 * (j - iter.start)]! +
                p.2.2.val[out.val.length +
                 2 * (j - iter.start) + 1]!) =
-               (polys.val[j]!).toGF216Poly.eval (idx.val.toGF216)) ∧
+               (polys[j]!).toGF216Poly.eval (idx.val.toGF216)) ∧
         (∀ pts', p.2.1.s = .Points pts' → p.2.1 = self) ∧
+        (∀ polys, p.2.1.s = .Polys polys →
+            ∀ (j : Nat), j < 16 →
+              (polys[j]!).coefficients.length + 1 ≤ Usize.max) ∧
         (∀ pts, self.s = .Points pts →
           ∀ polys', p.2.1.s = .Polys polys' →
             ∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
                 ∑ k ∈ Finset.range (pts[j]!).value.length,
                   C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
-        (∀ polys, p.2.1.s = .Polys polys →
-          ∀ (j : Nat), j < 16 →
-            (polys.val[j]!).coefficients.length + 1 ≤ Usize.max))
+                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k))
   · rintro ⟨iter', self', out'⟩ ⟨h_end', h_iter_ge, h_start_le', h_idx', h_out_len',
                                   h_stable', h_adm', h_pre', h_poly_pre',
-                                  h_pts_stable', h_lagrange', h_coeff_inv⟩
+                                  h_pts_stable', h_coeff_inv', h_lagrange'⟩
     simp only at h_end' h_iter_ge h_start_le' h_idx' h_out_len' h_stable' h_adm'
     simp only at  h_pre' h_pts_stable' ⊢
-    dsimp at h_poly_pre' h_lagrange' h_coeff_inv
+    dsimp at h_poly_pre' h_coeff_inv' h_lagrange'
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
     have h_coeff' : ∀ polys, self'.s = .Polys polys →
         ∀ (j : Nat), j < 16 →
-          (polys.val[j]!).coefficients.length + 1 ≤ Usize.max :=
-      h_coeff_inv
+          (polys[j]!).coefficients.length + 1 ≤ Usize.max :=
+      h_coeff_inv'
     by_cases h_iter_lt : iter'.start.val < iter'.end.val
     · have h_body := body_spec idx iter' self' out'
-        (by omega) h_idx_overflow (by grind) h_adm' (by grind)
+        (by omega) h_idx_overflow (by grind) h_adm' h_coeff'
       apply WP.spec_mono h_body
       intro cf h_cf
       match cf with
@@ -271,7 +271,7 @@ theorem loop_spec
             | Points pts' =>
               simp only [h_s] at h_match
               by_cases h_cache :
-                  idx < (pts'.val[iter'.start.val]!).value.length
+                  idx < (pts'[iter'.start]!).value.length
               · simp only [if_pos h_cache] at h_match
                 rw [h_match.2] at h_pts
                 exact h_adm' pts (by rw [h_s] at h_pts; grind) j hj
@@ -299,7 +299,7 @@ theorem loop_spec
             cases h_s : self'.s with
             | Points pts_curr =>
               simp only [h_s] at h_match
-              by_cases h_cache : idx < (pts_curr.val[iter'.start.val]!).value.length
+              by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
               · simp only [if_pos h_cache] at h_match
                 rw [h_match.2]
                 exact h_pts_stable' pts_curr h_s
@@ -309,11 +309,26 @@ theorem loop_spec
               simp only [h_s] at h_match
               rw [h_match.2] at h_pts_new
               simp [h_s] at h_pts_new
+          · intro polys_coeff h_polys_coeff j hj
+            cases h_s : self'.s with
+            | Points pts_curr =>
+              simp only [h_s] at h_match
+              by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
+              · simp only [if_pos h_cache] at h_match
+                rw [h_match.2] at h_polys_coeff
+                simp [h_s] at h_polys_coeff
+              · simp only [if_neg h_cache] at h_match
+                simp only [h_polys_coeff] at h_match
+                exact h_match.2.1 j hj
+            | Polys polys_curr =>
+              simp only [h_s] at h_match
+              rw [h_match.2] at h_polys_coeff
+              exact h_coeff_inv' polys_coeff h_polys_coeff j hj
           · intro pts_init h_pts_init polys_new h_polys_new j hj
             cases h_s : self'.s with
             | Points pts_curr =>
               simp only [h_s] at h_match
-              by_cases h_cache : idx < (pts_curr.val[iter'.start.val]!).value.length
+              by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
               · simp only [if_pos h_cache] at h_match
                 rw [h_match.2] at h_polys_new
                 simp [h_s] at h_polys_new
@@ -329,25 +344,6 @@ theorem loop_spec
               simp only [h_s] at h_match
               rw [h_match.2] at h_polys_new
               exact h_lagrange' pts_init h_pts_init polys_new h_polys_new j hj
-          · -- Coefficient bound invariant maintenance
-            intro polys h_polys j hj
-            cases h_s : self'.s with
-            | Polys polys_curr =>
-              simp only [h_s] at h_match
-              rw [h_match.2] at h_polys
-              exact h_coeff_inv polys h_polys j hj
-            | Points pts_curr =>
-              simp only [h_s] at h_match
-              by_cases h_cache : idx < (pts_curr.val[iter'.start.val]!).value.length
-              · simp only [if_pos h_cache] at h_match
-                rw [h_match.2] at h_polys
-                simp [h_s] at h_polys
-              · simp only [if_neg h_cache] at h_match
-                simp only [h_polys, Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
-                  alloc.vec.Vec.length, alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.len,
-                  Order.add_one_le_iff] at h_match
-                have := h_match.2.1 j hj
-                grind
         · grind
     · unfold body
       obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
@@ -361,37 +357,28 @@ theorem loop_spec
       · cases h_s : self.s with
         | Polys polys =>
           exact ⟨h_stable' polys h_s, fun j hj1 hj2 =>
-            by grind⟩
+            h_poly_pre' polys h_s j hj1 (by grind)⟩
         | Points pts =>
           intro polys' h2 j hj
           exact h_lagrange' pts h_s polys' (by simpa using h2) j hj
   · dsimp
+    constructor; · exact rfl
+    constructor; · exact le_refl _
+    constructor; · exact h_start_le
+    constructor; · exact rfl
+    constructor; · simp
+    constructor; · exact fun _ _ => rfl
+    constructor; · exact h_admissible
+    constructor; · exact fun j h1 h2 => absurd h2 (by omega)
+    constructor; · exact fun _ _ j h1 h2 => absurd h2 (by omega)
+    constructor; · exact fun _ _ => rfl
     constructor
-    · exact rfl
-    · constructor
-      · exact le_refl _
-      · constructor
-        · exact h_start_le
-        · constructor
-          ·  exact rfl
-          · constructor
-            · simp
-            · constructor
-              · exact fun _ _ => rfl
-              · constructor
-                · grind
-                · constructor
-                  · exact fun j h1 h2 => absurd h2 (by omega)
-                  · constructor
-                    · exact fun _ _ j h1 h2 => absurd h2 (by omega)
-                    · constructor
-                      · exact fun _ _ => rfl
-                      · constructor
-                        · intro pts h1 polys' h2 j hj
-                          exfalso
-                          have h2' : self.s = .Polys polys' := by simpa using h2
-                          simp [h1] at h2'
-                        · grind
+    · intro polys h_polys
+      exact h_coeff_bound polys h_polys
+    intro pts h1 polys' h2 j hj
+    exfalso
+    have h2' : self.s = .Polys polys' := by simpa using h2
+    simp [h1] at h2'
 
 end spqr.encoding.polynomial.PolyEncoder.chunk_at_loop
 
@@ -444,15 +431,16 @@ theorem chunk_at_spec
     (h_coeff_bound : ∀ polys, self.s = .Polys polys →
         ∀ (j : Nat), j < 16 →
           (polys[j]!).coefficients.length + 1 ≤ Usize.max) :
-    chunk_at self idx ⦃ ((chunk, self') : encoding.Chunk × PolyEncoder) =>
+    chunk_at self idx ⦃ ((chunk, self') :
+        encoding.Chunk × encoding.polynomial.PolyEncoder) =>
       chunk.index = idx ∧
-      chunk.data.length = 32 ∧
+      chunk.data.val.length = 32 ∧
       self'.idx = self.idx ∧
       match self.s with
       | .Polys polys =>
           self' = self ∧
           ∀ (j : Nat), j < 16 →
-            Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+            Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
               (polys[j]!).toGF216Poly.eval (idx.val.toGF216)
       | .Points pts =>
           ∀ polys', self'.s = .Polys polys' →
