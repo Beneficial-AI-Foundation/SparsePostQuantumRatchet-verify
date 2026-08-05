@@ -6,42 +6,18 @@ Authors: Hoang Le Truong
 import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 
-/-!
-# Spec theorems for `spqr::encoding::{Decoder for Option<T>}::add_chunk`
+/-! # Spec theorems for `spqr::encoding::{Decoder for Option<T>}::add_chunk`
 
-Whenever `T : Decoder`, the `Decoder` trait also applies to `Option<T>`. In Rust the method
-`add_chunk` on `Option<T>` operates on a `&mut Option<T>` and is only legitimate when the option is
-`Some` (the `#[hax_lib::requires(self.is_some())]` annotation); under that precondition it
-transparently delegates to `T::add_chunk` on the inner value and leaves the option in the `Some`
-state, having folded the fresh `chunk` into the inner decoder.
+`Option<T>::add_chunk` requires `self.isSome`, delegates to `T::add_chunk` on the inner value, and
+re-wraps the result in `Some`. The extracted Lean code decomposes this into four steps: `take`,
+`unwrap`, inner `add_chunk`, and `ok (some ·)` — a pure structural lift with no extra math.
 
-To enable formal verification with hax — which disallows mutable references that escape a function
-body via APIs such as `Option::take` — the extracted Lean version reifies the borrow as a pair of
-ordinary functional steps:
+Two theorems:
 
-  1. `core.option.Option.take self` — pure decomposition `self ↦ (self, none)`, returning the
-     "extracted" inner option together with a `none` placeholder.
-  2. `core.option.Option.unwrap o` — partial projection out of `Option T`, succeeding iff
-     `o.isSome` (i.e. `self.isSome`).
-  3. `DecoderInst.add_chunk tmp chunk` — delegation to the underlying `Decoder T` instance on the
-     unwrapped state, absorbing `chunk`.
-  4. `ok (some tmp1)` — re-injection of the updated inner state back into the `Some` branch.
+  • `add_chunk_spec_lift` — lifts an arbitrary inner postcondition through the `Option` wrapper.
+  • `add_chunk_spec_poly_decoder` — instantiates the lift for `T = PolyDecoder`.
 
-The composition is a *pure structural lift*: the outer `add_chunk` carries no extra mathematical
-content beyond that of `DecoderInst.add_chunk`; the `Option` layer merely repackages inputs and
-outputs. This mirrors, on the decoding side, the `Option<T>` lifting already established for the
-encoder's `next_chunk`, and for the decoder's own `new`.
-
-This file proves two theorems built on that observation:
-
-  • `add_chunk_spec_lift` — transports an arbitrary postcondition of the inner decoder's
-    `add_chunk` through the `Option<T>` wrapper, under the `self.isSome` precondition.
-  • `add_chunk_spec_poly_decoder` — the `T = PolyDecoder` instance, obtained from the lift plus the
-    point-insertion postcondition of
-    `PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_spec`.
-
-**Source**: spqr/src/encoding.rs (lines 84:4-91:5)
--/
+**Source**: spqr/src/encoding.rs -/
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial
 
@@ -67,10 +43,7 @@ The proof composes the four functional steps of the extraction:
 
 Since the `Option` layer only re-injects along `Some`, whatever `P` holds for the inner decoder
 holds — retagged with `Some` — for the wrapped one. This is the reusable building block behind
-`add_chunk_spec_poly_decoder`.
-
-**Source**: spqr/src/encoding.rs (lines 84:4-91:5)
--/
+`add_chunk_spec_poly_decoder`. -/
 @[step]
 theorem add_chunk_spec_lift
     {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T)
@@ -111,8 +84,6 @@ spec.
 
 Proved by feeding `PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_spec` (the inner `PolyDecoder`
 postcondition) into `add_chunk_spec_lift`, whose `Some`-lifted conclusion matches the target shape.
-
-**Source**: spqr/src/encoding.rs (lines 84:4-91:5)
 -/
 @[step]
 theorem add_chunk_spec_poly_decoder
