@@ -45,12 +45,15 @@ import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Aeneas.IntoIteratorSlice
 import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.ResultExpect
 import Spqr.Specs.Aeneas.SliceChunksExact
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Aeneas.SliceIteratorNext
+import Spqr.Specs.Aeneas.TryFromSliceToArray
 import Spqr.Specs.Aeneas.VecClone
 import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Aeneas.VecIndexRangeFull
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Authenticator.Authenticator.MacHdr
@@ -129,6 +132,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
