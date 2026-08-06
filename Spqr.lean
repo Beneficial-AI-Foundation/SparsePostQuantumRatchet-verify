@@ -136,6 +136,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallMut
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallOnce
