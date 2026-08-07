@@ -29,11 +29,18 @@ namespace spqr.encoding.polynomial.lagrange_polys_for_complete_points_loop0
 
 /-- **Spec theorem for `encoding.polynomial.lagrange_polys_for_complete_points_loop0.body`**:
 
-One step setting `ones[i].x.value := i` (cast `usize → u16`) and `ones[i].y := GF16.ONE`.
+One step setting `ones[i].x.value := i` (cast `usize → u16`). The Rust body writes only `x`,
+so `y` is *framed*: whatever `y` came in at position `i` comes back out.
 
 - **Done** (`i ≥ N`): `ones' = ones`, loop terminates.
-- **Cont** (`i < N`): `i1 = i + 1`; `ones1[i].x.value.val = i.val`, `ones1[i].y = GF16.ONE`;
+- **Cont** (`i < N`): `i1 = i + 1`; `ones1[i].x.value.val = i.val`, `ones1[i].y = ones[i].y`;
   other positions unchanged.
+
+The `y` conjunct must state preservation rather than `y = GF16.ONE`: `ones` is universally
+quantified with no hypothesis constraining it, and the body never writes `y`, so
+`ones1[i].y = GF16.ONE` is refutable (issue #272). Callers recover `y = GF16.ONE` by composing
+this frame with their own invariant; `lagrange_polys_for_complete_points_spec` does so once,
+from the `Array.repeat N { x := GF16.ZERO, y := GF16.ONE }` initialiser.
 
 No panic when `i < N ≤ 65536` (array access, cast, and increment all in bounds). -/
 @[step]
@@ -48,13 +55,14 @@ theorem body_spec
           i1 = i.val + 1 ∧
           (∀ (_ : i < ones1.length),
             (ones1[i]!).x.value.val = i.val ∧
-            (ones1[i]!).y = GF16.ONE) ∧
+            (ones1[i]!).y = (ones[i]!).y) ∧
           (∀ (j : Nat), j ≠ i → ones1[j]! = ones[j]!) ⦄ := by
   unfold body
   by_cases h_lt : i.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false, ne_eq, true_and]
     step*
-    all_goals (simp_all [UScalar.cast_val_eq]; sorry)
+    all_goals (simp_all [UScalar.cast_val_eq])
+    all_goals omega
   · step*
 
 /-! # Spec theorem for `spqr::encoding::polynomial::lagrange_polys_for_complete_points`: loop 0
@@ -62,8 +70,10 @@ theorem body_spec
 The `loop` wrapper iterating `body_spec` over `i = 0, …, N−1` to initialise the point array.
 
 **Closed-form postcondition** (starting from index `i`):
-- Processed positions (`i ≤ j < N`): `result[j].x.value.val = j`, `result[j].y = GF16.ONE`.
+- Processed positions (`i ≤ j < N`): `result[j].x.value.val = j`, `result[j].y = ones[j].y`.
 - Unprocessed positions (`j < i`): `result[j]? = ones[j]?`.
+
+As in `body_spec`, `y` is framed rather than pinned to `GF16.ONE`; the caller discharges it.
 
 Starting at `i = 0`, all positions are processed.
 
@@ -76,7 +86,7 @@ theorem loop_spec
     lagrange_polys_for_complete_points_loop0 ones i ⦃ (result : Std.Array Pt N) =>
       (∀ (j : Nat), i ≤ j ∧  j < N →
         (result[j]!).x.value.val = j ∧
-        (result[j]!).y = GF16.ONE) ∧
+        (result[j]!).y = (ones[j]!).y) ∧
       (∀ (j : Nat), j < i → result[j]! = ones[j]!) ⦄ := by
   unfold lagrange_polys_for_complete_points_loop0
   apply loop.spec_decr_nat
@@ -87,7 +97,7 @@ theorem loop_spec
         (∀ (j : Nat), i ≤ j → j < p.2 →
             (∀ (hj : j < p.1.length),
             (p.1[j]!).x.value.val = j ∧
-            (p.1[j]!).y = GF16.ONE)) ∧
+            (p.1[j]!).y = (ones[j]!).y)) ∧
         (∀ (j : Nat), ¬(i ≤ j ∧ j < p.2) → p.1[j]! = ones[j]!))
   · rintro ⟨ones', i'⟩ ⟨h_i_le_i', h_i'_le_N, h_proc, h_rest⟩
     simp only at h_i_le_i' h_i'_le_N h_proc h_rest ⊢
@@ -101,7 +111,12 @@ theorem loop_spec
       refine ⟨⟨by grind, by grind, fun j h_ij h_ji1 h_idx => ?_, fun j h_not => by grind⟩, by grind⟩
       · by_cases h_eq : j = i'.val
         · subst h_eq
-          exact h_at_i h_idx
+          -- Position `i'` was untouched before this iteration, so the frame chains
+          -- `ones1[i'].y = ones'[i'].y = ones[i'].y`.
+          have h2 : ones'[i']! = ones[i']! := h_rest i'.val (by grind)
+          have hy := (h_at_i h_idx).2
+          rw [h2] at hy
+          exact ⟨(h_at_i h_idx).1, hy⟩
         · grind
   · grind
 
@@ -223,6 +238,14 @@ and each `result[j]` is the `j`-th scaled Lagrange basis polynomial for the poin
 
 namespace spqr.encoding.polynomial
 
+/-- Every position of `Array.repeat N pt` below `N` holds `pt`, so its `y` is `pt.y`.
+
+Used to discharge the `y` frame carried by `loop0.loop_spec` against the generated
+initialiser `Array.repeat N { x := GF16.ZERO, y := GF16.ONE }`. -/
+private theorem repeat_y {N : Usize} (pt : Pt) (j : Nat) (hj : j < N.val) :
+    ((Array.repeat N pt)[j]!).y = pt.y := by
+  simp [Array.getElem!_Nat_eq, Array.repeat_val, hj]
+
 /-- **Spec theorem for `encoding.polynomial.lagrange_polys_for_complete_points`**:
 
 Returns the `N`-element array of Lagrange basis polynomials for complete points `0, …, N−1`
@@ -248,8 +271,9 @@ theorem lagrange_polys_for_complete_points_spec
                 condProdLinearFactors (ones1[j]!).x (ones1.val.take N.val) 0) ⦄ := by
   unfold lagrange_polys_for_complete_points
   step*
-  exact ⟨ones1, fun j hj => ones1_post1 j (Nat.zero_le j) hj,
-         fun j hj => result_post1 j (Nat.zero_le j) hj⟩
+  refine ⟨ones1, fun j hj => ?_, fun j hj => result_post1 j (Nat.zero_le j) hj⟩
+  obtain ⟨hx, hy⟩ := ones1_post1 j (Nat.zero_le j) hj
+  exact ⟨hx, hy.trans (repeat_y _ j hj)⟩
 
 instance instInhabitedPolyConst {N : Usize} : Inhabited (PolyConst N) := ⟨PolyConst.ZEROS N⟩
 
