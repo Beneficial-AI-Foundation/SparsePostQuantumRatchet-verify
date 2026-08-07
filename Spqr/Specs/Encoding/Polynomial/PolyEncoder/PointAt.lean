@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Hoang Le Truong
+Authors: Hoang Le Truong, Lacramioara Astefanoaei
 -/
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
