@@ -57,6 +57,7 @@ import Spqr.Specs.Authenticator.Authenticator.MacHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Encoding.Decoder.AddChunk
+import Spqr.Specs.Encoding.Decoder.DecodedMessage
 import Spqr.Specs.Encoding.Decoder.New
 import Spqr.Specs.Encoding.Encoder.EncodeBytes
 import Spqr.Specs.Encoding.EncodingError.From
