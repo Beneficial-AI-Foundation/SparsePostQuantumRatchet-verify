@@ -552,6 +552,8 @@ theorem point_at_spec
                     polys'[j]!.toGF216Poly = ∑ k ∈ Finset.range (pts[j]!).value.length,
                         C (((pts[j]!).value[k]!).toGF216) *
                           scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
+                  (∀ (j : Nat), j < 16 →
+                    (polys'.val[j]!).coefficients.length + 1 ≤ Usize.max) ∧
                   result.toGF216 = (polys'[poly]!).toGF216Poly.eval (idx.val.toGF216)
               | .Points _ => False
       | .Polys polys =>
@@ -617,10 +619,14 @@ theorem point_at_spec
         rw [List.Inhabited_getElem_eq_getElem! polys1.val poly.val h_poly_lt]
         exact h_poly_spec.1
       simp_all only [↓reduceIte]
-      constructor
+      refine ⟨?_, ?_, ?_⟩
       · intro j hj
         have := polys1_post j (by grind)
         grind
+      · intro j hj
+        have h_spec := polys1_post j (by grind)
+        simp only [Poly.degree] at h_spec
+        exact h_spec.1
       · have h_poly_lt : poly.val < polys1.val.length := by
           rw [polys1.property]; exact h_poly
         have h_eq : polys1.val[poly.val] = polys1.val[poly.val]! :=
