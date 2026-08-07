@@ -323,7 +323,7 @@ theorem body_spec
     rw [h_opt_eq]
     have h_i_lt_16 : iter.start.val < 16 := by omega
     have h_adm := h_admissible iter.start.val h_i_lt_16
-    simp only [UScalar.lt_equiv, UScalar.ofNatCore_val_eq, uncurry_apply_pair, not_lt,
+    simp only [UScalar.lt_equiv, UScalar.ofNatCore_val_eq, not_lt,
       List.getElem!_eq_getElem?_getD, ne_eq]
     simp only [core.slice.Slice.iter, core.iter.traits.iterator.Iterator.enumerate.trait_default,
       core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
