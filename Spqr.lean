@@ -7,7 +7,6 @@ import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
-import Spqr.Math.Attr
 import Spqr.Math.Gf16.Basic
 import Spqr.Math.Gf16.Field
 import Spqr.Math.Gf16.Irreducible
@@ -40,7 +39,6 @@ import Spqr.Math.Poly.Lagrange.InterpolantSum
 import Spqr.Math.Poly.LinearFactors.Basic
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Math.Poly.ModByMonic
-import Spqr.Specs.Aeneas.EnumerateSliceIterNext
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.IndexRangeFull

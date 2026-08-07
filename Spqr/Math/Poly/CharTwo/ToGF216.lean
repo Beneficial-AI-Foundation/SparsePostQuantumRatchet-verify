@@ -49,7 +49,6 @@ Bridge: `getElem!` with `toGF216` equals `listToGF216Poly` coefficient.
 Connects the Lean list indexing `cs[j]!.toGF216` to the mathematical coefficient
 `(listToGF216Poly cs).coeff j`, handling the out-of-bounds case.
 -/
-@[gf216_simp]
 lemma getElem!_toGF216_eq_coeff
     (cs : List GF16) (j : Nat) :
     (cs[j]!).toGF216 = (listToGF216Poly cs).coeff j := by

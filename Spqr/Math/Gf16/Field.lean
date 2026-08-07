@@ -59,7 +59,6 @@ BinaryPoly → GF216` where the first arrow is `natToBinaryPoly` (binary expansi
 GF(2)-polynomial) and the second arrow is the canonical ring homomorphism `BinaryPoly.toGF216`
 (which factors through `BinaryPoly / (polyGF2)`).
 -/
-@[gf216_simp]
 noncomputable def _root_.Nat.toGF216 (n : Nat) : GF216 :=
   BinaryPoly.toGF216 (natToBinaryPoly n)
 
@@ -71,13 +70,8 @@ open spqr.encoding.gf in
 Interpret a `GF16` field element as an element of `GF216 = GF(2¹⁶)`, using the canonical chain
 `GF16.value.val → BinaryPoly → GF216`.
 -/
-@[gf216_simp]
 noncomputable def toGF216 (g : GF16) : GF216 := g.value.val.toGF216
 
 end spqr.encoding.gf.GF16
-
-/- Machine-level opening move shared by virtually every GF16 spec proof: expose the bitwise
-operation underneath an Aeneas scalar before the `gf216_simp` bridge lemmas fire. -/
-attribute [gf216_simp] Aeneas.Std.UScalar.val_xor
 
 deriving instance Inhabited for spqr.encoding.gf.GF16
