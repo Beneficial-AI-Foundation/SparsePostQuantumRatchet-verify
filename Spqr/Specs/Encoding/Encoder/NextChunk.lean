@@ -16,8 +16,7 @@ This file proves:
   • `next_chunk_spec_lift` — lifts any postcondition of the inner `next_chunk` through `Option<T>`.
   • `next_chunk_spec_poly_encoder` — the `T = PolyEncoder` specialisation.
 
-**Source**: spqr/src/encoding.rs (lines 63:4-71:5)
--/
+**Source**: spqr/src/encoding.rs -/
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial encoding.gf Polynomial
 
@@ -26,10 +25,7 @@ namespace spqr.core.option.Option.Insts.SpqrEncodingEncoder
 /-- **Predicate-lifting spec for `Option<T>::next_chunk`**:
 
 If `self.isSome` and the inner `EncoderInst.next_chunk` satisfies predicate `P`, then
-`next_chunk EncoderInst self` satisfies `P` lifted through `Some`.
-
-**Source**: spqr/src/encoding.rs (lines 63:4-71:5)
--/
+`next_chunk EncoderInst self` satisfies `P` lifted through `Some`. -/
 @[step]
 theorem next_chunk_spec_lift
     {T : Type} (EncoderInst : encoding.Encoder T) (self : Option T)
@@ -52,10 +48,7 @@ theorem next_chunk_spec_lift
 
 Lifts `PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec` through the `Option` wrapper via
 `next_chunk_spec_lift`. The result stays `Some` and the inner postcondition (chunk index, 32-byte
-data, wrapping index increment, polynomial evaluation / Lagrange interpolation) holds verbatim.
-
-**Source**: spqr/src/encoding.rs (lines 63:4-71:5)
--/
+data, wrapping index increment, polynomial evaluation / Lagrange interpolation) holds verbatim. -/
 @[step]
 theorem next_chunk_spec_poly_encoder
     (pe0 : PolyEncoder)
