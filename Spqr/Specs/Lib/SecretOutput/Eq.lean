@@ -70,41 +70,34 @@ private theorem eq_vec_u8_spec
 /--
 **Spec theorem for `spqr.SecretOutput.Insts.CoreCmpPartialEqSecretOutput.eq`**:
 
-Structural equality on two `SecretOutput` values: `true` iff same variant with equal payloads,
-`false` on variant mismatch. Always succeeds (no panic). Proved by case-splitting and `step*`.
+Structural equality on two `SecretOutput` values: `true` iff `self = other`.
+Always succeeds (no panic). Proved by case-splitting and `step*`.
 
 **Source**: spqr/src/lib.rs (line 73)
 -/
 @[step]
 theorem eq_spec (self other : spqr.SecretOutput) :
     eq self other ⦃ (result : Bool) =>
-      (self = .None ∧ other = .None → result = true) ∧
-      (∀ a b, self = .Send a ∧  other = .Send b → (result = true ↔ a = b)) ∧
-      (∀ a b, self = .Recv a ∧ other = .Recv b → (result = true ↔ a = b)) ∧
-      ((self = .None ∧ (∃ s, other = .Send s ∨ other = .Recv s)) ∨
-       ((∃ s, self = .Send s ∨ self = .Recv s) ∧ other = .None) ∨
-       ((∃ s, self = .Send s) ∧ (∃ s, other = .Recv s)) ∨
-       ((∃ s, self = .Recv s) ∧ (∃ s, other = .Send s)) →
-       result = false) ⦄ := by
+      result = true ↔ self = other ⦄ := by
   unfold eq
   match self, other with
   | .None, .None =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .None, .Send _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .None, .Recv _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Send _, .None =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Send a, .Send b =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Send _, .Recv _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Recv _, .None =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Recv _, .Send _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Recv a, .Recv b =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
 
 end spqr.SecretOutput.Insts.CoreCmpPartialEqSecretOutput
