@@ -43,6 +43,7 @@ import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Aeneas.IntoIteratorSlice
+import Spqr.Specs.Aeneas.MapCollectBridge
 import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.ResultExpect
@@ -63,6 +64,7 @@ import Spqr.Specs.Encoding.Decoder.AddChunk
 import Spqr.Specs.Encoding.Decoder.DecodedMessage
 import Spqr.Specs.Encoding.Decoder.New
 import Spqr.Specs.Encoding.Encoder.EncodeBytes
+import Spqr.Specs.Encoding.Encoder.NextChunk
 import Spqr.Specs.Encoding.EncodingError.From
 import Spqr.Specs.Encoding.Gf.GF16.Add
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
