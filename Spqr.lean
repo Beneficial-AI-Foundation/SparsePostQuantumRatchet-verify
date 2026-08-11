@@ -156,6 +156,7 @@ import Spqr.Specs.IncrementalMlkem768.Generate
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
 import Spqr.Specs.Lib.SecretOutput.Eq
+import Spqr.Specs.Lib.SecretOutput.Fmt
 import Spqr.Specs.Serialize.Error.Clone
 import Spqr.Specs.Serialize.Error.Eq
 import Spqr.Specs.Serialize.Error.From
