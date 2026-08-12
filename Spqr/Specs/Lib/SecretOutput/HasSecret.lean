@@ -9,8 +9,7 @@ import SrcTranslated.Funs
 
 Returns `true` for `Send(_)` or `Recv(_)`, `false` for `None`.
 
-**Source**: spqr/src/lib.rs (lines 173:4-175:5)
--/
+**Source**: spqr/src/lib.rs -/
 
 open Aeneas Aeneas.Std Result
 
