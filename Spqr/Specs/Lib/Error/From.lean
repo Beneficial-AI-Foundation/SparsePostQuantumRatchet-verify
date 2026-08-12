@@ -31,3 +31,30 @@ theorem from_spec (e : encoding.EncodingError) :
   simp
 
 end spqr.Error.Insts.CoreConvertFromEncodingError
+
+/-! # Spec theorem for `spqr::{impl From<authenticator::Error> for Error}::from`
+
+Maps every `authenticator::Error` to `Error::MacVerifyFailed`. The mapping is
+**lossy**: the specific authenticator error is discarded so MAC verification
+failures do not leak their failure mode.
+
+**Source**: spqr/src/lib.rs -/
+
+open Aeneas Aeneas.Std Result
+
+namespace spqr.Error.Insts.CoreConvertFromError
+
+/-- **Spec theorem for `spqr.Error.Insts.CoreConvertFromError.from`**:
+
+• Discards the input `v : authenticator.Error`.
+• Always succeeds: returns `ok Error.MacVerifyFailed` (constant mapping).
+
+Postcondition: `result = Error.MacVerifyFailed`. -/
+@[step]
+theorem from_spec (v : authenticator.Error) :
+    Error.Insts.CoreConvertFromError.from v ⦃ (result : Error) =>
+      result = Error.MacVerifyFailed ⦄ := by
+  unfold Error.Insts.CoreConvertFromError.from
+  simp_all
+
+end spqr.Error.Insts.CoreConvertFromError
