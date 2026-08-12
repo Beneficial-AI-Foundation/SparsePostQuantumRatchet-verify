@@ -157,6 +157,8 @@ import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
 import Spqr.Specs.Lib.SecretOutput.Eq
 import Spqr.Specs.Lib.SecretOutput.Fmt
+import Spqr.Specs.Lib.SecretOutput.Secret
+import Spqr.Specs.Lib.SecretOutput.SendSecret
 import Spqr.Specs.Serialize.Error.Clone
 import Spqr.Specs.Serialize.Error.Eq
 import Spqr.Specs.Serialize.Error.From
