@@ -159,7 +159,9 @@ import Spqr.Specs.Lib.SecretOutput.Eq
 import Spqr.Specs.Lib.SecretOutput.Fmt
 import Spqr.Specs.Lib.SecretOutput.HasSecret
 import Spqr.Specs.Lib.SecretOutput.RecvSecret
+import Spqr.Specs.Lib.SecretOutput.Secret
 import Spqr.Specs.Lib.SecretOutput.SendSecret
+import Spqr.Specs.Lib.Version.U8.From
 import Spqr.Specs.Serialize.Error.Clone
 import Spqr.Specs.Serialize.Error.Eq
 import Spqr.Specs.Serialize.Error.From
