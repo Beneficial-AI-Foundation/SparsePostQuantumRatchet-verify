@@ -42,13 +42,16 @@ namespace spqr.chain.KeyHistory
 • Appends the 32-byte key `k.1` to `self.data`.
 • Returns an updated `KeyHistory` whose `data` vector has grown by exactly `KEY_SIZE = 36` bytes.
 
-The result satisfies the postcondition:
+The result satisfies the postconditions:
 
-  `result.data.length = self.data.length + 36`
+  1. `result.data.length = self.data.length + 36`
+     — exactly one key record (4 bytes counter ++ 32 bytes key) has been appended.
 
-i.e. exactly one key record (4 bytes counter ++ 32 bytes key) has been appended to the history.
+  2. `result.data.val = self.data.val ++ (core.num.U32.to_be_bytes k.1).val ++ k.2.val`
+     — the new data is the original data followed by the big-endian counter bytes and the key.
 
-The proof unfolds `add` and discharges the resulting goals with `step*` and `scalar_tac`.
+  3. `∀ i, i < self.data.length → result.data.val[i]! = self.data.val[i]!`
+     — all pre-existing bytes are preserved (the append is non-destructive).
 
 **Source**: spqr/src/chain.rs (lines 139:4-142:5)
 -/
@@ -58,7 +61,9 @@ theorem add_spec (self : chain.KeyHistory)
     (_params : proto.pq_ratchet.ChainParams)
     (h : self.data.length + 36 ≤ Std.Usize.max) :
     add self k _params ⦃ fun (result : chain.KeyHistory) =>
-      result.data.length = self.data.length + 36 ⦄ := by
+      result.data.length = self.data.length + 36 ∧
+      result.data.val = self.data.val ++ (core.num.U32.to_be_bytes k.1).val ++ k.2.val ∧
+      (∀ i, i < self.data.length → result.data.val[i]! = self.data.val[i]!) ⦄ := by
   unfold add
   step*
   sorry
