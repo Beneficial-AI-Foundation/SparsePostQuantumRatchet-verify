@@ -382,15 +382,12 @@ theorem body_spec
                             (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
                   | _ => False ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    simp only [alloc.vec.Vec.index_slice_index, alloc.vec.Vec.len, UScalar.lt_equiv,
-      UScalar.ofNatCore_val_eq, uncurry_apply_pair, not_lt, ↓existsAndEq,
+    simp only [alloc.vec.Vec.len, UScalar.lt_equiv,
+      UScalar.ofNatCore_val_eq, not_lt, ↓existsAndEq,
       List.getElem!_eq_getElem?_getD, ne_eq, exists_and_left, true_and]
     have h_i_lt_v : iter.start.val < v.val.length := by grind
     have h_i_lt_16 : iter.start.val < 16 := by omega

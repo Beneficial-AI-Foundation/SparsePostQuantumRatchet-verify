@@ -3,6 +3,7 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+import Spqr.Specs.Aeneas.EnumerateSliceIterNext
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeSum
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_1
@@ -37,73 +38,6 @@ open PolyConst.lagrange_interpolate_pt_loop
 
 
 namespace spqr.encoding.polynomial.Poly.from_complete_points_loop
-
-private lemma usize_checked_add_one_val (x : Usize)
-    (h : x.val + 1 ≤ Usize.max) :
-    ∃ (y : Usize), (x + 1#usize : Result Usize) = ok y ∧ y.val = x.val + 1 := by
-  have h_add : x.val + (1#usize : Usize).val ≤ Usize.max := by scalar_tac
-  have h_spec := Usize.add_spec h_add
-  revert h_spec
-  generalize (x + 1#usize : Result Usize) = res
-  intro h_spec
-  match res with
-  | .ok z => exact ⟨z, rfl, by simp_all [WP.spec_ok]⟩
-  | .fail e => simp_all
-  | .div => simp_all
-
-private lemma EnumerateSliceIter_next_Pt_post
-    (iter : Enumerate (Iter Pt))
-    (h_bound : iter.iter.i < iter.iter.slice.val.length → iter.count.val + 1 ≤ Usize.max) :
-    ∃ (opt : Option (Usize × Pt))
-      (iter' : Enumerate (Iter Pt)),
-      IteratorEnumerate.next
-        (core.iter.traits.iterator.IteratorSliceIter Pt) iter =
-          ok (opt, iter') := by
-  simp only [IteratorEnumerate.next,
-    IteratorSliceIter.next]
-  split
-  · have h_add_bound : iter.count.val + 1 ≤ Usize.max := h_bound (by scalar_tac)
-    obtain ⟨count', h_add_eq, _⟩ := usize_checked_add_one_val iter.count h_add_bound
-    rw [h_add_eq]
-    exact ⟨_, _, rfl⟩
-  · exact ⟨_, _, rfl⟩
-
-private lemma EnumerateSliceIter_next_Pt_some
-    (iter : Enumerate (Iter Pt))
-    (h_lt : iter.iter.i < iter.iter.slice.val.length)
-    (h_bound : iter.count.val + 1 ≤ Usize.max) :
-    ∃ (iter1 : Enumerate (Iter Pt)),
-      IteratorEnumerate.next
-        (core.iter.traits.iterator.IteratorSliceIter Pt) iter =
-          ok (some (iter.count, iter.iter.slice.val[iter.iter.i]), iter1) ∧
-      iter1.iter.i = iter.iter.i + 1 ∧
-      iter1.iter.slice = iter.iter.slice ∧
-      iter1.count.val = iter.count.val + 1 := by
-  simp only [
-    IteratorEnumerate.next,
-    IteratorSliceIter.next]
-  have h_lt' : iter.iter.i < (↑iter.iter.slice.len : Nat) := by scalar_tac
-  rw [dif_pos h_lt']
-  obtain ⟨count', h_add_eq, h_add_val⟩ := usize_checked_add_one_val iter.count h_bound
-  rw [h_add_eq]
-  exact ⟨_, rfl, rfl, rfl, h_add_val⟩
-
-private lemma EnumerateSliceIter_next_Pt_none
-    (iter : Enumerate (Iter Pt))
-    (iter' : Enumerate (Iter Pt))
-    (hnext : IteratorEnumerate.next
-        (core.iter.traits.iterator.IteratorSliceIter Pt) iter =
-          ok (none, iter')) :
-    ¬ (iter.iter.i < iter.iter.slice.val.length) := by
-  simp only [IteratorEnumerate.next,
-    IteratorSliceIter.next] at hnext
-  split at hnext
-  case isTrue h_lt =>
-    exfalso
-    revert hnext
-    generalize (iter.count + 1#usize : Result Usize) = add_res
-    cases add_res <;> simp
-  case isFalse h_neg => exact h_neg
 
 private lemma usize_cast_u16_val (x : Usize) (h : x.val ≤ UScalar.max .U16) :
     (UScalar.cast UScalarTy.U16 x).val = x.val :=
@@ -145,21 +79,6 @@ private abbrev bodyPost
           iter'.iter.slice = pts ∧
           iter'.count.val = iter.count.val + 1
 
-private lemma absurd_some_out_of_bounds
-    (iter : Enumerate (Iter Pt))
-    (idx : Usize) (pt : Pt) (iter1 : Enumerate (Iter Pt))
-    (hnext : IteratorEnumerate.next
-        (core.iter.traits.iterator.IteratorSliceIter Pt) iter =
-          ok (some (idx, pt), iter1))
-    (h_out : ¬(iter.iter.i < iter.iter.slice.val.length)) :
-    False := by
-  simp only [IteratorEnumerate.next,
-    IteratorSliceIter.next] at hnext
-  split at hnext
-  case isTrue h_lt => exact absurd h_lt h_out
-  case isFalse => simp at hnext
-
-
 /-! ## Spec helper: the `some` (validation) branch
 
 Body spec for the `some` case: the iterator is still in bounds, so we get the current
@@ -175,17 +94,19 @@ private theorem body_spec_some_case
     body pts iter ⦃ bodyPost pts iter ⦄ := by
   unfold body
   have h_count_bound : iter.count.val + 1 ≤ Usize.max := by scalar_tac
-  obtain ⟨iter1, hnext, h_iter1_i, h_iter1_slice, h_iter1_count⟩ :=
-    EnumerateSliceIter_next_Pt_some iter h_in_bounds h_count_bound
-  rw [hnext]
-  simp only [bind_tc_ok]
-  have h_lt_pts : iter.iter.i < pts.val.length := by
-    rw [← h_slice_eq]; exact h_in_bounds
-  have h_cast_val := usize_cast_u16_val iter.count h_count
-  step*
-  · simp_all
-    grind
-  · grind
+  step as ⟨opt, iter1, hnext⟩
+  cases opt with
+  | none => exact absurd h_in_bounds hnext.1
+  | some p =>
+    obtain ⟨idx, pt⟩ := p
+    obtain ⟨h_lt', h_idx, h_pt, h_iter1_slice, h_iter1_i, h_iter1_count⟩ := hnext
+    have h_lt_pts : iter.iter.i < pts.val.length := by
+      rw [← h_slice_eq]; exact h_in_bounds
+    have h_cast_val := usize_cast_u16_val iter.count h_count
+    step*
+    · simp_all
+      grind
+    · grind
 
 /-! ## Spec helpers: the `none` (computation) branch by size
 
@@ -200,18 +121,14 @@ private theorem body_spec_none_0
     (h0 : pts.val.length = 0) :
     body pts iter ⦃ bodyPost pts iter ⦄ := by
   unfold body
-  obtain ⟨opt, iter1, hnext⟩ := EnumerateSliceIter_next_Pt_post iter
-    (fun h_lt => absurd h_lt h_out_of_bounds)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1, hnext⟩
   cases opt with
   | some p =>
-    obtain ⟨idx, pt⟩ := p
-    exact (absurd_some_out_of_bounds iter idx pt iter1 hnext h_out_of_bounds).elim
+    obtain ⟨h_lt, -⟩ := hnext
+    exact absurd h_lt h_out_of_bounds
   | none =>
     have h_not_lt : ¬ (iter.iter.i < pts.val.length) := by
-      have := EnumerateSliceIter_next_Pt_none iter iter1 hnext
-      rw [h_slice_eq] at this; exact this
+      rw [← h_slice_eq]; exact hnext.1
     have h_len_0 : Slice.len pts = 0#usize := by
       ext
       simp [Slice.len]
@@ -261,17 +178,14 @@ private theorem body_spec_none_N
     (hN_admissible : N = 1 ∨ N = 3 ∨ N = 5 ∨ N = 30 ∨ N = 34 ∨ N = 36) :
     body pts iter ⦃ bodyPost pts iter ⦄ := by
   unfold body
-  obtain ⟨opt, iter1, hnext⟩ := EnumerateSliceIter_next_Pt_post iter
-    (fun h_lt => absurd h_lt h_out_of_bounds)
-  rw [hnext]; simp only [bind_tc_ok]
+  step as ⟨opt, iter1, hnext⟩
   cases opt with
   | some p =>
-    obtain ⟨idx, pt⟩ := p
-    exact (absurd_some_out_of_bounds iter idx pt iter1 hnext h_out_of_bounds).elim
+    obtain ⟨h_lt, -⟩ := hnext
+    exact absurd h_lt h_out_of_bounds
   | none =>
     have h_not_lt : ¬ (iter.iter.i < pts.val.length) := by
-      have := EnumerateSliceIter_next_Pt_none iter iter1 hnext
-      rw [h_slice_eq] at this; exact this
+      rw [← h_slice_eq]; exact hnext.1
     rcases hN_admissible with rfl | rfl | rfl | rfl | rfl | rfl
     · have h_len_N : Slice.len pts = 1#usize := by simp [Slice.len, hN, Usize.ofNatCore]
       step as ⟨ s, hs⟩
@@ -471,10 +385,13 @@ theorem body_spec_inbounds
     rw [h_slice_eq]; exact h_in_bounds
   unfold body
   have h_count_bound : iter.count.val + 1 ≤ Usize.max := by scalar_tac
-  obtain ⟨iter1, hnext, h_iter1_i, h_iter1_slice, h_iter1_count⟩ :=
-    EnumerateSliceIter_next_Pt_some iter h_in_bounds' h_count_bound
-  rw [hnext]
-  step*
+  step as ⟨opt, iter1, hnext⟩
+  cases opt with
+  | none => exact absurd h_in_bounds' hnext.1
+  | some p =>
+    obtain ⟨idx, pt⟩ := p
+    obtain ⟨h_lt', h_idx, h_pt, h_iter1_slice, h_iter1_i, h_iter1_count⟩ := hnext
+    step*
 
 /-- **Full body spec for `encoding.polynomial.Poly.from_complete_points_loop.body`**:
 

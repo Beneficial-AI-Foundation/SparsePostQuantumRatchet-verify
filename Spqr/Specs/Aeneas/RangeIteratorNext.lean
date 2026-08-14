@@ -47,6 +47,7 @@ The range iterator `next` always returns `ok` and either provides the current `s
 **Source**: core/src/ops/range.rs (Iterator impl for Range)
 Note: Aeneas provides `core.iter.range.IteratorRange.next_Usize_spec` but is only for one branch.
 -/
+@[step]
 theorem next_Usize_spec' (range : core.ops.range.Range Std.Usize) :
     next core.iter.range.StepUsize range ⦃ (opt, range') =>
       (¬ range.start.val < range.end.val → opt = none ∧ range' = range) ∧

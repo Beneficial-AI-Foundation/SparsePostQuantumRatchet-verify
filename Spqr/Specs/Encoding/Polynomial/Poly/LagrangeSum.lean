@@ -51,14 +51,13 @@ theorem body_spec
           out1.toGF216Poly = out.toGF216Poly +
             C ((pts[iter.start]!).y.toGF216) * (polys[iter.start]!).toGF216Poly ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
-  by_cases h_lt : iter.start < iter.end.val
-  · step*
+  step as ⟨opt, iter1', h_none, h_some⟩
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨rfl, h_start, h_end⟩ := h_some h_lt
+    step*
     all_goals grind
-  · grind
+  · obtain ⟨rfl, rfl⟩ := h_none h_lt
+    grind
 
 /-! # Spec theorem for `Poly::lagrange_sum`: loop 0
 

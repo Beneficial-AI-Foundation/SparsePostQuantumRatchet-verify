@@ -127,10 +127,7 @@ theorem body_spec_base
              else
                self1 = self) ⦄ := by
   unfold body sorted_vec.SortedSet.push
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]

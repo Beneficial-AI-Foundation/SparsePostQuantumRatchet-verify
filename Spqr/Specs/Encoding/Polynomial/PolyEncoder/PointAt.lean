@@ -295,16 +295,13 @@ theorem body_spec
             C (((pts.val[iter.start.val]!).value.val[j]!).toGF216) *
             scaledLagrangeBasis (alloc.vec.Vec.len ((pts.val[iter.start.val]!).value)) j) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
     have h_i_lt_16 : iter.start.val < 16 := by omega
     have h_adm := h_admissible iter.start.val h_i_lt_16
-    simp only [UScalar.lt_equiv, UScalar.ofNatCore_val_eq, uncurry_apply_pair, not_lt,
+    simp only [UScalar.lt_equiv, UScalar.ofNatCore_val_eq, not_lt,
       List.getElem!_eq_getElem?_getD, ne_eq]
     simp only [core.slice.Slice.iter, core.iter.traits.iterator.Iterator.enumerate.trait_default,
       core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]

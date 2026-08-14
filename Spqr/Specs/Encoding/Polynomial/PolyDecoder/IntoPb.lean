@@ -54,9 +54,7 @@ theorem body_spec
             256 * b0 + b1.val = (pts.val[iter.start.val]!).x.value.val ∧
             256 * b2 + b3.val = (pts.val[iter.start.val]!).y.value.val ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]; simp only [bind_tc_ok]
+  step as ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt, h_start1, h_end1⟩ := h_some h_lt
     subst h_opt
