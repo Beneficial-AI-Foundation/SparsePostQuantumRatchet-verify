@@ -62,10 +62,9 @@ theorem compare_loop_spec
 @[step]
 theorem compare_spec (lhs rhs : Slice U8) (hlen : lhs.length = rhs.length) :
     compare lhs rhs ⦃ (result : U8) =>
-      result.val =
-        if (∀ (j : Nat), j < lhs.length → lhs.val[j]! = rhs.val[j]!) then 0 else 1 ⦄ := by
+      (result.val = 0 ∨ result.val = 1) ∧
+      (result.val = 0 ↔ (∀ j < lhs.length, lhs.val[j]! = rhs.val[j]!)) ⦄ := by
   unfold compare
   step*
-  grind
 
 end spqr.util
