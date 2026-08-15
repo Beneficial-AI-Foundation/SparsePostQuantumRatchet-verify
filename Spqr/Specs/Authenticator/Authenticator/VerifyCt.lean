@@ -17,6 +17,7 @@ Source: "spqr/src/authenticator.rs" -/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
+open core.result.Result
 
 /-- Spec theorem for `spqr::authenticator::Authenticator::verify_ct`. Requires several boundedness
 hypotheses. Returns `Ok` iff `expected_mac` is byte-for-byte equal to the `mac_ct` output. -/
@@ -25,7 +26,7 @@ theorem verify_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8) (expect
     (h_key : self.mac_key.length ≤ U32.max) (h_data : ct.length + 43 ≤ U32.max)
     (h_mac : expected_mac.length = MACSIZE.val) :
     verify_ct self ep ct expected_mac ⦃ (result : core.result.Result Unit Error) =>
-      result = core.result.Result.Ok () ↔ mac_ct self ep ct = ok expected_mac ⦄ := by
+      result = Ok () ↔ mac_ct self ep ct = ok expected_mac ⦄ := by
   unfold verify_ct
   have hmac := refl_of% mac_ct_spec
   step*
