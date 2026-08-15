@@ -17,7 +17,7 @@ Source: "spqr/src/authenticator.rs" -/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
-open core.result.Result
+open core.result.Result (Ok)
 
 /-- Spec theorem for `spqr::authenticator::Authenticator::verify_ct`. Requires several boundedness
 hypotheses. Returns `Ok` iff `expected_mac` is byte-for-byte equal to the `mac_ct` output. -/
