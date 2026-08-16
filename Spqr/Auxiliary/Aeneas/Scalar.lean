@@ -31,10 +31,10 @@ theorem U8.toNat_toUInt8 (x : U8) : x.toUInt8.toNat = x.val := rfl
 
 @[simp, grind =]
 theorem U8.map_ofUInt8_map_toUInt8 (l : List U8) :
-    (l.map U8.toUInt8).map U8.ofUInt8 = l := by simp [comp_def]
+    List.map (U8.ofUInt8 ∘ U8.toUInt8) l = l := by simp [comp_def]
 
 @[simp, grind =]
 theorem U8.map_toUInt8_map_ofUInt8 (l : List UInt8) :
-    (l.map U8.ofUInt8).map U8.toUInt8 = l := by simp [comp_def]
+    List.map (U8.toUInt8 ∘ U8.ofUInt8) l = l := by simp [comp_def]
 
 end Aeneas.Std

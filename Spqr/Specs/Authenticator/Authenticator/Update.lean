@@ -21,7 +21,7 @@ open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 
 /-- The 45-byte domain-separation label used as the HKDF info prefix in `update`. -/
-def UPDATE_LABEL : List U8 :=
+def UpdateLabel : List U8 :=
   [83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 95#u8, 80#u8, 81#u8,
    67#u8, 75#u8, 65#u8, 95#u8, 86#u8, 49#u8, 95#u8, 77#u8, 76#u8, 75#u8,
    69#u8, 77#u8, 55#u8, 54#u8, 56#u8, 58#u8, 65#u8, 117#u8, 116#u8,
@@ -29,7 +29,7 @@ def UPDATE_LABEL : List U8 :=
    114#u8, 32#u8, 85#u8, 112#u8, 100#u8, 97#u8, 116#u8, 101#u8]
 
 @[simp, grind =]
-theorem UPDATE_LABEL_length : UPDATE_LABEL.length = 45 := by rfl
+theorem UpdateLabel_length : UpdateLabel.length = 45 := by rfl
 
 open List core.num.U64 in
 /-- Spec theorem for `spqr::authenticator::Authenticator::update`. Requires that the current root
@@ -42,11 +42,11 @@ theorem update_spec (self : Authenticator) (ep : U64) (k : Slice U8)
       result.root_key.length = 32 ∧ result.mac_key.length = 32 ∧
       result.root_key.val ++ result.mac_key.val
         = hkdf (replicate 32 0#u8) (self.root_key.val ++ k.val)
-          (UPDATE_LABEL ++ to_be_bytes ep) 64 ⦄ := by
+          (UpdateLabel ++ to_be_bytes ep) 64 ⦄ := by
   unfold update
   step*
   · simp [*]
   · simp [*]; grind
-  · simp_all [UPDATE_LABEL]
+  · simp_all [UpdateLabel]
 
 end spqr.authenticator.Authenticator

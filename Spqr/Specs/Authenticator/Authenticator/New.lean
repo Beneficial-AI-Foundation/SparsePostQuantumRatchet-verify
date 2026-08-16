@@ -24,7 +24,7 @@ theorem new_spec (root_key : alloc.vec.Vec U8) (ep : U64)
       result.mac_key.length = 32 ∧
       result.root_key.val ++ result.mac_key.val
         = hkdf (replicate 32 0#u8) (replicate 32 0#u8 ++ root_key.val)
-          (UPDATE_LABEL ++ to_be_bytes ep) 64 ⦄ := by
+          (UpdateLabel ++ to_be_bytes ep) 64 ⦄ := by
   unfold new
   step*
   simp_all
