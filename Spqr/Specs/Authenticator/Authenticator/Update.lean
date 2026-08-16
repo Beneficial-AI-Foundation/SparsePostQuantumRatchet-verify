@@ -41,7 +41,7 @@ theorem update_spec (self : Authenticator) (ep : U64) (k : Slice U8)
     update self ep k ⦃ (result : Authenticator) =>
       result.root_key.length = 32 ∧ result.mac_key.length = 32 ∧
       result.root_key.val ++ result.mac_key.val
-        = kdf.hkdf (replicate 32 0#u8) (self.root_key.val ++ k.val)
+        = hkdf (replicate 32 0#u8) (self.root_key.val ++ k.val)
           (UPDATE_LABEL ++ to_be_bytes ep) 64 ⦄ := by
   unfold update
   step*
