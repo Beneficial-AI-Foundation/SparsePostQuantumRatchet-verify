@@ -50,6 +50,7 @@ theorem decode_state_spec (s : alloc.vec.Vec U8) :
     -- (see aeneas-config.yml and https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102).
     -- Until that trait impl is properly specified, the decode-encode roundtrip property
     -- in the non-empty branch cannot be discharged.
+    -- TODO: #102
     sorry
 
 end spqr

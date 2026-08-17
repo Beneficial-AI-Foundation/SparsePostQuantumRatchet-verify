@@ -153,8 +153,8 @@ import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 import Spqr.Specs.IncrementalMlkem768.Generate
-import Spqr.Specs.Lib.DecodeState
 import Spqr.Specs.Lib.CurrentVersion.CallOnce
+import Spqr.Specs.Lib.DecodeState
 import Spqr.Specs.Lib.DecodeState.CallOnce
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
