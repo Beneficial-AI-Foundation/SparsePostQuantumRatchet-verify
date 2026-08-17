@@ -167,6 +167,7 @@ import Spqr.Specs.Lib.Version.DISABLED
 import Spqr.Specs.Lib.Version.MAX
 import Spqr.Specs.Lib.Version.TryFrom
 import Spqr.Specs.Lib.Version.U8.From
+import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
 import Spqr.Specs.Serialize.Error.Clone
 import Spqr.Specs.Serialize.Error.Eq
 import Spqr.Specs.Serialize.Error.From
