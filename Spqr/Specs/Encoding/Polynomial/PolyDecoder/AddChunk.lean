@@ -137,7 +137,7 @@ private theorem sortedInsert_push_result (l : List Pt) (p : Pt)
   exact ⟨idx, opt, newList, h_si,
     ⟨by have := h_res.length_le; omega, by omega⟩, h_res⟩
 
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 800000 in
 -- The proof unfolds the full `SortedSet.push` case analysis (empty/gt/eq/lt) for each of
 -- the three code paths of the loop body, which exceeds the default heartbeat budget.
 /-- **Spec theorem for `body` (Lagrange-enriched)**:
@@ -261,7 +261,7 @@ theorem body_spec
             | step*
         · -- Eq: dropLast append
           simp only [bind_tc_ok]; step*
-          refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
           split <;> split
           all_goals first
             | (exact ⟨fun k' hk' => by
@@ -272,7 +272,7 @@ theorem body_spec
             | step*
         · -- Gt: append
           simp only [bind_tc_ok]; step*
-          refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
           split <;> split
           all_goals first
             | (exact ⟨fun k' hk' => by
@@ -332,7 +332,7 @@ theorem body_spec
     split
     · -- getLast? = none (empty set)
       simp only [bind_tc_ok]; step*
-      refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+      refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
       have h_empty : ss.val = [] := by
         cases h_ss : ss.val with | nil => rfl | cons hd tl => simp [h_ss, List.getLast?_cons] at *
       split <;> split
@@ -353,7 +353,7 @@ theorem body_spec
           obtain ⟨idx, opt, newList, h_si, hbnd, h_push_result⟩ :=
             sortedInsert_push_result ss.val p h_cap
           simp only [h_si, dif_pos hbnd, bind_tc_ok]; step*
-          refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
           rw [h_ss_eq_set] at h_push_result
           split <;> split
           all_goals first
@@ -363,7 +363,7 @@ theorem body_spec
             | step*
         · -- Eq: dropLast append
           simp only [bind_tc_ok]; step*
-          refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
           split <;> split
           all_goals first
             | (exact ⟨fun k' hk' => by
@@ -374,7 +374,7 @@ theorem body_spec
             | step*
         · -- Gt: append
           simp only [bind_tc_ok]; step*
-          refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
           split <;> split
           all_goals first
             | (exact ⟨fun k' hk' => by
@@ -429,7 +429,7 @@ theorem body_spec
       have hmod : (chunk.index.val * 16 + iter.start.val) % 16 = poly.val := by
         rw [h_poly_eq_i, h_i_eq]; omega
       rw [hmod, ← h_v_eq]; intro h; apply h_ge; convert h using 2; grind
-    refine ⟨by grind, by grind, by grind, by grind, by grind, p, by grind, by grind, ?_⟩
+    refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
     exact ite_or_of_neg_neg h_not1 h_not2 trivial
 
 private theorem body_pts_length_le
@@ -455,8 +455,6 @@ private theorem body_pts_length_le
     subst h_update
     omega
 
-set_option maxHeartbeats 800000 in
--- heavy
 /-- **Spec theorem for `PolyDecoder::add_chunk_loop`** (loop 0):
 
 Iterates over `[iter.start, iter.end)` with `iter.end ≤ 16`, preserving `pts_needed` and
