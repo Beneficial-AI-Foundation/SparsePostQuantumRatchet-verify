@@ -58,6 +58,7 @@ import Spqr.Specs.Aeneas.VecIndexRangeFull
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Authenticator.Authenticator.MacHdr
+import Spqr.Specs.Authenticator.Authenticator.VerifyCt
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.ChainParams.Clone
