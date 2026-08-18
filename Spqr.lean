@@ -61,6 +61,7 @@ import Spqr.Specs.Authenticator.Authenticator.MacHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.ChainParams.Clone
+import Spqr.Specs.Chain.ChainParams.Default
 import Spqr.Specs.Encoding.Decoder.AddChunk
 import Spqr.Specs.Encoding.Decoder.DecodedMessage
 import Spqr.Specs.Encoding.Decoder.New
