@@ -16,6 +16,7 @@ Source: "spqr/src/authenticator.rs"
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
+open crypto
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::new`**

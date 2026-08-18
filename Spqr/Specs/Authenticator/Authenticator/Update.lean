@@ -24,6 +24,7 @@ Source: "spqr/src/authenticator.rs"
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
+open crypto
 
 /-- The 45-byte domain-separation label used as the HKDF info prefix in `update`. -/
 def updateLabel : List U8 :=
