@@ -20,6 +20,37 @@ open Aeneas Aeneas.Std Result
 
 namespace spqr
 
+/-- Version implied by the presence of the `inner` field:
+`none` → V0 (PQ ratchet disabled), `some _` → V1 (enabled). -/
+def innerVersion (st : proto.pq_ratchet.PqRatchetState) : proto.pq_ratchet.Version :=
+  match st.inner with
+  | none => proto.pq_ratchet.Version.V0
+  | some _ => proto.pq_ratchet.Version.V1
+
+/-- `st` is a decoding of the serialized `state`: re-encoding `st` yields the
+original bytes (canonical-form roundtrip property). -/
+def decodesTo (state : alloc.vec.Vec U8) (st : proto.pq_ratchet.PqRatchetState) : Prop :=
+  proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec st = ok state
+
+/-- Expected result of `current_version` for a successfully decoded state `st`:
+no `version_negotiation` means negotiation is complete at `innerVersion st`;
+otherwise `vn.min_version` is converted via `Version::try_from` — `0`/`1` give
+`StillNegotiating` at V0/V1, anything else is a `StateDecode` error. -/
+def negotiationOutcome (st : proto.pq_ratchet.PqRatchetState)
+    (result : core.result.Result CurrentVersion Error) : Prop :=
+  match st.version_negotiation with
+  | none =>
+      result = .Ok (CurrentVersion.NegotiationComplete (innerVersion st))
+  | some vn =>
+      (vn.min_version = 0#i32 →
+        result = .Ok
+          (CurrentVersion.StillNegotiating (innerVersion st) proto.pq_ratchet.Version.V0)) ∧
+      (vn.min_version = 1#i32 →
+        result = .Ok
+          (CurrentVersion.StillNegotiating (innerVersion st) proto.pq_ratchet.Version.V1)) ∧
+      (vn.min_version ≠ 0#i32 ∧ vn.min_version ≠ 1#i32 →
+        result = core.result.Result.Err Error.StateDecode)
+
 /-- **Spec theorem for `spqr.current_version`**:
 
 Splits on `state.val = []` vs `≠ []`. Empty → `Ok (NegotiationComplete V0)`.
@@ -35,21 +66,8 @@ theorem current_version_spec (state : alloc.vec.Vec U8) :
       (state.val ≠ [] →
         (result = core.result.Result.Err Error.StateDecode) ∨
         (∃ st : proto.pq_ratchet.PqRatchetState,
-          proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec
-            st = ok state ∧
-          let v := match st.inner with
-            | none => proto.pq_ratchet.Version.V0
-            | some _ => proto.pq_ratchet.Version.V1
-          match st.version_negotiation with
-          | none => result = .Ok (CurrentVersion.NegotiationComplete v)
-          | some vn =>
-              (vn.min_version = 0#i32 →
-                result = .Ok (CurrentVersion.StillNegotiating v proto.pq_ratchet.Version.V0)) ∧
-              (vn.min_version = 1#i32 →
-                result = .Ok (CurrentVersion.StillNegotiating v proto.pq_ratchet.Version.V1)) ∧
-              (vn.min_version ≠ 0#i32 ∧
-                vn.min_version ≠ 1#i32 →
-                result = core.result.Result.Err Error.StateDecode))) ⦄ := by
+          decodesTo state st ∧ negotiationOutcome st result)) ⦄ := by
+  simp only [decodesTo, negotiationOutcome, innerVersion]
   unfold current_version
   step*
   · match hr : r with
