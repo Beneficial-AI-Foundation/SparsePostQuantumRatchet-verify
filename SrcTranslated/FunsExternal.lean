@@ -3620,7 +3620,8 @@ axiom
 
 namespace spqr.kdf
 
-/- See `hkdf_to_slice_spec` in `Spqr/Specs/Kdf/Hkdf.lean`: this function implements RFC 5869. -/
+/- See `hkdf_to_slice_spec` in `Spqr/Specs/Kdf/HkdfToSlice.lean`: this function implements
+RFC 5869. -/
 
 /-- [spqr::kdf::hkdf_to_slice]:
     Source: 'src/kdf.rs', lines 14:0-18:1

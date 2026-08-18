@@ -6,16 +6,24 @@ Authors: Oliver Butterley
 import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Authenticator.Update
 
-/-! # Spec theorem for `spqr::authenticator::Authenticator::new`
+/-!
+# Spec theorem for `spqr::authenticator::Authenticator::new`
 
-Source: "spqr/src/authenticator.rs" -/
+`new` zero-initialises an `Authenticator` and immediately calls `update` with `root_key`.
+
+Source: "spqr/src/authenticator.rs"
+-/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 
 open List core.num.U64 in
-/-- Spec theorem for `spqr::authenticator::Authenticator::new`. Requires that `root_key` prefixed
-by 32 bytes fits in memory. The two keys are the halves of a 64-octet HKDF-SHA256 output. -/
+/-- **Spec theorem for `spqr::authenticator::Authenticator::new`**
+• Given that `root_key` prefixed by 32 bytes fits in memory, the call does not panic.
+• Both keys are 32 bytes.
+• They are the halves of the 64-byte HKDF-SHA256 output keyed on `root_key` prefixed by the 32
+  zero bytes of the empty initial state.
+-/
 @[step]
 theorem new_spec (root_key : alloc.vec.Vec U8) (ep : U64)
     (h : root_key.length + 32 ≤ Usize.max) :
@@ -24,7 +32,7 @@ theorem new_spec (root_key : alloc.vec.Vec U8) (ep : U64)
       result.mac_key.length = 32 ∧
       result.root_key.val ++ result.mac_key.val
         = hkdf (replicate 32 0#u8) (replicate 32 0#u8 ++ root_key.val)
-          (UpdateLabel ++ to_be_bytes ep) 64 ⦄ := by
+          (updateLabel ++ to_be_bytes ep) 64 ⦄ := by
   unfold new
   step*
   simp_all

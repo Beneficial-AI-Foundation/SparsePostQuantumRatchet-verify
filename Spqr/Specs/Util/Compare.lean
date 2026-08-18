@@ -57,7 +57,8 @@ theorem compare_loop_spec
 
 /-- **Spec theorem for `spqr::util::compare`**
 • The function never panics when `lhs` and `rhs` have equal length.
-• `result.val = 0` when `lhs.val[j]! = rhs.val[j]!` for all `j < lhs.length`, and `1` otherwise.
+• `result.val` is `0` or `1`, and is `0` exactly when `lhs.val[j]! = rhs.val[j]!` for all
+  `j < lhs.length`.
 -/
 @[step]
 theorem compare_spec (lhs rhs : Slice U8) (hlen : lhs.length = rhs.length) :

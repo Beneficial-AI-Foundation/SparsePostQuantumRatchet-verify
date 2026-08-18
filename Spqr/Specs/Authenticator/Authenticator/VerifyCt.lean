@@ -8,19 +8,23 @@ import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Util.Compare
 import Spqr.Auxiliary.Aeneas.Vec
 
-/-! # Spec theorem for `spqr::authenticator::Authenticator::verify_ct`
+/-!
+# Spec theorem for `spqr::authenticator::Authenticator::verify_ct`
 
 `verify_ct` recomputes the expected ciphertext authentication tag via `mac_ct` and checks it
 against `expected_mac` using a constant-time byte comparison.
 
-Source: "spqr/src/authenticator.rs" -/
+Source: "spqr/src/authenticator.rs"
+-/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 open core.result.Result (Ok)
 
-/-- Spec theorem for `spqr::authenticator::Authenticator::verify_ct`. Requires several boundedness
-hypotheses. Returns `Ok` iff `expected_mac` is byte-for-byte equal to the `mac_ct` output. -/
+/-- **Spec theorem for `spqr::authenticator::Authenticator::verify_ct`**
+• Given the boundedness hypotheses and `expected_mac.length = MACSIZE`, the call does not panic.
+• The result is `Ok ()` exactly when `expected_mac` equals the `mac_ct` output.
+-/
 @[step]
 theorem verify_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8) (expected_mac : Slice U8)
     (h_key : self.mac_key.length ≤ U32.max) (h_data : ct.length + 43 ≤ U32.max)
@@ -33,6 +37,5 @@ theorem verify_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8) (expect
   · grind
   · simp only [true_iff, *]
     exact congrArg ok (Subtype.ext (List.ext_getElem! (by simp [*]) (by grind)))
-
 
 end spqr.authenticator.Authenticator

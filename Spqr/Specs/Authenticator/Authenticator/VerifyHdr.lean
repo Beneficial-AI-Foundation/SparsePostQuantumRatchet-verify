@@ -8,19 +8,23 @@ import Spqr.Specs.Authenticator.Authenticator.MacHdr
 import Spqr.Specs.Util.Compare
 import Spqr.Auxiliary.Aeneas.Vec
 
-/-! # Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`
+/-!
+# Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`
 
 `verify_hdr` recomputes the expected header authentication tag via `mac_hdr` and checks it
 against `expected_mac` using a constant-time byte comparison.
 
-Source: "spqr/src/authenticator.rs" -/
+Source: "spqr/src/authenticator.rs"
+-/
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 open core.result.Result (Ok)
 
-/-- Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`. Requires several boundedness
-hypotheses. Returns `Ok` iff `expected_mac` is byte-for-byte equal to the `mac_hdr` output. -/
+/-- **Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`**
+• Given the boundedness hypotheses and `expected_mac.length = MACSIZE`, the call does not panic.
+• The result is `Ok ()` exactly when `expected_mac` equals the `mac_hdr` output.
+-/
 @[step]
 theorem verify_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8) (expected_mac : Slice U8)
     (h_key : self.mac_key.length ≤ U32.max) (h_data : hdr.length + 41 ≤ U32.max)

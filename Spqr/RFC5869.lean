@@ -9,7 +9,7 @@ public section
 
 /-! # RFC 5869: HMAC-based Extract-and-Expand Key Derivation Function (HKDF)
 
-The constuction here is faithful to the RFC and independent of any particular implementation.
+The construction here is faithful to the RFC and independent of any particular implementation.
 Section numbers below refer to the RFC, and the names `salt`, `IKM`, `PRK`, `info`, `L`, `N`, `T`,
 `OKM` and `HashLen` are used verbatim.
 
