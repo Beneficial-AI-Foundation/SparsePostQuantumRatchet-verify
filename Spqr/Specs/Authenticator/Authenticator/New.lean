@@ -22,8 +22,7 @@ open List core.num.U64 in
 • Requires that `root_key` prefixed by 32 bytes fits in memory.
 • Both keys are 32 bytes.
 • They are the halves of the 64-byte HKDF-SHA256 output keyed on `root_key` prefixed by the 32
-  zero bytes of the empty initial state.
--/
+  zero bytes of the empty initial state. -/
 @[step]
 theorem new_spec (root_key : alloc.vec.Vec U8) (ep : U64)
     (h : root_key.length + 32 ≤ Usize.max) :
