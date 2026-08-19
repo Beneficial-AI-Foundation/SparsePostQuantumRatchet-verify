@@ -25,9 +25,6 @@ This enables compositional reasoning over sequences of `add_chunk` calls.
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
-private instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) :=
-  ⟨alloc.vec.Vec.new Pt⟩
-
 namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
 
 private theorem u8_shl8_mod_u16_size (b : U8) :
@@ -48,6 +45,10 @@ private theorem ite_or_of_neg_neg {a b : Prop} [Decidable a] [Decidable b] {P Q 
   Eq.mpr (if_neg (by tauto)) hq
 
 
+end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
+
+namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
+
 /-- The unified postcondition for a `SortedSet.push` call: the result list is obtained
     by either inserting or replacing at some position `j`. This abstracts over the
     `getLast?`/`compare` case analysis inside `SortedSet.push`. -/
@@ -65,6 +66,10 @@ theorem IsSortedPushResult.length_le {α : Type*} {old new_ : List α} {p : α}
   obtain ⟨j, hj, h_ins | ⟨hlt, h_rep⟩⟩ := h
   · rw [h_ins]; simp [List.length_append, List.length_take, List.length_drop]; omega
   · rw [h_rep]; simp [List.length_append, List.length_take, List.length_drop]; omega
+
+end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
+
+namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
 
 /-- All branches of `SortedSet.push` (empty/gt/eq/lt) satisfy `IsSortedPushResult`. -/
 private theorem push_match_to_sorted_push_result

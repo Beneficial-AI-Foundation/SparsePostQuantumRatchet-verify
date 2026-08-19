@@ -114,7 +114,7 @@ theorem add_chunk_spec_poly_decoder
               (if poly_idx < np ∨ ((selfs j).pts.val[poly]!).val.length < np
                then
                  (∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
-                 PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop.IsSortedPushResult
+                 PolyDecoder.Insts.SpqrEncodingDecoder.IsSortedPushResult
                    ((selfs j).pts.val[poly]!).val
                    ((selfs (j + 1)).pts.val[poly]!).val p
                else
