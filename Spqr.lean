@@ -1,10 +1,13 @@
 import Spqr.Auxiliary.Aeneas.Array
 import Spqr.Auxiliary.Aeneas.ArraySlice
+import Spqr.Auxiliary.Aeneas.Scalar
 import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Crypto.Hkdf
+import Spqr.Crypto.RFC5869
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
 import Spqr.Math.Gf16.Basic
@@ -58,6 +61,8 @@ import Spqr.Specs.Aeneas.VecIndexRangeFull
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Authenticator.Authenticator.MacHdr
+import Spqr.Specs.Authenticator.Authenticator.New
+import Spqr.Specs.Authenticator.Authenticator.Update
 import Spqr.Specs.Authenticator.Authenticator.VerifyCt
 import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
@@ -158,6 +163,8 @@ import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 import Spqr.Specs.IncrementalMlkem768.Generate
+import Spqr.Specs.Kdf.HkdfToSlice
+import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Specs.Lib.CurrentVersion
 import Spqr.Specs.Lib.CurrentVersion.CallOnce
 import Spqr.Specs.Lib.DecodeState
