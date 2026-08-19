@@ -3618,26 +3618,18 @@ axiom
   T1 → Result (core.result.Result proto.pq_ratchet.chain.epoch.EpochDirection
     prost.error.DecodeError)
 
+namespace spqr.kdf
+
+/- See `hkdf_to_slice_spec` in `Spqr/Specs/Kdf/HkdfToSlice.lean`: this function implements
+RFC 5869. -/
+
 /-- [spqr::kdf::hkdf_to_slice]:
     Source: 'src/kdf.rs', lines 14:0-18:1
     Visibility: public -/
-opaque kdf.hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
+opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
     Result (Slice Std.U8)
 
-/-- RFC 5869 HKDF-SHA256:
-
-If `okm.length ≤ 255 * 32` then `kdf::hkdf_to_slice(salt, ikm, info, okm)` is panic-free and returns
-a slice of length `okm.length`.
-
-The function `spqr::kdf::hkdf_to_slice` relies on:
-- `hkdf::Hkdf::extract` which implements the RFC5869 HKDF-Extract operation,
-- `hkdf::Hkdf::expand` which implements the RFC5869 HKDF-Expand operation,
-- `sha2::Sha256`, the SHA-256 hasher.
-
-https://datatracker.ietf.org/doc/html/rfc5869 -/
-@[step]
-axiom kdf.hkdf_to_slice_spec (salt ikm info okm : Slice U8) (h : okm.length ≤ 255 * 32) :
-    kdf.hkdf_to_slice salt ikm info okm ⦃ (out : Slice U8) => out.length = okm.length ⦄
+end spqr.kdf
 
 /-- [spqr::encoding::gf::mul2_u16]:
     Source: 'src/encoding/gf.rs', lines 216:0-225:1 -/
