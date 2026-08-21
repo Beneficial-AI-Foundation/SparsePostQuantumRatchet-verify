@@ -69,6 +69,7 @@ import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.ChainParams.Clone
 import Spqr.Specs.Chain.ChainParams.Default
+import Spqr.Specs.Chain.ChainParams.IntoPb
 import Spqr.Specs.Chain.ChainParams.MaxJumpOrDefault
 import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 import Spqr.Specs.Encoding.Decoder.AddChunk
