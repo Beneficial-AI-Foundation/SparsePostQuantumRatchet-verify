@@ -75,6 +75,7 @@ import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 import Spqr.Specs.Chain.ChainParams.TrimSize
 import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 import Spqr.Specs.Chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
+import Spqr.Specs.Chain.KeyHistory.New
 import Spqr.Specs.Encoding.Decoder.AddChunk
 import Spqr.Specs.Encoding.Decoder.DecodedMessage
 import Spqr.Specs.Encoding.Decoder.New
