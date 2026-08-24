@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
-import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::add`
