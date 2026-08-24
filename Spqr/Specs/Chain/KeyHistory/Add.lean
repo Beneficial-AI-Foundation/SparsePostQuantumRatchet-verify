@@ -22,7 +22,7 @@ These ensure the vector length stays within `usize` bounds after the append.
 
 **Source**: spqr/src/chain.rs -/
 
-open Aeneas Aeneas.Std Result spqr
+open Aeneas Aeneas.Std
 
 namespace spqr.chain.KeyHistory
 
