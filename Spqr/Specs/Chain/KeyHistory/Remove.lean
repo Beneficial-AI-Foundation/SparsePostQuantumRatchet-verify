@@ -42,8 +42,7 @@ namespace spqr.chain.KeyHistory
 theorem remove_spec (self : KeyHistory)
     (my_array_index : Usize)
     (_params : proto.pq_ratchet.ChainParams)
-    (h_aligned : my_array_index + 36 ≤ self.data.length)
-    (h_bound : self.data.length ≤ Usize.max) :
+    (h_aligned : my_array_index + 36 ≤ self.data.length) :
     remove self my_array_index _params ⦃ fun (result : KeyHistory) =>
       result.data.length = self.data.length - 36 ∧
       (∀ i, i < my_array_index.val → result.data.val[i]! = self.data[i]!) ∧
@@ -67,8 +66,7 @@ theorem remove_spec (self : KeyHistory)
     step*
     split
     · step*
-      simp only [_root_.Slice.copyWithinStart,
-        _root_.Slice.copyWithinEnd] at *
+      simp only [_root_.Slice.copyWithinStart, _root_.Slice.copyWithinEnd] at *
       simp only [alloc.vec.Vec.length] at *
       refine ⟨?_, ?_, ?_, ?_⟩
       · grind
