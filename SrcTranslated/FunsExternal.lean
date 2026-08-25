@@ -897,7 +897,7 @@ Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42).
 
 Lexicographic comparison of two element lists, delegating per-element to the
 `Ord` instance and short-circuiting on the first non-`eq` result. -/
-private def Slice.lexCmpAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
+def Slice.lexCmpAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
     List T → List T → Result Ordering
   | [], [] => ok .eq
   | [], _ :: _ => ok .lt
