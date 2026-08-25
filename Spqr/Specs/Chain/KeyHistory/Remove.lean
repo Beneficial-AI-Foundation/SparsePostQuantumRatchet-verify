@@ -18,7 +18,7 @@ Both paths shrink vector by exactly 36 bytes.
 
 **Source**: spqr/src/chain.rs -/
 
-open Aeneas Aeneas.Std Result spqr
+open Aeneas Aeneas.Std
 
 namespace spqr.chain.KeyHistory
 

@@ -1120,7 +1120,7 @@ end core.slice.Slice
 Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
 
 Resolve a `RangeBounds` lower bound to a concrete start index. -/
-private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
+def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
   match b with
   | .Included i => i.val
   | .Excluded i => i.val + 1
@@ -1131,7 +1131,7 @@ private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
 Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
 
 Resolve a `RangeBounds` upper bound to a concrete end index (`len` when open). -/
-private def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
+def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
   match b with
   | .Included i => i.val + 1
   | .Excluded i => i.val
