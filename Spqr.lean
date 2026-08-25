@@ -78,6 +78,7 @@ import Spqr.Specs.Chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
 import Spqr.Specs.Chain.KeyHistory.Add
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 import Spqr.Specs.Chain.KeyHistory.New
+import Spqr.Specs.Chain.KeyHistory.Remove
 import Spqr.Specs.Encoding.Decoder.AddChunk
 import Spqr.Specs.Encoding.Decoder.DecodedMessage
 import Spqr.Specs.Encoding.Decoder.New
