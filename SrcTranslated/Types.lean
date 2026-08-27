@@ -105,7 +105,7 @@ structure core.ops.arith.DivAssign (Self : Type) (Rhs : Type) where
 def core.ops.range.RangeFull := Unit
 
 /-- [core::ops::range::Bound]
-    Source: '/rustc/library/core/src/ops/range.rs', lines 692:0-692:17
+    Source: '/rustc/library/core/src/ops/range.rs', lines 704:0-704:17
     Name pattern: [core::ops::range::Bound]
     Visibility: public -/
 @[discriminant isize, rust_type "core::ops::range::Bound"]
@@ -115,7 +115,7 @@ inductive core.ops.range.Bound (T : Type) where
 | Unbounded : core.ops.range.Bound T
 
 /-- Trait declaration: [core::ops::range::RangeBounds]
-    Source: '/rustc/library/core/src/ops/range.rs', lines 820:0-820:38
+    Source: '/rustc/library/core/src/ops/range.rs', lines 832:0-832:38
     Name pattern: [core::ops::range::RangeBounds]
     Visibility: public -/
 @[rust_trait "core::ops::range::RangeBounds"]
@@ -124,7 +124,7 @@ structure core.ops.range.RangeBounds (Self : Type) (T : Type) where
   end_bound : Self → Result (core.ops.range.Bound T)
 
 /-- Trait declaration: [alloc::slice::Concat]
-    Source: '/rustc/library/alloc/src/slice.rs', lines 702:0-702:30
+    Source: '/rustc/library/alloc/src/slice.rs', lines 699:0-699:30
     Name pattern: [alloc::slice::Concat]
     Visibility: public -/
 @[rust_trait "alloc::slice::Concat"]
