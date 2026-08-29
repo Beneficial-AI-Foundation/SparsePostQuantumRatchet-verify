@@ -34,7 +34,7 @@ def Shared0T.Insts.CoreBorrowBorrow (T : Type) : core.borrow.Borrow T T := {
 }
 
 /-- Trait implementation: [core::fmt::{impl core::fmt::Display for &'_0 T}]
-    Source: '/rustc/library/core/src/fmt/mod.rs', lines 2871:8-2871:46
+    Source: '/rustc/library/core/src/fmt/mod.rs', lines 2886:8-2886:46
     Name pattern: [core::fmt::Display<&'0 @T>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<&'0 @T>"]
 def Shared0T.Insts.CoreFmtDisplay {T : Type} (DisplayInst : core.fmt.Display T)
@@ -81,7 +81,7 @@ impl_def core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator {B :
 }
 
 /-- Trait implementation: [core::ops::range::{impl core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}]
-    Source: '/rustc/library/core/src/ops/range.rs', lines 1067:0-1067:45
+    Source: '/rustc/library/core/src/ops/range.rs', lines 1079:0-1079:45
     Name pattern: [core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>] -/
 @[reducible, rust_trait_impl
   "core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>"]
@@ -93,7 +93,7 @@ def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type) :
 }
 
 /-- Trait implementation: [core::result::{impl core::iter::traits::collect::FromIterator<core::result::Result<A, E>> for core::result::Result<V, E>}]
-    Source: '/rustc/library/core/src/result.rs', lines 2116:0-2116:74
+    Source: '/rustc/library/core/src/result.rs', lines 2115:0-2115:74
     Name pattern: [core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>] -/
 @[reducible, rust_trait_impl
   "core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>"]
@@ -110,25 +110,14 @@ def core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult {A : Type}
     itertraitscollectFromIteratorInst itertraitscollectIntoIteratorPResultPInst
 }
 
-/-- Trait implementation: [core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFull}]
-    Source: '/rustc/library/core/src/slice/index.rs', lines 120:4-120:34
-    Name pattern: [core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFull>] -/
-@[reducible, rust_trait_impl
-  "core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFull>"]
-def core.ops.range.RangeFull.Insts.CoreSliceIndexPrivate_slice_indexSealed :
-  core.slice.index.private_slice_index.Sealed core.ops.range.RangeFull := {
-}
-
 /-- Trait implementation: [core::slice::index::{impl core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}]
-    Source: '/rustc/library/core/src/slice/index.rs', lines 631:0-631:55
+    Source: '/rustc/library/core/src/slice/index.rs', lines 610:0-610:55
     Name pattern: [core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>] -/
 @[reducible, rust_trait_impl
   "core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>"]
 def core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice (T :
   Type) : core.slice.index.SliceIndex core.ops.range.RangeFull (Slice T) (Slice
   T) := {
-  sealedInst :=
-    core.ops.range.RangeFull.Insts.CoreSliceIndexPrivate_slice_indexSealed
   get := core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get
   get_mut :=
     core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_mut
@@ -164,7 +153,7 @@ impl_def
 }
 
 /-- Trait implementation: [alloc::collections::vec_deque::{impl core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}]
-    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3824:0-3824:39
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3887:0-3887:39
     Name pattern: [core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>] -/
 @[reducible, rust_trait_impl
   "core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>"]
@@ -180,7 +169,7 @@ def
 }
 
 /-- Trait implementation: [alloc::slice::{impl alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}]
-    Source: '/rustc/library/alloc/src/slice.rs', lines 726:0-726:48
+    Source: '/rustc/library/alloc/src/slice.rs', lines 723:0-723:48
     Name pattern: [alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>] -/
 @[reducible, rust_trait_impl
   "alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>"]
@@ -5332,7 +5321,7 @@ def chain.KeyHistory.clear
     Source: 'src/chain.rs', lines 197:8-207:5 -/
 @[rust_loop_body]
 def chain.KeyHistory.get_loop.body
-  (i : Std.Usize) (v : alloc.vec.Vec Std.U8) (at1 : Std.U32)
+  (i : Std.Usize) (v : alloc.vec.Vec Std.U8) («at» : Std.U32)
   (params : proto.pq_ratchet.ChainParams) (want : Array Std.U8 4#usize)
   (iter : core.iter.adapters.step_by.StepBy (core.ops.range.Range Std.Usize)) :
   Result (ControlFlow (core.iter.adapters.step_by.StepBy (core.ops.range.Range
@@ -5344,7 +5333,7 @@ def chain.KeyHistory.get_loop.body
       (core.iter.traits.iterator.IteratorRange core.iter.range.StepUsize) iter
   match o with
   | none =>
-    ok (done (core.result.Result.Err (Error.KeyAlreadyRequested at1),
+    ok (done (core.result.Result.Err (Error.KeyAlreadyRequested «at»),
       { data := v }))
   | some i1 =>
     let i2 ← i1 + 4#usize
@@ -5369,19 +5358,19 @@ def chain.KeyHistory.get_loop.body
 def chain.KeyHistory.get_loop
   (i : Std.Usize)
   (iter : core.iter.adapters.step_by.StepBy (core.ops.range.Range Std.Usize))
-  (v : alloc.vec.Vec Std.U8) (at1 : Std.U32)
+  (v : alloc.vec.Vec Std.U8) («at» : Std.U32)
   (params : proto.pq_ratchet.ChainParams) (want : Array Std.U8 4#usize) :
   Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
     chain.KeyHistory)
   := do
   loop
-    (fun iter1 => chain.KeyHistory.get_loop.body i v at1 params want iter1)
+    (fun iter1 => chain.KeyHistory.get_loop.body i v «at» params want iter1)
     iter
 
 /-- [spqr::chain::{spqr::chain::KeyHistory}::get]:
     Source: 'src/chain.rs', lines 185:4-207:5 -/
 def chain.KeyHistory.get
-  (self : chain.KeyHistory) (at1 : Std.U32) (current_ctr : Std.U32)
+  (self : chain.KeyHistory) («at» : Std.U32) (current_ctr : Std.U32)
   (params : proto.pq_ratchet.ChainParams) :
   Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
     chain.KeyHistory)
@@ -5391,17 +5380,17 @@ def chain.KeyHistory.get
   let left_val ← i % i1
   massert (left_val = 0#usize)
   let i2 ← chain.ChainParams.max_ooo_keys_or_default params
-  let i3 ← at1 + i2
+  let i3 ← «at» + i2
   if i3 < current_ctr
-  then ok (core.result.Result.Err (Error.KeyTrimmed at1), self)
+  then ok (core.result.Result.Err (Error.KeyTrimmed «at»), self)
   else
-    let want ← lift (core.num.U32.to_be_bytes at1)
+    let want ← lift (core.num.U32.to_be_bytes «at»)
     let i4 := alloc.vec.Vec.len self.data
     let iter ←
       core.iter.traits.iterator.Iterator.step_by.trait_default
         (core.iter.traits.iterator.IteratorRange core.iter.range.StepUsize)
         { start := 0#usize, «end» := i4 } i1
-    chain.KeyHistory.get_loop i1 iter self.data at1 params want
+    chain.KeyHistory.get_loop i1 iter self.data «at» params want
 
 /-- [spqr::chain::{spqr::chain::ChainEpochDirection}::new]:
     Source: 'src/chain.rs', lines 212:4-218:5 -/
@@ -5475,19 +5464,19 @@ def chain.ChainEpochDirection.next_key
     Source: 'src/chain.rs', lines 270:8-286:9 -/
 @[rust_loop_body]
 def chain.ChainEpochDirection.key_loop.body
-  (at1 : Std.U32) (params : proto.pq_ratchet.ChainParams) (i : Std.U32)
+  («at» : Std.U32) (params : proto.pq_ratchet.ChainParams) (i : Std.U32)
   (v : alloc.vec.Vec Std.U8) (kh : chain.KeyHistory) :
   Result (ControlFlow (Std.U32 × (alloc.vec.Vec Std.U8) × chain.KeyHistory)
     (Std.U32 × (alloc.vec.Vec Std.U8) × chain.KeyHistory))
   := do
   let i1 ← i + 1#u32
-  if at1 > i1
+  if «at» > i1
   then
     let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut v)
     let (k, s1, i2) ← chain.ChainEpochDirection.next_key_internal s i
     let i3 ← chain.ChainParams.max_ooo_keys_or_default params
     let i4 ← i2 + i3
-    if i4 >= at1
+    if i4 >= «at»
     then
       let kh1 ← chain.KeyHistory.add kh k params
       let v1 := deref_mut_back s1
@@ -5501,43 +5490,43 @@ def chain.ChainEpochDirection.key_loop.body
 @[rust_loop]
 def chain.ChainEpochDirection.key_loop
   (i : Std.U32) (v : alloc.vec.Vec Std.U8) (kh : chain.KeyHistory)
-  (at1 : Std.U32) (params : proto.pq_ratchet.ChainParams) :
+  («at» : Std.U32) (params : proto.pq_ratchet.ChainParams) :
   Result (Std.U32 × (alloc.vec.Vec Std.U8) × chain.KeyHistory)
   := do
   loop
-    (fun (i1, v1, kh1) => chain.ChainEpochDirection.key_loop.body at1 params i1
-      v1 kh1)
+    (fun (i1, v1, kh1) => chain.ChainEpochDirection.key_loop.body «at» params
+      i1 v1 kh1)
     (i, v, kh)
 
 /-- [spqr::chain::{spqr::chain::ChainEpochDirection}::key]:
     Source: 'src/chain.rs', lines 247:4-296:5 -/
 def chain.ChainEpochDirection.key
-  (self : chain.ChainEpochDirection) (at1 : Std.U32)
+  (self : chain.ChainEpochDirection) («at» : Std.U32)
   (params : proto.pq_ratchet.ChainParams) :
   Result ((core.result.Result (alloc.vec.Vec Std.U8) Error) ×
     chain.ChainEpochDirection)
   := do
-  let o ← lift (core.cmp.impls.OrdU32.cmp at1 self.ctr)
+  let o ← lift (core.cmp.impls.OrdU32.cmp «at» self.ctr)
   match o with
   | Ordering.lt =>
-    let (r, kh) ← chain.KeyHistory.get self.prev at1 self.ctr params
+    let (r, kh) ← chain.KeyHistory.get self.prev «at» self.ctr params
     ok (r, { self with prev := kh })
   | Ordering.eq =>
-    ok (core.result.Result.Err (Error.KeyAlreadyRequested at1), self)
+    ok (core.result.Result.Err (Error.KeyAlreadyRequested «at»), self)
   | Ordering.gt =>
-    let i ← at1 - self.ctr
+    let i ← «at» - self.ctr
     let i1 ← chain.ChainParams.max_jump_or_default params
     if i > i1
-    then ok (core.result.Result.Err (Error.KeyJump self.ctr at1), self)
+    then ok (core.result.Result.Err (Error.KeyJump self.ctr «at»), self)
     else
       let i2 ← chain.ChainParams.max_ooo_keys_or_default params
       let i3 ← self.ctr + i2
       let kh ←
-        if at1 > i3
+        if «at» > i3
         then chain.KeyHistory.clear self.prev
         else ok self.prev
       let (i4, v, kh1) ←
-        chain.ChainEpochDirection.key_loop self.ctr self.next kh at1 params
+        chain.ChainEpochDirection.key_loop self.ctr self.next kh «at» params
       let kh2 ← chain.KeyHistory.gc kh1 i4 params
       let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut v)
       let ((_, a), s1, i5) ← chain.ChainEpochDirection.next_key_internal s i4
@@ -14042,7 +14031,7 @@ def
     Source: 'src/v1/chunked/states/serialize.rs', lines 165:4-174:5 -/
 @[rust_loop_body]
 def v1.chunked.states.serialize.decode_varint_loop.body
-  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) (max_i : Std.Usize)
+  («from» : alloc.vec.Vec Std.U8) («at» : Std.Usize) (max_i : Std.Usize)
   (out : Std.U64) (i : Std.Usize) (done1 : Bool) :
   Result (ControlFlow (Std.U64 × Std.Usize × Bool) (Std.U64 × Std.Usize ×
     Bool))
@@ -14052,10 +14041,10 @@ def v1.chunked.states.serialize.decode_varint_loop.body
     if done1
     then ok (done (out, i, true))
     else
-      let i1 ← at1 + i
+      let i1 ← «at» + i
       let byte ←
         alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice Std.U8)
-          from1 i1
+          «from» i1
       let i2 ← lift (UScalar.cast .U64 byte)
       let i3 ← lift (i2 &&& 127#u64)
       let i4 ← lift (UScalar.hcast .I32 i)
@@ -14071,73 +14060,73 @@ def v1.chunked.states.serialize.decode_varint_loop.body
     Source: 'src/v1/chunked/states/serialize.rs', lines 165:4-174:5 -/
 @[rust_loop]
 def v1.chunked.states.serialize.decode_varint_loop
-  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) (out : Std.U64)
+  («from» : alloc.vec.Vec Std.U8) («at» : Std.Usize) (out : Std.U64)
   (i : Std.Usize) (done1 : Bool) (max_i : Std.Usize) :
   Result (Std.U64 × Std.Usize × Bool)
   := do
   loop
     (fun (out1, i1, done2) =>
-      v1.chunked.states.serialize.decode_varint_loop.body from1 at1 max_i out1
-      i1 done2)
+      v1.chunked.states.serialize.decode_varint_loop.body «from» «at» max_i
+      out1 i1 done2)
     (out, i, done1)
 
 /-- [spqr::v1::chunked::states::serialize::decode_varint]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 152:0-182:1 -/
 def v1.chunked.states.serialize.decode_varint
-  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
+  («from» : alloc.vec.Vec Std.U8) («at» : Std.Usize) :
   Result ((core.result.Result Std.U64 Error) × Std.Usize)
   := do
-  let i := alloc.vec.Vec.len from1
-  if at1 >= i
-  then ok (core.result.Result.Err Error.MsgDecode, at1)
+  let i := alloc.vec.Vec.len «from»
+  if «at» >= i
+  then ok (core.result.Result.Err Error.MsgDecode, «at»)
   else
-    let i1 := alloc.vec.Vec.len from1
-    let i2 ← i1 - at1
+    let i1 := alloc.vec.Vec.len «from»
+    let i2 ← i1 - «at»
     let max_i ←
       core.cmp.min core.cmp.OrdUsize
         v1.chunked.states.serialize.MAX_VARINT_BYTES_LEN i2
     let (out, i3, done1) ←
-      v1.chunked.states.serialize.decode_varint_loop from1 at1 0#u64 0#usize
-        false max_i
+      v1.chunked.states.serialize.decode_varint_loop «from» «at» 0#u64
+        0#usize false max_i
     if done1
-    then let at2 ← at1 + i3
-         ok (core.result.Result.Ok out, at2)
-    else ok (core.result.Result.Err Error.MsgDecode, at1)
+    then let at1 ← «at» + i3
+         ok (core.result.Result.Ok out, at1)
+    else ok (core.result.Result.Err Error.MsgDecode, «at»)
 
 /-- [spqr::v1::chunked::states::serialize::decode_chunk]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 190:0-202:1 -/
 def v1.chunked.states.serialize.decode_chunk
-  (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
+  («from» : alloc.vec.Vec Std.U8) («at» : Std.Usize) :
   Result ((core.result.Result encoding.Chunk Error) × Std.Usize)
   := do
-  let (r, at2) ← v1.chunked.states.serialize.decode_varint from1 at1
+  let (r, at1) ← v1.chunked.states.serialize.decode_varint «from» «at»
   let cf ← core.result.Result.Insts.CoreOpsTry.branch r
   match cf with
   | core.ops.control_flow.ControlFlow.Continue val =>
-    let at3 ← at2 + 32#usize
-    let i := alloc.vec.Vec.len from1
-    if at3 > i
-    then ok (core.result.Result.Err Error.MsgDecode, at3)
+    let at2 ← at1 + 32#usize
+    let i := alloc.vec.Vec.len «from»
+    if at2 > i
+    then ok (core.result.Result.Err Error.MsgDecode, at2)
     else
       if val > 65535#u64
-      then ok (core.result.Result.Err Error.MsgDecode, at3)
+      then ok (core.result.Result.Err Error.MsgDecode, at2)
       else
         let i1 ← lift (UScalar.cast .U16 val)
         let s ←
           alloc.vec.Vec.index (core.slice.index.SliceIndexRangeUsizeSlice
-            Std.U8) from1 { start := at2, «end» := at3 }
+            Std.U8) «from» { start := at1, «end» := at2 }
         let r1 ←
           core.array.TryFromArrayCopySlice.try_from 32#usize core.marker.CopyU8
             s
         let a ←
           core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
             "correct size")
-        ok (core.result.Result.Ok { index := i1, data := a }, at3)
+        ok (core.result.Result.Ok { index := i1, data := a }, at2)
   | core.ops.control_flow.ControlFlow.Break residual =>
     let r1 ←
       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
         encoding.Chunk (core.convert.FromSame Error) residual
-    ok (r1, at2)
+    ok (r1, at1)
 
 /-- [spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<u8, alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}::try_from]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 109:4-120:5
@@ -14172,31 +14161,33 @@ def
     Source: 'src/v1/chunked/states/serialize.rs', lines 248:4-278:5
     Visibility: public -/
 def v1.chunked.states.serialize.Message.deserialize
-  (from1 : alloc.vec.Vec Std.U8) :
+  («from» : alloc.vec.Vec Std.U8) :
   Result (core.result.Result (v1.chunked.states.Message × Std.U32 ×
     Std.Usize) Error)
   := do
-  let b ← alloc.vec.Vec.is_empty Global from1
+  let b ← alloc.vec.Vec.is_empty Global «from»
   if b
   then ok (core.result.Result.Err Error.MsgDecode)
   else
     let i ←
-      alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice Std.U8) from1
-        0#usize
+      alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice Std.U8)
+        «from» 0#usize
     let i1 ←
       core.convert.IntoFrom.into U8.Insts.CoreConvertFromVersion
         proto.pq_ratchet.Version.V1
     if i != i1
     then ok (core.result.Result.Err Error.MsgDecode)
     else
-      let (r, at1) ← v1.chunked.states.serialize.decode_varint from1 1#usize
+      let (r, «at») ←
+        v1.chunked.states.serialize.decode_varint «from» 1#usize
       let cf ← core.result.Result.Insts.CoreOpsTry.branch r
       match cf with
       | core.ops.control_flow.ControlFlow.Continue val =>
         if val = 0#u64
         then ok (core.result.Result.Err Error.MsgDecode)
         else
-          let (r1, at2) ← v1.chunked.states.serialize.decode_varint from1 at1
+          let (r1, at1) ←
+            v1.chunked.states.serialize.decode_varint «from» «at»
           let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
           match cf1 with
           | core.ops.control_flow.ControlFlow.Continue val1 =>
@@ -14209,13 +14200,13 @@ def v1.chunked.states.serialize.Message.deserialize
             let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r3
             match cf2 with
             | core.ops.control_flow.ControlFlow.Continue val2 =>
-              let i2 := alloc.vec.Vec.len from1
-              if at2 >= i2
+              let i2 := alloc.vec.Vec.len «from»
+              if at1 >= i2
               then ok (core.result.Result.Err Error.MsgDecode)
               else
                 let i3 ←
                   alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
-                    Std.U8) from1 at2
+                    Std.U8) «from» at1
                 let r4 ←
                   v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from
                     i3
@@ -14226,17 +14217,17 @@ def v1.chunked.states.serialize.Message.deserialize
                 let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r5
                 match cf3 with
                 | core.ops.control_flow.ControlFlow.Continue val3 =>
-                  let at3 ← at2 + 1#usize
+                  let at2 ← at1 + 1#usize
                   match val3 with
                   | v1.chunked.states.serialize.MessageType.None =>
                     ok (core.result.Result.Ok
                       ({
                          epoch := val,
                          payload := v1.chunked.states.MessagePayload.None
-                       }, val2, at3))
+                       }, val2, at2))
                   | v1.chunked.states.serialize.MessageType.Hdr =>
-                    let (r6, at4) ←
-                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let (r6, at3) ←
+                      v1.chunked.states.serialize.decode_chunk «from» at2
                     let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r6
                     match cf4 with
                     | core.ops.control_flow.ControlFlow.Continue val4 =>
@@ -14245,14 +14236,14 @@ def v1.chunked.states.serialize.Message.deserialize
                            epoch := val,
                            payload :=
                              (v1.chunked.states.MessagePayload.Hdr val4)
-                         }, val2, at4))
+                         }, val2, at3))
                     | core.ops.control_flow.ControlFlow.Break residual =>
                       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
                         (v1.chunked.states.Message × Std.U32 × Std.Usize)
                         (core.convert.FromSame Error) residual
                   | v1.chunked.states.serialize.MessageType.Ek =>
-                    let (r6, at4) ←
-                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let (r6, at3) ←
+                      v1.chunked.states.serialize.decode_chunk «from» at2
                     let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r6
                     match cf4 with
                     | core.ops.control_flow.ControlFlow.Continue val4 =>
@@ -14261,14 +14252,14 @@ def v1.chunked.states.serialize.Message.deserialize
                            epoch := val,
                            payload :=
                              (v1.chunked.states.MessagePayload.Ek val4)
-                         }, val2, at4))
+                         }, val2, at3))
                     | core.ops.control_flow.ControlFlow.Break residual =>
                       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
                         (v1.chunked.states.Message × Std.U32 × Std.Usize)
                         (core.convert.FromSame Error) residual
                   | v1.chunked.states.serialize.MessageType.EkCt1Ack =>
-                    let (r6, at4) ←
-                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let (r6, at3) ←
+                      v1.chunked.states.serialize.decode_chunk «from» at2
                     let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r6
                     match cf4 with
                     | core.ops.control_flow.ControlFlow.Continue val4 =>
@@ -14277,7 +14268,7 @@ def v1.chunked.states.serialize.Message.deserialize
                            epoch := val,
                            payload :=
                              (v1.chunked.states.MessagePayload.EkCt1Ack val4)
-                         }, val2, at4))
+                         }, val2, at3))
                     | core.ops.control_flow.ControlFlow.Break residual =>
                       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
                         (v1.chunked.states.Message × Std.U32 × Std.Usize)
@@ -14288,10 +14279,10 @@ def v1.chunked.states.serialize.Message.deserialize
                          epoch := val,
                          payload :=
                            (v1.chunked.states.MessagePayload.Ct1Ack true)
-                       }, val2, at3))
+                       }, val2, at2))
                   | v1.chunked.states.serialize.MessageType.Ct1 =>
-                    let (r6, at4) ←
-                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let (r6, at3) ←
+                      v1.chunked.states.serialize.decode_chunk «from» at2
                     let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r6
                     match cf4 with
                     | core.ops.control_flow.ControlFlow.Continue val4 =>
@@ -14300,14 +14291,14 @@ def v1.chunked.states.serialize.Message.deserialize
                            epoch := val,
                            payload :=
                              (v1.chunked.states.MessagePayload.Ct1 val4)
-                         }, val2, at4))
+                         }, val2, at3))
                     | core.ops.control_flow.ControlFlow.Break residual =>
                       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
                         (v1.chunked.states.Message × Std.U32 × Std.Usize)
                         (core.convert.FromSame Error) residual
                   | v1.chunked.states.serialize.MessageType.Ct2 =>
-                    let (r6, at4) ←
-                      v1.chunked.states.serialize.decode_chunk from1 at3
+                    let (r6, at3) ←
+                      v1.chunked.states.serialize.decode_chunk «from» at2
                     let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r6
                     match cf4 with
                     | core.ops.control_flow.ControlFlow.Continue val4 =>
@@ -14316,7 +14307,7 @@ def v1.chunked.states.serialize.Message.deserialize
                            epoch := val,
                            payload :=
                              (v1.chunked.states.MessagePayload.Ct2 val4)
-                         }, val2, at4))
+                         }, val2, at3))
                     | core.ops.control_flow.ControlFlow.Break residual =>
                       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
                         (v1.chunked.states.Message × Std.U32 × Std.Usize)
