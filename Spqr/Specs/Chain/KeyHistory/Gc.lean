@@ -238,7 +238,6 @@ theorem gc_loop_spec
       (∀ m, m < result.length ∧ m % 36 = 0 →
         ∃ n, n < self.data.length ∧ n % 36 = 0 ∧
           result.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-      -- completeness: every unexpired record in self.data is retained in result
       (∀ n, n < self.data.length ∧ n % 36 = 0 →
         Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
           (self.data.val.slice n (n + 4)) ≠ ok .gt →
@@ -414,10 +413,9 @@ theorem gc_loop_spec
 
 /-!**Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc` (32-bit platform)**
 
-32-bit variant of `gc_spec` (proved in `Gc.lean`). Differences from 64-bit:
-- `h_platform : System.Platform.numBits = 32`
+32-bit and 64-bit variant of `gc_spec` (proved in `Gc.lean`). Differences from 64-bit:
 - `h_ooo : params.max_ooo_keys.val < 108458770` (tighter bound ensuring `trim_size * KEY_SIZE`
-fits in 32-bit `usize`)
+fits in 32-bit `usize` and so it also fits in 64-bit `usize` )
 
 **Rationale for tighter bound**:
 - `max_ooo_keys < 108458770` → `trim_size * 36 ≤ 4294967295` (`U32.max`)
@@ -437,23 +435,31 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : Std.U32)
         if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
       let trim_size : Nat := max_ooo * 11 / 10 + 1
       let trim_threshold : Nat := trim_size * 36
+      -- (1) alignment: result length is a multiple of 36 (whole records)
       result.data.length % 36 = 0 ∧
+      -- (2) shrinkage: GC only removes records, never grows
       result.data.length ≤ self.data.length ∧
+      -- (3) no-op when below threshold: if data is small enough, nothing is removed
       (self.data.length < trim_threshold → result = self) ∧
+      -- (4) when above threshold, GC computes a trim horizon and enforces:
       (trim_threshold ≤ self.data.length →
         ∃ horizon : Std.U32,
+         -- (4a) horizon value: `current_key - max_ooo`
          horizon.val = current_key.val - max_ooo ∧
+          -- (4b) liveness: every record in result is unexpired (counter ≥ horizon)
           (∀ m, m < result.data.length ∧ m % 36 = 0 →
             Slice.lexCmpAux core.cmp.OrdU8
               (horizon.bv.toBEBytes.map (@Std.UScalar.mk Std.UScalarTy.U8))
               (result.data.val.slice m (m + 4)) ≠ ok .gt) ∧
-          -- completeness: every unexpired record in self.data is retained in result
+          -- (4c) completeness: every unexpired record in self.data is retained in result
           (∀ n, n < self.data.length ∧ n % 36 = 0 →
             Slice.lexCmpAux core.cmp.OrdU8
               (horizon.bv.toBEBytes.map (@Std.UScalar.mk Std.UScalarTy.U8))
               (self.data.val.slice n (n + 4)) ≠ ok .gt →
             ∃ m, m < result.data.length ∧ m % 36 = 0 ∧
               result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
+          -- (4d) provenance: every record in result originated from some record
+          --      in the original self.data (no spurious records)
           (∀ m, m < result.data.length ∧ m % 36 = 0 →
             ∃ n, n < self.data.length ∧ n % 36 = 0 ∧
               result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36))) ⦄ := by
@@ -534,22 +540,31 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
         if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
       let trim_size : Nat := max_ooo * 11 / 10 + 1
       let trim_threshold : Nat := trim_size * 36
+      -- (1) alignment: result length is a multiple of 36 (whole records)
       result.data.length % 36 = 0 ∧
+      -- (2) shrinkage: GC only removes records, never grows
       result.data.length ≤ self.data.length ∧
+      -- (3) no-op when below threshold: if data is small enough, nothing is removed
       (self.data.length < trim_threshold → result = self) ∧
+      -- (4) when above threshold, GC computes a trim horizon and enforces:
       (trim_threshold ≤ self.data.length →
         ∃ horizon : U32,
+         -- (4a) horizon value: `current_key - max_ooo`
          horizon.val = current_key.val - max_ooo ∧
+          -- (4b) liveness: every record in result is unexpired (counter ≥ horizon)
           (∀ m, m < result.data.length ∧ m % 36 = 0 →
             Slice.lexCmpAux core.cmp.OrdU8
               (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
               (result.data.val.slice m (m + 4)) ≠ ok .gt) ∧
+          -- (4c) completeness: every unexpired record in self.data is retained in result
           (∀ n, n < self.data.length ∧ n % 36 = 0 →
             Slice.lexCmpAux core.cmp.OrdU8
               (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
               (self.data.val.slice n (n + 4)) ≠ ok .gt →
             ∃ m, m < result.data.length ∧ m % 36 = 0 ∧
               result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
+          -- (4d) provenance: every record in result originated from some record
+          --      in the original self.data (no spurious records)
           (∀ m, m < result.data.length ∧ m % 36 = 0 →
             ∃ n, n < self.data.length ∧ n % 36 = 0 ∧
               result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36))) ⦄ := by
