@@ -166,7 +166,7 @@ private theorem partialEqAux_U8_spec :
         simp only [decide_true, ↓reduceIte]
         obtain ⟨r, hr, hiff⟩ := ih ys
         exact ⟨r, hr, by constructor <;> intro h <;> simp_all⟩
-      · simp only [show decide (a = c) = false from by simp [hab], ↓reduceIte]
+      · simp only [show decide (a = c) = false from by simp [hab]]
         exact ⟨false, rfl, by simp [hab]⟩
 
 /-- `Slice.Insts.CoreCmpPartialEqArray.eq` with `PartialEqU8` always succeeds and
