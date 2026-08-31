@@ -76,6 +76,7 @@ import Spqr.Specs.Chain.ChainParams.TrimSize
 import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 import Spqr.Specs.Chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
 import Spqr.Specs.Chain.KeyHistory.Add
+import Spqr.Specs.Chain.KeyHistory.Clear
 import Spqr.Specs.Chain.KeyHistory.Gc
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 import Spqr.Specs.Chain.KeyHistory.New
