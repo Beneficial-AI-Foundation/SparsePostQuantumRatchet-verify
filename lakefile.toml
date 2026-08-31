@@ -17,7 +17,7 @@ maxRecDepth = 10000
 name = "aeneas"
 git = "https://github.com/AeneasVerif/aeneas.git"
 subDir = "backends/lean"
-rev = "6e167c9b"
+rev = "nightly-2026.08.27-5b9dcf3"
 
 # Slightly modified copy of Mathlib's header linter (`linter.style.headerAlt`).  Pending the upstream
 # PR which adds a config option and then this will be removed from here.
