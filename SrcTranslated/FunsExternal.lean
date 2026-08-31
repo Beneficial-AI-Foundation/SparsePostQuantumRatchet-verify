@@ -143,6 +143,46 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_eq
     Slice.Insts.CoreCmpPartialEqArray.eq cmpPartialEqInst s arr =
       Slice.partialEqAux cmpPartialEqInst s.val arr.val := rfl
 
+/-- `Slice.partialEqAux` with a homogeneous `PartialEq` always succeeds, and for U8
+    the result `b = true ↔ xs = ys`. -/
+private theorem partialEqAux_U8_spec :
+    ∀ (xs ys : List Std.U8),
+    ∃ b : Bool, Slice.partialEqAux core.cmp.PartialEqU8 xs ys = ok b ∧
+      (b = true ↔ xs = ys) := by
+  intro xs
+  induction xs with
+  | nil =>
+    intro ys; cases ys with
+    | nil => exact ⟨true, by unfold Slice.partialEqAux; rfl, by simp⟩
+    | cons _ _ => exact ⟨false, by unfold Slice.partialEqAux; rfl, by simp⟩
+  | cons a xs ih =>
+    intro ys; cases ys with
+    | nil => exact ⟨false, by unfold Slice.partialEqAux; rfl, by simp⟩
+    | cons c ys =>
+      unfold Slice.partialEqAux
+      simp only [core.cmp.PartialEqU8, liftFun2, core.cmp.impls.PartialEqU8.eq, bind_tc_ok]
+      by_cases hab : a = c
+      · subst hab
+        simp only [decide_true, ↓reduceIte]
+        obtain ⟨r, hr, hiff⟩ := ih ys
+        exact ⟨r, hr, by constructor <;> intro h <;> simp_all⟩
+      · simp only [show decide (a = c) = false from by simp [hab], ↓reduceIte]
+        exact ⟨false, rfl, by simp [hab]⟩
+
+/-- `Slice.Insts.CoreCmpPartialEqArray.eq` with `PartialEqU8` always succeeds and
+    `b = true ↔ s.val = arr.val`. -/
+@[step]
+theorem Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec
+    {N : Std.Usize}
+    (s : Slice Std.U8) (arr : Array Std.U8 N) :
+    Slice.Insts.CoreCmpPartialEqArray.eq core.cmp.PartialEqU8 s arr
+    ⦃ b => b = true ↔ s.val = arr.val ⦄ := by
+  simp only [Slice.Insts.CoreCmpPartialEqArray.eq_eq]
+  have ⟨b, hb, hiff⟩ := partialEqAux_U8_spec s.val arr.val
+  rw [hb]
+  simp only [WP.spec_ok]
+  exact hiff
+
 /-- Implementation helper for `core.array.from_fn`
     (`[core::array::from_fn]`,
     Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52).
