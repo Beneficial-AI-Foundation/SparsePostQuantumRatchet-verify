@@ -1401,7 +1401,7 @@ theorem alloc.slice.Slice.concat_eq
 Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
 
 Package an element list as a `Vec`, failing if it would exceed `Usize.max`. -/
-private def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
+def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
   if h : l.length ≤ Std.Usize.max then ok ⟨l, h⟩ else fail .panic
 
 /-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
@@ -1410,7 +1410,7 @@ Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
 
 Flatten a list of borrowable chunks: borrow each `V` to a `Slice T`, clone its
 elements, and concatenate the results into one element list. -/
-private def Slice.concatListAux {T V : Type} (corecloneCloneInst : core.clone.Clone T)
+def Slice.concatListAux {T V : Type} (corecloneCloneInst : core.clone.Clone T)
     (coreborrowBorrowVSliceInst : core.borrow.Borrow V (Slice T)) :
     List V → Result (List T)
   | [] => ok []
