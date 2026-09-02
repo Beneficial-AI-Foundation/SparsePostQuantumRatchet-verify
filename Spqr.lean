@@ -73,6 +73,7 @@ import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
+import Spqr.Specs.Chain.ChainEpochDirection.New
 import Spqr.Specs.Chain.ChainParams.Clone
 import Spqr.Specs.Chain.ChainParams.Default
 import Spqr.Specs.Chain.ChainParams.IntoPb
