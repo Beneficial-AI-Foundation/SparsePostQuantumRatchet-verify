@@ -203,6 +203,8 @@ import Spqr.Specs.Lib.Version.TryFrom
 import Spqr.Specs.Lib.Version.U8.From
 import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
 import Spqr.Specs.Serialize.Error.Clone
+import Spqr.Specs.Serialize.Error.Debug
+import Spqr.Specs.Serialize.Error.Display
 import Spqr.Specs.Serialize.Error.Eq
 import Spqr.Specs.Serialize.Error.From
 import Spqr.Specs.Util.Compare
