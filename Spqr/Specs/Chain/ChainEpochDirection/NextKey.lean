@@ -23,7 +23,7 @@ namespace spqr.chain.ChainEpochDirection
 
 Given `ctr1 = self.ctr + 1` and `okm = nextKeyHkdfOutput self.next ctr1`, the result satisfies:
 `idx = ctr1`, `key_vec = okm.drop 32`, `self'.ctr = ctr1`, `self'.next = okm.take 32`,
-and `self'.next.length` is preserved. -/
+`self'.next.length` is preserved, and the key history `self'.prev` is untouched. -/
 @[step]
 theorem next_key_spec (self : chain.ChainEpochDirection)
     (h_next_len : self.next.length = 32)
@@ -35,6 +35,7 @@ theorem next_key_spec (self : chain.ChainEpochDirection)
       result.2.ctr = self.ctr.val + 1 ∧
       result.2.next.length = self.next.length ∧
       result.2.next = okm.take 32 ∧
+      result.2.prev = self.prev ∧
       result.1.2 = okm.drop 32 ⦄ := by
   unfold chain.ChainEpochDirection.next_key
   simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.length, lift, bind_tc_ok] at *
