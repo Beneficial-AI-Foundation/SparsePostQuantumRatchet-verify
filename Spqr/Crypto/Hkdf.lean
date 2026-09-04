@@ -47,4 +47,23 @@ def hkdf (salt IKM info : List U8) (L : Nat) : List U8 :=
 theorem hkdf_length (salt IKM info : List U8) (L : Nat) : (hkdf salt IKM info L).length = L := by
   simp [hkdf, HKDF.ExtractAndExpand_length]
 
+/-- HKDF info label: `"Signal PQ Ratchet V1 Chain Next"` as `List U8`. -/
+def chainNextLabel : List U8 :=
+  [83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 32#u8,
+   80#u8, 81#u8, 32#u8, 82#u8, 97#u8, 116#u8, 99#u8,
+   104#u8, 101#u8, 116#u8, 32#u8, 86#u8, 49#u8, 32#u8,
+   67#u8, 104#u8, 97#u8, 105#u8, 110#u8, 32#u8, 78#u8,
+   101#u8, 120#u8, 116#u8]
+
+/-- Zero salt: 32 zero bytes. -/
+def zeroSalt32 : List U8 := List.replicate 32 0#u8
+
+/-- HKDF info: `ctr1.to_be_bytes() ++ chainNextLabel`. -/
+def nextKeyInfo (ctr1 : U32) : List U8 :=
+  (ctr1.bv.toBEBytes.map (fun b : Byte => U8.ofUInt8 ⟨b⟩)) ++ chainNextLabel
+
+/-- Full 64-byte HKDF output from `ikm` and incremented counter `ctr1`. -/
+noncomputable def nextKeyHkdfOutput (ikm : List U8) (ctr1 : U32) : List U8 :=
+  hkdf zeroSalt32 ikm (nextKeyInfo ctr1) 64
+
 end crypto

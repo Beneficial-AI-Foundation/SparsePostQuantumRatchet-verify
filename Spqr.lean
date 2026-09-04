@@ -42,6 +42,9 @@ import Spqr.Math.Poly.Lagrange.InterpolantSum
 import Spqr.Math.Poly.LinearFactors.Basic
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Math.Poly.ModByMonic
+import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
+import Spqr.Specs.Aeneas.ArrayIndexRangeTo
+import Spqr.Specs.Aeneas.CopyFromSlice
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.IndexRangeFull
@@ -52,8 +55,10 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.ResultExpect
 import Spqr.Specs.Aeneas.SliceChunksExact
 import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.SliceConcatListAux
 import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Aeneas.SliceIteratorNext
+import Spqr.Specs.Aeneas.SliceListToVec
 import Spqr.Specs.Aeneas.TryFromSliceToArray
 import Spqr.Specs.Aeneas.VecClone
 import Spqr.Specs.Aeneas.VecExtendFromSlice
@@ -67,6 +72,7 @@ import Spqr.Specs.Authenticator.Authenticator.VerifyCt
 import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
 import Spqr.Specs.Chain.ChainEpochDirection.New
 import Spqr.Specs.Chain.ChainParams.Clone
 import Spqr.Specs.Chain.ChainParams.Default
