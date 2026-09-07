@@ -61,6 +61,7 @@ import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Aeneas.SliceListToVec
 import Spqr.Specs.Aeneas.TryFromSliceToArray
 import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Aeneas.VecDerefMut
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 import Spqr.Specs.Aeneas.VecIndexRangeFull
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
@@ -72,8 +73,9 @@ import Spqr.Specs.Authenticator.Authenticator.VerifyCt
 import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
-import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
 import Spqr.Specs.Chain.ChainEpochDirection.New
+import Spqr.Specs.Chain.ChainEpochDirection.NextKey
+import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
 import Spqr.Specs.Chain.ChainParams.Clone
 import Spqr.Specs.Chain.ChainParams.Default
 import Spqr.Specs.Chain.ChainParams.IntoPb
