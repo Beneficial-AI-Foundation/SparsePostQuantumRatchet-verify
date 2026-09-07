@@ -29,6 +29,10 @@ theorem deref_mut_spec {T : Type} (v : alloc.vec.Vec T) :
       ∀ (s : Slice T), (r.2 s).val = s.val ⦄ := by
   unfold core.ops.deref.DerefMutVec
     alloc.vec.Vec.deref_mut
-  simp [WP.spec_ok]
+  rw [WP.spec_ok]
+  constructor
+  · rfl
+  · intro s
+    rfl
 
 end Aeneas.Std.alloc.vec.Vec
