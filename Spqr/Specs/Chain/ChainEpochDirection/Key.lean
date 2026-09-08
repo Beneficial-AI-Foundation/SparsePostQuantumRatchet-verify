@@ -35,8 +35,7 @@ counter `i`:
 The preconditions require that the chain secret `v` has length 32 and the counter `i` is
 below `U32.max` (so that incrementing it does not overflow).
 
-**Source**: spqr/src/chain.rs, lines 270:8-286:9
--/
+**Source**: spqr/src/chain.rs -/
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -56,10 +55,7 @@ One step of the chain-key advancement loop.
       `kh2.data.length = kh.data.length + 36` and
       `kh2.data = kh.data ++ to_be_bytes(k.1) ++ k.2`.
     • Otherwise the history is unchanged: `kh2 = kh`.
-  In both sub-cases the counter advances: `i2.val = i.val + 1`.
-
-**Source**: spqr/src/chain.rs, lines 270:8-286:9
--/
+  In both sub-cases the counter advances: `i2.val = i.val + 1`. -/
 @[step]
 theorem body_spec
     (at1 : U32) (params : proto.pq_ratchet.ChainParams)
@@ -154,8 +150,7 @@ theorem body_spec
 
 end spqr.chain.ChainEpochDirection.key_loop
 
-/-!
-# Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::key`: loop 0
+/-! # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::key`: loop 0
 
 The full loop spec for the chain-key advancement loop of `ChainEpochDirection::key`.  The loop
 iterates from counter `i` up to `at - 1`, repeatedly calling `next_key_internal` to derive the
@@ -174,7 +169,7 @@ On termination the loop returns `(i_final, v_final, kh_final)` where `i_final` i
 counter value at which `at ≤ i_final + 1` (i.e. `i_final + 1 ≥ at`), `v_final` has length 32,
 and `kh_final` is the accumulated key history.
 
-## Properties covered
+## Properties
 
 1. **Exact counter value**: the final counter satisfies `i_f.val + 1 = max at1.val (i.val + 1)`,
    i.e. `i_f = at1 - 1` when the loop executes and `i_f = i` when it does not.
@@ -191,38 +186,11 @@ and `kh_final` is the accumulated key history.
 6. **Zero-iteration identity**: when `at1.val ≤ i.val + 1` the state is returned unchanged:
    `i_f = i ∧ v_f = v ∧ kh_f = kh`.
 
-**Source**: spqr/src/chain.rs, lines 270:8-286:9
--/
+**Source**: spqr/src/chain.rs, lines 270:8-286:9 -/
 
 
 namespace spqr.chain.ChainEpochDirection
 
-
-/-- **Spec theorem for `spqr.chain.ChainEpochDirection.key_loop`** (loop 0):
-
-The chain-key advancement loop, proven via `loop.spec_decr_nat`.
-
-- **Preconditions**:
-    • `v.length = 32` (the chain secret is 32 bytes).
-    • `at.val ≤ U32.max - 390451572` (counter + maxOoo arithmetic stays in range).
-    • `(chain.maxOoo params).val < 390451572`.
-    • `kh.data.length + 36 * (at.val - i.val) ≤ Usize.max` (the key history has enough
-      capacity for all possible additions).
-    • `i.val < U32.max`.
-
-- **Postcondition**: the loop returns `(i_f, v_f, kh_f)` with
-    • `i_f.val + 1 = Nat.max at1.val (i.val + 1)` (exact final counter).
-    • `v_f.length = 32` (the chain secret is still 32 bytes).
-    • `v_f.val = iterChainSecret v.val i.val (at1.val - (i.val + 1))` (functional
-      correctness of the chain secret derivation).
-    • `kh_f = iterKeyHistory v.val i.val at1.val params kh (at1.val - (i.val + 1))`
-      (exact key history content).
-    • `kh.data.length ≤ kh_f.data.length` (the key history does not shrink).
-    • `kh_f.data.length ≤ kh.data.length + 36 * (at1.val - i.val)` (bounded growth).
-    • When `at1.val ≤ i.val + 1` (zero iterations), the result is `(i, v, kh)` unchanged.
-
-**Source**: spqr/src/chain.rs, lines 270:8-286:9
--/
 @[step]
 theorem key_loop_spec
     (at1 : U32) (params : proto.pq_ratchet.ChainParams)
@@ -258,8 +226,7 @@ theorem key_loop_spec
       s.2.2 = iterKeyHistory v.val i.val at1.val params kh steps ∧
       (at1.val > i.val + 1 → s.1.val + 1 ≤ at1.val) ∧
       (at1.val ≤ i.val + 1 → s.1 = i ∧ s.2.1 = v ∧ s.2.2 = kh))
-  · -- Body step
-    intro ⟨i', v', kh'⟩ hinv
+  · intro ⟨i', v', kh'⟩ hinv
     simp only  at hinv
     obtain ⟨h_inv_v, h_inv_i_le, h_inv_i_lt, h_inv_at, h_inv_maxooo,
       h_inv_kh_cap, h_inv_kh_lb, h_inv_kh_ub, h_inv_secret, h_inv_kh_content,
@@ -273,8 +240,7 @@ theorem key_loop_spec
       apply WP.spec_mono hspec
       intro cf hcf
       rcases cf with ⟨i'', v'', kh''⟩ | ⟨i'', v'', kh''⟩
-      · -- cont
-        simp only at hcf ⊢
+      · simp only at hcf ⊢
         obtain ⟨_, he, hvl, hvv, hks⟩ := hcf
         have hstep : i''.val - i.val = (i'.val - i.val) + 1 := by omega
         have h_cs : v''.val = iterChainSecret v.val i.val (i''.val - i.val) := by
@@ -289,12 +255,10 @@ theorem key_loop_spec
             rw [hstep, iterKeyHistory, iterKeyHistoryData]
             simp only [show i.val + (i'.val - i.val) + 1 ≤ U32.max from by omega, ↓reduceDIte]
             simp only [h_ctr_eq]
-            -- Rewrite kh' via h_inv_kh_content and unfold iterKeyHistory in hdata
             rw [h_inv_kh_content] at hdata hl
             simp only [iterKeyHistory] at hdata hl
             split at hdata
-            · -- iterKeyHistoryData fits in Usize.max
-              simp only [] at hdata hl
+            · simp only [] at hdata hl
               rw [← h_inv_secret]
               simp only [show i.val + (i'.val - i.val) + 1 = i'.val + 1 from by omega]
               simp only [ha, ↓reduceIte]
@@ -311,8 +275,7 @@ theorem key_loop_spec
                 simp only [iterKeyHistory, alloc.vec.Vec.length,
                   h_prev_len, ↓reduceDIte] at h_kh'_cap
                 grind
-            · -- iterKeyHistoryData does not fit in Usize.max: impossible under the cap
-              rename_i h_notfit
+            · rename_i h_notfit
               exfalso
               apply h_notfit
               have hb := iterKeyHistoryData_length_le v.val i.val at1.val params
@@ -340,11 +303,9 @@ theorem key_loop_spec
             omega
           · rw [hks]; exact h_inv_kh_lb
           · rw [hks]; omega
-      · -- done contradicts h_continue
-        simp only  at hcf
+      · simp only  at hcf
         exact absurd h_continue hcf.2.2.2
-    · -- Loop terminates
-      push Not at h_continue
+    · push Not at h_continue
       have h_i_le : i.val ≤ i'.val := h_inv_i_le
       have h_le : at1.val ≤ i'.val + 1 := h_continue
       have key1 : i'.val + 1 = Nat.max at1.val (i.val + 1) := by
@@ -370,34 +331,6 @@ theorem key_loop_spec
       Nat.le_refl _, by grind, by simp [iterChainSecret],
       by simp [iterKeyHistory, iterKeyHistoryData],
       fun h => by scalar_tac, fun _ => ⟨rfl, rfl, rfl⟩⟩
-
-end spqr.chain.ChainEpochDirection
-
-/-!
-# Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::key`
-
-`ChainEpochDirection::key` retrieves (or derives) the chain key at position `at`.  It branches
-on the comparison of `at` with the current counter `self.ctr`:
-
-  1. **`at < self.ctr`** (Ordering::Less): the key was already derived in a previous epoch.
-     Delegates to `KeyHistory.get` to look up the key from `self.prev` and returns the result
-     together with the (potentially modified) key history.
-
-  2. **`at = self.ctr`** (Ordering::Equal): the key has already been requested.  Returns
-     `Err(Error::KeyAlreadyRequested at)` without modifying `self`.
-
-  3. **`at > self.ctr`** (Ordering::Greater): the key must be derived by advancing the chain.
-     - If the jump `at - self.ctr` exceeds `max_jump_or_default`, returns
-       `Err(Error::KeyJump self.ctr at)`.
-     - Otherwise, optionally clears the key history if all existing keys will become obsolete,
-       runs the chain-key advancement loop to derive intermediate keys, garbage-collects old
-       keys, and finally calls `next_key_internal` one more time to produce the requested key.
-
-**Source**: spqr/src/chain.rs, lines 247:4-296:5
--/
-
-
-namespace spqr.chain.ChainEpochDirection
 
 theorem maxOoo_if_eq (params : proto.pq_ratchet.ChainParams) :
     (if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000) =
@@ -561,7 +494,6 @@ theorem key_spec_equal (self : chain.ChainEpochDirection) (ats : U32)
     (h_platform : System.Platform.numBits = 64) :
     key self ats params ⦃ (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
         chain.ChainEpochDirection) =>
-        -- Equal case: key already requested
       (ats = self.ctr →
           result.1 = core.result.Result.Err (Error.KeyAlreadyRequested ats) ∧
           result.2 = self) ⦄ := by
@@ -598,8 +530,6 @@ theorem key_spec_equal (self : chain.ChainEpochDirection) (ats : U32)
 
 theorem less_branch_vacuous {P : Prop} {a b : Nat}
     (h_lt : a < b) (h_gt : b < a) : P := by omega
-
-
 
 @[step]
 theorem key_spec_greater (self : chain.ChainEpochDirection) (ats : U32)
@@ -697,9 +627,7 @@ theorem key_spec_less (self : chain.ChainEpochDirection) (ats : U32)
     key self ats params ⦃
       (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
         chain.ChainEpochDirection) =>
-        -- Less case: delegates to KeyHistory.get
       (ats < self.ctr →
-          -- ctr and next are unchanged (only prev is modified)
           result.2.ctr = self.ctr ∧
           result.2.next = self.next ∧
           match result.1 with
@@ -710,7 +638,6 @@ theorem key_spec_less (self : chain.ChainEpochDirection) (ats : U32)
               (e = Error.KeyAlreadyRequested ats ∧
                 self.ctr ≤ ats + (chain.maxOoo params).val ∧
                 result.2.prev = self.prev ∧
-                -- No 36-aligned record in self.prev has its 4-byte tag matching ats
                 (∀ k, k + 36 ≤ self.prev.data.length → k % 36 = 0 →
                   self.prev.data.val.slice k (k + 4) ≠ core.num.U32.to_be_bytes ats))
           | core.result.Result.Ok out =>
@@ -718,17 +645,13 @@ theorem key_spec_less (self : chain.ChainEpochDirection) (ats : U32)
               out.length = 32 ∧
               result.2.prev.data.length = self.prev.data.length - 36 ∧
               result.2.prev.data.length % 36 = 0 ∧
-              -- The returned key is from the first entry tagged with ats
               (∃ off, off % 36 = 0 ∧
                 off + 36 ≤ self.prev.data.length ∧
                 self.prev.data.val.slice off (off + 4) = (core.num.U32.to_be_bytes ats).val ∧
-                -- First match: no earlier record has the same tag
                 (∀ k, k < off → k % 36 = 0 →
                   self.prev.data.val.slice k (k + 4) ≠ (core.num.U32.to_be_bytes ats).val) ∧
                 out = self.prev.data.val.slice (off + 4) (off + 36) ∧
-                -- Bytes before the removed offset are element-wise preserved
                 (∀ j, j < off → result.2.prev.data[j]! = self.prev.data[j]!) ∧
-                -- Structural result: swap-remove or tail-truncation
                 (off + 36 < self.prev.data.length →
                   result.2.prev.data = (self.prev.data.val.setSlice! off
                     (self.prev.data.val.drop (self.prev.data.length - 36))).take
@@ -1111,7 +1034,6 @@ theorem key_spec_greater_jump (self : chain.ChainEpochDirection) (ats : U32)
                   have hkv2 : kh.val = ats.val - 1 := by omega
                   rw [hhz, hkv2]
                   rfl
-
 
 @[step]
 theorem key_spec (self : chain.ChainEpochDirection) (ats : U32)
