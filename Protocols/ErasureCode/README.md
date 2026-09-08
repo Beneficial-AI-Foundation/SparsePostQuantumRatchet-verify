@@ -1,79 +1,85 @@
 # SPQR erasure-code verification
 
-## What is proved
+This directory connects the extracted SPQR polynomial encoder and decoder to a Reed–Solomon model
+in Lean. The final theorem, [`concreteSpqrErasureCode_correct`](Correct.lean), applies when
+`k ∈ {1, 3, 5, 30, 34, 36}`. For honest chunks at distinct indices, it proves that:
 
-`concreteSpqrErasureCode_correct` connects the extracted SPQR encoder and decoder to the
-Reed–Solomon model in this directory. For an allowed message size `k`, an honest set of encoded
-chunks at distinct positions decodes to the original message when it contains at least `k`
-chunks, and decoding returns `none` when it contains fewer than `k` chunks.
+- at least `k` chunks recover the original message;
+- fewer than `k` chunks return `none`.
 
-The proof is split at two correspondence lemmas:
+These six values are the point counts supported by the encoder's precomputed polynomial tables.
+The broader `concreteSpqrErasureCode` constructor packages encode and decode operations for every
+positive `k ≤ 2^16`; `Correct` is a separate property. Its encoder maps extracted construction or
+chunk-lookup failures to `default` so that the operation is total.
 
-- `encode_toModel` shows that the extracted encoder produces the model's chunk at each index.
-- `decode_toModel` shows that the extracted decoder agrees with the model on honest chunk sets.
+The theorem is the deterministic extensional fragment of Definition A.6 in
+[*How to Compare Bandwidth Constrained Two-Party Secure Messaging Protocols*](https://eprint.iacr.org/2025/2267.pdf).
+Recovery from at least `k` honest chunks strengthens the paper's exactly-`k` clause. The result
+makes no computability, polynomial-time or PPT, asymptotic-cost, or protocol-security claim.
 
-This is a functional-correctness result. It does not claim security, cover streaming decode, or
-define an `ErasureCodePayload` instance.
+## How the proof works
 
-The theorem requires `k ∈ {1, 3, 5, 30, 34, 36}`. These are the point counts supported by the
-precomputed polynomial tables used by the Rust implementation; a theorem for arbitrary `k`
-would not describe the shipped code.
+1. [`encode_toModel`](Correctness/Encode.lean) proves that the extracted encoder returns the model
+   chunk at each index for the six supported table sizes.
+2. [`decode_toModel`](Correctness/Decode.lean) starts a fresh decoder, folds over honest chunks at
+   distinct indices, and proves that its output equals the model decoder's output.
+3. [`modelEC_correct`](Correctness/Params.lean) supplies the Reed–Solomon result. The final theorem
+   rewrites both concrete operations to the model and applies that result.
 
-## Assumptions and axiom closure
+The decoder equation covers this fresh-decoder fold and its output. It does not equate persistent
+decoder histories produced by different insertion orders, arbitrary input sets, or streaming
+states.
 
-Rust's `decoded_message` function is deliberately opaque to extraction; see
-[issue #103](https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/103).
-`Contract.lean` therefore states two assumptions about that real function:
+## Assumptions and trust
 
-- `decoded_message_spec_short`: if any one of the 16 point stores is short, decoding returns
-  `none`.
-- `decoded_message_spec_complete`: complete, sorted stores containing points on suitably
-  low-degree polynomials decode to the bytes of those polynomial evaluations.
+The extracted `decoded_message` function is opaque. [`Contract.lean`](Contract.lean) states two
+assumptions about it and gives their exact hypotheses:
 
-The checked closure of `concreteSpqrErasureCode_correct` contains:
+- `decoded_message_spec_short` says that decoding returns `none` when any one of the sixteen stores
+  is below its quota. It needs no flag premise.
+- `decoded_message_spec_complete` starts with `is_complete = false`. Strictly sorted stores must
+  contain enough points on the stated degree-bounded polynomials; decoding then serializes the
+  requested evaluations.
 
-- `propext`, `Classical.choice`, and `Quot.sound`: Lean's standard logical axioms;
-- `decoded_message_spec_short` and `decoded_message_spec_complete`: the two assumptions above;
-- `encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message`: the extraction
-  opaque;
-- <code>sorr&#121;Ax</code>: inherited through the pre-existing named assumption
-  `Spqr.Aeneas.collect_default_bridge`. Aeneas currently mistranslates the relevant mapped
-  iterator ([aeneas#1043](https://github.com/AeneasVerif/aeneas/issues/1043)); project
-  [issue #409](https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/409)
-  tracks removing this assumption;
-- `Aeneas.Std.core.fmt.Formatter` and the two `RangeFull.get_unchecked` declarations: opaque
-  primitives in the extracted support library;
-- `PolyEncoder.chunk_at._native.decide.ax_1` and
-  `PolyEncoder.point_at_loop.body._native.decide.ax_1`: pre-existing generated certificates
-  that two fixed panic-message strings fit in `U32`.
+The terminal theorem's checked closure contains:
 
-The bridge adds no proof placeholders or uses of `native_decide`.
+- Lean's standard logical axioms: `propext`, `Classical.choice`, and `Quot.sound`;
+- the two decoder contracts and the opaque `decoded_message` definition;
+- <code>sorr&#121;Ax</code> from two direct origins: the admitted generated map-iterator `next` in
+  [`SrcTranslated/Funs.lean`](../../SrcTranslated/Funs.lean), and
+  `Spqr.Aeneas.collect_default_bridge` in
+  [`Spqr/Specs/Aeneas/MapCollectBridge.lean`](../../Spqr/Specs/Aeneas/MapCollectBridge.lean);
+- the opaque backend type `Aeneas.Std.core.fmt.Formatter`, plus the `RangeFull` extraction
+  externals `get_unchecked` and `get_unchecked_mut`;
+- two pre-existing encoder native certificates showing that fixed panic strings fit in `U32`:
+  `PolyEncoder.chunk_at._native.decide.ax_1` and
+  `PolyEncoder.point_at_loop.body._native.decide.ax_1`.
 
-To recheck the closure, save the following as `/tmp/ErasureCodeAxioms.lean` and run
-`lake env lean /tmp/ErasureCodeAxioms.lean` from the repository root:
-
-```lean
-import Protocols
-
-#print axioms Protocols.ErasureCode.concreteSpqrErasureCode_correct
-#print axioms Protocols.ErasureCode.encode_toModel
-#print axioms Protocols.ErasureCode.decode_toModel
-#print axioms Protocols.ErasureCode.decoded_message_spec_short
-#print axioms Protocols.ErasureCode.decoded_message_spec_complete
-#print axioms spqr.encoding.polynomial.PolyEncoder.chunk_at_spec_points
-```
+Both decoder contracts remain assumptions. The bridge adds no proof placeholders or uses of
+`native_decide`, and a green build cannot validate the assumed contracts. `Contract.lean` also
+describes the broader interpolation helper, its machine-size premise, and its helper-only native
+certificate, which is outside the terminal theorem's closure and does not discharge either
+contract.
 
 ## Model provenance
 
-The five files under `Model/` are non-canonical copies from
-`Beneficial-AI-Foundation/secure-messaging` at commit `2144e35`. Their only local differences
-are the provenance header and imports rewritten to the `Protocols.ErasureCode.Model` namespace.
-The canonical files remain in `secure-messaging`.
+The five files under `Model/` are vendored from the canonical
+[`Beneficial-AI-Foundation/secure-messaging`](https://github.com/Beneficial-AI-Foundation/secure-messaging)
+repository at immutable commit `2144e3561b3ebf775f973a3c2804a0f8edb77f75`:
 
-To recheck a vendored file, run this in a checkout of `secure-messaging` and compare the output
-with the corresponding file under `Protocols/ErasureCode/Model/`, allowing only those two
-mechanical differences:
+- `SecureMessaging/ErasureCode/Defs.lean`
+- `SecureMessaging/ErasureCode/ReedSolomon/Construction.lean`
+- `SecureMessaging/ErasureCode/ReedSolomon/Correctness.lean`
+- `SecureMessaging/ErasureCode/SPQRReedSolomon/Construction.lean`
+- `SecureMessaging/ErasureCode/SPQRReedSolomon/Correctness.lean`
 
-```sh
-git show 2144e35:SecureMessaging/ErasureCode/<path>
-```
+Only these local differences are permitted:
+
+1. The header preserves upstream copyright and authorship, names `LICENSE-APACHE`, and records the
+   provenance, local adaptation credit, full commit, upstream path, and this README.
+2. Imports replace the `SecureMessaging.ErasureCode.*` prefix with
+   `Protocols.ErasureCode.Model.*`.
+
+Apart from that import rewrite, every byte from the first import onward matches the pinned source,
+including body prose and navigation names. A retained `SecureMessaging.ErasureCode.*` name refers
+to the upstream module; its local copy uses the `Protocols.ErasureCode.Model.*` prefix.

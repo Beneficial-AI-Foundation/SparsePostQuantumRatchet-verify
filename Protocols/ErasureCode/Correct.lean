@@ -5,12 +5,27 @@ Authors: Alessandro D'Angelo
 -/
 import Protocols.ErasureCode.Correctness.Decode
 
-/-! # Correctness of the concrete SPQR erasure code -/
+/-!
+# Correctness of the concrete SPQR erasure code
+
+`ErasureCode` packages deterministic encode and decode functions. Its `Correct` predicate is a
+separate property. The result below proves the deterministic extensional fragment of Definition
+A.6 and strengthens the paper's exactly-`k` clause to recovery from at least `k` honest chunks. It
+establishes no computability, polynomial-time or PPT, asymptotic-cost, or protocol-security
+theorem.
+
+The decoder correspondence covers honest chunks at distinct indices and starts from a fresh
+decoder. Its fold invariant proves that equation without identifying persistent states produced
+by different input orders. It makes no claim about arbitrary input sets or streaming states.
+-/
 
 open ErasureCode.SPQRReedSolomon
 
 namespace Protocols.ErasureCode
 
+/-- Package the concrete encoder and decoder for the structural bound `k ≤ 2^16`. This constructor
+supplies `ErasureCode` operations. Correctness is the separate theorem below, and extracted
+encoder failures have already been mapped to `default`. -/
 noncomputable def concreteSpqrErasureCode
     (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
     ErasureCode (Chunk GF16) where
@@ -37,6 +52,8 @@ theorem encodeChunks_toModel
     (i, (modelEC k hk hk_pos).encode M i)
   exact Prod.ext rfl (encode_toModel k hk hk_pos hk_tab M i)
 
+/-- Correctness for the six supported table sizes. Honest chunks at distinct indices recover the
+message when at least `k` are present and decode to `none` when fewer are present. -/
 theorem concreteSpqrErasureCode_correct
     (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
     (hk_tab : k ∈ ({1, 3, 5, 30, 34, 36} : Finset ℕ)) :

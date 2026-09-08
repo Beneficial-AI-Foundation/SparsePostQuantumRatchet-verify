@@ -7,7 +7,25 @@ import Protocols.ErasureCode.Correctness.Maps
 import SrcTranslated.FunsExternal
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 
-/-! # Contract for the opaque polynomial decoder -/
+/-!
+# Contract for the opaque polynomial decoder
+
+The proof assumes the two contracts below for the shipped opaque `decoded_message` function. They
+cover point lookup, slicing, interpolation or direct evaluation, and byte serialization.
+
+The Rust Hax annotation on `Poly.lagrange_interpolate` limits input to 36 points. The proved Lean
+helper `spqr.encoding.polynomial.Poly.lagrange_interpolate_spec` requires only
+`pts.length + 1 ≤ Usize.max`. Its axiom closure contains the standard logical axioms and the
+pre-existing certificate
+`spqr.encoding.polynomial.Poly.lagrange_interpolate_complete._native.decide.ax_1`. That helper is
+supporting evidence for the contracts. It proves neither contract, and its certificate is outside
+the current closure of `concreteSpqrErasureCode_correct`.
+
+The short path returns before allocating an output byte vector. On the complete path, strict
+ordering of U16 x-values bounds each store by 65536 points. The sixteen per-store quotas therefore
+give `pts_needed ≤ 16 * 65536`, so the `2 * pts_needed` output fits the supported `usize` range.
+This source-level bound supports the assumptions; it is not a Lean proof.
+-/
 
 open Aeneas Aeneas.Std Result Polynomial
 open spqr encoding.polynomial
@@ -27,9 +45,9 @@ def SortedStore (l : List Pt) : Prop :=
 def StoreOn (l : List Pt) (P : Polynomial GF216) : Prop :=
   ∀ p ∈ l, P.eval p.x.toGF216 = p.y.toGF216
 
-/-- Assumption about the shipped Rust `decoded_message` implementation: a short point store
-forces decoding to return `none`. The function is opaque to extraction and this assumption can
-become a theorem if that Rust function is refactored for extraction. -/
+/-- Assume that the shipped opaque `decoded_message` returns `none` if any of its sixteen stores
+is below quota. No `is_complete` premise is needed because the implementation also returns `none`
+when that flag is set. -/
 @[step]
 axiom decoded_message_spec_short
     (pd : PolyDecoder)
@@ -37,10 +55,8 @@ axiom decoded_message_spec_short
     spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message pd
       ⦃ (r : Option (alloc.vec.Vec U8)) => r = none ⦄
 
-/-- Assumption about the shipped Rust `decoded_message` implementation: complete sorted point
-stores on low-degree polynomials serialize their evaluations. The function is opaque to
-extraction and this assumption can become a theorem if that Rust function is refactored for
-extraction. -/
+/-- Assume that, from `is_complete = false`, sufficiently long and strictly sorted stores whose
+points lie on polynomials below their per-store quotas serialize the requested evaluations. -/
 @[step]
 axiom decoded_message_spec_complete
     (pd : PolyDecoder) (P : Nat → Polynomial GF216)

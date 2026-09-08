@@ -1,13 +1,16 @@
 /-
 Copyright (c) 2026 Beneficial AI Foundation. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Alessandro D'Angelo
+Released under Apache 2.0 license as described in the file LICENSE-APACHE.
+Authors: Beneficial AI Foundation
 -/
 
-/- Vendored verbatim (imports rewritten) from
+/- Vendored from
    https://github.com/Beneficial-AI-Foundation/secure-messaging
-   SecureMessaging/ErasureCode/Defs.lean at commit 2144e35.
-   The canonical copy is secure-messaging; do not edit here — re-vendor. -/
+   SecureMessaging/ErasureCode/Defs.lean
+   at commit 2144e3561b3ebf775f973a3c2804a0f8edb77f75.
+   Local adaptation: Alessandro D'Angelo.
+   The canonical copy is secure-messaging; refresh from the pinned source.
+   Local differences: see Protocols/ErasureCode/README.md, Model provenance. -/
 
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Finset.Sort

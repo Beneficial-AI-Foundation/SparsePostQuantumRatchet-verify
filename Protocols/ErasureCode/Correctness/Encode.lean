@@ -8,7 +8,14 @@ import Spqr.Math.Poly.Lagrange.Interpolant
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
 
-/-! # Concrete encoder and its model correspondence -/
+/-!
+# Concrete encoder and its model correspondence
+
+`encodeConcrete` maps failures from the extracted encoder constructor or chunk lookup to
+`default`, making it a total Lean function. `encode_toModel` proves agreement with the
+Reed–Solomon model when `k ∈ {1, 3, 5, 30, 34, 36}`. The definition does not preserve extracted
+failures or guarantee correctness for other values of `k`.
+-/
 
 open Aeneas Aeneas.Std Result Polynomial
 open ErasureCode.SPQRReedSolomon
@@ -26,6 +33,8 @@ private theorem sum_scaledLagrangeBasis_eq_interpolate_of_val_eq
   subst k
   exact spqr.encoding.polynomial.sum_scaledLagrangeBasis_eq_interpolate hN y
 
+/-- Run the extracted polynomial encoder at index `i`, returning `default` if construction or
+chunk lookup fails. `encode_toModel` proves agreement for the six supported table sizes. -/
 noncomputable def encodeConcrete (k : ℕ) (hk : k ≤ 2 ^ 16)
     (M : Fin k → Chunk GF16) (i : Fin (2 ^ 16)) : Chunk GF16 :=
   match spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes
