@@ -18,17 +18,12 @@ namespace spqr.Direction
 /-- **Spec theorem for `spqr.Direction.switch`**:
 `switch` maps `A2B ↦ B2A` and `B2A ↦ A2B`. Proof by unfolding and `simp`. -/
 @[step]
-theorem switch_spec_A2B :
-    Direction.switch .A2B ⦃ (result : proto.pq_ratchet.Direction) =>
-      result = .B2A ⦄ := by
-  unfold Direction.switch
-  simp
-
-@[step]
-theorem switch_spec_B2A :
-    Direction.switch .B2A ⦃ (result : proto.pq_ratchet.Direction) =>
-      result = .A2B ⦄ := by
-  unfold Direction.switch
-  simp
+theorem switch_spec (self : proto.pq_ratchet.Direction) :
+    switch self ⦃ (result : proto.pq_ratchet.Direction) =>
+      result = match self with
+        | .A2B => .B2A
+        | .B2A => .A2B ⦄ := by
+  unfold switch
+  step*
 
 end spqr.Direction
