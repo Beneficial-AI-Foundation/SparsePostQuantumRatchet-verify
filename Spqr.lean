@@ -196,6 +196,7 @@ import Spqr.Specs.Lib.CurrentVersion
 import Spqr.Specs.Lib.CurrentVersion.CallOnce
 import Spqr.Specs.Lib.DecodeState
 import Spqr.Specs.Lib.DecodeState.CallOnce
+import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
 import Spqr.Specs.Lib.SecretOutput.Eq
