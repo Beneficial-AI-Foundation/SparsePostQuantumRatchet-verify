@@ -217,6 +217,7 @@ import Spqr.Specs.Serialize.Error.From
 import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
+import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
 import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.IntoPb
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
