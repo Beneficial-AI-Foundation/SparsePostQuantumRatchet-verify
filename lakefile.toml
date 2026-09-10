@@ -1,6 +1,6 @@
 name = "Spqr"
 version = "0.1.0"
-defaultTargets = ["Spqr", "SrcTranslated"]
+defaultTargets = ["Spqr", "SrcTranslated", "Protocols"]
 
 [leanOptions]
 autoImplicit = false
@@ -32,6 +32,9 @@ name = "Spqr"
 
 [[lean_lib]]
 name = "Utils"
+
+[[lean_lib]]
+name = "Protocols"
 
 [[lean_exe]]
 name = "status"
