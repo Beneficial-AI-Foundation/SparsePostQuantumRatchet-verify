@@ -66,4 +66,30 @@ def nextKeyInfo (ctr1 : U32) : List U8 :=
 noncomputable def nextKeyHkdfOutput (ikm : List U8) (ctr1 : U32) : List U8 :=
   hkdf zeroSalt32 ikm (nextKeyInfo ctr1) 64
 
+/-- HKDF info label: `"Signal PQ Ratchet V1 Chain  Start"` (33 bytes) as `List U8`. -/
+def chainStartLabel : List U8 :=
+  [83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 32#u8,
+   80#u8, 81#u8, 32#u8, 82#u8, 97#u8, 116#u8, 99#u8,
+   104#u8, 101#u8, 116#u8, 32#u8, 86#u8, 49#u8, 32#u8,
+   67#u8, 104#u8, 97#u8, 105#u8, 110#u8, 32#u8,
+   32#u8, 83#u8, 116#u8, 97#u8, 114#u8, 116#u8]
+
+/-- The 96-byte HKDF-SHA256 output derived from `initial_key` with zero salt and
+    the chain-start info label. -/
+noncomputable def newHkdfOutput (initial_key : List U8) : List U8 :=
+  crypto.hkdf crypto.zeroSalt32 initial_key chainStartLabel 96
+
+/-- HKDF info label: `"Signal PQ Ratchet V1 Chain Add Epoch"` (36 bytes) as `List U8`. -/
+def chainAddEpochLabel : List U8 :=
+  [83#u8, 105#u8, 103#u8, 110#u8, 97#u8, 108#u8, 32#u8,
+   80#u8, 81#u8, 32#u8, 82#u8, 97#u8, 116#u8, 99#u8,
+   104#u8, 101#u8, 116#u8, 32#u8, 86#u8, 49#u8, 32#u8,
+   67#u8, 104#u8, 97#u8, 105#u8, 110#u8, 32#u8,
+   65#u8, 100#u8, 100#u8, 32#u8, 69#u8, 112#u8, 111#u8, 99#u8, 104#u8]
+
+/-- The 96-byte HKDF-SHA256 output derived from `next_root` and `epoch_secret` with
+    the chain-add-epoch info label. -/
+noncomputable def addEpochHkdfOutput (next_root secret : List U8) : List U8 :=
+  crypto.hkdf next_root secret chainAddEpochLabel 96
+
 end crypto
