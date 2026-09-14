@@ -29,21 +29,12 @@ pair) from `docs/spqr-properties.md`.
   - production-code
   - production-test
   - spec-mlkembraid (include section, e.g. §2.5)
+  - spec-code deviation (D1–D5 in docs/spqr-properties.md)
   - spec-2025-2267
   - hax-cross
   - hax-kat
   - hax-proptest
   - lean-specific
--->
-
-**Tier:** {TIER}
-
-<!-- Choose one:
-  - 1: Provable Now
-  - 2: Axiom-Backed
-  - 3: Infrastructure Work
-  - 4: Blocked
-  - Proved
 -->
 
 ---
@@ -81,7 +72,8 @@ pair) from `docs/spqr-properties.md`.
   <!-- Easy / Medium / Hard / Axiom-only -->
 
 - **Status:** {STATUS}
-  <!-- Provable Now / Feasible / Axiom Required / Blocked / Proved -->
+  <!-- One of the values used in docs/spqr-properties.md:
+       Proved / Proved (branch) / Open / Axiom -->
 
 - **Proof approach:** {APPROACH}
   <!-- Brief description of the proof strategy, e.g.:
@@ -126,14 +118,10 @@ Type (pick one):
   type:history-erasure | type:progress | type:proof-infra
 
 Status (pick one):
-  status:provable-now | status:feasible | status:axiom-required |
-  status:blocked | status:proved
-
-Tier (pick one):
-  tier:1 | tier:2 | tier:3 | tier:4 | tier:proved
+  status:open | status:axiom | status:proved-branch | status:proved
 
 Special (if applicable):
   modelling-assumption | spec-deviation
 -->
 
-**Labels:** `{TYPE_LABEL}`, `{STATUS_LABEL}`, `{TIER_LABEL}`
+**Labels:** `{TYPE_LABEL}`, `{STATUS_LABEL}`

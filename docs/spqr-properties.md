@@ -20,7 +20,7 @@ Status values:
 | Status | Meaning |
 |--------|---------|
 | Proved | Theorem on `main`, no `sorry`, no hand-written axiom beyond `hkdf_to_slice_spec` |
-| Proved (branch) | Theorem exists only on `la/lean-v1-protocol-proofs`; not merged |
+| Proved (branch) | Theorem exists only on `la/lean-v1-protocol-proofs`; not merged. Those proofs also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. Merging requires replacing them with theorems. |
 | Open | Statement fixed, no theorem yet |
 | Axiom | Cannot be a theorem: the code calls an opaque library function |
 
@@ -57,6 +57,16 @@ Layers, from the spec's point of view:
 3. **Chain and API** (`src/chain.rs`, `src/lib.rs`): the SCKA-to-secure-messaging
    compiler of SCKA §3 / Fig. 2. Outside the spec; properties there are
    grounded in the code only.
+
+How the layers relate to the SCKA paper: ML-KEM Braid is the concrete form of
+Opp-UniKEM-CKA (SCKA §4.1, Fig. 16), with the paper's offline/online
+encapsulation split into `encaps1` (needs only the header) and `encaps2` (needs
+the full key), which is what produces the 11 states. The internal
+authenticator (§2.4) has no counterpart in Fig. 16, which relies on the outer
+AEAD. In the Fig. 2 compiler, `chain.add_epoch` is the key mix-in,
+`chain.send_key`/`recv_key` are the per-epoch sending and receiving chains, and
+`ChainParams { max_jump: 25_000, max_ooo_keys: 2_000 }` (`chain.rs:35`) are
+its tuning constants.
 
 ---
 
@@ -232,6 +242,11 @@ tag, and chunk, returning `(m, index, bytes_consumed)`
 (`Spqr/Specs/V1/Chunked/States/Serialize/Message/`). The composed roundtrip
 `deserialize(serialize(m, i)) = ok (m, i, _)` is **Open**.
 
+The `index` field is the chain layer's per-message key index from
+`chain.send_key` (`lib.rs:300`). §2.3 lists only `{epoch, type, data}` and
+leaves the encoding to the implementer, so this is permitted, but the wire
+format is SPQR-specific rather than a pure ML-KEM Braid message.
+
 ### PROP-36 Epoch zero rejected
 
 `deserialize` returns `Err(MsgDecode)` when the wire epoch is 0
@@ -326,6 +341,22 @@ Status: **Open** for all 13. Send arms other than 1 and 7 emit the payload
 type the spec prescribes, except `EkSentCt1Received.send`, which emits
 `Ct1Ack(true)` where the spec emits `None` (D3).
 
+State contents match the spec's per-state lists, with one representational
+difference: `ek_seed` and `hek` are held as a single 64-byte `hdr`
+(`chunked/send_ct.rs:94` splits `hdr ‖ mac` at `HEADER_SIZE`; libcrux reads
+the seed and hash out of `hdr`).
+
+### PROP-50 Structural liveness
+
+From `(KeysUnsampled_A(e), NoHeaderReceived_B(e))`, every fair interleaving of
+`send`/`recv` with every message eventually delivered reaches
+`(NoHeaderReceived_A(e+1), KeysUnsampled_B(e+1))`, and every reachable state
+pair has a next step (§2.6: "Alice and Bob will always be able to make forward
+progress as long as fresh messages are delivered"; Fig. 2 gives the reachable
+pairs). D2 matters here: a future-epoch message is an error rather than a
+no-op, so the property holds only for in-order delivery across epochs.
+Status: **Open**.
+
 ### PROP-25 Encapsulation-key integrity
 
 Whenever the `ek_decoder` completes, `ek_matches_header(ek, hdr)` is checked
@@ -407,9 +438,60 @@ assumption.
 | D4 | `Ct1Acknowledged.recv` (`states.rs:484-492`) | accepts `EkCt1Ack` | also accepts `Ek` chunks | Out-of-order delivery; comment at `states.rs:485-488`. Integrity still checked by PROP-25. |
 | D5 | MAC failure (§2.4) | "should not proceed with the session and should negotiate a new session" | returns `Err`; caller keeps the previous state and may retry | Weaker than the spec; the session is not aborted by the library. |
 
+Resolution for each is a decision, not a proof: D1 needs either a code fix
+or a spec erratum; D2 needs the spec to mandate strictness or the code to
+adopt the no-op; D3 and D4 need the spec to document the extra message
+handling or the code to drop it; D5 needs the caller's contract written down.
+Until decided, the properties above describe the code as it is.
+
 ---
 
-## 12. Changes from the previous draft
+## 12. Index
+
+| ID | Section | Status |
+|----|---------|--------|
+| PROP-1 | 2 | Open (needs PROP-3 axiom) |
+| PROP-3 | 3 | Axiom; `generate_spec` proved |
+| PROP-3b | 3 | Axiom |
+| PROP-9 | 10 | Proved |
+| PROP-10 | 10 | Open |
+| PROP-12a | 10 | Proved |
+| PROP-12b | 10 | Open |
+| PROP-14 | 10 | Proved (branch) |
+| PROP-15 | 7 | Proved |
+| PROP-16 | 9 | Open |
+| PROP-17 | 10 | Proved |
+| PROP-18 | 5 | Proved |
+| PROP-21 | 2 | Proved (branch), send half; recv half and trace part Open |
+| PROP-22 | 2 | Open |
+| PROP-23 | 2 | Open |
+| PROP-24 | 5 | Open |
+| PROP-25 | 8 | Open |
+| PROP-27 | 9 | Open |
+| PROP-29 | 10 | Open |
+| PROP-30 | 8 | Proved (branch), Less/Greater rows; Equal rows Open |
+| PROP-31 | 7 | Proved |
+| PROP-35 | 6 | Proved (components); roundtrip Open |
+| PROP-36 | 6 | Proved |
+| PROP-37 | 10 | Open |
+| PROP-38 | 10 | Open |
+| PROP-40 | 7 | Proved |
+| PROP-41 | 5 | Proved (labels); KDF_OK literal Open |
+| PROP-42 | 5 | Proved |
+| PROP-43 | 7 | Open |
+| PROP-45 | 5 | Open |
+| PROP-47 | 8 | Open |
+| PROP-48 | 8 | Open |
+| PROP-49 | 8 | Open |
+| PROP-50 | 8 | Open |
+| LEAN-ENC-1 | 4 | Proved |
+| LEAN-ENC-2 | 4 | Axiom |
+| LEAN-GF | 4 | Proved |
+| D1–D5 | 11 | Deviations |
+
+---
+
+## 13. Changes from the previous draft
 
 Removed: PROP-4, PROP-7, PROP-8 (universally quantified HKDF collision-freeness
 axioms are false for a fixed-length output and would make the environment
@@ -422,7 +504,15 @@ epochs are `msg.epoch - 1`), PROP-10 (erasure is in `send_key`), PROP-40
 (`ct = ct1 ‖ ct2`), PROP-43 (order of checks, where state is preserved),
 PROP-3 (actual code interface), PROP-3b (byte layout from libcrux).
 
-Added: PROP-45, PROP-47, PROP-48, PROP-49 for spec content that had no property.
-Statuses refreshed against `main`: `lib.rs` is extracted; GF16 multiplication,
-Authenticator, KeyHistory, Message serialization and `hkdf_to_vec` are proved;
-the state-machine theorems are on `la/lean-v1-protocol-proofs` only.
+Added: PROP-45, PROP-47, PROP-48, PROP-49, PROP-50 for spec content that had
+no property. Statuses refreshed against `main`: `lib.rs` is extracted; GF16
+multiplication, Authenticator, KeyHistory, Message serialization and
+`hkdf_to_vec` are proved; the state-machine theorems are on
+`la/lean-v1-protocol-proofs` only.
+
+Dropped on purpose: the source-tag taxonomy and evidence scale (each property
+now names its spec section or code location directly), effort estimates and
+phase plans, and the coverage percentages of the former
+`SPQR_SPEC_COVERAGE.md`. The former `code-vs-spec.md`, `gaps-vs-spec.md` and
+`gaps_impl_vs_spec_refined.md` are folded into sections 1 and 11; their
+longer discussion is in git history.
