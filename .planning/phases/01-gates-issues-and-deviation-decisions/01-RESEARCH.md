@@ -1399,9 +1399,13 @@ this phase does not need. slopcheck was not run because no package is recommende
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All five were resolved during `/gsd-plan-phase 1` — Q-1 and Q-4 by the user, Q-2/Q-3/Q-5 by adopting the recommendation below. Each carries its resolution inline. None is still open.
 
 ### Q-1 — Success criterion 1's repo-wide grep cannot return empty (B-3)
+
+- **RESOLVED (user, 2026-09-14): scope the grep.** Criterion 1 and INFRA-01 are reworded by plan 01-02 T1/T2. `.planning/PROJECT.md` and `.planning/STATE.md` are deliberately left alone — the user declined the belt-and-braces option. D-17's three operative files are still corrected (plan 01-01 T2).
 - **What we know:** the token is in nine tracked files; six are `.planning/` records of the
   decision to remove it, including this phase's own CONTEXT and DISCUSSION-LOG, and the
   requirement and criterion that mandate the removal.
@@ -1424,6 +1428,8 @@ this phase does not need. slopcheck was not run because no package is recommende
   only if the user prefers belt-and-braces — both are one-line rewordings and cost nothing.
 
 ### Q-2 — What is PR A's base branch? (B-4)
+
+- **RESOLVED (default adopted): stack on `la/spec-catalog`, but do not decide silently.** The question is carried verbatim and marked OPEN in plan 01-07 T3's stop-and-report text, for the user to answer at the PR A boundary.
 - **What we know:** `main` contains none of the files this phase edits; `la/spec-catalog` is
   unmerged and has diverged from its remote; `branching_strategy` is `none`.
 - **What's unclear:** whether the user intends to merge `la/spec-catalog` to `main` first, or
@@ -1433,6 +1439,8 @@ this phase does not need. slopcheck was not run because no package is recommende
   silently. The planner should put this question in PR A's stop-and-report task text verbatim.
 
 ### Q-3 — Does the `issues/272/` analysis survive deletion?
+
+- **RESOLVED (recommendation adopted): ask before deleting.** Plan 01-05 T1 is a blocking `checkpoint:decision` that runs `gh issue view 272` and asks the user, preceding the `rm -rf`.
 - **What we know:** the README documents a real, load-bearing finding (a false postcondition in
   `Spqr/Specs/Encoding/Polynomial/LagrangePolysForCompletePoints.lean:40`, admitted by a `sorry`
   at `:57`, with a fix on `fix/272-frame-condition-loop0-body-spec`). The supporting `.lean`
@@ -1444,10 +1452,14 @@ this phase does not need. slopcheck was not run because no package is recommende
   Phase 4 scope.
 
 ### Q-4 — §11 layout: one wide table or two? (D-12)
+
+- **RESOLVED (user, 2026-09-14): two tables (option b).** The five-column table and its five rows stay verbatim; a narrow `| ID | Decision | Status |` table is added beneath. Plan 01-08's `<layout_decision>` block states this reading of D-12 and its reasoning explicitly, so the Codex plan reviewer does not file it as drift.
 - **Recommendation:** two tables (option (b) above). The planner should state the choice and
   its reasoning in the plan so the reviewer reads it as a deliberate reading of D-12, not drift.
 
 ### Q-5 — Does gate 4 belong in CI eventually?
+
+- **RESOLVED (recommendation adopted): no action this phase.** Filed as a `type:proof-infra` TSV row (`INFRA-CI-GATE4`) during PR A's run, so the deferred idea is tracked rather than lost.
 - **What we know:** D-08a scopes this phase to local-only and the CONTEXT defers the
   `lean.yml` refactor.
 - **Recommendation:** no action this phase. File it as a `type:proof-infra` issue during PR A's
