@@ -30,19 +30,24 @@ hand-written axiom beyond the documented opaque stubs.
 <!-- GSD:stack-start source:STACK.md -->
 ## Technology Stack
 
-Technology stack not yet documented. Will populate after codebase mapping or first phase.
+- Rust crate under `src/` (SPQR, pinned at `d47083c`); never edited outside a D1–D5 decision.
+- Aeneas (`nightly-2026.08.27-5b9dcf3`) extracts the whole crate into `SrcTranslated/` (`Funs.lean`, `Types.lean`, `FunsExternal.lean` axiom stubs). Never hand-edited.
+- Lean `leanprover/lean4:v4.31.0`, build with `lake build` (default targets `Spqr`, `SrcTranslated`); hand-written specs and proofs under `Spqr/Specs/`, every module re-exported from `Spqr.lean`.
+- Gates: `lake build` with no warning other than `declaration uses 'sorry'`; `lake exe runLinter Spqr`; `lake env lean scripts/Audit.lean` (axiom audit, writes `sorry-manifest.txt`); `#print axioms <thm>`.
 <!-- GSD:stack-end -->
 
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+- One spec file per Rust function: `Spqr/Specs/<Module>/<Type>/<Function>.lean`, header comment naming the Rust path, `@[step] theorem <fn>_spec ... : f args ⦃ r => P r ⦄` in WP style over `Result`. See `Spqr/Specs/Chain/Chain/AddEpoch.lean` (PR #541) for the pattern.
+- One GitHub issue per catalog property (`docs/ISSUE_TEMPLATE.md`), one draft PR per issue; the user opens the PRs. The catalog row, section text and §12 index change in the same PR as the theorem.
+- Property IDs (`PROP-n`, `LEAN-*`, `D1`–`D5`) are stable; use them in commits, issues and theorem doc-comments.
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
-Architecture not yet mapped. Follow existing patterns found in the codebase.
+Three layers, as in `docs/spqr-properties.md` §1: the SCKA interface (§1.1 of the ML-KEM Braid spec; trace properties over `lib.rs` `send`/`recv`), ML-KEM Braid (`src/v1/` eleven-variant `States` machine, `authenticator.rs`, `incremental_mlkem768.rs`, `encoding/`), and the chain/API compiler (`chain.rs`, `lib.rs`). Opaque items: libcrux KEM/HMAC stubs, `hkdf_to_slice` (single hand-written axiom), `PolyDecoder.decoded_message`, prost `Message` impls (`sorry`). Proofs on `la/lean-v1-protocol-proofs` (`States/Send.lean`, `States/Recv.lean`, liveness axioms in `Specs/External.lean`) are not yet on `main`.
 <!-- GSD:architecture-end -->
 
 <!-- GSD:skills-start source:skills/ -->
