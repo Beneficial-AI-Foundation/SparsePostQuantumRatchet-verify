@@ -58,7 +58,18 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. `gh issue list` shows one open issue per v1 property, created from the corrected template, and each phase below names the issue numbers it closes
   4. `docs/spqr-properties.md` §11 carries a recorded decision for each of D1–D5 (code fix, spec erratum, or written caller contract), and PROP-42's §5 statement matches the D1 decision
   5. The catalog text for PROP-30, PROP-50, PROP-47 and PROP-43 states the decided behaviour for D2, D3/D4 and D5, so phases 5–6 can quote it verbatim
-**Plans**: TBD (expect one per requirement, 8 PR boundaries)
+**Plans**: 9 plans across 2 PR boundaries (PR A: infra; PR B: deviations)
+
+Plans:
+- [ ] 01-01-PLAN.md — correct the issue template checklist and remove the phantom gate token from the operative documents (wave 1, PR A)
+- [ ] 01-02-PLAN.md — reword INFRA-01/INFRA-02 and Phase 1 criteria 1 and 3 (wave 1, PR A)
+- [ ] 01-03-PLAN.md — author scripts/check-gates.sh, the axiom allowlist, the check-lint shim and the gates README section (wave 1, PR A)
+- [ ] 01-04-PLAN.md — author scripts/create-property-issues.sh and its two TSV data files (wave 2, PR A)
+- [ ] 01-05-PLAN.md — retire the legacy issues/ tooling and its .gitignore rule (wave 2, PR A)
+- [ ] 01-06-PLAN.md — build, run all four gates, cross-check against CI and run the negative controls (wave 2, PR A)
+- [ ] 01-07-PLAN.md — create labels, file the PR A issues, stop and report at the PR A boundary (wave 3, PR A)
+- [ ] 01-08-PLAN.md — record the D1–D5 decisions in §11, restate PROP-42/30/47/50 and write the PROP-43 caller contract (wave 4, PR B)
+- [ ] 01-09-PLAN.md — draft the Signal deviation note, file the DEV issues, stop and report at the PR B boundary (wave 5, PR B)
 
 ### Phase 2: Merge Branch Proofs
 **Goal**: The theorems that exist only on `la/lean-v1-protocol-proofs` are on `main`, axiom-free, deduplicated, and available as lemmas to later phases
@@ -149,7 +160,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Gates, Issues and Deviation Decisions | 0/TBD | Not started | - |
+| 1. Gates, Issues and Deviation Decisions | 0/9 | Not started | - |
 | 2. Merge Branch Proofs | 0/TBD | Not started | - |
 | 3. Parameters, KDF, Wire Format and Initialization | 0/TBD | Not started | - |
 | 4. Trusted Base | 0/TBD | Not started | - |

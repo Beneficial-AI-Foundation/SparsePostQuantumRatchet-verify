@@ -2,7 +2,7 @@
 phase: 1
 slug: gates-issues-and-deviation-decisions
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-09-14
 ---
@@ -48,27 +48,29 @@ criterion 1's scoped grep must not find. Substitute the literal token at run tim
 
 ## Per-Task Verification Map
 
-Task IDs are assigned by the planner. Each row below is a requirement-level obligation that at
-least one task must carry as an `<automated>` verify. The planner fills the Task ID column.
+Task IDs are assigned by the planner and refer to `<plan> T<n>` in
+`.planning/phases/01-gates-issues-and-deviation-decisions/01-NN-PLAN.md`. Each row below is a
+requirement-level obligation that the named task carries as an `<automated>` verify or an
+`<acceptance_criteria>` assertion. Wave numbers match the plan frontmatter.
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD | PR A | 1 | INFRA-01 | — | Template names four gates by command + a catalog-and-index line | grep assertion | `grep -c '^- \[ \] `lake' docs/ISSUE_TEMPLATE.md` ≥ 3; `grep -q 'print axioms' docs/ISSUE_TEMPLATE.md`; `grep -q '§12' docs/ISSUE_TEMPLATE.md` | ❌ W0 | ⬜ pending |
-| TBD | PR A | 1 | INFRA-01 | — | No operative document cites a gate that does not exist | grep assertion | `git grep -n '<phantom>' -- ':!.planning'` exits 1 with no output | ❌ W0 | ⬜ pending |
-| TBD | PR A | 1 | INFRA-03 | — | Gate script is syntactically valid | static | `bash -n scripts/check-gates.sh` | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-03 | T-1-01 | Gate script passes on a clean tree | integration | `./scripts/check-gates.sh spqr.kdf.hkdf_to_slice_spec; echo $?` → `0` | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-03 | T-1-01 | Gate script **fails** on a deliberately broken tree — the only proof it is not a no-op | negative integration | see Negative Controls below | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-03 | — | Its verdict matches CI's on `main` (ROADMAP criterion 2) | cross-check | run on the `origin/main` worktree; compare per gate against `gh run list --workflow lean.yml --branch main --limit 1 --json conclusion` | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-02 | T-1-02 | Issue script dry-runs and files nothing | static + integration | `bash -n`; then run with no `--execute`; `gh issue list --state open --limit 500 --json number --jq length` unchanged before/after | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-02 | — | Generated body matches the template shape | diff | render one body; `! grep -qE '\{[A-Z_]+\}' /tmp/body-PROP-42.md`; four gate checklist lines present | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-02 | T-1-02 | Idempotent — no duplicate issues | integration | run `--execute` for one ID twice; second prints `SKIP … already filed as #N`; issue count unchanged | ❌ W0 | ⬜ pending |
-| TBD | PR A | 2 | INFRA-02 | — | Labels created and correct | integration | `gh label list --limit 100 --json name --jq '[.[].name]'` contains all 15; re-running the label step is a no-op | ❌ W0 | ⬜ pending |
-| TBD | PR A | 1 | INFRA-02 | — | D-09 rewording survives the roadmap parser | integration | `gsd-sdk query roadmap.get-phase 1` still returns the phase with 5 criteria after the edit | ✅ | ⬜ pending |
-| TBD | PR A | 1 | CAT-01 | — | Template names the §12 index in its checklist | grep | `grep -q '§12' docs/ISSUE_TEMPLATE.md` | ❌ W0 | ⬜ pending |
-| TBD | PR B | 3 | DEV-01..04 | — | §11 carries Decision + Status for all five rows | table parse | §11 parse check below | ❌ W0 | ⬜ pending |
-| TBD | PR B | 3 | DEV-01..04 | — | PROP-42/30/43/47/50 each cite their D-row | grep | `for p in 42 30 43 47 50; do grep -A20 "^### PROP-$p " docs/spqr-properties.md \| grep -qE 'D[1-5]' \|\| exit 1; done` | ❌ W0 | ⬜ pending |
-| TBD | PR B | 3 | DEV-04 | — | The caller contract is under PROP-43 in §7 | grep | `grep -A30 '^### PROP-43' docs/spqr-properties.md \| grep -q 'caller'` | ❌ W0 | ⬜ pending |
-| TBD | PR B | 3 | DEV-01..04 | — | The Signal note is sendable as-is | structural | `docs/signal-deviation-questions.md` has five sections, each with spec text, code lines, impact and two candidate resolutions | ❌ W0 | ⬜ pending |
+| 01-01 T1 | PR A | 1 | INFRA-01 | — | Template names four gates by command + a catalog-and-index line | grep assertion | `grep -c '^- \[ \] `lake' docs/ISSUE_TEMPLATE.md` ≥ 3; `grep -q 'print axioms' docs/ISSUE_TEMPLATE.md`; `grep -q '§12' docs/ISSUE_TEMPLATE.md` | ❌ W0 | ⬜ pending |
+| 01-01 T2 | PR A | 1 | INFRA-01 | — | No operative document cites a gate that does not exist | grep assertion | `git grep -n '<phantom>' -- ':!.planning'` exits 1 with no output | ❌ W0 | ⬜ pending |
+| 01-03 T1 | PR A | 1 | INFRA-03 | — | Gate script is syntactically valid | static | `bash -n scripts/check-gates.sh` | ❌ W0 | ⬜ pending |
+| 01-06 T1 | PR A | 2 | INFRA-03 | T-1-01 | Gate script passes on a clean tree | integration | `./scripts/check-gates.sh spqr.kdf.hkdf_to_slice_spec; echo $?` → `0` | ❌ W0 | ⬜ pending |
+| 01-06 T3 | PR A | 2 | INFRA-03 | T-1-01 | Gate script **fails** on a deliberately broken tree — the only proof it is not a no-op | negative integration | see Negative Controls below | ❌ W0 | ⬜ pending |
+| 01-06 T2 | PR A | 2 | INFRA-03 | — | Its verdict matches CI's on `main` (ROADMAP criterion 2) | cross-check | run on the `origin/main` worktree; compare per gate against `gh run list --workflow lean.yml --branch main --limit 1 --json conclusion` | ❌ W0 | ⬜ pending |
+| 01-04 T2 | PR A | 2 | INFRA-02 | T-1-02 | Issue script dry-runs and files nothing | static + integration | `bash -n`; then run with no `--execute`; `gh issue list --state open --limit 500 --json number --jq length` unchanged before/after | ❌ W0 | ⬜ pending |
+| 01-04 T2 | PR A | 2 | INFRA-02 | — | Generated body matches the template shape | diff | render one body; `! grep -qE '\{[A-Z_]+\}' /tmp/body-PROP-42.md`; four gate checklist lines present | ❌ W0 | ⬜ pending |
+| 01-07 T2 | PR A | 3 | INFRA-02 | T-1-02 | Idempotent — no duplicate issues | integration | run `--execute` for one ID twice; second prints `SKIP … already filed as #N`; issue count unchanged | ❌ W0 | ⬜ pending |
+| 01-07 T2 | PR A | 3 | INFRA-02 | — | Labels created and correct | integration | `gh label list --limit 100 --json name --jq '[.[].name]'` contains all 15; re-running the label step is a no-op | ❌ W0 | ⬜ pending |
+| 01-02 T2 | PR A | 1 | INFRA-02 | — | D-09 rewording survives the roadmap parser | integration | `gsd-sdk query roadmap.get-phase 1` still returns the phase with 5 criteria after the edit | ✅ | ⬜ pending |
+| 01-01 T1 | PR A | 1 | CAT-01 | — | Template names the §12 index in its checklist | grep | `grep -q '§12' docs/ISSUE_TEMPLATE.md` | ❌ W0 | ⬜ pending |
+| 01-08 T1 | PR B | 4 | DEV-01..04 | — | §11 carries Decision + Status for all five rows | table parse | §11 parse check below | ❌ W0 | ⬜ pending |
+| 01-08 T2 | PR B | 4 | DEV-01..04 | — | PROP-42/30/43/47/50 each cite their D-row | grep | `for p in 42 30 43 47 50; do grep -A20 "^### PROP-$p " docs/spqr-properties.md \| grep -qE 'D[1-5]' \|\| exit 1; done` | ❌ W0 | ⬜ pending |
+| 01-08 T3 | PR B | 4 | DEV-04 | — | The caller contract is under PROP-43 in §7 | grep | `grep -A30 '^### PROP-43' docs/spqr-properties.md \| grep -q 'caller'` | ❌ W0 | ⬜ pending |
+| 01-09 T1 | PR B | 5 | DEV-01..04 | — | The Signal note is sendable as-is | structural | `docs/signal-deviation-questions.md` has five sections, each with spec text, code lines, impact and two candidate resolutions | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
