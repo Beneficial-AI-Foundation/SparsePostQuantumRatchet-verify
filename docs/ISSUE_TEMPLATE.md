@@ -1,7 +1,7 @@
 # SPQR Property — Issue Template
 
 Use this template to create a GitHub issue for a single property (or grouped companion
-pair) from `docs/mlkembraid_spec/`.
+pair) from `docs/spqr-properties.md`.
 
 ---
 
@@ -104,7 +104,7 @@ pair) from `docs/mlkembraid_spec/`.
 - [ ] Lean theorem statement written
 - [ ] Proof completed
 - [ ] `#check_no_sorry` passes
-- [ ] Added to proof file index in `docs/mlkembraid_spec/README.md`
+- [ ] Status updated in `docs/spqr-properties.md`
 
 <!-- Add additional checklist items as needed, e.g.:
 - [ ] Blocker resolved (describe)

@@ -1,7 +1,7 @@
 # Spec coverage analysis: SPQR catalog vs. `mlkembraid.pdf`
 
 This document estimates how much of `mlkembraid.pdf` the property catalog
-(`docs/mlkembraid_spec/`) addresses, what confidence we would have *after*
+(`docs/spqr-properties.md`) addresses, what confidence we would have *after*
 discharging every property, and which additional properties would close the
 remaining gap.
 
