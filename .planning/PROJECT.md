@@ -32,7 +32,7 @@ hand-written axiom beyond the documented opaque stubs.
 
 <!-- Scope chosen 2026-09-14: Open properties, merge branch proofs, axiom hygiene, deviations D1-D5. -->
 
-- [ ] Every Open property in the catalog has a theorem on `main` with `#check_no_sorry` passing: PROP-1, 10, 12b, 16, 22, 23, 24, 25, 27, 29, 37, 38, 43, 45, 47, 48, 49, 50, and the Open halves of PROP-21 (recv half, trace part), PROP-30 (Equal rows), PROP-35 (composed roundtrip), PROP-41 (KDF_OK literal)
+- [ ] Every Open property in the catalog has a theorem on `main` whose `#print axioms` lists only the builtin axioms and the documented stubs, and which adds no line to `sorry-manifest.txt` (`lake env lean scripts/Audit.lean`): PROP-1, 10, 12b, 16, 22, 23, 24, 25, 27, 29, 37, 38, 43, 45, 47, 48, 49, 50, and the Open halves of PROP-21 (recv half, trace part), PROP-30 (Equal rows), PROP-35 (composed roundtrip), PROP-41 (KDF_OK literal)
 - [ ] The Proved (branch) theorems (`Send.lean`, `Recv.lean` Less/Greater rows, `SendKey.lean` for PROP-14) are on `main`, with the three liveness axioms on defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) replaced by theorems
 - [ ] The remaining axioms (PROP-3, PROP-3b, LEAN-ENC-2, `hkdf_to_slice_spec`, `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`) are stated minimally, bound to a single `generate` call where relevant, and each is justified in one place
 - [ ] The two hand-written `sorry`s on main (`MapCollectBridge.lean:70`, `DecodeState.lean:54`) and the prost `Message` `sorry`s are either discharged or explicitly listed as trusted with a reason
@@ -62,7 +62,9 @@ hand-written axiom beyond the documented opaque stubs.
 
 - **Trusted base**: no new hand-written axiom without a catalog entry explaining why it cannot be a theorem — the Core Value depends on this
 - **Provenance**: theorem statements must match the catalog wording; if a statement must change, the catalog changes in the same PR
-- **Process**: one GitHub issue per property (from `docs/ISSUE_TEMPLATE.md`), one draft PR per issue closing it, following the #537–#541 pattern
+- **Process**: one GitHub issue per property (from `docs/ISSUE_TEMPLATE.md`), one draft PR per issue closing it, following the #537–#541 pattern. The user opens every PR themselves: when a property's work is complete and verified, GSD stops and reports; the user creates the PR, then work continues with the next property
+- **Review gates**: after `/gsd:plan-phase N` and before `/gsd:execute-phase N`, run `/spqr-plan-review N` (Codex, read-only, rubric `docs/rubrics/spqr-plan-review.md`); only APPROVE, or APPROVE-WITH-EDITS with all edits triaged and applied, routes to execution. After execution, alongside gsd-verifier, dispatch the `spqr-eval` agent (`.claude/agents/spqr-eval.md`) on the phase diff; persist as `NN-EVAL.md`; FOLLOWUP routes to a gap-closure plan, HUMAN_RULING stops for the user
+- **Gates**: `#check_no_sorry` in `docs/ISSUE_TEMPLATE.md` does not exist in the repo; the real checks are `lake build` with no non-sorry warning, `lake exe runLinter Spqr`, `lake env lean scripts/Audit.lean`, and `#print axioms`. The template should be corrected in the first phase
 - **Tooling**: proofs must build with the repository's pinned Lean/Aeneas versions; no toolchain bumps inside a property PR
 - **Code freeze**: `src/` changes are limited to D1–D5 resolutions agreed with Signal
 - **Dependencies**: PROP-1 needs PROP-3 (axiom) and PROP-24; PROP-23 and PROP-50 need the per-transition results of PROP-47; PROP-38 and PROP-37 depend on prost `sorry`s and may end as trusted rather than proved
@@ -76,6 +78,9 @@ hand-written axiom beyond the documented opaque stubs.
 | Order phases by dependency, not by spec section | Leaf lemmas (constants, KDF sites, initial state) unblock transitions, which unblock trace properties | — Pending |
 | New theorems land on `main` via one draft PR per property | Matches the existing #537–#541 workflow and keeps the catalog in sync | — Pending |
 | Interactive mode, standard granularity | A wrong lemma statement costs hours; confirm before each phase executes | — Pending |
+| Pre-execution Codex plan review + post-execution adversarial eval | Ported from secure-messaging `la/address_issue_20`; the verifier checks promises were kept, the eval checks the theorem states the catalog property | — Pending |
+| User opens all PRs; GSD stops at the PR boundary | User request 2026-09-14; keeps PR authorship and review timing with the user | — Pending |
+| Skip GSD domain research | The domain is this repository; requirements come from the catalog rows | — Pending |
 
 ## Evolution
 
