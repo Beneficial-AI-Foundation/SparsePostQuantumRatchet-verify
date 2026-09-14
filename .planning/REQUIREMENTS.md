@@ -118,13 +118,61 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (filled by roadmapper) | | |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| MERGE-01 | Phase 2 | Pending |
+| MERGE-02 | Phase 2 | Pending |
+| MERGE-03 | Phase 2 | Pending |
+| MERGE-04 | Phase 2 | Pending |
+| MERGE-05 | Phase 2 | Pending |
+| MERGE-06 | Phase 2 | Pending |
+| MERGE-07 | Phase 2 | Pending |
+| PARAM-01 | Phase 3 | Pending |
+| PARAM-02 | Phase 3 | Pending |
+| PARAM-03 | Phase 3 | Pending |
+| MSG-01 | Phase 3 | Pending |
+| AUTH-01 | Phase 5 | Pending |
+| INIT-01 | Phase 3 | Pending |
+| INIT-02 | Phase 3 | Pending |
+| SM-01 | Phase 3 | Pending |
+| SM-02 | Phase 5 | Pending |
+| SM-03 | Phase 5 | Pending |
+| SM-04 | Phase 5 | Pending |
+| SM-05 | Phase 5 | Pending |
+| SM-06 | Phase 5 | Pending |
+| SM-07 | Phase 5 | Pending |
+| TRACE-01 | Phase 6 | Pending |
+| TRACE-02 | Phase 6 | Pending |
+| TRACE-03 | Phase 6 | Pending |
+| TRACE-04 | Phase 6 | Pending |
+| TRACE-05 | Phase 6 | Pending |
+| CHAIN-01 | Phase 7 | Pending |
+| CHAIN-02 | Phase 7 | Pending |
+| CHAIN-03 | Phase 7 | Pending |
+| CHAIN-04 | Phase 7 | Pending |
+| CHAIN-05 | Phase 7 | Pending |
+| AXIOM-01 | Phase 4 | Pending |
+| AXIOM-02 | Phase 4 | Pending |
+| AXIOM-03 | Phase 4 | Pending |
+| AXIOM-04 | Phase 4 | Pending |
+| AXIOM-05 | Phase 4 | Pending |
+| AXIOM-06 | Phase 4 | Pending |
+| DEV-01 | Phase 1 | Pending |
+| DEV-02 | Phase 1 | Pending |
+| DEV-03 | Phase 1 | Pending |
+| DEV-04 | Phase 1 | Pending |
+| CAT-01 | Phase 1 | Pending |
+| CAT-02 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 46 total
-- Mapped to phases: 0
-- Unmapped: 46 ⚠️
+- Mapped to phases: 46
+- Unmapped: 0 ✓
+
+Per-phase counts: Phase 1 = 8, Phase 2 = 7, Phase 3 = 7, Phase 4 = 6,
+Phase 5 = 7, Phase 6 = 5, Phase 7 = 5, Phase 8 = 1.
 
 ---
 *Requirements defined: 2026-09-14*
-*Last updated: 2026-09-14 after initial definition*
+*Last updated: 2026-09-14 after roadmap creation (traceability filled)*
