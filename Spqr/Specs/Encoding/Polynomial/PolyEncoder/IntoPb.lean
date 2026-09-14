@@ -438,6 +438,41 @@ theorem into_pb_spec_bytes
       · simp_all
         grind
 
+/-- **Postcondition predicate for `PolyEncoder.into_pb`**
+
+The postcondition of `into_pb_spec`: the byte-level serialization identities together
+with the derived GF(2¹⁶) and binary-polynomial identities. -/
+def IntoPbPostCond (self : PolyEncoder)
+    (result : proto.pq_ratchet.PolynomialEncoder) : Prop :=
+  result.idx = self.idx ∧
+  match self.s with
+  | .Points points =>
+    result.polys.val = [] ∧
+    result.pts.length = points.length ∧
+    ∀ j < points.length,
+        result.pts[j]!.length = 2 * (points[j]!).value.length ∧
+        ∀ k < (points[j]!).value.length,
+            256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]! =
+              ((points[j]!).value[k]!).value.val ∧
+            (256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]! : ℕ).toGF216 =
+              ((points[j]!).value[k]!).value.val.toGF216 ∧
+            natToBinaryPoly (256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]!) =
+              natToBinaryPoly (((points[j]!).value[k]!).value.val)
+  | .Polys polys =>
+    result.pts.val = [] ∧
+    result.polys.length = polys.length ∧
+    ∀ j < polys.length,
+        (result.polys[j]!).length =
+          2 * (polys[j]!).degree ∧
+        ∀ k < (polys[j]!).degree,
+             256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! =
+              ((polys[j]!).coefficients[k]! ).value.val ∧
+            (256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! : ℕ).toGF216 =
+              ((polys[j]!).coefficients[k]!).value.val.toGF216 ∧
+            natToBinaryPoly (
+              256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! ) =
+              natToBinaryPoly (((polys[j]!).coefficients[k]!).value.val)
+
 /-- **Spec theorem for `PolyEncoder.into_pb`**
 (cascading: byte-level + algebraic)
 
@@ -451,34 +486,7 @@ theorem into_pb_spec
     (h_overflow_polys : ∀ polys, self.s = .Polys polys →
         ∀ j < polys.length, 2 * (polys[j]!).degree + 2 ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.PolynomialEncoder) =>
-      result.idx = self.idx ∧
-      match self.s with
-      | .Points points =>
-        result.polys.val = [] ∧
-        result.pts.length = points.length ∧
-        ∀ j < points.length,
-            result.pts[j]!.length = 2 * (points[j]!).value.length ∧
-            ∀ k < (points[j]!).value.length,
-                256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]! =
-                  ((points[j]!).value[k]!).value.val ∧
-                (256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]! : ℕ).toGF216 =
-                  ((points[j]!).value[k]!).value.val.toGF216 ∧
-                natToBinaryPoly (256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]!) =
-                  natToBinaryPoly (((points[j]!).value[k]!).value.val)
-      | .Polys polys =>
-        result.pts.val = [] ∧
-        result.polys.length = polys.length ∧
-        ∀ j < polys.length,
-            (result.polys[j]!).length =
-              2 * (polys[j]!).degree ∧
-            ∀ k < (polys[j]!).degree,
-                 256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! =
-                  ((polys[j]!).coefficients[k]! ).value.val ∧
-                (256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! : ℕ).toGF216 =
-                  ((polys[j]!).coefficients[k]!).value.val.toGF216 ∧
-                natToBinaryPoly (
-                  256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! ) =
-                  natToBinaryPoly (((polys[j]!).coefficients[k]!).value.val) ⦄ := by
+      IntoPbPostCond self result ⦄ := by
   have h_raw := into_pb_spec_bytes self h_overflow_points h_overflow_polys
   apply WP.spec_mono h_raw
   intro result h_post
