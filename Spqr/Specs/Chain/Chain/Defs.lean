@@ -5,6 +5,10 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 
+/-! # Chain definitions
+
+Auxiliary definitions for `spqr.chain.Chain` specifications. -/
+
 open Aeneas Aeneas.Std Result spqr
 
 namespace spqr.chain
