@@ -1,0 +1,50 @@
+# ML-KEM Braid Protocol - the complete list of section numbers.
+#
+# Document:   R. Schmidt, "The ML-KEM Braid Protocol", Revision 1, 2025-02-21,
+#             last updated 2025-09-26.  File `mlkembraid.pdf`, which is
+#             gitignored and therefore not in this tree.
+# Transcribed: 2026-09-15, from the document's own table of contents.
+#
+# Commands used (the PDF was read from a path outside the repository; nothing
+# was written into the tree):
+#
+#   pdftotext -f 1 -l 3 mlkembraid.pdf -
+#       pages 1-3; the Contents block spans pages 1-2 and gives every
+#       numbered section and subsection with its page number.
+#
+#   pdftotext mlkembraid.pdf - \
+#     | grep -nE '^[0-9]+(\.[0-9]+)*\.?[[:space:]]+[A-Z]'
+#       cross-check of the table of contents against the body headings of the
+#       full text.  Every entry below appears in both; no numbered heading
+#       appears in the body that is absent from the table of contents.  The
+#       named subheadings under 2.4 ("Ratcheted Authenticator state
+#       variables", "Ratcheted Authenticator functions") and under 2.5 (the
+#       eleven state names) carry no number and so have no entry.
+#
+# This file is gate 5's checkable proxy for the PDF: a `Source: Spec §x.y`
+# citation in `docs/spqr-properties.md` resolves iff `x.y` is a line below.
+# One bare section number per line, sorted.  Add a line only after reading it
+# out of the document.
+1
+1.1
+1.2
+1.2.1
+1.3
+2
+2.1
+2.2
+2.3
+2.4
+2.5
+2.6
+3
+3.1
+3.2
+3.3
+3.4
+3.5
+3.6
+3.7
+3.8
+4
+5

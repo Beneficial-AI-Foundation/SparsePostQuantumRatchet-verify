@@ -1,0 +1,56 @@
+# SCKA paper - the numbered definitions and figures that can be cited.
+#
+# Document:   B. Auerbach, Y. Dodis, D. Jost, S. Katsumata, R. Schmidt,
+#             "How to Compare Bandwidth Constrained Two-Party Secure Messaging
+#             Protocols: A Quest for A More Efficient and Secure Post-Quantum
+#             Protocol".  File `2025-2267.pdf`, gitignored and therefore not in
+#             this tree.
+# Transcribed: 2026-09-15, from the full text of the paper.
+#
+# Commands used (the PDF was read from a path outside the repository; nothing
+# was written into the tree):
+#
+#   pdftotext 2025-2267.pdf - > /tmp/scka.txt
+#   grep -noE '(Definition|Theorem|Lemma|Corollary|Figure|Construction|Proposition|Remark|Claim|Table|Protocol|Game)[[:space:]]+[0-9]+(\.[0-9]+)*' \
+#       /tmp/scka.txt | sed 's/^[0-9]*://' | sort -u -V
+#
+# That enumeration returned, in full: Definitions 2.1, 2.2, 2.3, 3.1, 3.3;
+# Remarks 3.2 and 3.5; Theorem 3.4; Figures 1 through 23.  The paper numbers no
+# lemma, corollary, proposition, claim or table.
+#
+# Only `Def. n` and `Fig. n` are citation forms under PROV-01, so only those
+# are listed as entries.  Theorem 3.4 and Remarks 3.2 and 3.5 exist in the
+# paper but have no `Source:` grammar; a row grounded in one of them cites the
+# enclosing definition, or goes on an `Evidence:` line.
+#
+# This file is gate 5's checkable proxy for the PDF: a `Source: SCKA Def. n` or
+# `Source: SCKA Fig. n` citation in `docs/spqr-properties.md` resolves iff the
+# reference is a line below.  Add a line only after reading it out of the paper.
+Def. 2.1
+Def. 2.2
+Def. 2.3
+Def. 3.1
+Def. 3.3
+Fig. 1
+Fig. 2
+Fig. 3
+Fig. 4
+Fig. 5
+Fig. 6
+Fig. 7
+Fig. 8
+Fig. 9
+Fig. 10
+Fig. 11
+Fig. 12
+Fig. 13
+Fig. 14
+Fig. 15
+Fig. 16
+Fig. 17
+Fig. 18
+Fig. 19
+Fig. 20
+Fig. 21
+Fig. 22
+Fig. 23
