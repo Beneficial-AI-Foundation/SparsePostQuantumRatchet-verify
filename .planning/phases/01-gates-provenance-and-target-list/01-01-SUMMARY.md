@@ -139,3 +139,7 @@ None - no external service configuration required.
 ---
 *Phase: 01-gates-provenance-and-target-list*
 *Completed: 2026-09-15*
+
+## Self-Check: PASSED
+
+All four claimed files exist on disk; all three commits (`be8bf78`, `97e0d25`, `6239688`) are in the log on `worktree-agent-ae34408ff42616711` above base `a8b7a32`.
