@@ -314,13 +314,39 @@ gate_3b() {
 #       T-1-14) holds `import Spqr` plus one `#print axioms <name>` per target.
 #
 # 4B fails, and never passes, on each of:
-#   - `unknown identifier` / `unknown constant` - a typo'd target
+#   - an unresolvable target name (see the observed wording below)
 #   - a target that produced no report line at all (asserted per target by name)
 #   - a `depends on axioms: [` whose `]` never arrives ("malformed" report)
 #   - `sorryAx` in a target not named by `--allow-sorry`
 # A wrapped axiom list is *not* a failure: Lean soft-breaks the list with
 # `"," ++ Format.line` (Lean/Message.lean:417), so the parser accumulates
 # continuation lines up to the closing `]` before splitting on `,`.
+#
+# ── Output format, observed not assumed ──────────────────────────────────────
+#
+# The three strings 4B matches were settled empirically by the five-probe
+# elaboration in plan 01-04 task 1, run with `lake env lean` under
+# `leanprover/lean4:v4.31.0` (`lean-toolchain`) on the built tree.  Verbatim:
+#
+#   'spqr.kdf.hkdf_to_slice_spec' depends on axioms: [propext, Quot.sound, spqr.kdf.hkdf_to_slice_spec]
+#   'probe_no_axioms' does not depend on any axioms
+#   Probe.lean:10:14: error(lean.unknownIdentifier): Unknown constant `spqr.kdf.hkdf_to_slice_spce`
+#
+# Three consequences, all load-bearing:
+#
+#  1. An unresolvable name is reported as **`Unknown constant` with a capital U
+#     and backticks around the name**, tagged `error(lean.unknownIdentifier)`.
+#     It is NOT the lower-case `unknown identifier '<name>'` / `unknown constant
+#     '<name>'` that research assumption A1 guessed, so a substring test for the
+#     lower-case forms never fires.  `UNKNOWN_NAME` below matches the observed
+#     wording case-insensitively and also matches the error-code tag, so either
+#     spelling trips it.  A typo'd target is caught twice over: here, and by the
+#     per-target "no report for target" assertion further down.
+#  2. Both report shapes A1 assumed are exactly right and are unchanged.
+#  3. Axiom lists **do** wrap at the default print width, unforced: the
+#     11-element closure of `spqr.decode_state_spec` came back over 11 lines
+#     with one axiom per continuation line.  The accumulate-to-`]` loop below is
+#     therefore exercised on every real run, not just by a synthetic control.
 
 validate_allowlist() {
   python3 - "$ALLOWLIST" "$REPO_ROOT" <<'PYVALIDATE'
@@ -434,11 +460,21 @@ for raw in allowlist_path.read_text().splitlines():
 log = log_path.read_text(errors="replace").splitlines()
 
 HEADER = re.compile(r"'([^']+)'\s+(depends on axioms:\s*\[|does not depend on any axioms)")
+
+# Observed on Lean 4.31.0 (plan 01-04 task 1, verbatim):
+#   error(lean.unknownIdentifier): Unknown constant `spqr.kdf.hkdf_to_slice_spce`
+# Capital `U`, backticks, and the error-code tag.  Matched case-insensitively
+# and with the tag as an alternative so that either spelling trips the gate.
+UNKNOWN_NAME = re.compile(
+    r"unknown\s+(?:constant|identifier)|lean\.unknown(?:Identifier|Constant)",
+    re.IGNORECASE,
+)
+
 failures, reports = [], {}
 
 # A typo'd target must fail loudly rather than pass vacuously.
 for line in log:
-    if "unknown identifier" in line or "unknown constant" in line:
+    if UNKNOWN_NAME.search(line):
         failures.append(f"unresolved target name: {line.strip()}")
 
 i = 0
