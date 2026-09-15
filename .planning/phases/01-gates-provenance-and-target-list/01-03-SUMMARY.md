@@ -38,8 +38,8 @@ key-decisions:
   - "Lean paths (`Spqr/Specs/**`) went on `Evidence:` lines for the four rows that carried them inline (LEAN-ENC-1, LEAN-ENC-2, LEAN-GF, PROP-35, PROP-42). The checker records but does not gate them."
 
 metrics:
-  duration: ~27 min
-  tasks_completed: 2 of 3 (task 3 is a blocking human-verify checkpoint)
+  duration: ~35 min
+  tasks_completed: 3 of 3 (task 3's blocking human-verify checkpoint closed by the user's "no unsourced rows, proceed", 2026-09-15)
   completed: 2026-09-15
   files_created: 2
   files_modified: 1
@@ -231,7 +231,11 @@ The 104 insertions account exactly: a 24-line PROV-01 block in §1 (21 non-blank
 `Source:` lines and 5 `Evidence:` lines in the prose sections §2-§9, the 18 re-added table
 lines, and 32 blank separator lines. 21 + 28 + 5 + 18 + 32 = 104.
 
-## Checkpoint tables (task 3)
+## Task 3: checkpoint — closed
+
+`checkpoint:human-verify`, `gate="blocking"`. Presented to the user with the two tables and
+the `git diff --stat` below; the user ruled **"no unsourced rows, proceed"** on 2026-09-15.
+Verbatim record and what it covers are in subsection 3.
 
 ### 1. Unsourced rows
 
@@ -256,7 +260,35 @@ execution:
 | PROP-24 | `Spec §2.2; src/v1/unchunked/send_ct.rs:129-135; src/v1/unchunked/send_ek.rs:150-158` | §2.2 defines `KDF_OK(shared_secret, epoch)` = 32 bytes of HKDF with IKM = shared_secret, salt = a zero-filled sequence of hash-output length, info = `PROTOCOL_INFO \|\| ":SCKA Key" \|\| ToBytes(epoch)`, length 32. Both code sites call `hkdf_to_vec(&[0u8; 32], &ss, &info, 32)` with the `Signal_PQCKA_V1_MLKEM768:SCKA Key` label and big-endian epoch. |
 | D1 | `Spec §2.2; src/authenticator.rs:43-54` | §2.2 defines `KDF_AUTH(root_key, update_key, epoch)` with **HKDF salt = root_key, IKM = update_key**. The code at `:45-51` computes `ikm = root_key ‖ k` and passes `salt = [0u8; 32]`. The deviation the row records is exactly the difference, and the spec side of it is resolvable. |
 
-### 3. `git diff --stat` for the plan
+### 3. The user's ruling — checkpoint closed
+
+Ruling, verbatim, 2026-09-15:
+
+> no unsourced rows, proceed
+
+It covers both halves of what task 3 asked:
+
+1. **The `Unsourced` table.** There was nothing to adjudicate — zero rows ended `Unsourced`,
+   so no row needs a C2 verdict carried into plan 01-06 on this account.
+2. **The citation spot-check and the no-statement-text-changed check.** Both accepted.
+
+Independently verified by the orchestrator in this worktree before the ruling was presented,
+and recorded here as confirmed:
+
+- Gate 5 re-run: `GATE 5 PASS: every one of 42 row(s) has a resolving Source: citation.`,
+  exit 0.
+- All 18 catalog deletions read line by line: exactly four table header/separator lines
+  (§10's `Code` → `Source`, §11 gaining a `Source` column) plus nine §10 and five §11 data
+  rows, each replaced by the same row re-columned. PROP-9's and PROP-37's statement cells are
+  byte-identical; the only changes in those cells' row are the `src/` prefix PROV-01 requires
+  and PROP-37's `chunked/{send_ek,send_ct}/serialize.rs` glob resolving to three real line
+  ranges.
+- The PROP-50 finding (threat T-1-06: `SCKA Fig. 2` would have resolved against the wrong
+  document; the reachable-state-pair graph is the braid document's Figure 2 inside §2.6) was
+  accepted as-is, including the new §1 rule that a braid-spec figure is cited through its
+  enclosing section.
+
+### 4. `git diff --stat` for the plan
 
 ```
  docs/scka-refs.txt      |  56 ++++++++++++
@@ -357,16 +389,16 @@ discharged as follows.
 |------|--------|------|
 | 1 | `f3ff32d` | `docs(01-03): transcribe the two provenance reference lists` |
 | 2 | `c78cf8b` | `docs(01-03): give every catalog row a resolving Source: citation` |
-| — | (this file) | `docs(01-03): summarise the provenance retrofit` |
+| — | `97003eb` | `docs(01-03): summarise the provenance retrofit` |
+| 3 | (this file) | `docs(01-03): record the closed task-3 checkpoint ruling` — no code or catalog change; task 3 is a review checkpoint, and the approving ruling asks for nothing to be edited |
 
 ## Status
 
-Tasks 1 and 2 complete. **Task 3 is a `checkpoint:human-verify` with `gate="blocking"` and
-the plan is `autonomous: false`, so execution stops here** and the checkpoint is returned to
-the user. The `Unsourced` table is empty, so the ruling the checkpoint asks for is the
-spot-check of the three both-grounds rows above plus confirmation that no statement text
-changed. Nothing in this plan is left to do after that ruling; a `no unsourced rows, proceed`
-closes it.
+**Plan complete: all 3 tasks done.** Tasks 1 and 2 executed and committed; task 3's blocking
+`checkpoint:human-verify` was presented and closed by the user's ruling "no unsourced rows,
+proceed" (2026-09-15). ROADMAP criterion 2 is met with no residue, and the C2 criterion is
+enforceable from here on: a new catalog row without a resolving citation cannot reach a green
+gate 5.
 
 STATE.md and ROADMAP.md were deliberately not touched: the orchestrator owns those writes
 after the wave completes.
