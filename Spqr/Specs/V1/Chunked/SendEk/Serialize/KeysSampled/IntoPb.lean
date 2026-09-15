@@ -32,13 +32,10 @@ namespace spqr.v1.chunked.send_ek.serialize.KeysSampled
 
 /-- **Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::into_pb`**
 • The call succeeds (no panic) given the two overflow hypotheses inherited from
-  `PolyEncoder::into_pb` at `self.sending_hdr`: `2 * len + 2 ≤ Usize.max` per serialized item.
-• Converting the chunking part succeeds: `PolyEncoder.into_pb self.sending_hdr = ok pe`. That
-  fixes `pe` uniquely (but opaquely to mitigate excess verbosity in the theorem formulation).
-• The result is pinned down completely: `epoch`, `ek`, `dk` come verbatim from `self.uc`,
-  `root_key` and `mac_key` from `self.uc.auth`, `sending_hdr` is `pe`; the optional fields
-  `uc`, `auth` and `sending_hdr` are all `some`.
--/
+  `PolyEncoder::into_pb` for `self.sending_hdr`: `2 * len + 2 ≤ Usize.max` per serialized item.
+• The protobuf form `pe` of the chunking part `self.sending_hdr` is uniquely characterised at
+  the detailed value level by `PolyEncoder.IntoPbPostCond self.sending_hdr pe`.
+• The result is then fully determined as an explicit record literal. -/
 @[step]
 theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
     (h_overflow_points : ∀ points, self.sending_hdr.s = .Points points →
@@ -46,16 +43,18 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
     (h_overflow_polys : ∀ polys, self.sending_hdr.s = .Polys polys →
       ∀ j < polys.length, 2 * polys[j]!.degree + 2 ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.v1_state.chunked.KeysSampled) =>
-      ∃ pe, PolyEncoder.into_pb self.sending_hdr = ok pe ∧
-      result = { uc := some { epoch := self.uc.epoch,
-                              auth := some { root_key := self.uc.auth.root_key,
-                                             mac_key := self.uc.auth.mac_key },
-                              ek := self.uc.ek, dk := self.uc.dk },
-                 sending_hdr := some pe } ⦄ := by
+      ∃ pe, PolyEncoder.IntoPbPostCond self.sending_hdr pe ∧
+            result = { uc := some { epoch := self.uc.epoch,
+                                    auth := some { root_key := self.uc.auth.root_key,
+                                                   mac_key := self.uc.auth.mac_key },
+                                    ek := self.uc.ek, dk := self.uc.dk },
+                       sending_hdr := some pe } ⦄ := by
   unfold into_pb
-  obtain ⟨pe, h_pe, -⟩ := spec_imp_exists (PolyEncoder.into_pb_spec self.sending_hdr ‹_› ‹_›)
+  obtain ⟨pe, h_pe, h_pe_post⟩ := spec_imp_exists
+    (PolyEncoder.into_pb_spec self.sending_hdr h_overflow_points h_overflow_polys)
   rw [h_pe]
   step*
   simp only [← hs_post1, ← hs_post2, ← hs_post3, ← hs_post4]
+  exact ⟨pe, h_pe_post, rfl⟩
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled
