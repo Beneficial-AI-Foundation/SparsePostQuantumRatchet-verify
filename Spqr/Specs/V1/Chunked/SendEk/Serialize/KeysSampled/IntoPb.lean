@@ -35,7 +35,7 @@ namespace spqr.v1.chunked.send_ek.serialize.KeysSampled
   `PolyEncoder::into_pb` for `self.sending_hdr`: `2 * len + 2 ≤ Usize.max` per serialized item.
 • The protobuf form `pe` of the chunking part `self.sending_hdr` is uniquely characterised at
   the detailed value level by `PolyEncoder.IntoPbPostCond self.sending_hdr pe`.
-• The result is then fully determined as an explicit record literal. -/
+• The result is then fully characterised as an explicit record literal. -/
 @[step]
 theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
     (h_overflow_points : ∀ points, self.sending_hdr.s = .Points points →
