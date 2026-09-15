@@ -8,8 +8,7 @@ import Spqr.Specs.Chain.Chain.CedForDirection
 import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Crypto.Hkdf
-/-!
-# Spec theorem for `spqr::chain::{spqr::chain::Chain}::new`
+/-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::new`
 
 Constructs a `Chain` from `initial_key`, `dir`, and `params` by deriving 96 bytes via
 HKDF-SHA256 (zero salt, chain-start info), splitting into `next_root`, send/recv keys
