@@ -68,6 +68,31 @@ AEAD. In the Fig. 2 compiler, `chain.add_epoch` is the key mix-in,
 `ChainParams { max_jump: 25_000, max_ooo_keys: 2_000 }` (`chain.rs:35`) are
 its tuning constants.
 
+Provenance (PROV-01). Every property row below carries a `Source:` field, and
+every citation in that field must resolve. There are exactly three forms:
+
+- `Source: Spec §x.y` — a section of the ML-KEM Braid document above. Resolved
+  against `docs/spec-sections.txt`, which lists every section number of the
+  document, transcribed from its table of contents.
+- `Source: SCKA Def. n` / `Source: SCKA Fig. n` — a numbered definition or
+  figure of the SCKA paper. Resolved against `docs/scka-refs.txt`, transcribed
+  the same way.
+- `Source: src/path.rs:a-b` — the code at `d47083c`. Resolved by checking that
+  the file exists and that lines `a..b` are within it.
+
+A row with more than one ground cites each, semicolon-separated. **Every**
+listed citation must resolve: one good citation does not rescue a broken one
+beside it. Anything outside the three forms — a `Spqr/Specs/**` lemma, a
+planning document — belongs on a separate `Evidence:` line, which is recorded
+but not gated. The ML-KEM Braid document's own figures have no citation form of
+their own; cite the section that contains the figure.
+
+Gate 5 (`scripts/check-provenance.py`, run by `scripts/check-gates.sh`)
+resolves every citation of every row and cross-checks the row IDs against the
+§12 index. A row whose provenance cannot be established is marked
+`Source: Unsourced - <why>`, which fails the gate deliberately: an unresolvable
+row is a finding, not a pass.
+
 ---
 
 ## 2. SCKA interface (§1.1)
@@ -83,6 +108,8 @@ optional key as `EpochSecret { epoch, secret }` and never returns `t_snd` or
 
 If both parties output `(t, K)` and `(t, K')`, then `K = K'`.
 
+Source: Spec §1.1; SCKA Def. 3.1
+
 Reduces to: both parties' `EpochSecret.secret` for epoch `t` equal
 `KDF_OK(ss, t)` for the same ML-KEM shared secret `ss`, which needs PROP-3
 (KEM roundtrip) and PROP-24 (both KDF_OK sites identical). Status: **Open**.
@@ -91,6 +118,8 @@ Requires the KEM axiom of PROP-3.
 ### PROP-21 Per-participant epoch uniqueness
 
 Each party outputs at most one key per epoch.
+
+Source: Spec §1.1; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:361-368
 
 Structural part: exactly two arms of the state machine return a key,
 `HeaderReceived.send` (spec transition 7, `states.rs:203-220`) and
@@ -107,6 +136,8 @@ recv half and trace part **Open**.
 
 `t_snd` returned by `Send` equals `t_rcv` returned by the matching `Receive`.
 
+Source: Spec §1.1; src/lib.rs:300; src/lib.rs:427
+
 In the code both equal `msg.epoch - 1`, so the property holds by
 construction once the wire epoch is the sender's state epoch:
 for every `States` variant, `send` puts `state.epoch()` in `msg.epoch`
@@ -119,6 +150,8 @@ messages; the code's choice is the one that satisfies the property.
 
 When `Send` returns `t_snd` (resp. `Receive` returns `t_rcv`), the caller has
 emitted keys for that epoch and all earlier ones.
+
+Source: Spec §1.1; src/lib.rs:298; src/lib.rs:430
 
 With `t_snd = msg.epoch - 1` this says: a party at state epoch `e` has emitted
 keys for epochs `1..e-1`. Trace property over the v1 machine plus the chain
@@ -141,6 +174,8 @@ The crate never computes SHA3 itself.
 For `Keys { hdr, ek, dk } = generate(r)`, `(ct1, es, ss) = encaps1(hdr, r')`,
 `ct2 = encaps2(ek, es)`: `decaps(dk, ct1, ct2) = ss`.
 
+Source: Spec §1.2; src/incremental_mlkem768.rs:34-156
+
 The three key components must be bound to one `generate` call; an axiom
 quantifying over independent `hdr`, `ek`, `dk` is too strong. Status:
 **Axiom** (`encapsulate1`, `encapsulate2`, `decapsulate_compressed_key` are
@@ -153,6 +188,8 @@ sizes above.
 `ek_matches_header(ek, hdr)` holds iff `hdr` is the header libcrux derives
 from the key pair whose vector part is `ek` (§1.2.1: `hdr = ek_seed ‖
 SHA3-256(ek)` for the FIPS 203 encoding of `ek`).
+
+Source: Spec §1.2.1; src/incremental_mlkem768.rs:28-30
 
 Status: **Axiom** (`validate_pk_bytes` is a libcrux stub). The exact byte
 string hashed must be taken from libcrux, not from the spec prose
@@ -167,6 +204,9 @@ string hashed must be taken from libcrux, not from the spec prose
 `Pt.deserialize(Pt.serialize(p)) = ok p`. **Proved**
 (`Spqr/Specs/Encoding/Polynomial/Pt/{Serialize,Deserialize}.lean`).
 
+Source: src/encoding/polynomial.rs:26-44
+Evidence: Spqr/Specs/Encoding/Polynomial/Pt/{Serialize,Deserialize}.lean
+
 ### LEAN-ENC-2 Decode from any N chunks
 
 If a message fits in `N` codewords, `PolyDecoder` reconstructs it from any
@@ -174,12 +214,18 @@ If a message fits in `N` codewords, `PolyDecoder` reconstructs it from any
 `decoded_message`; the surrounding encoder/decoder functions have specs
 (`Spqr/Specs/Encoding/{Encoder,Decoder,Polynomial}/`).
 
+Source: Spec §3.6; src/encoding/polynomial.rs:905-911
+Evidence: Spqr/Specs/Encoding/{Encoder,Decoder,Polynomial}/
+
 ### LEAN-GF GF(2^16) arithmetic
 
 `GF16` add, sub, eq, mul, div and their assign forms agree with
 `GaloisField 2 16` (`Spqr/Math/Gf16/Field.lean:31`). **Proved**
 (`Spqr/Specs/Encoding/Gf/`, no `sorry`). `mul2_u16` (SIMD dispatch) remains a
 stub; the unaccelerated path is the one verified.
+
+Source: Spec §2.2; src/encoding/gf.rs:16-196
+Evidence: Spqr/Math/Gf16/Field.lean:31; Spqr/Specs/Encoding/Gf/
 
 ---
 
@@ -192,6 +238,8 @@ ML-KEM-768. Code: `HEADER_SIZE = pk1_len()`, `ENCAPSULATION_KEY_SIZE = pk2_len()
 (`incremental_mlkem768.rs:13,15`), `ensures` clauses 960/2080/32/128 on
 `encaps1`/`encaps2`. Status: **Open** (constant evaluation).
 
+Source: Spec §2.2; src/incremental_mlkem768.rs:8-15
+
 ### PROP-24 KDF_OK
 
 Both derivation sites, `HeaderReceived::send_ct1` (`unchunked/send_ct.rs:129-135`)
@@ -200,6 +248,8 @@ and `EkSentCt1Received::recv_ct2` (`unchunked/send_ek.rs:150-158`), call
 This is the spec recipe (salt = zero block of hash length, IKM = shared
 secret, info = `PROTOCOL_INFO ‖ ":SCKA Key" ‖ ToBytes(epoch)`, length 32).
 Status: **Open**; `hkdf_to_vec_spec` (**Proved**) gives the HKDF value.
+
+Source: Spec §2.2; src/v1/unchunked/send_ct.rs:129-135; src/v1/unchunked/send_ek.rs:150-158
 
 ### PROP-42 KDF_AUTH info and length
 
@@ -210,6 +260,9 @@ splitting the output into `root_key = out[..32]`, `mac_key = out[32..]`
 see deviation D1. **Proved** as `update_spec`
 (`Spqr/Specs/Authenticator/Authenticator/Update.lean`).
 
+Source: Spec §2.2; src/authenticator.rs:43-54
+Evidence: Spqr/Specs/Authenticator/Authenticator/Update.lean
+
 ### PROP-18 HKDF output lengths
 
 Every production HKDF call requests 32, 64 or 96 bytes
@@ -217,6 +270,8 @@ Every production HKDF call requests 32, 64 or 96 bytes
 `chain.rs:232,331,357`), within the HKDF-SHA256 limit of 8160. `hkdf_to_vec_spec`
 (**Proved**) needs `okm_len ≤ 255 * 32`; each call site discharges it by
 evaluation.
+
+Source: Spec §2.2; src/authenticator.rs:51; src/v1/unchunked/send_ct.rs:135; src/v1/unchunked/send_ek.rs:156; src/chain.rs:232; src/chain.rs:331; src/chain.rs:357
 
 ### PROP-41 Label prefix
 
@@ -227,6 +282,8 @@ The five info/MAC labels (`authenticator.rs:47,68,93`,
 name is not a deviation. Status: **Proved** indirectly via the label constants
 in `update_spec`, `mac_hdr_spec`, `mac_ct_spec`; the KDF_OK literal is not yet
 covered.
+
+Source: Spec §2.2; src/authenticator.rs:47; src/authenticator.rs:68; src/authenticator.rs:93; src/v1/unchunked/send_ct.rs:131; src/v1/unchunked/send_ek.rs:152
 
 ---
 
@@ -242,6 +299,9 @@ tag, and chunk, returning `(m, index, bytes_consumed)`
 (`Spqr/Specs/V1/Chunked/States/Serialize/Message/`). The composed roundtrip
 `deserialize(serialize(m, i)) = ok (m, i, _)` is **Open**.
 
+Source: Spec §2.3; src/v1/chunked/states/serialize.rs:221; src/v1/chunked/states/serialize.rs:248
+Evidence: Spqr/Specs/V1/Chunked/States/Serialize/Message/
+
 The `index` field is the chain layer's per-message key index from
 `chain.send_key` (`lib.rs:300`). §2.3 lists only `{epoch, type, data}` and
 leaves the encoding to the implementer, so this is permitted, but the wire
@@ -252,6 +312,8 @@ format is SPQR-specific rather than a pure ML-KEM Braid message.
 `deserialize` returns `Err(MsgDecode)` when the wire epoch is 0
 (`v1/chunked/states/serialize.rs:254-256`), so `msg.epoch - 1` in `lib.rs`
 cannot underflow. **Proved** (part of `deserialize_spec`: `0 < msg.epoch`).
+
+Source: src/v1/chunked/states/serialize.rs:254-256; src/lib.rs:427
 
 ---
 
@@ -266,6 +328,8 @@ Constants: `MACSIZE = 32` (`authenticator.rs:33`), HMAC-SHA256.
 `Authenticator.Init`). **Proved**: `new_spec` gives the same HKDF expression
 as `update_spec` on the zero state.
 
+Source: Spec §2.4; src/authenticator.rs:34-41
+
 ### PROP-40 MAC inputs
 
 `mac_hdr(ep, hdr) = HMAC(mac_key, "…:ekheader" ‖ ep_be ‖ hdr)` and
@@ -275,12 +339,16 @@ as `update_spec` on the zero state.
 `MacCt(epoch, ct1 || ct2)`; this is why `Ct1` chunks carry no MAC of their own.
 **Proved**: `mac_hdr_spec`, `mac_ct_spec`.
 
+Source: Spec §2.4; src/authenticator.rs:66-105; src/v1/unchunked/send_ct.rs:192-193; src/v1/unchunked/send_ek.rs:160
+
 ### PROP-15 Verify accepts own MAC
 
 `verify_hdr(ep, hdr, mac_hdr(ep, hdr)) = Ok(())` and likewise for `ct`.
 `verify_*` uses the constant-time `util::compare` (`util.rs:25-33`) and returns
 `InvalidHdrMac` / `InvalidCtMac` otherwise. **Proved**: `verify_ct_spec` and
 `verify_hdr_spec` state `Ok ↔ mac_* = ok expected_mac`.
+
+Source: Spec §2.4; src/authenticator.rs:57; src/authenticator.rs:82; src/util.rs:25-33
 
 ### PROP-43 MAC failure
 
@@ -290,6 +358,8 @@ On a failed `verify_hdr` (transition 6, `unchunked/send_ct.rs:107`) or
 stores only on `Ok`, `lib.rs:356-425`). In transition 5 the check runs after
 `decaps` and after `auth.update`, matching the spec's order. Status: **Open**.
 See deviation D5 for the spec's stronger requirement.
+
+Source: Spec §2.4; src/v1/unchunked/send_ct.rs:107; src/v1/unchunked/send_ek.rs:160; src/lib.rs:356-425
 
 ---
 
@@ -305,6 +375,8 @@ not a separate protocol mode; `lib.rs` uses only `v1::chunked`.
 ### PROP-30 Epoch and type dispatch
 
 Every `recv` arm compares `msg.epoch` with `state.epoch()`:
+
+Source: Spec §2.5; src/v1/chunked/states.rs:275-532
 
 | Case | Code | Spec |
 |------|------|------|
@@ -322,6 +394,8 @@ per variant); Equal rows **Open**.
 
 Each spec transition is implemented by the named code path with the same
 effect on the state's epoch, authenticator and payload.
+
+Source: Spec §2.5; src/v1/chunked/states.rs:115-532
 
 | # | Spec | Code entry | Notes |
 |---|------|-----------|-------|
@@ -357,6 +431,8 @@ pairs). D2 matters here: a future-epoch message is an error rather than a
 no-op, so the property holds only for in-order delivery across epochs.
 Status: **Open**.
 
+Source: Spec §2.6; src/v1/chunked/states.rs:115-532
+
 ### PROP-25 Encapsulation-key integrity
 
 Whenever the `ek_decoder` completes, `ek_matches_header(ek, hdr)` is checked
@@ -366,6 +442,8 @@ from `Ct1Sampled` and `Ct1Acknowledged` with either `Ek` or `EkCt1Ack`
 chunks (four combinations). Status: **Open**; the meaning of the check is
 PROP-3b.
 
+Source: Spec §2.5; src/v1/unchunked/send_ct.rs:160-169
+
 ### PROP-48 Decoder sizes
 
 Decoders are created with the spec's message sizes: header
@@ -374,6 +452,8 @@ ek `ENCAPSULATION_KEY_SIZE` (`chunked/send_ct.rs:96`), ct1 `CIPHERTEXT1_SIZE`
 (`chunked/send_ek.rs:86`), ct2 `CIPHERTEXT2_SIZE + MACSIZE`
 (`chunked/send_ek.rs:170-171`). Status: **Open**.
 
+Source: Spec §2.2; src/v1/chunked/send_ct.rs:72-73; src/v1/chunked/send_ct.rs:96; src/v1/chunked/send_ek.rs:86; src/v1/chunked/send_ek.rs:170-171; src/v1/chunked/send_ek.rs:208-209
+
 ### PROP-49 Key epoch
 
 The emitted `EpochSecret.epoch` is the epoch being negotiated: in
@@ -381,6 +461,8 @@ transition 7 it is `state.epoch`; in transition 5 it is the pre-increment
 epoch while the new state carries `epoch + 1` (`unchunked/send_ek.rs:163-166`).
 This is the value `chain.add_epoch` asserts to be `current_epoch + 1`
 (PROP-9). Status: **Open**.
+
+Source: Spec §2.5; src/v1/unchunked/send_ek.rs:163-166
 
 ---
 
@@ -393,12 +475,16 @@ Authenticator::new(k, 1) }`, with B2A `NoHeaderReceived { epoch: 1, auth:
 Authenticator::new(k, 1), header_decoder }` (`lib.rs:198-209`,
 `unchunked/send_ek.rs:78-79`, `unchunked/send_ct.rs:94-95`). Status: **Open**.
 
+Source: Spec §2.6; src/lib.rs:198-209; src/v1/unchunked/send_ek.rs:78-79; src/v1/unchunked/send_ct.rs:94-95
+
 ### PROP-16 Version negotiation
 
 Not in the spec. If the peer's version is below ours and below
 `min_version`, `recv` returns `Error::MinimumVersion`; if below ours with no
 `version_negotiation` record, `VersionMismatch` (`lib.rs:373-389`). Status:
 **Open**.
+
+Source: src/lib.rs:373-389
 
 ---
 
@@ -407,17 +493,17 @@ Not in the spec. If the peer's version is below ours and below
 The chain turns each SCKA key into per-message keys (SCKA Fig. 2). Properties
 here are grounded in the code.
 
-| ID | Statement | Code | Status |
-|----|-----------|------|--------|
-| PROP-9 | `add_epoch(es)` with `es.epoch = current_epoch + 1` sets `current_epoch = es.epoch`, derives `next_root` and the new link's send/recv seeds from HKDF(`next_root`, `es.secret`, 96), appends one link, leaves `dir`, `send_epoch`, `params` unchanged | `chain.rs:350-368` | **Proved** `add_epoch_spec` (`Spqr/Specs/Chain/Chain/AddEpoch.lean`) |
-| PROP-14 | `send_key(epoch)` with `epoch < send_epoch` returns `Err(SendKeyEpochDecreased(send_epoch, epoch))` | `chain.rs:384-387` | **Proved (branch)** |
-| PROP-17 | `ChainEpochDirection::key(at)`: `at > ctr ∧ at - ctr > max_jump` → `Err(KeyJump(ctr, at))`; `at = ctr` → `Err(KeyAlreadyRequested(at))`; `at < ctr` → `prev.get` | `chain.rs:247-260` | **Proved** `key_spec_greater_jump`, `key_spec_equal`, `key_spec_less` (`Spqr/Specs/Chain/ChainEpochDirection/Key.lean`) |
-| PROP-29 | `epoch_idx(e)`: `Ok(links.len() - 1 - (current_epoch - e))` iff `e ≤ current_epoch` and the difference is below `links.len()`, else `Err(EpochOutOfRange(e))` | `chain.rs:372-382` | **Open** |
-| PROP-10 | When `send_key` moves `send_epoch` forward it pops links older than `EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH = 1` and clears the send seed of every earlier link; receive seeds are untouched, and `KeyHistory` entries are removed on `get` or trimmed by `gc` | `chain.rs:389-399, 314, 145-168, 200` | **Open** |
-| PROP-12a | `KeyHistory.data.len() % 36 = 0` (`KEY_SIZE = 4 + 32`, `chain.rs:130`) is preserved by `add`, `get`, `gc` | `chain.rs:130-210` | **Proved** (`add_spec`, `get_loop_spec`, `gc_loop_spec` carry the alignment) |
-| PROP-12b | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `chain.rs:184-210` | **Open**; `get_loop_spec` gives the per-slot behaviour |
-| PROP-37 | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `chunked/{send_ek,send_ct}/serialize.rs` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for `KeysUnsampled` |
-| PROP-38 | `Chain::from_pb(c.into_pb()) = ok c` | `chain.rs:414-452` | **Open**; both functions depend on prost `sorry`s |
+| ID | Statement | Source | Status |
+|----|-----------|--------|--------|
+| PROP-9 | `add_epoch(es)` with `es.epoch = current_epoch + 1` sets `current_epoch = es.epoch`, derives `next_root` and the new link's send/recv seeds from HKDF(`next_root`, `es.secret`, 96), appends one link, leaves `dir`, `send_epoch`, `params` unchanged | `src/chain.rs:350-368` | **Proved** `add_epoch_spec` (`Spqr/Specs/Chain/Chain/AddEpoch.lean`) |
+| PROP-14 | `send_key(epoch)` with `epoch < send_epoch` returns `Err(SendKeyEpochDecreased(send_epoch, epoch))` | `src/chain.rs:384-387` | **Proved (branch)** |
+| PROP-17 | `ChainEpochDirection::key(at)`: `at > ctr ∧ at - ctr > max_jump` → `Err(KeyJump(ctr, at))`; `at = ctr` → `Err(KeyAlreadyRequested(at))`; `at < ctr` → `prev.get` | `src/chain.rs:247-260` | **Proved** `key_spec_greater_jump`, `key_spec_equal`, `key_spec_less` (`Spqr/Specs/Chain/ChainEpochDirection/Key.lean`) |
+| PROP-29 | `epoch_idx(e)`: `Ok(links.len() - 1 - (current_epoch - e))` iff `e ≤ current_epoch` and the difference is below `links.len()`, else `Err(EpochOutOfRange(e))` | `src/chain.rs:372-382` | **Open** |
+| PROP-10 | When `send_key` moves `send_epoch` forward it pops links older than `EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH = 1` and clears the send seed of every earlier link; receive seeds are untouched, and `KeyHistory` entries are removed on `get` or trimmed by `gc` | `src/chain.rs:389-399`; `src/chain.rs:314`; `src/chain.rs:145-168`; `src/chain.rs:200` | **Open** |
+| PROP-12a | `KeyHistory.data.len() % 36 = 0` (`KEY_SIZE = 4 + 32`, `chain.rs:130`) is preserved by `add`, `get`, `gc` | `src/chain.rs:130-210` | **Proved** (`add_spec`, `get_loop_spec`, `gc_loop_spec` carry the alignment) |
+| PROP-12b | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `src/chain.rs:184-210` | **Open**; `get_loop_spec` gives the per-slot behaviour |
+| PROP-37 | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `src/v1/chunked/states/serialize.rs:12-49`; `src/v1/chunked/send_ek/serialize.rs:10-112`; `src/v1/chunked/send_ct/serialize.rs:11-151` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for `KeysUnsampled` |
+| PROP-38 | `Chain::from_pb(c.into_pb()) = ok c` | `src/chain.rs:414-452` | **Open**; both functions depend on prost `sorry`s |
 
 Note on §3.8 (epoch wraparound). Epochs are `u64`. The code excludes
 wraparound by assumption (`hax_lib::assume!(current_epoch < u64::MAX)` in
@@ -430,13 +516,13 @@ assumption.
 
 ## 11. Deviations from the spec
 
-| ID | Where | Spec | Code | Impact |
-|----|-------|------|------|--------|
-| D1 | `Authenticator::update` (`authenticator.rs:43-54`) | KDF_AUTH: salt = `root_key`, IKM = `update_key` | salt = `[0u8; 32]`, IKM = `root_key ‖ update_key` | Different key bytes. Not a weakness, but a spec-conformant peer cannot interoperate. Needs a decision from Signal on which side is authoritative. |
-| D2 | every `recv` arm | `msg.epoch > epoch` ignored | `Err(EpochOutOfRange)` (except Ct2Sampled at `epoch + 1`) | Tightening; a future-epoch message is an error instead of a no-op. |
-| D3 | `EkSentCt1Received.send` (`states.rs:182`), `EkReceivedCt1Sampled.recv` (`states.rs:464-467`) | sends `None`; accepts only `EkCt1Ack` | sends `Ct1Ack(true)`; accepts `Ct1Ack(true)` too | §2.3 defines the `Ct1Ack` type but §2.5 never uses it; the code does. `Ct1Ack(false)` is never emitted. Motivation is robustness to a lost acknowledgement; no reachable state pair of the spec machine deadlocks without it. |
-| D4 | `Ct1Acknowledged.recv` (`states.rs:484-492`) | accepts `EkCt1Ack` | also accepts `Ek` chunks | Out-of-order delivery; comment at `states.rs:485-488`. Integrity still checked by PROP-25. |
-| D5 | MAC failure (§2.4) | "should not proceed with the session and should negotiate a new session" | returns `Err`; caller keeps the previous state and may retry | Weaker than the spec; the session is not aborted by the library. |
+| ID | Where | Spec | Code | Impact | Source |
+|----|-------|------|------|--------|--------|
+| D1 | `Authenticator::update` (`authenticator.rs:43-54`) | KDF_AUTH: salt = `root_key`, IKM = `update_key` | salt = `[0u8; 32]`, IKM = `root_key ‖ update_key` | Different key bytes. Not a weakness, but a spec-conformant peer cannot interoperate. Needs a decision from Signal on which side is authoritative. | Spec §2.2; `src/authenticator.rs:43-54` |
+| D2 | every `recv` arm | `msg.epoch > epoch` ignored | `Err(EpochOutOfRange)` (except Ct2Sampled at `epoch + 1`) | Tightening; a future-epoch message is an error instead of a no-op. | Spec §2.5; `src/v1/chunked/states.rs:275-532` |
+| D3 | `EkSentCt1Received.send` (`states.rs:182`), `EkReceivedCt1Sampled.recv` (`states.rs:464-467`) | sends `None`; accepts only `EkCt1Ack` | sends `Ct1Ack(true)`; accepts `Ct1Ack(true)` too | §2.3 defines the `Ct1Ack` type but §2.5 never uses it; the code does. `Ct1Ack(false)` is never emitted. Motivation is robustness to a lost acknowledgement; no reachable state pair of the spec machine deadlocks without it. | Spec §2.3; Spec §2.5; `src/v1/chunked/states.rs:182`; `src/v1/chunked/states.rs:464-467` |
+| D4 | `Ct1Acknowledged.recv` (`states.rs:484-492`) | accepts `EkCt1Ack` | also accepts `Ek` chunks | Out-of-order delivery; comment at `states.rs:485-488`. Integrity still checked by PROP-25. | Spec §2.5; `src/v1/chunked/states.rs:484-492` |
+| D5 | MAC failure (§2.4) | "should not proceed with the session and should negotiate a new session" | returns `Err`; caller keeps the previous state and may retry | Weaker than the spec; the session is not aborted by the library. | Spec §2.4; `src/v1/unchunked/send_ct.rs:107`; `src/v1/unchunked/send_ek.rs:160` |
 
 Resolution for each is a decision, not a proof: D1 needs either a code fix
 or a spec erratum; D2 needs the spec to mandate strictness or the code to
