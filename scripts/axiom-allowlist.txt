@@ -19,13 +19,25 @@
 #     (FunsExternal.lean:3661-3672), which is why the single hand-written
 #     axiom below is `spqr.kdf.hkdf_to_slice_spec`.
 #
-#  2. `opaque` declarations never appear in `#print axioms`: Lean's
+#  2. `opaque` declarations never enter an axiom closure: Lean's
 #     `collectAxioms` gathers `axiomInfo` only.  So `spqr.kdf.hkdf_to_slice`
 #     (FunsExternal.lean:3669) and `crypto`'s HMAC-SHA256 wrapper
 #     (Spqr/Crypto/Hkdf.lean:30) are deliberately NOT listed - they are
 #     opaque, hence invisible to the gate.  Note the latter's declaration
 #     name is `crypto.<wrapper>` (`namespace crypto`, Spqr/Crypto/Hkdf.lean:27),
 #     not `Spqr.Crypto.Hkdf.<wrapper>`, which is the module path.
+#
+#     Settled empirically, plan 01-04 task 1 probe 2, Lean 4.31.0, verbatim:
+#
+#       'spqr.kdf.hkdf_to_slice' depends on axioms: [propext]
+#
+#     Read it precisely.  An `opaque` name is a perfectly good *subject* of
+#     `#print axioms` - the command answers rather than erroring - but the
+#     answer is the closure of its *type*, and the opaque itself is absent
+#     from it.  Nor does it appear in any other closure: the axiom beside it,
+#     `spqr.kdf.hkdf_to_slice_spec`, reports `[propext, Quot.sound,
+#     spqr.kdf.hkdf_to_slice_spec]` - itself, never the opaque.  So no opaque
+#     name needs allowlisting and the entry count below stays at 20.
 #
 #  3. FunsExternal.lean also declares bare root-level axioms for
 #     `initial_state` (:3694), `send` (:3700) and `recv` (:3708).  Those are

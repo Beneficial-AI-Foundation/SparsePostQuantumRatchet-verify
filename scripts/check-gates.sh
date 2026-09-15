@@ -176,6 +176,26 @@ gate_2() {
     return
   fi
 
+  # `lake exe runLinter Spqr` builds the runLinter executable but NOT the
+  # library it lints: it loads whatever `Spqr` oleans are on disk.  So a gate-2
+  # run on a stale tree lints the previous version of the code and can report
+  # PASS for a declaration that was never compiled - observed in plan 01-04
+  # task 3, where control 2's `dupNamespace` breakage reported
+  # "Linting passed for Spqr" until the library was rebuilt.  That is threat
+  # T-1-01 (a gate passing without checking).
+  #
+  # CI cannot hit it, because lean.yml runs the build step (:46) before the lint
+  # step (:56) every time.  Reproduce that precondition when gate 1 is not part
+  # of this run; the CI-identical command below is left untouched.  A failing
+  # build is not judged here - that is gate 1's job - but it will surface as a
+  # runLinter error, so gate 2 still cannot pass on a tree that will not build.
+  if ! selected 1; then
+    echo "(bringing the library up to date first: runLinter does not rebuild it)"
+    set +e
+    lake build --no-ansi > /tmp/lake-lint-prebuild.log 2>&1
+    set -e
+  fi
+
   # Lint ONLY the hand-written `Spqr` library.  `|| true` is CI's: runLinter
   # exits non-zero when it reports lints, and the `error:` grep is the verdict.
   set +e
@@ -314,13 +334,39 @@ gate_3b() {
 #       T-1-14) holds `import Spqr` plus one `#print axioms <name>` per target.
 #
 # 4B fails, and never passes, on each of:
-#   - `unknown identifier` / `unknown constant` - a typo'd target
+#   - an unresolvable target name (see the observed wording below)
 #   - a target that produced no report line at all (asserted per target by name)
 #   - a `depends on axioms: [` whose `]` never arrives ("malformed" report)
 #   - `sorryAx` in a target not named by `--allow-sorry`
 # A wrapped axiom list is *not* a failure: Lean soft-breaks the list with
 # `"," ++ Format.line` (Lean/Message.lean:417), so the parser accumulates
 # continuation lines up to the closing `]` before splitting on `,`.
+#
+# ── Output format, observed not assumed ──────────────────────────────────────
+#
+# The three strings 4B matches were settled empirically by the five-probe
+# elaboration in plan 01-04 task 1, run with `lake env lean` under
+# `leanprover/lean4:v4.31.0` (`lean-toolchain`) on the built tree.  Verbatim:
+#
+#   'spqr.kdf.hkdf_to_slice_spec' depends on axioms: [propext, Quot.sound, spqr.kdf.hkdf_to_slice_spec]
+#   'probe_no_axioms' does not depend on any axioms
+#   Probe.lean:10:14: error(lean.unknownIdentifier): Unknown constant `spqr.kdf.hkdf_to_slice_spce`
+#
+# Three consequences, all load-bearing:
+#
+#  1. An unresolvable name is reported as **`Unknown constant` with a capital U
+#     and backticks around the name**, tagged `error(lean.unknownIdentifier)`.
+#     It is NOT the lower-case `unknown identifier '<name>'` / `unknown constant
+#     '<name>'` that research assumption A1 guessed, so a substring test for the
+#     lower-case forms never fires.  `UNKNOWN_NAME` below matches the observed
+#     wording case-insensitively and also matches the error-code tag, so either
+#     spelling trips it.  A typo'd target is caught twice over: here, and by the
+#     per-target "no report for target" assertion further down.
+#  2. Both report shapes A1 assumed are exactly right and are unchanged.
+#  3. Axiom lists **do** wrap at the default print width, unforced: the
+#     11-element closure of `spqr.decode_state_spec` came back over 11 lines
+#     with one axiom per continuation line.  The accumulate-to-`]` loop below is
+#     therefore exercised on every real run, not just by a synthetic control.
 
 validate_allowlist() {
   python3 - "$ALLOWLIST" "$REPO_ROOT" <<'PYVALIDATE'
@@ -385,20 +431,52 @@ print("Allowlist resolves against the tree.")
 PYVALIDATE
 }
 
+# Enumerate the default gate-4 target set: every theorem/lemma/axiom under
+# `Spqr/Specs/**` that `#print axioms` can actually address from an importing
+# scratch file.  Two exclusions, both measured against the real tree in plan
+# 01-04 task 2, where the unfiltered collector produced 463 targets of which 70
+# could not be resolved at all:
+#
+#   - `private` declarations (68 of the 70).  Lean mangles a private name to
+#     `_private.<Module>.0.<Name>`, so the source-order name is not a constant
+#     in an importing module and `#print axioms` answers `Unknown constant`.
+#     Such a target can never expose a violation, only bury the real ones, so
+#     it is dropped rather than reported.  Nothing checkable is lost: a private
+#     lemma's axioms reach the closure of whatever non-private declaration uses
+#     it, which *is* a target; if nothing uses it, it is dead code.
+#   - a doc-comment line that happens to *begin* with the word `theorem` or
+#     `lemma` because a `/-- ... -/` block wrapped there (2 of the 70:
+#     DecodeChunk.lean:73 `theorem against \`encode_chunk\` can identify …` and
+#     FromCompletePoints.lean:167 `lemma for the iterator step, then resolves …`).
+#     Block-comment depth is tracked so prose cannot masquerade as a declaration.
+#
+# Neither exclusion can turn a FAIL into a PASS for a real declaration: both
+# remove only names that Lean refuses to resolve.
 collect_axiom_targets() {
   python3 - "$REPO_ROOT" <<'PYTARGETS'
 import re, sys, pathlib
 
 repo_root = pathlib.Path(sys.argv[1])
+# `private` is deliberately NOT in the modifier alternation: a private
+# declaration is matched by PRIVATE below and skipped.
 DECL = re.compile(
-    r"(?m)^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|nonrec\s+)*"
+    r"(?m)^\s*(?:@\[[^\]]*\]\s*)?(?:protected\s+|nonrec\s+)*"
     r"(?:theorem|lemma|axiom)\s+([A-Za-z_À-￿][^\s:({\[⦃]*)"
 )
+PRIVATE = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)?private\b")
 out = []
 for path in sorted(repo_root.glob("Spqr/Specs/**/*.lean")):
     text = path.read_text(errors="replace")
     stack = []
+    depth = 0                      # `/- … -/` nesting depth, Lean allows nesting
     for line in text.splitlines():
+        code = line.split("--", 1)[0] if line.lstrip().startswith("--") else line
+        opens, closes = code.count("/-"), code.count("-/")
+        was_in_comment = depth > 0
+        depth = max(0, depth + opens - closes)
+        if was_in_comment or opens > closes:
+            # Inside, or opening, a block comment: prose, never a declaration.
+            continue
         ns = re.match(r"^namespace\s+(\S+)\s*$", line)
         if ns:
             stack.append(ns.group(1))
@@ -406,10 +484,17 @@ for path in sorted(repo_root.glob("Spqr/Specs/**/*.lean")):
         if re.match(r"^end\s+\S+\s*$", line) and stack:
             stack.pop()
             continue
+        if PRIVATE.match(line):
+            continue               # name is mangled; unaddressable by #print axioms
         m = DECL.match(line)
         if m:
             name = m.group(1).strip()
-            if name:
+            if name.startswith("_root_."):
+                # `_root_.` escapes the enclosing namespace, and Lean prints the
+                # constant without it.  Strip the marker and do NOT prefix the
+                # stack, or the target name never matches its own report.
+                out.append(name[len("_root_."):])
+            elif name:
                 out.append(".".join(stack + [name]) if stack else name)
 for name in sorted(set(out)):
     print(name)
@@ -433,12 +518,35 @@ for raw in allowlist_path.read_text().splitlines():
 
 log = log_path.read_text(errors="replace").splitlines()
 
-HEADER = re.compile(r"'([^']+)'\s+(depends on axioms:\s*\[|does not depend on any axioms)")
+# The name capture is non-greedy and anchored on the literal suffix, NOT
+# `[^']+`.  A prime-suffixed Lean name is printed with two closing quotes -
+# observed verbatim in plan 01-04 task 2:
+#
+#   'spqr.encoding.gf.unaccelerated.poly_mul_spec'' depends on axioms: [propext, …]
+#
+# `[^']+` cannot match such a line at all: it stops at the first `'`, then the
+# required `' depends` tail meets `'' depends` and the whole match fails, so the
+# report is silently dropped rather than mis-attributed.  The prime-named target
+# then looks unreported and gate 4 fails on it forever - fail-strict, but
+# unusable, since primed names are routine in Lean.  `(.+?)` plus the required
+# `' depends on axioms:` / `' does not depend` tail backtracks onto the real
+# name.  4 of the tree's 393 targets are primed.
+HEADER = re.compile(r"'(.+?)'\s+(depends on axioms:\s*\[|does not depend on any axioms)")
+
+# Observed on Lean 4.31.0 (plan 01-04 task 1, verbatim):
+#   error(lean.unknownIdentifier): Unknown constant `spqr.kdf.hkdf_to_slice_spce`
+# Capital `U`, backticks, and the error-code tag.  Matched case-insensitively
+# and with the tag as an alternative so that either spelling trips the gate.
+UNKNOWN_NAME = re.compile(
+    r"unknown\s+(?:constant|identifier)|lean\.unknown(?:Identifier|Constant)",
+    re.IGNORECASE,
+)
+
 failures, reports = [], {}
 
 # A typo'd target must fail loudly rather than pass vacuously.
 for line in log:
-    if "unknown identifier" in line or "unknown constant" in line:
+    if UNKNOWN_NAME.search(line):
         failures.append(f"unresolved target name: {line.strip()}")
 
 i = 0
