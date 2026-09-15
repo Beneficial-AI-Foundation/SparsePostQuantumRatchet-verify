@@ -3,8 +3,10 @@ phase: 1
 slug: gates-provenance-and-target-list
 status: draft
 flag_owner: plan 01-04 task 3 flips nyquist_compliant and wave_0_complete to true, and only when all nine negative controls are recorded with literal output
-nyquist_compliant: false
+nyquist_compliant: true
+nyquist_compliant_basis: "plan 01-04 task 3, 2026-09-15 - all nine negative controls run in a throwaway worktree with literal output recorded in 01-04-SUMMARY.md; five gates observed failing; the wrapped-continuation-line control met at natural print width"
 wave_0_complete: false
+wave_0_complete_basis: "NOT flipped. All nine controls are recorded, which is a necessary but not a sufficient condition for this flag. Four Wave 0 deliverables are still absent from disk, all owned by later plans in this phase: docs/proof-targets.md (01-06), docs/rubrics/spqr-statement-review.md (01-06), .claude/skills/spqr-statement-review/SKILL.md (01-06), docs/spec-review-log.md (01-07). The build-and-baseline Wave 0 dependency that blocked gates 1, 2, 3a, 3b and 4 IS now discharged by 01-04. Whichever plan lands the last of the four should flip this."
 created: 2026-09-14
 rescoped: 2026-09-15
 ---
@@ -145,13 +147,14 @@ awk '/^## 11\./{f=1} /^## 12\./{f=0} f && /^\| D[1-5] \|/{n=split($0,c,"|"); pri
 - [ ] `scripts/README.md` — `## Verification gates` section (INFRA-03 documentation)
 - [ ] `.gitignore` — add `.gate-cache/` and `.sorry-delta-comment.md`. The `issues/` line
       stays: no issue tooling is built, so there is nothing to retire
-- [ ] A `lake build` of the working tree **and** of the `origin/main` baseline worktree
+- [x] A `lake build` of the working tree **and** of the `origin/main` baseline worktree
       (`lake exe cache get` first — mathlib is transitive via aeneas), before the
       **build-dependent** gates can be validated: gates 1, 2, 3a, 3b and 4. Gate 5 and every
       static check need no build and are validated in waves 1–2 without one; plan 01-04 in
       wave 3 is what supplies the build, so its absence before then is the schedule working,
-      not a gap
-- [ ] No test framework needs installing — every assertion is a shell command
+      not a gap — **done 2026-09-15 (01-04): working tree 357 s / 8.2 GB, baseline
+      `e8f6689` 340 s / 8.1 GB, cost recorded in `scripts/README.md`**
+- [x] No test framework needs installing — every assertion is a shell command
 
 ---
 
@@ -204,8 +207,10 @@ control with four recorded corruptions, all four required.
 - [ ] Wave 0 covers all ❌ references above
 - [ ] No watch-mode flags
 - [ ] Per-task feedback latency < 5 s
-- [ ] Negative-control matrix run and output recorded in SUMMARY — **all nine rows**, the
-      wrapped-axiom-list control included; it cannot be waived
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] Negative-control matrix run and output recorded in SUMMARY — **all nine rows**, the
+      wrapped-axiom-list control included; it cannot be waived — **done 2026-09-15 (01-04
+      task 3), literal output in `01-04-SUMMARY.md`; the wrapped-list control was met at the
+      natural default print width, `set_option format.width` was not needed**
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending

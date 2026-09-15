@@ -176,6 +176,26 @@ gate_2() {
     return
   fi
 
+  # `lake exe runLinter Spqr` builds the runLinter executable but NOT the
+  # library it lints: it loads whatever `Spqr` oleans are on disk.  So a gate-2
+  # run on a stale tree lints the previous version of the code and can report
+  # PASS for a declaration that was never compiled - observed in plan 01-04
+  # task 3, where control 2's `dupNamespace` breakage reported
+  # "Linting passed for Spqr" until the library was rebuilt.  That is threat
+  # T-1-01 (a gate passing without checking).
+  #
+  # CI cannot hit it, because lean.yml runs the build step (:46) before the lint
+  # step (:56) every time.  Reproduce that precondition when gate 1 is not part
+  # of this run; the CI-identical command below is left untouched.  A failing
+  # build is not judged here - that is gate 1's job - but it will surface as a
+  # runLinter error, so gate 2 still cannot pass on a tree that will not build.
+  if ! selected 1; then
+    echo "(bringing the library up to date first: runLinter does not rebuild it)"
+    set +e
+    lake build --no-ansi > /tmp/lake-lint-prebuild.log 2>&1
+    set -e
+  fi
+
   # Lint ONLY the hand-written `Spqr` library.  `|| true` is CI's: runLinter
   # exits non-zero when it reports lints, and the `error:` grep is the verdict.
   set +e
