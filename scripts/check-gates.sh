@@ -574,6 +574,33 @@ gate_4() {
   fi
 }
 
+# ─── Gate 5: provenance (PROV-01) ─────────────────────────────────────────────
+#
+# Needs no build: `--gates 5` never invokes lake.  The checker enumerates every
+# catalog row, requires a `Source:` field and resolves every citation in it.
+
+gate_5() {
+  banner "GATE 5: provenance (scripts/check-provenance.py)"
+  if ! command -v python3 >/dev/null 2>&1; then
+    skip 5 "python3 not on PATH"
+    return
+  fi
+  if [[ ! -f "$REPO_ROOT/scripts/check-provenance.py" ]]; then
+    skip 5 "scripts/check-provenance.py not found"
+    return
+  fi
+  local rc=0
+  set +e
+  python3 "$REPO_ROOT/scripts/check-provenance.py"
+  rc=$?
+  set -e
+  case "$rc" in
+    0) pass 5 ;;
+    1) fail 5 "unresolved Source: citations or §12 index disagreement" ;;
+    *) skip 5 "check-provenance.py exited $rc (could not run)" ;;
+  esac
+}
+
 # ─── Run the selected gates ───────────────────────────────────────────────────
 
 if selected 1; then gate_1; fi
@@ -582,6 +609,7 @@ if selected 3; then
   if gate_3a; then gate_3b; else skip 3b "gate 3a did not produce a manifest"; fi
 fi
 if selected 4; then gate_4; fi
+if selected 5; then gate_5; fi
 
 # ─── Report ───────────────────────────────────────────────────────────────────
 
