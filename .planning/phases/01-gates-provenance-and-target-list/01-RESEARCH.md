@@ -1,4 +1,29 @@
-# Phase 1: Gates, Issues and Deviation Decisions - Research
+# Phase 1: Gates, Provenance and the Reviewed Target List - Research
+
+> **RE-SCOPED 2026-09-15.** The phase goal changed from "close every Open catalog row, one
+> GitHub issue per property" to "prove as many non-trivial specs as possible", with
+> provenance (PROV-01) and a binding statement review (REV-01). Issue automation is out of
+> scope.
+>
+> **Still live in this document** — the new plan set cites these by line range:
+> - the gate-4 `#print axioms` recipe, the 20-name allowlist table and the three naming traps
+> - the assumptions log, in particular A1 (output shapes, unknown-name behaviour) and A2
+>   (`opaque` invisibility), both still requiring the plan 01-04 probe
+> - the pitfalls: P-1 (the gate that passes on a misspelled name), P-5, P-7, P-8
+> - the environment facts: `shellcheck` absent, the tree unbuilt, mathlib transitive via aeneas
+> - blocker B-4 and question Q-2 on the PR base branch
+>
+> **Superseded** — ignore these sections:
+> - everything on `scripts/create-property-issues.sh`, the TSV data files, the label scheme
+>   and the `gh issue` invocations (D-01 to D-05, D-09)
+> - the retirement of the legacy `issues/` tooling (D-05); `issues/` stays untracked
+> - the Signal deviation note (D-11); deferred to v2 as DEV-05
+> - the plan numbering; see `.planning/archive/01-superseded-2026-09-15/README.md` for the map
+>
+> New material the re-scope added is **not** in this document: the band taxonomy, the
+> provenance gate design and the statement-review machinery are specified in
+> `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md` and plans 01-02, 01-03, 01-06 and 01-07.
+
 
 **Researched:** 2026-09-14
 **Domain:** Repository process tooling (bash gate script, `gh` issue automation) and
@@ -955,10 +980,23 @@ AUTH-01 theorem and the plan reviewer can both re-verify them:
 | A failed ciphertext MAC returns `Err(InvalidCtMac)`, propagated by `?` **after** `decaps`, the KDF_OK derivation and `auth.update` | `src/v1/unchunked/send_ek.rs:160` (`auth.verify_ct(epoch, &ct1, &mac)?;`), preceded by `decaps` at :150, `hkdf_to_vec` at :156 and `auth.update(epoch, &ss)` at :158; error value at `src/authenticator.rs:59` |
 | The library takes state **by reference** and only ever returns a *new* serialized state inside `Ok`; on any `Err` the caller's `SerializedState` is untouched and the library performs no abort, no zeroization and no session teardown | `src/lib.rs:356` `pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Error>`; the MAC error propagates at `src/lib.rs:425` (`…States::from_pb(pb)?.recv(&scka_msg)?`); the only state write is the `Ok(Recv { state: …encode_to_vec(), … })` at `src/lib.rs:437-451` |
 
-So the contract to write under PROP-43 is exactly: **`spqr::recv` returns `Err(InvalidHdrMac)`
-or `Err(InvalidCtMac)`; it mutates nothing; the caller's previous `SerializedState` remains
+So the contract to write under PROP-43 is exactly: **`spqr::recv` returns
+`Err(Error::MacVerifyFailed)`; it mutates nothing; the caller's previous `SerializedState` remains
 valid and may be reused for a retry; the library does not terminate the session — deciding
 whether to negotiate a new session on repeated MAC failure is the caller's responsibility.**
+
+> **Correction (plan review 01, 2026-09-14).** An earlier draft of this paragraph said
+> `spqr::recv` returns `Err(InvalidHdrMac)` / `Err(InvalidCtMac)`. That is wrong at the
+> public boundary. `InvalidHdrMac` and `InvalidCtMac` are variants of
+> **`authenticator::Error`** (`src/authenticator.rs:13,15`), and
+> `impl From<authenticator::Error> for Error` (`src/lib.rs:145-149`) maps *every*
+> authenticator error to the single public variant `Error::MacVerifyFailed`
+> (`src/lib.rs:106`). `spqr::Error` has no `InvalidHdrMac`/`InvalidCtMac` variant at all.
+> The two internal causes are therefore **indistinguishable to a caller**, and the D5
+> caller contract must say so. The internal error values remain correctly cited in the
+> rows above — they are what `verify_hdr`/`verify_ct` raise, which is the level PROP-15
+> speaks at (`docs/spqr-properties.md:282`). [VERIFIED: `src/lib.rs:145-149`,
+> `src/authenticator.rs:11-23`, `src/lib.rs:98-128`, `SrcTranslated/Types.lean:795-799`]
 Note the asymmetry worth stating: on a `verify_ct` failure the *epoch secret has already been
 derived and `auth.update` has already run on the local `auth` copy*, but because `recv_ct2`
 consumed `self` and returns `Err`, that updated authenticator is dropped — the caller's stored
@@ -1442,9 +1480,19 @@ All five were resolved during `/gsd-plan-phase 1` — Q-1 and Q-4 by the user, Q
 
 - **RESOLVED (recommendation adopted): ask before deleting.** Plan 01-05 T1 is a blocking `checkpoint:decision` that runs `gh issue view 272` and asks the user, preceding the `rm -rf`.
 - **What we know:** the README documents a real, load-bearing finding (a false postcondition in
-  `Spqr/Specs/Encoding/Polynomial/LagrangePolysForCompletePoints.lean:40`, admitted by a `sorry`
-  at `:57`, with a fix on `fix/272-frame-condition-loop0-body-spec`). The supporting `.lean`
-  files are already gone.
+  `Spqr/Specs/Encoding/Polynomial/LagrangePolysForCompletePoints.lean:40`, with a fix on
+  `fix/272-frame-condition-loop0-body-spec`). The supporting `.lean` files are already gone.
+
+  > **Correction (plan review 01, 2026-09-14): this describes a past state of the tree, not
+  > the current one.** `LagrangePolysForCompletePoints.lean` today has **no `sorry`**:
+  > `body_spec` at `:47` closes with `unfold body` and the frame conclusion at `:57` is
+  > `(ones1[i]!).y = (ones[i]!).y` — it *preserves* the `y` field rather than asserting
+  > `GF16.ONE`, and the doc comment at `:40-43` explains that callers recover
+  > `y = GF16.ONE` by composing this frame with their own invariant, which
+  > `lagrange_polys_for_complete_points_spec` does. So the `issues/272/README.md` analysis is
+  > **historical**. Treat it as such when deciding its fate: it documents a defect that has
+  > since been addressed, which is an argument for posting it to the issue thread as a record
+  > and closing it out, not for preserving it as live analysis.
 - **What's unclear:** whether it has been posted to issue #272.
 - **Recommendation:** before deleting, `gh issue view 272` and, if the analysis is not in the
   thread, offer to post it as a comment (a comment is not a PR, so PC-6 is untouched — but ask
@@ -1477,7 +1525,11 @@ All five were resolved during `/gsd-plan-phase 1` — Q-1 and Q-4 by the user, Q
   `scripts/README.md`
 - `sorry-manifest.txt` — format and current contents (134 lines, 36 `Spqr.Specs.*`)
 - `lakefile.toml`, `lean-toolchain`, `lake-manifest.json`, `.gitignore`
-- `SrcTranslated/FunsExternal.lean` (55 `axiom`/`opaque`, namespace structure),
+- `SrcTranslated/FunsExternal.lean` (**173 `axiom` + 1 `opaque`** declarations; the earlier
+  "55" in this inventory was wrong — corrected at plan review 01, 2026-09-14. Note the
+  allowlist is deliberately far smaller than this inventory: it admits 17 documented stubs,
+  not every extracted axiom, so a theorem reaching a prost or `core.*` axiom fails gate 4 by
+  design. Namespace structure as described in the gate-4 traps below.),
   `SrcTranslated/Funs.lean` (`namespace spqr`, `def initial_state/send/recv`)
 - `Spqr/Specs/Kdf/HkdfToSlice.lean`, `Spqr/Crypto/Hkdf.lean`, `Spqr.lean`
 - `docs/spqr-properties.md` (§1, §5, §7, §8, §11, §12, §13), `docs/ISSUE_TEMPLATE.md` (full),

@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 context gathered
+stopped_at: Phase 1 re-planned after the 2026-09-15 goal re-scope; awaiting /spqr-plan-review 1
 last_updated: "2026-09-14T19:26:33.386Z"
 last_activity: 2026-09-14 -- Phase 01 planning complete
 progress:
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-14)
 
 **Core value:** Every status in `docs/spqr-properties.md` can be regenerated from the Lean sources on `main`: Proved means a theorem with no `sorry` and no hand-written axiom beyond the documented opaque stubs.
-**Current focus:** Phase 1 — Gates, Issues and Deviation Decisions
+**Current focus:** Phase 1 — Gates, Provenance and the Reviewed Target List
 
 ## Current Position
 
@@ -63,7 +63,7 @@ Recent decisions affecting current work:
 - Order phases by dependency, not by spec section: gates and D1–D5 first, then the branch merge, then leaf lemmas, then transitions, then traces
 - One GitHub issue and one draft PR per property (#537–#541 pattern); GSD stops at each PR boundary and the user opens the PR
 - Review gates: `/spqr-plan-review N` after planning and before execution; `spqr-eval` alongside gsd-verifier after execution, persisted as `NN-EVAL.md`
-- Real gates are `lake build`, `lake exe runLinter Spqr`, `lake env lean scripts/Audit.lean`, `#print axioms`; `#check_no_sorry` does not exist and is corrected in Phase 1
+- Real gates are five: `lake build`, `lake exe runLinter Spqr`, `lake env lean scripts/Audit.lean`, `#print axioms`, and the provenance check over the catalog's `Source:` citations. `#check_no_sorry` does not exist and is removed in Phase 1
 
 ### Pending Todos
 
@@ -73,7 +73,7 @@ None yet.
 
 - DEV-01…DEV-04 (D1–D5) need decisions from Signal. They gate the final statements of PROP-42, PROP-30, PROP-50, PROP-47 and PROP-43 in Phases 5–6. If a decision is outstanding, the affected property is stated against the code as it is and the catalog marks it provisional.
 - CHAIN-05 (PROP-38) and TRACE-05 (PROP-1) may end as conditional theorems (prost `Message` sorrys, PROP-3 axiom). Both must name their hypotheses in the catalog.
-- Local `la/spec-catalog` has diverged from `origin/la/spec-catalog`; pushing needs `--force-with-lease`.
+- Local `la/spec-catalog` is **ahead of** `origin/la/spec-catalog` by nine commits and zero behind (measured 2026-09-14: `git rev-list --left-right --count origin/la/spec-catalog...HEAD` → `0	9`), so a plain push suffices. The earlier `--force-with-lease` note was wrong. Re-measure before pushing.
 
 ## Deferred Items
 
@@ -86,5 +86,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-09-14T15:50:16.389Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-gates-issues-and-deviation-decisions/01-CONTEXT.md
+Stopped at: Phase 1 re-planned after the 2026-09-15 goal re-scope; awaiting /spqr-plan-review 1
+Resume file: .planning/phases/01-gates-provenance-and-target-list/01-CONTEXT.md

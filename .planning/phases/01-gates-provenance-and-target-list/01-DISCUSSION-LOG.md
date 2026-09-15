@@ -1,5 +1,13 @@
 # Phase 1: Gates, Issues and Deviation Decisions - Discussion Log
 
+> **HISTORICAL — RE-SCOPED 2026-09-15.** This log records the discussion that produced the
+> original Phase 1 (close every Open row; one GitHub issue per property). The decisions on
+> issue tooling (D-01 to D-05, D-09) and the Signal note (D-11) were superseded when the goal
+> became "prove as many non-trivial specs as possible". The gate decisions (D-06, D-07, D-08,
+> D-08a), the deviation posture (D-10, D-12 to D-14) and the PR-boundary decisions (D-15,
+> D-16, D-17) all still hold. Kept for the reasoning, not as a current contract.
+
+
 > **Audit trail only.** Do not use as input to planning, research, or execution agents.
 > Decisions are captured in CONTEXT.md — this log preserves the alternatives considered.
 

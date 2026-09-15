@@ -1,4 +1,29 @@
-# Phase 1: Gates, Issues and Deviation Decisions - Context
+# Phase 1: Gates, Provenance and the Reviewed Target List - Context
+
+> **RE-SCOPED 2026-09-15.** The phase goal changed from "close every Open catalog row, one
+> GitHub issue per property" to "prove as many non-trivial specs as possible", with
+> provenance (PROV-01) and a binding statement review (REV-01). Issue automation is out of
+> scope.
+>
+> **Still live in this document** — the new plan set cites these by line range:
+> - the gate-4 `#print axioms` recipe, the 20-name allowlist table and the three naming traps
+> - the assumptions log, in particular A1 (output shapes, unknown-name behaviour) and A2
+>   (`opaque` invisibility), both still requiring the plan 01-04 probe
+> - the pitfalls: P-1 (the gate that passes on a misspelled name), P-5, P-7, P-8
+> - the environment facts: `shellcheck` absent, the tree unbuilt, mathlib transitive via aeneas
+> - blocker B-4 and question Q-2 on the PR base branch
+>
+> **Superseded** — ignore these sections:
+> - everything on `scripts/create-property-issues.sh`, the TSV data files, the label scheme
+>   and the `gh issue` invocations (D-01 to D-05, D-09)
+> - the retirement of the legacy `issues/` tooling (D-05); `issues/` stays untracked
+> - the Signal deviation note (D-11); deferred to v2 as DEV-05
+> - the plan numbering; see `.planning/archive/01-superseded-2026-09-15/README.md` for the map
+>
+> New material the re-scope added is **not** in this document: the band taxonomy, the
+> provenance gate design and the statement-review machinery are specified in
+> `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md` and plans 01-02, 01-03, 01-06 and 01-07.
+
 
 **Gathered:** 2026-09-14
 **Status:** Ready for planning
