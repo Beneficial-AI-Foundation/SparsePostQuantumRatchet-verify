@@ -1,0 +1,74 @@
+# Gate 4 axiom allowlist.
+#
+# Fully-qualified Lean names that `#print axioms <thm>` may report.  Anything
+# else in a theorem's axiom closure fails gate 4.  One name per line; `#`
+# comments and blank lines are ignored, and a trailing `# file:line` citation
+# is stripped before matching.
+#
+# The prose source of truth is `docs/spqr-properties.md` §1 ("Verification
+# setup"): these are the documented opaque items of the trusted base.  This
+# file is the grep-able form of that list, so a change to the trusted base
+# shows up as a diff here.  Phase 4 (AXIOM-01..06) owns edits to it.
+#
+# Three naming traps, all verified against the tree on 2026-09-15:
+#
+#  1. `SrcTranslated/FunsExternal.lean` has `open spqr` (line 16), NOT
+#     `namespace spqr`, so its axioms are root-level `libcrux_ml_kem.*`,
+#     `libcrux_hmac.*`, `encoding.*`, `incremental_mlkem768.*` - never
+#     `spqr.`-prefixed.  The one exception is `namespace spqr.kdf`
+#     (FunsExternal.lean:3661-3672), which is why the single hand-written
+#     axiom below is `spqr.kdf.hkdf_to_slice_spec`.
+#
+#  2. `opaque` declarations never appear in `#print axioms`: Lean's
+#     `collectAxioms` gathers `axiomInfo` only.  So `spqr.kdf.hkdf_to_slice`
+#     (FunsExternal.lean:3669) and `crypto`'s HMAC-SHA256 wrapper
+#     (Spqr/Crypto/Hkdf.lean:30) are deliberately NOT listed - they are
+#     opaque, hence invisible to the gate.  Note the latter's declaration
+#     name is `crypto.<wrapper>` (`namespace crypto`, Spqr/Crypto/Hkdf.lean:27),
+#     not `Spqr.Crypto.Hkdf.<wrapper>`, which is the module path.
+#
+#  3. FunsExternal.lean also declares bare root-level axioms for
+#     `initial_state` (:3694), `send` (:3700) and `recv` (:3708).  Those are
+#     dead aeneas template leftovers; the real functions are `def`s inside
+#     `namespace spqr` in `Funs.lean` and reach the manifest as `spqr.recv`
+#     etc.  They are NOT allowlisted: a theorem depending on them would be
+#     depending on the wrong constant.
+#
+# `sorryAx` is NOT listed.  Gate 4 rejects it by default and accepts it only
+# for targets named by `--allow-sorry` (AXIOM-04/AXIOM-05 in Phase 4 will
+# formalise that set).
+
+# ── Lean builtins (Audit.lean:26-27 treats exactly these as builtin) ─────────
+propext
+Classical.choice
+Quot.sound
+
+# ── The single hand-written axiom ───────────────────────────────────────────
+spqr.kdf.hkdf_to_slice_spec  # Spqr/Specs/Kdf/HkdfToSlice.lean:25
+
+# ── libcrux ML-KEM 768 incremental KEM stubs ────────────────────────────────
+libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes  # SrcTranslated/FunsExternal.lean:1985
+libcrux_ml_kem.mlkem768.incremental.encapsulate1  # SrcTranslated/FunsExternal.lean:1994
+libcrux_ml_kem.mlkem768.incremental.encapsulate2  # SrcTranslated/FunsExternal.lean:1856
+libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key  # SrcTranslated/FunsExternal.lean:2006
+libcrux_ml_kem.mlkem768.incremental.pk1_len  # SrcTranslated/FunsExternal.lean:1838
+libcrux_ml_kem.mlkem768.incremental.pk2_len  # SrcTranslated/FunsExternal.lean:1844
+libcrux_ml_kem.mlkem768.incremental.encaps_state_len  # SrcTranslated/FunsExternal.lean:1850
+libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec  # SrcTranslated/FunsExternal.lean:1873
+libcrux_ml_kem.constants.SHARED_SECRET_SIZE  # SrcTranslated/FunsExternal.lean:1806
+libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len  # SrcTranslated/FunsExternal.lean:1823
+libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len  # SrcTranslated/FunsExternal.lean:1831
+
+# ── libcrux HMAC stubs ──────────────────────────────────────────────────────
+libcrux_hmac.hmac  # SrcTranslated/FunsExternal.lean:1748
+libcrux_hmac.hmac_sha256_tag32_spec  # SrcTranslated/FunsExternal.lean:1795
+
+# ── Catalog §1 opaque items inside the crate ────────────────────────────────
+# Blocks LEAN-ENC-2 (decode from any N chunks).
+encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message  # SrcTranslated/FunsExternal.lean:3682
+# Declared across two lines (keyword :3687, name :3688) - see the note in
+# gate 4's allowlist validation: a `^axiom +NAME` matcher misses this, and 118
+# other axioms in the same file have the same shape.
+incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275  # SrcTranslated/FunsExternal.lean:3687-3688
+# SIMD dispatch, explicitly out of scope in .planning/REQUIREMENTS.md.
+encoding.gf.mul2_u16  # SrcTranslated/FunsExternal.lean:3676

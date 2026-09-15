@@ -31,6 +31,8 @@ CACHE_DIR="${SPQR_GATE_CACHE:-$REPO_ROOT/.gate-cache}"
 SKIP_BASELINE=false
 REFRESH_BASELINE=false
 ALLOW_SORRY=()
+AXIOM_TARGETS=()
+ALLOWLIST="${SPQR_AXIOM_ALLOWLIST:-$REPO_ROOT/scripts/axiom-allowlist.txt}"
 
 usage() {
   cat <<'USAGE'
@@ -50,6 +52,10 @@ Gates:
 Options:
   --gates LIST          Comma-separated subset, e.g. --gates 1,2 (default: 1,2,3,4,5)
   --allow-sorry THM     Permit `sorryAx` in THM's closure in gate 4 (repeatable)
+  --axiom-target THM    Check THM in gate 4 (repeatable).  With no --axiom-target,
+                        gate 4 checks every theorem/axiom declared under
+                        Spqr/Specs/**; if that yields nothing it reports SKIP
+  --allowlist FILE      Gate-4 allowlist (default: scripts/axiom-allowlist.txt)
   --baseline-ref REF    Git ref for the gate-3b baseline (default: origin/main)
   --baseline-dir DIR    Worktree path for the baseline build
                         (default: ../spqr-gate-baseline)
@@ -73,6 +79,10 @@ while [[ $# -gt 0 ]]; do
     --gates=*)         GATES="${1#*=}"; shift ;;
     --allow-sorry)     ALLOW_SORRY+=("${2:?--allow-sorry needs a theorem name}"); shift 2 ;;
     --allow-sorry=*)   ALLOW_SORRY+=("${1#*=}"); shift ;;
+    --axiom-target)    AXIOM_TARGETS+=("${2:?--axiom-target needs a theorem name}"); shift 2 ;;
+    --axiom-target=*)  AXIOM_TARGETS+=("${1#*=}"); shift ;;
+    --allowlist)       ALLOWLIST="${2:?--allowlist needs a path}"; shift 2 ;;
+    --allowlist=*)     ALLOWLIST="${1#*=}"; shift ;;
     --baseline-ref)    BASELINE_REF="${2:?--baseline-ref needs a value}"; shift 2 ;;
     --baseline-ref=*)  BASELINE_REF="${1#*=}"; shift ;;
     --baseline-dir)    BASELINE_DIR="${2:?--baseline-dir needs a value}"; shift 2 ;;
@@ -286,6 +296,284 @@ gate_3b() {
   fi
 }
 
+# ─── Gate 4: #print axioms against scripts/axiom-allowlist.txt ────────────────
+#
+# Two halves, both of which must hold:
+#
+#   4A  the allowlist itself still resolves against the tree - every non-builtin
+#       entry is an `axiom` or `opaque` declaration that exists.  Aeneas wraps a
+#       long name onto the line *after* the keyword (FunsExternal.lean:3687-3688,
+#       and 119 axioms in that file have the shape), so a `^axiom +NAME` matcher
+#       returns 1 on a correct entry.  The matcher below is whitespace- and
+#       newline-insensitive.  If an entry fails here, fix the matcher or the
+#       tree - never delete, shorten or rename the entry: the allowlist is the
+#       trusted base, the predicate is only tooling.
+#
+#   4B  every target's `#print axioms` closure is a subset of the allowlist.
+#       A scratch file under `mktemp -d` (mode 0700, removed by a trap, threat
+#       T-1-14) holds `import Spqr` plus one `#print axioms <name>` per target.
+#
+# 4B fails, and never passes, on each of:
+#   - `unknown identifier` / `unknown constant` - a typo'd target
+#   - a target that produced no report line at all (asserted per target by name)
+#   - a `depends on axioms: [` whose `]` never arrives ("malformed" report)
+#   - `sorryAx` in a target not named by `--allow-sorry`
+# A wrapped axiom list is *not* a failure: Lean soft-breaks the list with
+# `"," ++ Format.line` (Lean/Message.lean:417), so the parser accumulates
+# continuation lines up to the closing `]` before splitting on `,`.
+
+validate_allowlist() {
+  python3 - "$ALLOWLIST" "$REPO_ROOT" <<'PYVALIDATE'
+import re, sys, pathlib
+
+allowlist_path, repo_root = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+BUILTINS = {"propext", "Classical.choice", "Quot.sound"}
+
+if not allowlist_path.exists():
+    print(f"FAIL: allowlist not found at {allowlist_path}")
+    sys.exit(1)
+
+entries = []
+for raw in allowlist_path.read_text().splitlines():
+    line = raw.split("#", 1)[0].strip()       # entries carry a trailing `# file:line`
+    if line:
+        entries.append(line)
+
+sources = sorted(repo_root.glob("SrcTranslated/*.lean")) + \
+          sorted(repo_root.rglob("Spqr/**/*.lean"))
+texts = {p: p.read_text(errors="replace") for p in sources}
+
+def locate(name):
+    """Find `axiom|opaque NAME`, tolerating a newline between keyword and name
+    and tolerating NAME being declared inside `namespace <stripped prefix>`."""
+    parts = name.split(".")
+    for drop in range(len(parts)):
+        prefix, suffix = ".".join(parts[:drop]), ".".join(parts[drop:])
+        pat = re.compile(r"(?m)^(?:axiom|opaque)\s+" + re.escape(suffix) + r"(?![\w.])")
+        for path, text in texts.items():
+            m = pat.search(text)
+            if not m:
+                continue
+            if prefix and not re.search(r"(?m)^namespace\s+" + re.escape(prefix) + r"\s*$", text):
+                continue
+            kw_line = text[:m.start()].count("\n") + 1
+            name_line = text[:m.end()].count("\n") + 1
+            span = str(kw_line) if kw_line == name_line else f"{kw_line}-{name_line}"
+            rel = path.relative_to(repo_root)
+            return f"{rel}:{span}"
+    return None
+
+print(f"Allowlist entries: {len(entries)} ({len(BUILTINS & set(entries))} builtins)")
+bad = []
+for name in entries:
+    if name in BUILTINS:
+        print(f"  accept {name}  (Lean builtin, no tree declaration)")
+        continue
+    where = locate(name)
+    if where is None:
+        bad.append(name)
+        print(f"  REJECT {name}  (no `axiom`/`opaque` declaration found in the tree)")
+    else:
+        print(f"  accept {name}  ({where})")
+
+if bad:
+    print(f"FAIL: {len(bad)} allowlist entry/entries do not resolve against the tree:")
+    for name in bad:
+        print(f"  - {name}")
+    sys.exit(1)
+print("Allowlist resolves against the tree.")
+PYVALIDATE
+}
+
+collect_axiom_targets() {
+  python3 - "$REPO_ROOT" <<'PYTARGETS'
+import re, sys, pathlib
+
+repo_root = pathlib.Path(sys.argv[1])
+DECL = re.compile(
+    r"(?m)^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|nonrec\s+)*"
+    r"(?:theorem|lemma|axiom)\s+([A-Za-z_À-￿][^\s:({\[⦃]*)"
+)
+out = []
+for path in sorted(repo_root.glob("Spqr/Specs/**/*.lean")):
+    text = path.read_text(errors="replace")
+    stack = []
+    for line in text.splitlines():
+        ns = re.match(r"^namespace\s+(\S+)\s*$", line)
+        if ns:
+            stack.append(ns.group(1))
+            continue
+        if re.match(r"^end\s+\S+\s*$", line) and stack:
+            stack.pop()
+            continue
+        m = DECL.match(line)
+        if m:
+            name = m.group(1).strip()
+            if name:
+                out.append(".".join(stack + [name]) if stack else name)
+for name in sorted(set(out)):
+    print(name)
+PYTARGETS
+}
+
+parse_axiom_report() {
+  python3 - "$ALLOWLIST" "$1" "$2" "$3" <<'PYPARSE'
+import re, sys, pathlib
+
+allowlist_path = pathlib.Path(sys.argv[1])
+log_path = pathlib.Path(sys.argv[2])
+targets = [t for t in pathlib.Path(sys.argv[3]).read_text().split() if t]
+allow_sorry = set(t for t in pathlib.Path(sys.argv[4]).read_text().split() if t)
+
+allowed = set()
+for raw in allowlist_path.read_text().splitlines():
+    line = raw.split("#", 1)[0].strip()
+    if line:
+        allowed.add(line)
+
+log = log_path.read_text(errors="replace").splitlines()
+
+HEADER = re.compile(r"'([^']+)'\s+(depends on axioms:\s*\[|does not depend on any axioms)")
+failures, reports = [], {}
+
+# A typo'd target must fail loudly rather than pass vacuously.
+for line in log:
+    if "unknown identifier" in line or "unknown constant" in line:
+        failures.append(f"unresolved target name: {line.strip()}")
+
+i = 0
+while i < len(log):
+    m = HEADER.search(log[i])
+    if not m:
+        i += 1
+        continue
+    name, kind = m.group(1), m.group(2)
+    if kind.startswith("does not depend"):
+        reports[name] = set()
+        i += 1
+        continue
+    # Accumulate the axiom list across Lean's soft line breaks up to the `]`.
+    chunk = log[i][m.end():]
+    closed = "]" in chunk
+    chunk = chunk.split("]", 1)[0]
+    j = i + 1
+    while not closed and j < len(log):
+        if HEADER.search(log[j]):
+            break                      # next report started: bracket never closed
+        if "]" in log[j]:
+            chunk += " " + log[j].split("]", 1)[0]
+            closed = True
+            j += 1
+            break
+        chunk += " " + log[j]
+        j += 1
+    if not closed:
+        failures.append(f"malformed #print axioms report for '{name}': "
+                        "no closing ']' before the next report or EOF")
+        reports[name] = None
+    else:
+        reports[name] = {a.strip() for a in re.sub(r"\s+", " ", chunk).split(",") if a.strip()}
+    i = j if j > i else i + 1
+
+# Every target must have produced a report, by name.
+for t in targets:
+    if t not in reports:
+        failures.append(f"no #print axioms report for target '{t}' "
+                        "(target missing, renamed or the elaboration aborted)")
+
+for name, axioms in sorted(reports.items()):
+    if axioms is None:
+        continue
+    if "sorryAx" in axioms and name not in allow_sorry:
+        failures.append(f"'{name}' depends on sorryAx (not permitted; pass "
+                        f"--allow-sorry {name} to accept it deliberately)")
+    extra = sorted(a for a in axioms if a != "sorryAx" and a not in allowed)
+    if extra:
+        failures.append(f"'{name}' depends on non-allowlisted axiom(s): {', '.join(extra)}")
+
+print(f"Targets checked: {len(targets)}; reports parsed: {len(reports)}")
+if failures:
+    print(f"FAIL: {len(failures)} axiom violation(s):")
+    for f in failures:
+        print(f"  - {f}")
+    sys.exit(1)
+print("Every target's axiom closure is within the allowlist.")
+PYPARSE
+}
+
+gate_4() {
+  banner "GATE 4: #print axioms vs $(basename "$ALLOWLIST")"
+
+  echo "--- 4A: allowlist resolves against the tree ---"
+  local rc_a=0
+  set +e
+  validate_allowlist
+  rc_a=$?
+  set -e
+  if [[ "$rc_a" -ne 0 ]]; then
+    fail 4 "allowlist entries do not resolve against the tree"
+    return
+  fi
+
+  echo "--- 4B: axiom closure of each target ---"
+  if ! have_lake; then
+    skip 4 "lake not on PATH; 4A passed but the axiom closure was not checked"
+    return
+  fi
+
+  local scratch_dir
+  scratch_dir="$(mktemp -d)"            # mode 0700
+  trap 'rm -rf "$scratch_dir"' RETURN
+
+  local targets_file="$scratch_dir/targets.txt"
+  if [[ "${#AXIOM_TARGETS[@]}" -gt 0 ]]; then
+    printf '%s\n' "${AXIOM_TARGETS[@]}" > "$targets_file"
+  else
+    collect_axiom_targets > "$targets_file" || true
+  fi
+  if [[ ! -s "$targets_file" ]]; then
+    skip 4 "no #print axioms targets found under Spqr/Specs; pass --axiom-target"
+    return
+  fi
+  echo "Targets: $(grep -c '' "$targets_file")"
+
+  local allow_file="$scratch_dir/allow-sorry.txt"
+  : > "$allow_file"
+  if [[ "${#ALLOW_SORRY[@]}" -gt 0 ]]; then
+    printf '%s\n' "${ALLOW_SORRY[@]}" > "$allow_file"
+  fi
+
+  local scratch="$scratch_dir/PrintAxioms.lean"
+  {
+    echo 'import Spqr'
+    while IFS= read -r thm; do
+      [[ -n "$thm" ]] && echo "#print axioms $thm"
+    done < "$targets_file"
+  } > "$scratch"
+
+  set +e
+  lake env lean "$scratch" > "$scratch_dir/axioms.log" 2>&1
+  local lean_rc=$?
+  set -e
+  cp "$scratch_dir/axioms.log" /tmp/lake-axioms.log 2>/dev/null || true
+
+  local rc_b=0
+  set +e
+  parse_axiom_report "$scratch_dir/axioms.log" "$targets_file" "$allow_file"
+  rc_b=$?
+  set -e
+
+  if [[ "$rc_b" -ne 0 ]]; then
+    fail 4 "axiom closure violates the allowlist (see /tmp/lake-axioms.log)"
+  elif [[ "$lean_rc" -ne 0 ]]; then
+    # Every report parsed cleanly but lean still errored: something else in the
+    # scratch elaboration failed.  Do not call that a pass.
+    fail 4 "lake env lean exited $lean_rc on the scratch file"
+  else
+    pass 4
+  fi
+}
+
 # ─── Run the selected gates ───────────────────────────────────────────────────
 
 if selected 1; then gate_1; fi
@@ -293,6 +581,7 @@ if selected 2; then gate_2; fi
 if selected 3; then
   if gate_3a; then gate_3b; else skip 3b "gate 3a did not produce a manifest"; fi
 fi
+if selected 4; then gate_4; fi
 
 # ─── Report ───────────────────────────────────────────────────────────────────
 
