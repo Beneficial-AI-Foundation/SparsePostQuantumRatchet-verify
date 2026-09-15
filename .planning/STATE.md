@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 1 re-planned after the 2026-09-15 goal re-scope; awaiting /spqr-plan-review 1
-last_updated: "2026-09-14T19:26:33.386Z"
-last_activity: 2026-09-14 -- Phase 01 planning complete
+last_updated: "2026-09-15T13:09:03.035Z"
+last_activity: 2026-09-15 -- Phase 01 execution started
 progress:
   total_phases: 8
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-14)
 
 **Core value:** Every status in `docs/spqr-properties.md` can be regenerated from the Lean sources on `main`: Proved means a theorem with no `sorry` and no hand-written axiom beyond the documented opaque stubs.
-**Current focus:** Phase 1 — Gates, Provenance and the Reviewed Target List
+**Current focus:** Phase 01 — gates-provenance-and-target-list
 
 ## Current Position
 
-Phase: 1 of 8 (Gates, Issues and Deviation Decisions)
-Plan: 0 of TBD in current phase
-Status: Ready to execute
-Last activity: 2026-09-14 -- Phase 01 planning complete
+Phase: 01 (gates-provenance-and-target-list) — EXECUTING
+Plan: 1 of 9
+Status: Executing Phase 01
+Last activity: 2026-09-15 -- Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 

@@ -196,7 +196,7 @@ Phases execute in numeric order, except Phase 3 which may run concurrently with 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Gates, Provenance and the Reviewed Target List | 0/9 | Not started | - |
+| 1. Gates, Provenance and the Reviewed Target List | 2/9 | In Progress|  |
 | 2. Merge and Axiom Removal | 0/TBD | Not started | - |
 | 3. Encoding Layer — Roundtrips and Canonicity | 0/TBD | Not started | - |
 | 4. Transition Refinement | 0/TBD | Not started | - |
