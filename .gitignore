@@ -26,6 +26,8 @@ issues/
 docs/*.pdf
 sorry-manifest.txt
 docs/STATE_INVARIANT_PROOFS.md
+.gate-cache/
+.sorry-delta-comment.md
 
 # MacOS
 .DS_Store
