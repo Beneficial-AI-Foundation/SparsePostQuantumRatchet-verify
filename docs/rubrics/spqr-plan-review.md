@@ -65,9 +65,10 @@ the plan makes a normative choice about what a property means.
    the axiom stubs in `SrcTranslated/FunsExternal.lean`, `axiom hkdf_to_slice_spec` in
    `Spqr/Specs/Kdf/HkdfToSlice.lean`, and every theorem already merged under `Spqr/Specs/`.
 3. Accepted planning records: `docs/spqr-properties.md` (the property statements and the
-   deviation list D1–D5), `.planning/ROADMAP.md` phase contract, `.planning/PROJECT.md`
-   decisions and constraints, phase RESEARCH files, prior phase SUMMARYs, and explicit human
-   rulings recorded in `.planning/STATE.md`.
+   deviation list D1–D5), `docs/proof-targets.md` (the band and C1/C2/C3 verdict per
+   obligation), `docs/spec-review-log.md` (the REV-01 verdicts), `.planning/ROADMAP.md` phase
+   contract, `.planning/PROJECT.md` decisions and constraints, phase RESEARCH files, prior
+   phase SUMMARYs, and explicit human rulings recorded in `.planning/STATE.md`.
 4. The plan documents under review.
 
 ## Attack surface
@@ -103,18 +104,29 @@ Work through every applicable item and record both findings and cleared surfaces
    standing example of what must become theorems). A plan that quietly widens the trusted
    base is a BLOCKER.
 7. **Gates.** Check that every verification command is runnable as written and catches the
-   deviation it claims to catch. The repository's gates are: `lake build` with no warning
+   deviation it claims to catch. The repository's five gates are: `lake build` with no warning
    other than `declaration uses 'sorry'`; `lake exe runLinter Spqr` clean;
    `lake env lean scripts/Audit.lean` regenerating `sorry-manifest.txt` with no new entry for
    the property's theorem; `#print axioms <theorem>` listing only `propext`,
-   `Classical.choice`, `Quot.sound`, and the documented stubs. `#check_no_sorry` does not
-   exist in this repository; a plan citing it has a broken gate.
+   `Classical.choice`, `Quot.sound`, and the documented stubs; and
+   `python3 scripts/check-provenance.py` confirming that every citation on the row's
+   `Source:` line resolves. `./scripts/check-gates.sh <theorem-names>` runs all five. A plan
+   whose verification step cites a gate that does not exist in this repository has a broken
+   gate. Fail a plan that also (a) claims a property is proved, or sets its status row to say
+   so, without a resolving `Source:` citation in the PROV-01 grammar, or (b) schedules proof
+   work on a property with no **ACCEPT** entry in `docs/spec-review-log.md` dated before that
+   work (REV-01) — a support lemma needs its own `scope: support` ACCEPT, not the target's.
 8. **Boundedness and safety.** Exact file/theorem scope, stop conditions, the
    `allowed_sorries` policy, and the code-freeze rule: no edit under `src/` except an agreed
    D1–D5 resolution, and no edit under `SrcTranslated/` ever.
 9. **Roadmap and catalog coherence.** Compare the plans' endpoint with the ROADMAP phase goal
    and success criteria, and check that the plan updates the property's status row and index
    entry in `docs/spqr-properties.md`. Do not propose unrelated roadmap expansion.
+10. **Band and scope discipline.** Check the C3 band recorded for every row the plan makes a
+    goal. A plan whose goal is an **evaluation-band** or **single-path-band** row is a scope
+    error: those rows are support lemmas, proved when a target needs them and never a phase
+    goal. Say so rather than approving them as targets. A support lemma used as a means to a
+    target is fine; a support lemma presented as the deliverable is a finding.
 
 ## Evidence
 
