@@ -67,7 +67,12 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- **Post-PR cleanup after Phase 1** — `.planning/todos/pending/post-pr-cleanup-phase-01.md`.
+  Blocked until PR A and PR B are merged. Covers the merged `worktree-agent-*`
+  branches (`git branch -D` is orchestrator-denied), the ~8.4 GB `.lake` per
+  agent worktree, and a decision on the two local-only source PDFs the
+  orchestrator copied into gitignored `docs/` on 2026-09-15 — their only other
+  copies are in `/tmp`.
 
 ### Blockers/Concerns
 
