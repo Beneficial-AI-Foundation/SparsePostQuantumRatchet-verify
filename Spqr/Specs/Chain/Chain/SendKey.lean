@@ -298,6 +298,8 @@ namespace spqr.chain.Chain
       `ced.ctr = i`, `ced.next = (nextKeyHkdfOutput ce.send.next i).take 32`,
       `ced.next.length = ce.send.next.length` and the key history `ced.prev = ce.send.prev`
       is untouched (`recv` is untouched as well, since only `send` is replaced).
+    - If the send epoch stayed the same, no trimming or clearing happens: the deque
+      head and length are unchanged and every non-target slot is preserved.
     - If the send epoch moved, every slot in `[head + (idx - ei), phys)` is cleared
       (`send_key_loop1.clearedAt self.links self'.links j`).
     - Every slot outside `[head + (idx - ei), phys]` is untouched.
@@ -355,6 +357,11 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
                  ce'.send.next.length = ce.send.next.length ∧
                  ce'.send.next = (nextKeyHkdfOutput ce.send.next i).take 32 ∧
                  ce'.send.prev = ce.send.prev) ∧
+            (self.send_epoch = epoch →
+              result.2.links.head = self.links.head ∧
+              result.2.links.length = self.links.length ∧
+              ∀ j, j ≠ phys →
+                result.2.links.buf.val[j]? = self.links.buf.val[j]?) ∧
             (self.send_epoch ≠ epoch →
               ∀ j, self.links.head + (idx - ei) ≤ j → j < phys →
                 clearedAt self.links result.2.links j) ∧
@@ -396,7 +403,10 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
         simp only [h_idx', h_ei, Nat.sub_self, Nat.add_zero, Nat.sub_zero]
         simp only [h_ce]
         refine ⟨h_ge, h_le, h_back, p_post1, ?_, ?_, h_eq_ep, by rw [h_hd2],
-          by rw [h_ln2], ?_, ?_, ?_, ?_, fun h => absurd h_eq_ep h, ?_⟩
+          by rw [h_ln2], ?_, ?_, ?_, ?_,
+          fun _ => ⟨by rw [h_hd2], by rw [h_ln2],
+            fun j hj => by rw [h_buf2, List.getElem?_set_ne (by omega)]⟩,
+          fun h => absurd h_eq_ep h, ?_⟩
         · simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢
           rw [p_post6, List.length_drop, h64]
         · rw [p_post6, h_p1]
@@ -453,7 +463,7 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
           simpa [alloc.vec.Vec.length] using h_phys_lt1
         simp only [h_idx', h_ei, h_ce]
         refine ⟨h_ge, h_le, h_back, p_post1, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-          ?_, ?_⟩
+          fun h => absurd h h_ne, ?_, ?_⟩
         · simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢
           rw [p_post6, List.length_drop, h64]
         · rw [p_post6, h_p1]

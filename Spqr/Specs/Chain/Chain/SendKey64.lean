@@ -74,6 +74,11 @@ theorem send_key_spec_64 (self : chain.Chain) (epoch : U64)
                  ce'.send.next.length = ce.send.next.length ∧
                  ce'.send.next.val = (nextKeyHkdfOutput ce.send.next i).take 32 ∧
                  ce'.send.prev = ce.send.prev) ∧
+            (self.send_epoch = epoch →
+              result.2.links.head = self.links.head ∧
+              result.2.links.length = self.links.length ∧
+              ∀ j, j ≠ phys →
+                result.2.links.buf.val[j]? = self.links.buf.val[j]?) ∧
             (self.send_epoch ≠ epoch →
               ∀ j, self.links.head.val + (idx - ei) ≤ j → j < phys →
                 clearedAt self.links result.2.links j) ∧
