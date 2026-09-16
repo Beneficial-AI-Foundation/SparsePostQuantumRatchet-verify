@@ -145,10 +145,9 @@ noncomputable def decode (params : ReedSolomon.Parameters F)
 /-- Lift a Reed–Solomon code to an erasure code whose symbols are 16-coordinate
 chunks. It retains block length `N` and threshold `k`. -/
 -- ANCHOR: parallelReedSolomon_erasureCode
-def parallelErasureCode (params : ReedSolomon.Parameters F) : ErasureCode (Chunk F) where
-  N := params.N
+def parallelErasureCode (params : ReedSolomon.Parameters F) :
+    ErasureCode (Chunk F) params.N params.k where
   N_pos := params.N_pos
-  nchunk := params.k
   nchunk_pos := params.k_pos
   nchunk_le_N := params.k_le_N
   encode := encode params
@@ -206,7 +205,8 @@ def spqrParameters (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
 /-- The abstract SPQR erasure code at threshold `k`: the 16-coordinate parallel code
 specialized to `GF16`, with one chunk at each codeword position. -/
 -- ANCHOR: spqrReedSolomon_erasureCode
-def erasureCode (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) : ErasureCode (Chunk GF16) :=
+def erasureCode (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
+    ErasureCode (Chunk GF16) (2 ^ 16) k :=
   parallelErasureCode (spqrParameters k hk hk_pos)
 -- ANCHOR_END: spqrReedSolomon_erasureCode
 

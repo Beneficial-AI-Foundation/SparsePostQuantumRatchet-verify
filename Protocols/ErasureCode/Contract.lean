@@ -19,7 +19,7 @@ helper `spqr.encoding.polynomial.Poly.lagrange_interpolate_spec` requires only
 pre-existing certificate
 `spqr.encoding.polynomial.Poly.lagrange_interpolate_complete._native.decide.ax_1`. That helper is
 supporting evidence for the contracts. It proves neither contract, and its certificate is outside
-the current closure of `concreteSpqrErasureCode_correct`.
+the current closure of `concreteErasureCode_correct`.
 
 The short path returns before allocating an output byte vector. On the complete path, strict
 ordering of U16 x-values bounds each store by 65536 points. The sixteen per-store quotas therefore

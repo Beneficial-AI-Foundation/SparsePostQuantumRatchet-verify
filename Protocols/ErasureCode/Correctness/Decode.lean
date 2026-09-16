@@ -511,8 +511,8 @@ private theorem messagePolynomials_eval_encode
     (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
     (M : Fin k → Chunk GF16) (i : Fin (2 ^ 16)) (j : Fin 16) :
     (messagePolynomials k hk hk_pos M j.val).eval i.val.toGF216 =
-      (modelEC k hk hk_pos).encode M i j := by
-  simp [messagePolynomials, modelEC, concreteParams,
+      (modelErasureCode k hk hk_pos).encode M i j := by
+  simp [messagePolynomials, modelErasureCode, concreteParams,
     ErasureCode.SPQRReedSolomon.parallelErasureCode,
     ErasureCode.SPQRReedSolomon.encode,
     ErasureCode.ReedSolomon.Parameters.encode]
@@ -611,18 +611,18 @@ private theorem decodeConcrete_eq (k : ℕ) (hk : k ≤ 2 ^ 16)
 
 theorem decode_toModel (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
     (M : Fin k → Chunk GF16) (I : Finset (Fin (2 ^ 16))) :
-    decodeConcrete k hk ((modelEC k hk hk_pos).encodeChunks M I) =
-      (modelEC k hk hk_pos).decode ((modelEC k hk hk_pos).encodeChunks M I) := by
+    decodeConcrete k hk ((modelErasureCode k hk hk_pos).encodeChunks M I) =
+      (modelErasureCode k hk hk_pos).decode ((modelErasureCode k hk hk_pos).encodeChunks M I) := by
   classical
   let P := messagePolynomials k hk hk_pos M
   let chunks : List (Fin (2 ^ 16) × Chunk GF16) :=
-    ((modelEC k hk hk_pos).encodeChunks M I).toList
+    ((modelErasureCode k hk hk_pos).encodeChunks M I).toList
   obtain ⟨d0, hnew, hd0⟩ := new_decoderInv_exists k hk P
   have hmem : ∀ c, c ∈ chunks ↔
-      c.1 ∈ I ∧ c.2 = (modelEC k hk hk_pos).encode M c.1 := fun c =>
-    Finset.mem_toList.trans ((modelEC k hk hk_pos).mem_encodeChunks M I c)
+      c.1 ∈ I ∧ c.2 = (modelErasureCode k hk hk_pos).encode M c.1 := fun c =>
+    Finset.mem_toList.trans ((modelErasureCode k hk hk_pos).mem_encodeChunks M I c)
   have hchunks_length : chunks.length = I.card :=
-    (Finset.length_toList _).trans ((modelEC k hk hk_pos).card_encodeChunks M I)
+    (Finset.length_toList _).trans ((modelErasureCode k hk hk_pos).card_encodeChunks M I)
   have hindices : (chunks.map fun c => c.1.val).Nodup := by
     refine (Finset.nodup_toList _).map_on ?_
     intro a ha b hb hab
@@ -660,7 +660,7 @@ theorem decode_toModel (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
         (fun j hj => (hdinv'.2.2 j hj).1) (fun j hj => (hdinv'.2.2 j hj).2.1)
         hdegree hlength)
     obtain ⟨out, rfl, hout_length, hout_pairs⟩ := hpost
-    rw [((modelEC_correct k hk hk_pos) M I).1 hcard,
+    rw [((modelErasureCode_correct k hk hk_pos) M I).1 hcard,
       decodeConcrete_eq k hk hnew hfold hdecoded, Option.bind_some]
     apply messageOfBytes_eq_some_of_pairs
     · simpa [hdinv'.1] using hout_length
@@ -679,7 +679,7 @@ theorem decode_toModel (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
     obtain ⟨r, hdecoded, hr⟩ := WP.spec_imp_exists
       (decoded_message_spec_short d hshort)
     subst hr
-    rw [((modelEC_correct k hk hk_pos) M I).2 (show I.card < k by omega),
+    rw [((modelErasureCode_correct k hk hk_pos) M I).2 (show I.card < k by omega),
       decodeConcrete_eq k hk hnew hfold hdecoded]
     rfl
 

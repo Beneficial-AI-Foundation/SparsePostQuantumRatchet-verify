@@ -222,10 +222,8 @@ noncomputable def decode (params : Parameters F)
 /-- The erasure code `(N, nchunk = k, Encode, Decode)` induced by a Reed–Solomon
 code. -/
 -- ANCHOR: reedSolomon_erasureCode
-def erasureCode (params : Parameters F) : ErasureCode F where
-  N := params.N
+def erasureCode (params : Parameters F) : ErasureCode F params.N params.k where
   N_pos := params.N_pos
-  nchunk := params.k
   nchunk_pos := params.k_pos
   nchunk_le_N := params.k_le_N
   encode := params.encode

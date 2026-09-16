@@ -50,7 +50,7 @@ noncomputable def encodeConcrete (k : ℕ) (hk : k ≤ 2 ^ 16)
 theorem encode_toModel (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
     (hk_tab : k ∈ ({1, 3, 5, 30, 34, 36} : Finset ℕ))
     (M : Fin k → Chunk GF16) (i : Fin (2 ^ 16)) :
-    encodeConcrete k hk M i = (modelEC k hk hk_pos).encode M i := by
+    encodeConcrete k hk M i = (modelErasureCode k hk hk_pos).encode M i := by
   classical
   have hk_cases := hk_tab
   simp only [Finset.mem_insert, Finset.mem_singleton] at hk_cases

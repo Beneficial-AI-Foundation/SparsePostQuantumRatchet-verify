@@ -9,3 +9,4 @@ import Protocols.ErasureCode.Model.ReedSolomon.Construction
 import Protocols.ErasureCode.Model.ReedSolomon.Correctness
 import Protocols.ErasureCode.Model.SPQRReedSolomon.Construction
 import Protocols.ErasureCode.Model.SPQRReedSolomon.Correctness
+import Protocols.ErasureCode.Model.Specs

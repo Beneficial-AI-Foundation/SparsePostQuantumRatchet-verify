@@ -110,13 +110,13 @@ theorem decode_encodeChunks_of_k_le_card (params : Parameters F)
   have hpoly := params.encodingPolynomial_eq_decodingInterpolation message I hcard
   change params.decode (params.erasureCode.encodeChunks message I) = some message
   rw [decode]
-  split_ifs with h
-  · congr 1
-    funext i
-    exact
-      (congrArg (fun poly : F[X] => poly.eval (params.sourcePoint i)) hpoly.symm).trans
-        (params.eval_encodingPolynomial_source message i)
-  · exact (h hdec).elim
+  -- `hdec` already decides the guard, so `split_ifs` leaves only the decodable branch.
+  split_ifs
+  congr 1
+  funext i
+  exact
+    (congrArg (fun poly : F[X] => poly.eval (params.sourcePoint i)) hpoly.symm).trans
+      (params.eval_encodingPolynomial_source message i)
 
 /-- Failure below the threshold: `Decode(L_I) = ⊥` when `|I| < k`. -/
 theorem decode_encodeChunks_of_card_lt (params : Parameters F)

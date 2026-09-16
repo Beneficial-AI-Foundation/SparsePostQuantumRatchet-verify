@@ -136,15 +136,15 @@ theorem decode_encodeChunks_of_k_le_card (params : ReedSolomon.Parameters F)
   have hdec := decodable_encodeChunks_of_k_le_card params message I hcard
   change decode params ((parallelErasureCode params).encodeChunks message I) = some message
   rw [decode]
-  split_ifs with h
-  · congr 1
-    funext i coordinate
-    have hpoly :=
-      encodingPolynomial_eq_decodingPolynomial params message I hcard coordinate
-    exact
-      (congrArg (fun poly : F[X] => poly.eval (params.sourcePoint i)) hpoly.symm).trans
-        (params.eval_encodingPolynomial_source (fun j => message j coordinate) i)
-  · exact (h hdec).elim
+  -- `hdec` already decides the guard, so `split_ifs` leaves only the decodable branch.
+  split_ifs
+  congr 1
+  funext i coordinate
+  have hpoly :=
+    encodingPolynomial_eq_decodingPolynomial params message I hcard coordinate
+  exact
+    (congrArg (fun poly : F[X] => poly.eval (params.sourcePoint i)) hpoly.symm).trans
+      (params.eval_encodingPolynomial_source (fun j => message j coordinate) i)
 
 /-- Failure below the threshold: decoding
 `(parallelErasureCode params).encodeChunks message I` returns `none` whenever `|I| < k`. -/

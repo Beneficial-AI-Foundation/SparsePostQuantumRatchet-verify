@@ -19,7 +19,7 @@ into each chunk.
 ## Mapping this to the code
 
 The [Rust encoder and decoder](../../src/encoding/polynomial.rs) are translated into Lean by
-Aeneas. `concreteSpqrErasureCode` fills its `encode` and `decode` fields with two wrappers:
+Aeneas. `concreteErasureCode` fills its `encode` and `decode` fields with two wrappers:
 
 - `encodeConcrete` converts the message into bytes, calls `encode_bytes` to prepare the encoder,
   then calls `chunk_at` for a chosen index and reads the returned bytes as a model chunk.
@@ -32,7 +32,7 @@ as described below.
 Correctness means that, given enough chunks, decoding recovers exactly the message we encoded.
 Here, `k` is the number of 32-byte chunks in the original message, before adding redundancy.
 Under the [assumptions below](#assumptions-and-trust), the final theorem,
-[`concreteSpqrErasureCode_correct`](Correct.lean), proves that for unmodified chunks from the
+[`concreteErasureCode_correct`](Correct.lean), proves that for unmodified chunks from the
 same message at distinct indices:
 
 - at least `k` chunks recover the original message;
@@ -76,15 +76,24 @@ two assumed `decoded_message` contracts below.
    chunk at each index for the six supported table sizes.
 2. [`decode_toModel`](Correctness/Decode.lean) proves that starting a fresh decoder and adding
    honest chunks at distinct indices gives the same output as the model decoder.
-3. [`modelEC_correct`](Correctness/Params.lean) proves recovery for the mathematical Reed–Solomon
-   model. Since our encode and decode operations agree with that model, the final theorem gives
-   us the same recovery guarantee for those operations, subject to the stated assumptions.
+3. [`modelErasureCode_correct`](Correctness/Params.lean) proves recovery for the mathematical
+   Reed–Solomon model. Since our encode and decode operations agree with that model, the final
+   theorem gives us the same recovery guarantee for those operations, subject to the stated
+   assumptions.
+
+Those three steps are packaged by [`VerifiedErasureCode`](Model/Specs.lean), a class relating two
+erasure codes: a reference model and an implementation. Its fields are proofs that the two encoders
+and the two decoders agree, plus the model's own correctness. `ErasureCode` is parametrized over
+`N` and `nchunk`, so the two codes having the same type *is* the statement that they share those
+parameters; a mismatched pair is rejected when the type is elaborated, and no parameter equalities
+or casts appear anywhere. `VerifiedErasureCode.correct` then gives correctness of the
+implementation, so building `verifiedConcreteErasureCode` is all the final theorem needs.
 
 The decoder equation covers this fresh-decoder fold and its output. It does not equate persistent
 decoder histories produced by different insertion orders, arbitrary input sets, or streaming
 states.
 
-The broader `concreteSpqrErasureCode` constructor packages encode and decode operations for every
+The broader `concreteErasureCode` constructor packages encode and decode operations for every
 positive `k ≤ 2^16`; `Correct` is a separate property. Its encoder maps extracted construction or
 chunk-lookup failures to `default` so that the operation is total.
 
@@ -146,3 +155,12 @@ Only these local differences are permitted:
 Apart from that import rewrite, every byte from the first import onward matches the pinned source,
 including body prose and navigation names. A retained `SecureMessaging.ErasureCode.*` name refers
 to the upstream module; its local copy uses the `Protocols.ErasureCode.Model.*` prefix.
+
+Three of those files now carry a further local change, **pending contribution upstream**:
+`ErasureCode` is parametrized over `N` and `nchunk` rather than carrying them as fields, so
+`Defs.lean`, `ReedSolomon/Correctness.lean` and `SPQRReedSolomon/Correctness.lean` no longer match
+the pinned commit, and the two `Construction.lean` files changed their `erasureCode` return types.
+Refreshing any of them from that commit would drop the reparametrization.
+
+`Model/Specs.lean` is **not** one of the vendored files at all. It is a local addition, written
+against `Defs.lean` and likewise intended for contribution upstream.

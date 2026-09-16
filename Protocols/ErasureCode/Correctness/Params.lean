@@ -23,12 +23,12 @@ noncomputable def concreteParams (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) 
     intro a b hab
     exact Fin.ext (Nat.toGF216_injOn a.isLt b.isLt hab)
 
-noncomputable def modelEC (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
-    ErasureCode (Chunk GF16) :=
+noncomputable def modelErasureCode (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
+    ErasureCode (Chunk GF16) (2 ^ 16) k :=
   ErasureCode.SPQRReedSolomon.parallelErasureCode (concreteParams k hk hk_pos)
 
-theorem modelEC_correct (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
-    (modelEC k hk hk_pos).Correct :=
+theorem modelErasureCode_correct (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k) :
+    (modelErasureCode k hk hk_pos).Correct :=
   ErasureCode.SPQRReedSolomon.parallelErasureCode_correct _
 
 end Protocols.ErasureCode

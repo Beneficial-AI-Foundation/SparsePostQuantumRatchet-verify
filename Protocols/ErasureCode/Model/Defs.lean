@@ -10,7 +10,9 @@ Authors: Beneficial AI Foundation
    at commit 2144e3561b3ebf775f973a3c2804a0f8edb77f75.
    Local adaptation: Alessandro D'Angelo.
    The canonical copy is secure-messaging; refresh from the pinned source.
-   Local differences: see Protocols/ErasureCode/README.md, Model provenance. -/
+   Local differences: see Protocols/ErasureCode/README.md, Model provenance.
+   NOTE: `ErasureCode` is reparametrized over `N` and `nchunk` here; upstream carries them
+   as fields. Do not refresh this file from the pinned commit without re-applying that. -/
 
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Finset.Sort
@@ -34,6 +36,10 @@ An *erasure code* over a set of symbols `Σ`, with block length `N` and message 
 This model restricts `Encode` and `Decode` to deterministic functions, covering
 deterministic codes such as Reed-Solomon.
 
+`N` and `nchunk` are parameters of `ErasureCode` rather than fields, so two codes
+agree on them exactly when they share a type. That lets a statement relating two
+codes be written without casts and without equalities between their parameters.
+
 A received chunk set `L` is *decodable* for threshold `nchunk` when `nchunk ≤ |L|`
 and the chunks of `L` have pairwise distinct positions.
 
@@ -55,13 +61,9 @@ Writing `L_I = {(i, Encode(M, i)) | i ∈ I}` for the chunks of `M` at indices
 - `decode L`: recovers a message from a chunk set `L`, or fails (`none`).
 -/
 -- ANCHOR: ErasureCode
-structure ErasureCode (Sym : Type) where
-  /-- Number of valid encoded-chunk positions; valid indices are `0, …, N - 1`. -/
-  N : ℕ
+structure ErasureCode (Sym : Type) (N nchunk : ℕ) where
   /-- At least one encoded-chunk position is available. -/
   N_pos : 0 < N
-  /-- Number of source symbols and distinct encoded chunks needed for recovery. -/
-  nchunk : ℕ
   /-- At least one distinct encoded chunk is required for recovery. -/
   nchunk_pos : 0 < nchunk
   /-- The message fits within the codeword. -/
@@ -74,44 +76,44 @@ structure ErasureCode (Sym : Type) where
 
 /-- An erasure code over `Sym` equipped with serialization for payloads of type `M`. -/
 -- ANCHOR: ErasureCodePayload
-structure ErasureCodePayload (M Sym : Type) where
+structure ErasureCodePayload (M Sym : Type) (N nchunk : ℕ) where
   /-- The erasure code used for this payload type. -/
-  ec : ErasureCode Sym
+  ec : ErasureCode Sym N nchunk
   /-- Serialize a payload as the `nchunk`-symbol message consumed by `ec.encode`. -/
-  serialize : M → Fin ec.nchunk → Sym
+  serialize : M → Fin nchunk → Sym
   /-- Parse a decoded `nchunk`-symbol message as a payload, or fail. -/
-  parse : (Fin ec.nchunk → Sym) → Option M
+  parse : (Fin nchunk → Sym) → Option M
   /-- Parsing a serialized payload recovers the original payload. -/
   parse_serialize : ∀ payload, parse (serialize payload) = some payload
 -- ANCHOR_END: ErasureCodePayload
 
 namespace ErasureCodePayload
 
-variable {M Sym : Type}
+variable {M Sym : Type} {N nchunk : ℕ}
 
 /-- Map a natural counter index to a bounded chunk position modulo `N`. -/
-def counterIndex (ecp : ErasureCodePayload M Sym) (i : ℕ) : Fin ecp.ec.N :=
-  ⟨i % ecp.ec.N, Nat.mod_lt i ecp.ec.N_pos⟩
+def counterIndex (ecp : ErasureCodePayload M Sym N nchunk) (i : ℕ) : Fin N :=
+  ⟨i % N, Nat.mod_lt i ecp.ec.N_pos⟩
 
 /-- Encode at counter `i` modulo `N`, returning the wrapped index and symbol.
 This matches the `ℤ_N` indices in [SCKA] and SPQR's fixed-width chunk index. -/
-def encode (ecp : ErasureCodePayload M Sym) (payload : M) (i : ℕ) : ℕ × Sym :=
+def encode (ecp : ErasureCodePayload M Sym N nchunk) (payload : M) (i : ℕ) : ℕ × Sym :=
   let j := counterIndex ecp i
   (j.1, ecp.ec.encode (ecp.serialize payload) j)
 
 /-- Decode received chunks to a payload, rejecting a set containing an index
 outside the valid range `0, …, N - 1`. -/
-def decode (ecp : ErasureCodePayload M Sym) (chunks : Finset (ℕ × Sym)) : Option M :=
-  if hvalid : ∀ chunk ∈ chunks, chunk.1 < ecp.ec.N then
-    let toBounded : {chunk // chunk ∈ chunks} ↪ (Fin ecp.ec.N × Sym) :=
+def decode (ecp : ErasureCodePayload M Sym N nchunk) (chunks : Finset (ℕ × Sym)) : Option M :=
+  if hvalid : ∀ chunk ∈ chunks, chunk.1 < N then
+    let toBounded : {chunk // chunk ∈ chunks} ↪ (Fin N × Sym) :=
       { toFun := fun chunk =>
           (⟨chunk.1.1, hvalid chunk.1 chunk.2⟩, chunk.1.2)
         inj' := by
           intro a b hab
           apply Subtype.ext
           exact Prod.ext
-            (congrArg (fun chunk : Fin ecp.ec.N × Sym => chunk.1.val) hab)
-            (congrArg (fun chunk : Fin ecp.ec.N × Sym => chunk.2) hab) }
+            (congrArg (fun chunk : Fin N × Sym => chunk.1.val) hab)
+            (congrArg (fun chunk : Fin N × Sym => chunk.2) hab) }
     match ecp.ec.decode (chunks.attach.map toBounded) with
     | none => none
     | some block => ecp.parse block
@@ -122,7 +124,7 @@ end ErasureCodePayload
 
 namespace ErasureCode
 
-variable {Sym : Type}
+variable {Sym : Type} {N nchunk : ℕ}
 
 /-- A received chunk set is *decodable* for threshold `nchunk` when it contains
 at least `nchunk` chunks at pairwise distinct positions. -/
@@ -137,9 +139,9 @@ def Decodable {N : ℕ} (nchunk : ℕ) (chunks : Finset (Fin N × Sym)) : Prop :
 The index is retained in each chunk, so distinct positions remain distinct even
 when their encoded symbols are equal. -/
 -- ANCHOR: encodeChunks
-def encodeChunks (ec : ErasureCode Sym)
-    (M : Fin ec.nchunk → Sym) (I : Finset (Fin ec.N)) :
-    Finset (Fin ec.N × Sym) :=
+def encodeChunks (ec : ErasureCode Sym N nchunk)
+    (M : Fin nchunk → Sym) (I : Finset (Fin N)) :
+    Finset (Fin N × Sym) :=
   I.map {
     toFun := fun i => (i, ec.encode M i)
     inj' := fun _ _ h => congrArg Prod.fst h
@@ -148,16 +150,16 @@ def encodeChunks (ec : ErasureCode Sym)
 
 /-- `encodeChunks` contains exactly one indexed chunk for each position in `I`. -/
 @[simp]
-theorem card_encodeChunks (ec : ErasureCode Sym)
-    (M : Fin ec.nchunk → Sym) (I : Finset (Fin ec.N)) :
+theorem card_encodeChunks (ec : ErasureCode Sym N nchunk)
+    (M : Fin nchunk → Sym) (I : Finset (Fin N)) :
     (ec.encodeChunks M I).card = I.card := by
   simp [encodeChunks]
 
 /-- A pair `(i, c)` belongs to `encodeChunks M I` exactly when `i ∈ I` and
 `c = Encode(M, i)`. -/
 @[simp]
-theorem mem_encodeChunks (ec : ErasureCode Sym)
-    (M : Fin ec.nchunk → Sym) (I : Finset (Fin ec.N)) (chunk : Fin ec.N × Sym) :
+theorem mem_encodeChunks (ec : ErasureCode Sym N nchunk)
+    (M : Fin nchunk → Sym) (I : Finset (Fin N)) (chunk : Fin N × Sym) :
     chunk ∈ ec.encodeChunks M I ↔ chunk.1 ∈ I ∧ chunk.2 = ec.encode M chunk.1 := by
   simp only [encodeChunks, Finset.mem_map]
   constructor
@@ -168,13 +170,13 @@ theorem mem_encodeChunks (ec : ErasureCode Sym)
 
 /-- Honest chunks at positions `I` are decodable exactly when `nchunk ≤ |I|`:
 there is one chunk per index, so the indices are pairwise distinct. -/
-theorem decodable_encodeChunks_of_nchunk_le_card (ec : ErasureCode Sym)
-    (M : Fin ec.nchunk → Sym) (I : Finset (Fin ec.N))
-    (hcard : ec.nchunk ≤ I.card) :
-    Decodable ec.nchunk (ec.encodeChunks M I) := by
+theorem decodable_encodeChunks_of_nchunk_le_card (ec : ErasureCode Sym N nchunk)
+    (M : Fin nchunk → Sym) (I : Finset (Fin N))
+    (hcard : nchunk ≤ I.card) :
+    Decodable nchunk (ec.encodeChunks M I) := by
   constructor
   · calc
-      ec.nchunk ≤ I.card := hcard
+      nchunk ≤ I.card := hcard
       _ = (ec.encodeChunks M I).card := (ec.card_encodeChunks M I).symm
   · intro a ha b hb hab
     have ha' := (ec.mem_encodeChunks M I a).mp ha
@@ -185,10 +187,10 @@ theorem decodable_encodeChunks_of_nchunk_le_card (ec : ErasureCode Sym)
 /-- Correctness: decoding the chunk set `{(i, Encode(M, i)) | i ∈ I}` recovers
 `M` when `nchunk ≤ |I|` and fails when `|I| < nchunk`. -/
 -- ANCHOR: Correct
-def Correct (ec : ErasureCode Sym) : Prop :=
-  ∀ (M : Fin ec.nchunk → Sym) (I : Finset (Fin ec.N)),
-    (ec.nchunk ≤ I.card → ec.decode (ec.encodeChunks M I) = some M) ∧
-    (I.card < ec.nchunk → ec.decode (ec.encodeChunks M I) = none)
+def Correct (ec : ErasureCode Sym N nchunk) : Prop :=
+  ∀ (M : Fin nchunk → Sym) (I : Finset (Fin N)),
+    (nchunk ≤ I.card → ec.decode (ec.encodeChunks M I) = some M) ∧
+    (I.card < nchunk → ec.decode (ec.encodeChunks M I) = none)
 -- ANCHOR_END: Correct
 
 end ErasureCode
