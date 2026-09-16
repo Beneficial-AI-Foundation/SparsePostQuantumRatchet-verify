@@ -35,9 +35,9 @@ namespace spqr.v1.chunked.send_ek.serialize.KeysSampled
   `PolyEncoder::into_pb` for `self.sending_hdr`: `2 * len + 2 ≤ Usize.max` per serialized item.
 • Both optional protobuf fields of the result are always populated; the `| _ => False` branch
   rules out `none` in either position.
-• The unchunked part `uc` is pinned down as an explicit record literal copied from `self.uc`.
-• The chunking part `pe` is pinned down at the detailed value level by
-  `PolyEncoder.IntoPbPostCond self.sending_hdr pe`. -/
+• The unchunked part `uc_pb` is pinned down as an explicit record literal copied from `self.uc`.
+• The chunking part `hdr_pb` is pinned down at the detailed value level by
+  `PolyEncoder.IntoPbPostCond self.sending_hdr hdr_pb`. -/
 @[step]
 theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
     (h_overflow_points : ∀ points, self.sending_hdr.s = .Points points →
@@ -46,19 +46,19 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
       ∀ j < polys.length, 2 * polys[j]!.degree + 2 ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.v1_state.chunked.KeysSampled) =>
       match result with
-      | { uc := some uc, sending_hdr := some pe } =>
-          uc = { epoch := self.uc.epoch,
-                 auth := some { root_key := self.uc.auth.root_key,
-                                mac_key := self.uc.auth.mac_key },
-                 ek := self.uc.ek, dk := self.uc.dk } ∧
-          PolyEncoder.IntoPbPostCond self.sending_hdr pe
+      | { uc := some uc_pb, sending_hdr := some hdr_pb } =>
+          uc_pb = { epoch := self.uc.epoch,
+                    auth := some { root_key := self.uc.auth.root_key,
+                                   mac_key := self.uc.auth.mac_key },
+                    ek := self.uc.ek, dk := self.uc.dk } ∧
+          PolyEncoder.IntoPbPostCond self.sending_hdr hdr_pb
       | _ => False ⦄ := by
   unfold into_pb
-  obtain ⟨pe, h_pe, h_pe_post⟩ := spec_imp_exists
+  obtain ⟨hdr_pb, h_hdr_pb, h_hdr_pb_post⟩ := spec_imp_exists
     (PolyEncoder.into_pb_spec self.sending_hdr h_overflow_points h_overflow_polys)
-  rw [h_pe]
+  rw [h_hdr_pb]
   step*
-  refine ⟨?_, h_pe_post⟩
+  refine ⟨?_, h_hdr_pb_post⟩
   simp only [← hs_post1, ← hs_post2, ← hs_post3, ← hs_post4]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled
