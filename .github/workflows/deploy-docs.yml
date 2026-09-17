@@ -1,0 +1,129 @@
+name: Deploy Rust Docs
+# Builds the spqr rustdoc with per-function Lean verification panels and
+# deploys it to GitHub Pages.
+#
+# Pipeline: lake build (re-checks all proofs for THIS commit, so panels can
+# never reflect stale proof state) → lake exe docsjson → cargo rustdoc
+# (--features extraction, private items — the verified configuration) →
+# scripts/inject-lean-verification.ts (hard-fails if any spec'd function
+# cannot be mapped to a rustdoc anchor).
+#
+# On pull requests only the build job runs, uploading the docs as a plain
+# artifact for inspection; deployment happens on pushes to main.
+# NOTE: GitHub Pages must be configured with "GitHub Actions" as the source
+# (Settings → Pages) before the first deployment.
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ '**' ]
+    paths:
+      - 'Spqr/**'
+      - 'SrcTranslated/**'
+      - 'Utils/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'translation.json'
+      - 'lakefile.toml'
+      - 'lean-toolchain'
+      - 'Cargo.toml'
+      - 'package.json'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded doc builds on the same ref; the deploy job additionally
+# serializes on the shared `github-pages` group below (never cancelled), so
+# two pushes cannot deploy out of order.
+concurrency:
+  group: deploy-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  LEAN_ABORT_ON_PANIC: 1
+  RUST_DOCS_TOOLCHAIN: 1.94.1
+
+jobs:
+  build:
+    name: Build Rust docs with Lean panels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install protoc (build.rs / prost)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install "$RUST_DOCS_TOOLCHAIN" --profile minimal
+
+      - name: Setup Lean
+        uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+
+      - name: Build Lean project (checks all proofs for this commit)
+        run: lake build --no-ansi
+
+      - name: Generate functions.json
+        run: lake exe docsjson
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build rustdoc and inject Lean panels
+        run: bash scripts/build-rust-docs.sh
+
+      # (actions/configure-pages is not needed: rustdoc output requires no
+      # base-path templating, and the step would need extra Pages permissions
+      # in the build job.)
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/docs-build/doc
+
+      - name: Upload preview artifact
+        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-docs-preview
+          path: target/docs-build/doc
+          retention-days: 7
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Only ever deploy main — a workflow_dispatch on a feature branch builds a
+    # preview artifact but must not overwrite the production Pages site.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    # Deployment credentials are scoped to this job only; the build job never
+    # holds an OIDC deployment token.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
