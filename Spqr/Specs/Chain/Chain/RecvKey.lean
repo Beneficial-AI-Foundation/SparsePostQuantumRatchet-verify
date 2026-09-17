@@ -132,7 +132,8 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
     have h_tgt := h_target h_le h_back
     simp only [recvKeyIdx] at h_tgt
     have h_idx_eq : self.links.head.val + idx.val =
-        self.links.head.val + (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
+        self.links.head.val +
+        (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
       omega
     rw [List.getElem?_eq_getElem (by omega)] at h_tgt
     obtain ⟨ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, ht10⟩ := h_tgt
@@ -144,7 +145,8 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
       rw [h_ge] at ce_post
       have h_ce := ce_post.1; subst h_ce
       have : self.links.head.val + idx.val =
-          self.links.head.val + (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
+          self.links.head.val +
+          (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
         omega
       simp only [this] at *)
     all_goals first
@@ -170,7 +172,6 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
          · obtain ⟨key, h_ok, h_len, h_val⟩ := (r1_post4 h1 h2).1
            rw [h_ok]
            exact ⟨h_len, h_val⟩)
-
   · obtain ⟨h_e, h_bad⟩ := r_post2
     simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
