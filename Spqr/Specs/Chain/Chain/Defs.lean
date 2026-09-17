@@ -26,12 +26,12 @@ def clearedAt (vd vd' : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Gl
     ce'.send.prev = ce.send.prev
 
 /-- Deque index from `epoch_idx`: `links.len() - 1 - (current_epoch - epoch)`. -/
-@[simp] def sendKeyIdx (self : chain.Chain) (epoch : U64) : Nat :=
+def sendKeyIdx (self : chain.Chain) (epoch : U64) : Nat :=
   self.links.length.val - 1 - (self.current_epoch.val - epoch.val)
 
 /-- The deque index of the epoch whose key is derived, *after* the trimming loop: unchanged when
 the send epoch does not move, and `min idx EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH` otherwise. -/
-@[simp] def sendKeyEi (self : chain.Chain) (epoch : U64) : Nat :=
+def sendKeyEi (self : chain.Chain) (epoch : U64) : Nat :=
   if self.send_epoch = epoch then sendKeyIdx self epoch
   else min (sendKeyIdx self epoch) chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH.val
 
