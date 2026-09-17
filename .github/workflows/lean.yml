@@ -54,10 +54,14 @@ jobs:
       - name: Lint hand-written code
         run: |
           # Lint ONLY the hand-written `Spqr` library.
-          lake exe runLinter Spqr 2>&1 | tee /tmp/lake-lint.log || true
-          if grep -q 'error:' /tmp/lake-lint.log; then
+          # `runLinter` exits 1 on any lint failure.  Trust that exit code rather
+          # than grepping the output for `error:`: the Batteries linter only uses
+          # the `file:line:col: error:` format for declarations with a source
+          # range, and falls back to `#check <decl> /- ... -/` for automatically
+          # generated ones (`foo.eq_1`, projections, derived instances, ...).
+          set -o pipefail
+          if ! lake exe runLinter Spqr 2>&1 | tee /tmp/lake-lint.log; then
             echo "::error::Lint errors in hand-written code. Please fix them."
-            grep 'error:' /tmp/lake-lint.log
             exit 1
           fi
 
