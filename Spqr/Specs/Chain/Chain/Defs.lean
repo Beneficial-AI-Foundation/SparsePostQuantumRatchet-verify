@@ -35,4 +35,8 @@ def sendKeyEi (self : chain.Chain) (epoch : U64) : Nat :=
   if self.send_epoch = epoch then sendKeyIdx self epoch
   else min (sendKeyIdx self epoch) chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH.val
 
+/-- The deque index for `recv_key`: `links.len() - 1 - (current_epoch - epoch)`. -/
+def recvKeyIdx (self : chain.Chain) (epoch : U64) : Nat :=
+  self.links.length.val - 1 - (self.current_epoch.val - epoch.val)
+
 end spqr.chain

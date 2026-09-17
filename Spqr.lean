@@ -78,6 +78,8 @@ import Spqr.Specs.Chain.Chain.CedForDirection
 import Spqr.Specs.Chain.Chain.Defs
 import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.Chain.New
+import Spqr.Specs.Chain.Chain.RecvKey
+import Spqr.Specs.Chain.Chain.RecvKey32
 import Spqr.Specs.Chain.Chain.SendKey
 import Spqr.Specs.Chain.Chain.SendKey64
 import Spqr.Specs.Chain.ChainEpochDirection.ClearNext
