@@ -43,70 +43,12 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
       self.current_epoch.val - epoch.val < self.links.length.val →
       match self.links.buf.val[self.links.head.val + recvKeyIdx self epoch]? with
       | none => True
-      | some ce =>
-          ce.recv.next.length = 32 ∧
-          index.val ≤ U32.max - 108458770 ∧
-          (chain.maxOoo self.params).val < 108458770 ∧
-          ce.recv.ctr.val ≤ U32.max - 108458770 ∧
-          ce.recv.prev.data.length + 36 * (index.val - ce.recv.ctr.val) ≤ Usize.max ∧
-          ce.recv.ctr < U32.max ∧
-          ce.recv.prev.data.length % 36 = 0 ∧
-          ce.recv.prev.data.length ≤ 36 * ce.recv.ctr.val ∧
-          index.val + (chain.maxOoo self.params).val ≤ U32.max) :
+      | some ce => recvKeyPre32 self.params index ce) :
     recv_key self epoch index ⦃ (result :
         (core.result.Result (alloc.vec.Vec U8) Error) × chain.Chain) =>
-      (epoch.val > self.current_epoch.val ∨
-       self.current_epoch.val - epoch.val ≥ self.links.length.val →
-         result.1 = core.result.Result.Err (Error.EpochOutOfRange epoch) ∧
-         result.2 = self) ∧
-      (epoch.val ≤ self.current_epoch.val ∧
-       self.current_epoch.val - epoch.val < self.links.length.val →
-         result.2.dir = self.dir ∧
-         result.2.current_epoch = self.current_epoch ∧
-         result.2.send_epoch = self.send_epoch ∧
-         result.2.next_root = self.next_root ∧
-         result.2.params = self.params ∧
-         let phys := self.links.head.val + recvKeyIdx self epoch
-         match self.links.buf.val[phys]? with
-         | none => False
-         | some ce =>
-           (index = ce.recv.ctr →
-             result.1 = core.result.Result.Err (Error.KeyAlreadyRequested index) ) ∧
-           (index < ce.recv.ctr →
-             match result.1 with
-             | core.result.Result.Err e =>
-                 (e = Error.KeyTrimmed index ∧
-                   index + (chain.maxOoo self.params).val < ce.recv.ctr) ∨
-                 (e = Error.KeyAlreadyRequested index ∧
-                   ce.recv.ctr ≤ index + (chain.maxOoo self.params).val ∧
-                   (∀ k, k + 36 ≤ ce.recv.prev.data.length → k % 36 = 0 →
-                     ce.recv.prev.data.val.slice k (k + 4) ≠
-                       core.num.U32.to_be_bytes index))
-             | core.result.Result.Ok out =>
-                 ce.recv.ctr ≤ index + (chain.maxOoo self.params).val ∧
-                 out.length = 32 ∧
-                 (∃ off, off % 36 = 0 ∧
-                   off + 36 ≤ ce.recv.prev.data.length ∧
-                   ce.recv.prev.data.val.slice off (off + 4) =
-                     (core.num.U32.to_be_bytes index).val ∧
-                   (∀ k, k < off → k % 36 = 0 →
-                     ce.recv.prev.data.val.slice k (k + 4) ≠
-                       (core.num.U32.to_be_bytes index).val) ∧
-                   out = ce.recv.prev.data.val.slice (off + 4) (off + 36))) ∧
-           (index > ce.recv.ctr →
-             index.val - ce.recv.ctr.val > (chain.maxJump self.params).val →
-             result.1 = core.result.Result.Err
-               (Error.KeyJump ce.recv.ctr index)) ∧
-           (index > ce.recv.ctr →
-             index.val - ce.recv.ctr.val ≤ (chain.maxJump self.params).val →
-             match result.1 with
-             | core.result.Result.Ok key =>
-                 key.length = 32 ∧
-                 key.val = (nextKeyHkdfOutput
-                   (chain.ChainEpochDirection.iterChainSecret ce.recv.next.val ce.recv.ctr.val
-                     (index.val - (ce.recv.ctr.val + 1)))
-                   ⟨index.val, by scalar_tac⟩).drop 32
-             | _ => False)) ⦄ := by
+      recvKeyPost32 self epoch index result.1 result.2 ⦄ := by
+  unfold recvKeyPost32 recvKeyEpochPost32
+  simp only [recvKeyPre32] at h_target
   unfold recv_key
   step
   simp only [r_post1]

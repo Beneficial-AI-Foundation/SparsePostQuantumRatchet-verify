@@ -35,55 +35,7 @@ theorem send_key_spec_64 (self : chain.Chain) (epoch : U64)
       | some ce => ce.send.next.length = 32 ∧ ce.send.ctr < U32.max) :
     send_key self epoch ⦃ (result : (core.result.Result (U32 × alloc.vec.Vec U8) Error) ×
         chain.Chain) =>
-      match result.1 with
-      | core.result.Result.Err e =>
-          result.2 = self ∧
-          ((e = Error.SendKeyEpochDecreased self.send_epoch epoch ∧
-              epoch.val < self.send_epoch.val) ∨
-           (e = Error.EpochOutOfRange epoch ∧ self.send_epoch.val ≤ epoch.val ∧
-              (epoch.val > self.current_epoch.val ∨
-               self.current_epoch.val - epoch.val ≥ self.links.length.val)))
-      | core.result.Result.Ok (i, key) =>
-          let idx := sendKeyIdx self epoch
-          let ei := sendKeyEi self epoch
-          let phys := self.links.head.val + idx
-          self.send_epoch.val ≤ epoch.val ∧
-          epoch.val ≤ self.current_epoch.val ∧
-          self.current_epoch.val - epoch.val < self.links.length.val ∧
-          match self.links.buf.val[phys]? with
-          | none => False
-          | some ce =>
-            i.val = ce.send.ctr.val + 1 ∧
-            key.length = 32 ∧
-            key.val = (nextKeyHkdfOutput ce.send.next i).drop 32 ∧
-            result.2.dir = self.dir ∧
-            result.2.current_epoch = self.current_epoch ∧
-            result.2.send_epoch = epoch ∧
-            result.2.next_root = self.next_root ∧
-            result.2.params = self.params ∧
-            result.2.links.head.val = self.links.head.val + (idx - ei) ∧
-            result.2.links.length.val = self.links.length.val - (idx - ei) ∧
-            result.2.links.buf.val.length = self.links.buf.val.length ∧
-            result.2.links.head.val + result.2.links.length.val ≤ result.2.links.buf.val.length ∧
-            ei < result.2.links.length.val ∧
-            (match result.2.links.buf.val[phys]? with
-             | none => False
-             | some ce' =>
-                 ce'.recv = ce.recv ∧
-                 ce'.send.ctr = i ∧
-                 ce'.send.next.length = ce.send.next.length ∧
-                 ce'.send.next.val = (nextKeyHkdfOutput ce.send.next i).take 32 ∧
-                 ce'.send.prev = ce.send.prev) ∧
-            (self.send_epoch = epoch →
-              result.2.links.head = self.links.head ∧
-              result.2.links.length = self.links.length ∧
-              ∀ j, j ≠ phys →
-                result.2.links.buf.val[j]? = self.links.buf.val[j]?) ∧
-            (self.send_epoch ≠ epoch →
-              ∀ j, self.links.head.val + (idx - ei) ≤ j → j < phys →
-                clearedAt self.links result.2.links j) ∧
-            (∀ j, (j < self.links.head.val + (idx - ei) ∨ phys < j) →
-              result.2.links.buf.val[j]? = self.links.buf.val[j]?) ⦄ := by
+      sendKeyPost self epoch result.1 result.2 ⦄ := by
   apply send_key_spec self epoch _ h_wf h_target
   intro h_le h_le'
   have h_usize : Usize.max ≥ 2 ^ 64 - 1 := by

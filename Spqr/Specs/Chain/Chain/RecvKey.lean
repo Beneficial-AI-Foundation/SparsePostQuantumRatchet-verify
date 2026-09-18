@@ -56,71 +56,12 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
       self.current_epoch.val - epoch.val < self.links.length.val →
       match self.links.buf.val[self.links.head.val + recvKeyIdx self epoch]? with
       | none => True
-      | some ce =>
-          ce.recv.next.length = 32 ∧
-          index.val ≤ U32.max - 390451572 ∧
-          (chain.maxOoo self.params).val < 390451572 ∧
-          ce.recv.ctr.val ≤ U32.max - 390451572 ∧
-          ce.recv.prev.data.length + 36 * (index.val - ce.recv.ctr.val) ≤ Usize.max ∧
-          ce.recv.ctr < U32.max ∧
-          ce.recv.prev.data.length % 36 = 0 ∧
-          ce.recv.prev.data.length ≤ 36 * ce.recv.ctr.val ∧
-          index.val + (chain.maxOoo self.params).val ≤ U32.max ∧
-          System.Platform.numBits = 64) :
+      | some ce => recvKeyPre self.params index ce) :
     recv_key self epoch index ⦃ (result :
         (core.result.Result (alloc.vec.Vec U8) Error) × chain.Chain) =>
-      (epoch.val > self.current_epoch.val ∨
-       self.current_epoch.val - epoch.val ≥ self.links.length.val →
-         result.1 = core.result.Result.Err (Error.EpochOutOfRange epoch) ∧
-         result.2 = self) ∧
-      (epoch.val ≤ self.current_epoch.val ∧
-       self.current_epoch.val - epoch.val < self.links.length.val →
-         result.2.dir = self.dir ∧
-         result.2.current_epoch = self.current_epoch ∧
-         result.2.send_epoch = self.send_epoch ∧
-         result.2.next_root = self.next_root ∧
-         result.2.params = self.params ∧
-         let phys := self.links.head.val + recvKeyIdx self epoch
-         match self.links.buf.val[phys]? with
-         | none => False
-         | some ce =>
-           (index = ce.recv.ctr →
-             result.1 = core.result.Result.Err (Error.KeyAlreadyRequested index)) ∧
-           (index < ce.recv.ctr →
-             match result.1 with
-             | core.result.Result.Err e =>
-                 (e = Error.KeyTrimmed index ∧
-                   index + (chain.maxOoo self.params).val < ce.recv.ctr) ∨
-                 (e = Error.KeyAlreadyRequested index ∧
-                   ce.recv.ctr ≤ index + (chain.maxOoo self.params).val ∧
-                   (∀ k, k + 36 ≤ ce.recv.prev.data.length → k % 36 = 0 →
-                     ce.recv.prev.data.val.slice k (k + 4) ≠
-                       core.num.U32.to_be_bytes index))
-             | core.result.Result.Ok out =>
-                 ce.recv.ctr ≤ index + (chain.maxOoo self.params).val ∧
-                 out.length = 32 ∧
-                 (∃ off, off % 36 = 0 ∧
-                   off + 36 ≤ ce.recv.prev.data.length ∧
-                   ce.recv.prev.data.val.slice off (off + 4) =
-                     (core.num.U32.to_be_bytes index).val ∧
-                   (∀ k, k < off → k % 36 = 0 →
-                     ce.recv.prev.data.val.slice k (k + 4) ≠
-                       (core.num.U32.to_be_bytes index).val) ∧
-                   out = ce.recv.prev.data.val.slice (off + 4) (off + 36))) ∧
-           (index > ce.recv.ctr →
-             index.val - ce.recv.ctr.val > (chain.maxJump self.params).val →
-             result.1 = core.result.Result.Err
-               (Error.KeyJump ce.recv.ctr index)) ∧
-           (index > ce.recv.ctr →
-             index.val - ce.recv.ctr.val ≤ (chain.maxJump self.params).val →
-             match result.1 with
-             | core.result.Result.Ok key =>
-                 key.length = 32 ∧
-                 key.val = (nextKeyHkdfOutput
-                   (chain.ChainEpochDirection.iterChainSecret ce.recv.next.val ce.recv.ctr.val
-                     (index.val - (ce.recv.ctr.val + 1)))
-                   ⟨index.val, by scalar_tac⟩).drop 32
-             | _ => False)) ⦄ := by
+      recvKeyPost self epoch index result.1 result.2 ⦄ := by
+  unfold recvKeyPost chainFrame recvKeyEpochPost recvKeyAdvancePost
+  simp only [recvKeyPre] at h_target
   unfold recv_key
   step
   simp only [r_post1]
@@ -143,35 +84,58 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
           some (self.links.buf.val[self.links.head.val + idx.val]'h_phys_lt) :=
         List.getElem?_eq_getElem h_phys_lt
       rw [h_ge] at ce_post
-      have h_ce := ce_post.1; subst h_ce
-      have : self.links.head.val + idx.val =
+      obtain ⟨h_ce, h_back_fn⟩ := ce_post
+      subst h_ce
+      have h_phys_rw : self.links.head.val + idx.val =
           self.links.head.val +
           (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
         omega
-      simp only [this] at *)
+      simp only [h_phys_rw] at *)
     all_goals first
     | assumption
     | (constructor
        · intro h_bad; exfalso; grind
-       · intro _ _
+       · intro h_le' h_lt'
+         set ce := self.links.buf.val[self.links.head.val +
+           (self.links.length.val - 1 - (self.current_epoch.val - epoch.val))]'(by omega)
+         obtain ⟨h_buf_wb, h_hd_wb, h_ln_wb⟩ := h_back_fn { ce with recv := ced }
          simp only [recvKeyIdx]
+         refine ⟨h_hd_wb, h_ln_wb, by rw [h_buf_wb, List.length_set],
+                 by simp only [h_hd_wb, h_ln_wb, h_buf_wb, List.length_set]; exact h_wf,
+                 fun j hj => by rw [h_buf_wb, List.getElem?_set_ne (by omega)], ?_⟩
          rw [List.getElem?_eq_getElem (by omega)]
-         refine ⟨fun h => (r1_post1 h).1, fun h => ?_, fun h1 h2 => (r1_post3 h1 h2).1,
-                 fun h1 h2 => ?_⟩
-         · obtain ⟨_, _, hm⟩ := r1_post2 h
-           revert hm
-           cases r1 with
-           | Ok out =>
-             intro ⟨h1, h2, _, _, off, h3, h4, h5, h6, h7, _, _, _⟩
-             exact ⟨h1, h2, off, h3, h4, h5, h6, h7⟩
-           | Err e =>
-             intro h
-             rcases h with ⟨h1, h2, h3⟩ | ⟨h1, h2, _, h4⟩
-             · exact Or.inl ⟨h1, h2⟩
-             · exact Or.inr ⟨h1, h2, h4⟩
-         · obtain ⟨key, h_ok, h_len, h_val⟩ := (r1_post4 h1 h2).1
-           rw [h_ok]
-           exact ⟨h_len, h_val⟩)
+         have h_ss : (self.links.buf.val.set
+             (self.links.head.val +
+               (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)))
+             { ce with recv := ced })[self.links.head.val +
+               (self.links.length.val - 1 - (self.current_epoch.val - epoch.val))]? =
+             some { ce with recv := ced } :=
+           List.getElem?_set_self (by omega)
+         rw [h_buf_wb, h_ss]
+         refine ⟨rfl, fun h => ⟨(r1_post1 h).1, (r1_post1 h).2⟩, fun h => ?_,
+                 fun h1 h2 => ⟨(r1_post3 h1 h2).1, (r1_post3 h1 h2).2⟩, fun h1 h2 => ?_⟩
+         · exact r1_post2 h
+         · obtain ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, _, h_prevbd, h_clear,
+                   h_usize, h_pregcbd, h_pgalign, h_kh0pg, h_gc⟩ := r1_post4 h1 h2
+           refine ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, h_prevbd, h_usize,
+                  _, _, _, (⟨index.val - 1, by scalar_tac⟩ : U32), rfl, rfl, rfl,
+                  h_pregcbd, h_pgalign, ?_⟩
+           unfold keyPostGc
+           obtain ⟨hgc1, hgc2, hgc3, hgc4, hgc5⟩ := h_gc
+           exact ⟨fun h1 h2 => by obtain ⟨hz, hhz, hm⟩ := hgc1 h1 h2; exact ⟨hz, hhz,
+                  fun m ⟨hlt, hmod⟩ => hm m hlt hmod⟩,
+                  fun h1 h2 => by obtain ⟨hz, hhz, hm⟩ := hgc2 h1 h2; exact ⟨hz, hhz,
+                  fun n
+                  ⟨hlt, hmod⟩ hne => by
+                    obtain ⟨m, hm1, hm2, hm3⟩ := hm n hlt hmod hne; exact ⟨m, hm1, hm2, hm3⟩⟩,
+                  fun h1 => hgc3 h1,
+                  fun h1 h2 => by obtain
+                  ⟨f, hf1, hf2⟩ := hgc4 h1 h2; exact ⟨f, fun m ⟨hlt, hmod⟩ => hf1 m hlt hmod,
+                  fun m1 m2 ⟨h1a, h1b⟩ ⟨h2a, h2b⟩ => hf2 m1 m2 h1a h1b h2a h2b⟩,
+                  fun h1 h2 => by obtain ⟨hz, hhz, g, hg1, hg2⟩ := hgc5 h1 h2; exact ⟨hz, hhz, g,
+                  fun n ⟨hlt, hmod⟩ hne => hg1 n hlt hmod hne,
+                  fun n1 n2 ⟨h1a, h1b⟩ ⟨h2a, h2b⟩ hne1 hne2 =>
+                    hg2 n1 n2 h1a h1b h2a h2b hne1 hne2⟩⟩)
   · obtain ⟨h_e, h_bad⟩ := r_post2
     simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
