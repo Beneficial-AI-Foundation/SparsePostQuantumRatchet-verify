@@ -304,8 +304,7 @@ namespace spqr.chain.Chain
       (`send_key_loop1.clearedAt self.links self'.links j`).
     - Every slot outside `[head + (idx - ei), phys]` is untouched.
 
-**Source**: spqr/src/chain.rs, lines 384:4-407:5
--/
+**Source**: spqr/src/chain.rs -/
 @[step]
 theorem send_key_spec (self : chain.Chain) (epoch : U64)
     (h_diff_fits : self.send_epoch ≤ epoch.val → epoch.val ≤ self.current_epoch →

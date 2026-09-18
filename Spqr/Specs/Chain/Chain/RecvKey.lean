@@ -44,9 +44,7 @@ namespace spqr.chain.Chain
   and returns the inner result.
 
 The proof unfolds `recv_key`, then applies `step*` which chains the already-registered
-`epoch_idx_spec`, `index_mut_spec`, and `key_spec`.
-
-**Source**: spqr/src/chain.rs -/
+`epoch_idx_spec`, `index_mut_spec`, and `key_spec`. -/
 @[step]
 theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
     (h_diff_fits : epoch.val ≤ self.current_epoch.val →
