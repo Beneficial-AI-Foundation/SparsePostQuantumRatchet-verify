@@ -304,8 +304,7 @@ namespace spqr.chain.Chain
       (`send_key_loop1.clearedAt self.links self'.links j`).
     - Every slot outside `[head + (idx - ei), phys]` is untouched.
 
-**Source**: spqr/src/chain.rs, lines 384:4-407:5
--/
+**Source**: spqr/src/chain.rs -/
 @[step]
 theorem send_key_spec (self : chain.Chain) (epoch : U64)
     (h_diff_fits : self.send_epoch ≤ epoch.val → epoch.val ≤ self.current_epoch →
@@ -318,59 +317,11 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
       | some ce => ce.send.next.length = 32 ∧ ce.send.ctr < U32.max) :
     send_key self epoch ⦃ (result : (core.result.Result (U32 × alloc.vec.Vec U8) Error) ×
         chain.Chain) =>
-      match result.1 with
-      | core.result.Result.Err e =>
-          result.2 = self ∧
-          ((e = Error.SendKeyEpochDecreased self.send_epoch epoch ∧
-              epoch < self.send_epoch) ∨
-           (e = Error.EpochOutOfRange epoch ∧ self.send_epoch.val ≤ epoch.val ∧
-              (epoch > self.current_epoch ∨
-               self.current_epoch - epoch ≥ self.links.length.val)))
-      | core.result.Result.Ok (i, key) =>
-          let idx := sendKeyIdx self epoch
-          let ei := sendKeyEi self epoch
-          let phys := self.links.head + idx
-          self.send_epoch ≤ epoch ∧
-          epoch ≤ self.current_epoch ∧
-          self.current_epoch - epoch < self.links.length.val ∧
-          match self.links.buf.val[phys]? with
-          | none => False
-          | some ce =>
-            i.val = ce.send.ctr + 1 ∧
-            key.length = 32 ∧
-            key = (nextKeyHkdfOutput ce.send.next i).drop 32 ∧
-            result.2.dir = self.dir ∧
-            result.2.current_epoch = self.current_epoch ∧
-            result.2.send_epoch = epoch ∧
-            result.2.next_root = self.next_root ∧
-            result.2.params = self.params ∧
-            result.2.links.head = self.links.head + (idx - ei) ∧
-            result.2.links.length = self.links.length - (idx - ei) ∧
-            result.2.links.buf.val.length = self.links.buf.val.length ∧
-            result.2.links.head + result.2.links.length ≤ result.2.links.buf.val.length ∧
-            ei < result.2.links.length ∧
-            (match result.2.links.buf.val[phys]? with
-             | none => False
-             | some ce' =>
-                 ce'.recv = ce.recv ∧
-                 ce'.send.ctr = i ∧
-                 ce'.send.next.length = ce.send.next.length ∧
-                 ce'.send.next = (nextKeyHkdfOutput ce.send.next i).take 32 ∧
-                 ce'.send.prev = ce.send.prev) ∧
-            (self.send_epoch = epoch →
-              result.2.links.head = self.links.head ∧
-              result.2.links.length = self.links.length ∧
-              ∀ j, j ≠ phys →
-                result.2.links.buf.val[j]? = self.links.buf.val[j]?) ∧
-            (self.send_epoch ≠ epoch →
-              ∀ j, self.links.head + (idx - ei) ≤ j → j < phys →
-                clearedAt self.links result.2.links j) ∧
-            (∀ j, (j < self.links.head.val + (idx - ei) ∨ phys < j) →
-              result.2.links.buf.val[j]? = self.links.buf.val[j]?) ⦄ := by
+      sendKeyPost self epoch result.1 result.2 ⦄ := by
   unfold send_key
   split
-  · simp only [WP.spec_ok]
-    exact ⟨trivial, Or.inl ⟨trivial, by scalar_tac⟩⟩
+  · simp only [WP.spec_ok, sendKeyPost, sendKeyDequePost, sendKeySlotPost]
+    grind
   · rename_i h_nlt
     have h_ge : self.send_epoch.val ≤ epoch.val := by scalar_tac
     step (h_diff_fits := h_diff_fits h_ge)
@@ -400,24 +351,26 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
           UScalar.eq_of_val_eq p_post1
         have h64 : (nextKeyHkdfOutput ce.send.next p.1).length = 64 := by
           simp [nextKeyHkdfOutput, crypto.hkdf_length]
-        simp only [h_idx', h_ei, Nat.sub_self, Nat.add_zero, Nat.sub_zero]
-        simp only [h_ce]
-        refine ⟨h_ge, h_le, h_back, p_post1, ?_, ?_, h_eq_ep, by rw [h_hd2],
-          by rw [h_ln2], ?_, ?_, ?_, ?_,
-          fun _ => ⟨by rw [h_hd2], by rw [h_ln2],
+        simp only [sendKeyPost, sendKeyDequePost, sendKeySlotPost,
+          h_idx', h_ei, Nat.sub_self, Nat.add_zero, Nat.sub_zero, h_ce]
+        refine ⟨fun h => absurd h (by omega), ?_, fun _ _ _ =>
+          ⟨trivial, trivial, h_eq_ep, trivial, trivial,
+           ⟨by rw [h_hd2], by rw [h_ln2], by simp [h_buf2],
+            by simp only [h_hd2, h_ln2, h_buf2, List.length_set]; exact h_wf,
+            by rw [h_ln2]; exact h_idx_lt,
+            fun _ => ⟨by rw [h_hd2], by rw [h_ln2],
+              fun j hj => by rw [h_buf2, List.getElem?_set_ne (by omega)]⟩,
+            fun h => absurd rfl h,
             fun j hj => by rw [h_buf2, List.getElem?_set_ne (by omega)]⟩,
-          fun h => absurd h_eq_ep h, ?_⟩
-        · simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢
-          rw [p_post6, List.length_drop, h64]
-        · rw [p_post6, h_p1]
-        · simp only [h_buf2, List.length_set]
-        · simp only [h_buf2, List.length_set, h_hd2, h_ln2]; exact h_wf
-        · rw [h_ln2]; exact h_idx_lt
-        · simp only [h_buf2, List.getElem?_set_self h_phys_lt]
-          exact ⟨trivial, UScalar.eq_of_val_eq (by rw [p_post2, p_post1]),
-            p_post3, by rw [p_post4, h_p1], p_post5⟩
-        · intro j hj
-          rw [h_buf2, List.getElem?_set_ne (by omega)]
+           by simp only [h_buf2, List.getElem?_set_self h_phys_lt]
+              exact ⟨p.1, p.2, rfl, p_post1,
+                by simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢;
+                   rw [p_post6, List.length_drop, h64],
+                by rw [p_post6, h_p1],
+                trivial,
+                UScalar.eq_of_val_eq (by rw [p_post2, p_post1]),
+                p_post3, by rw [p_post4, h_p1], p_post5⟩⟩⟩
+        · intro _ h; exact absurd h (by simp only [not_or, not_lt, not_le]; exact ⟨h_le, by omega⟩)
       · rename_i h_ne
         have h_ei : sendKeyEi self epoch = min idx.val 1 := by
           rw [sendKeyEi, if_neg h_ne, h_idx', chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH_spec]
@@ -461,20 +414,25 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
           simp [nextKeyHkdfOutput, crypto.hkdf_length]
         have h_phys_lt1' : vd1.head.val + ei.val < vd1.buf.val.length := by
           simpa [alloc.vec.Vec.length] using h_phys_lt1
-        simp only [h_idx', h_ei, h_ce]
-        refine ⟨h_ge, h_le, h_back, p_post1, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-          fun h => absurd h h_ne, ?_, ?_⟩
-        · simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢
-          rw [p_post6, List.length_drop, h64]
-        · rw [p_post6, h_p1]
-        · simp only [h_hd2, h_hd1, h_hd0]; omega
-        · simp only [h_ln2, h_ln1, h_ln0]; omega
-        · simp only [h_buf2, List.length_set, h_bl1, h_buf0]
-        · simp only [h_buf2, List.length_set, h_hd2, h_ln2, h_bl1, h_hd1, h_ln1]; exact h_wf0
-        · simp only [h_ln2, h_ln1, h_ln0]; omega
-        · simp only [h_buf2, ← h_phys_eq, List.getElem?_set_self h_phys_lt1']
-          exact ⟨trivial, UScalar.eq_of_val_eq (by rw [p_post2, p_post1]),
-            p_post3, by rw [p_post4, h_p1], p_post5⟩
+        simp only [sendKeyPost, sendKeyDequePost, sendKeySlotPost, h_idx', h_ei, h_ce]
+        refine ⟨fun h => absurd h (by omega), ?_, fun _ _ _ =>
+          ⟨trivial, trivial, trivial, trivial, trivial,
+           ⟨by simp only [h_hd2, h_hd1, h_hd0]; omega,
+            by simp only [h_ln2, h_ln1, h_ln0]; omega,
+            by simp only [h_buf2, List.length_set, h_bl1, h_buf0],
+            by simp only [h_buf2, List.length_set, h_hd2, h_ln2, h_bl1, h_hd1, h_ln1]; exact h_wf0,
+            by simp only [h_ln2, h_ln1, h_ln0]; omega,
+            fun h => absurd h h_ne,
+            ?_, ?_⟩,
+           by simp only [h_buf2, ← h_phys_eq, List.getElem?_set_self h_phys_lt1']
+              exact ⟨p.1, p.2, rfl, p_post1,
+                by simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢;
+                   rw [p_post6, List.length_drop, h64],
+                by rw [p_post6, h_p1],
+                trivial,
+                UScalar.eq_of_val_eq (by rw [p_post2, p_post1]),
+                p_post3, by rw [p_post4, h_p1], p_post5⟩⟩⟩
+        · intro _ h; exact absurd h (by simp only [not_or, not_lt, not_le]; exact ⟨h_le, by omega⟩)
         · intro _ j hj1 hj2
           have hj1' : vd.head.val + (0#usize).val ≤ j := by rw [h_hd0, h_zero]; omega
           have hj2' : j < vd.head.val + ei.val := by rw [h_hd0]; omega
@@ -485,9 +443,11 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
           rw [h_buf2, List.getElem?_set_ne (by omega), h_same1 j (by rw [h_hd0, h_zero]; omega),
             h_buf0]
     · obtain ⟨h_e, h_bad⟩ := r_post2
-      simp only [core.result.Result.Insts.CoreOpsTry.branch,
+      simp only [sendKeyPost, sendKeyDequePost, sendKeySlotPost,
+        core.result.Result.Insts.CoreOpsTry.branch,
         core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
         core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-      exact ⟨trivial, Or.inr ⟨h_e, h_ge, h_bad⟩⟩
+      exact ⟨fun h => absurd h (by omega), fun _ _ => ⟨by rw [h_e], trivial⟩,
+        fun _ _ h3 => absurd h3 (by rcases h_bad with h|h <;> scalar_tac)⟩
 
 end spqr.chain.Chain
