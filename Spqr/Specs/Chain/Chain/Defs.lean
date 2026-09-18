@@ -363,4 +363,98 @@ def sendKeyPost (self : chain.Chain) (epoch : U64)
           sendKeySlotPost ce ce' i key
       | _, _ => False)
 
+/-- Postcondition for the less-than case of `ChainEpochDirection.key`:
+`ats < self.ctr`, delegates to `KeyHistory.get`. -/
+def cedKeyLessPost (self : chain.ChainEpochDirection) (ats : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (result : core.result.Result (alloc.vec.Vec U8) Error)
+    (self' : chain.ChainEpochDirection) : Prop :=
+  self'.ctr = self.ctr ∧
+  self'.next = self.next ∧
+  match result with
+  | core.result.Result.Err e =>
+      (e = Error.KeyTrimmed ats ∧
+        ats + (chain.maxOoo params).val < self.ctr ∧
+        self'.prev = self.prev) ∨
+      (e = Error.KeyAlreadyRequested ats ∧
+        self.ctr ≤ ats + (chain.maxOoo params).val ∧
+        self'.prev = self.prev ∧
+        (∀ k, k + 36 ≤ self.prev.data.length → k % 36 = 0 →
+          self.prev.data.val.slice k (k + 4) ≠ core.num.U32.to_be_bytes ats))
+  | core.result.Result.Ok out =>
+      self.ctr ≤ ats + (chain.maxOoo params).val ∧
+      out.length = 32 ∧
+      self'.prev.data.length = self.prev.data.length - 36 ∧
+      self'.prev.data.length % 36 = 0 ∧
+      (∃ off, off % 36 = 0 ∧
+        off + 36 ≤ self.prev.data.length ∧
+        self.prev.data.val.slice off (off + 4) = (core.num.U32.to_be_bytes ats).val ∧
+        (∀ k, k < off → k % 36 = 0 →
+          self.prev.data.val.slice k (k + 4) ≠ (core.num.U32.to_be_bytes ats).val) ∧
+        out = self.prev.data.val.slice (off + 4) (off + 36) ∧
+        (∀ j, j < off → self'.prev.data[j]! = self.prev.data[j]!) ∧
+        (off + 36 < self.prev.data.length →
+          self'.prev.data = (self.prev.data.val.setSlice! off
+            (self.prev.data.val.drop (self.prev.data.length - 36))).take
+              (self.prev.data.length - 36)) ∧
+        (off + 36 = self.prev.data.length →
+          self'.prev.data = self.prev.data.val.take off))
+
+/-- Postcondition for the greater+within-jump case of `ChainEpochDirection.key`:
+chain advancement from `self.ctr` to `ats`. -/
+def cedKeyAdvancePost (self : chain.ChainEpochDirection) (ats : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (result : core.result.Result (alloc.vec.Vec U8) Error)
+    (self' : chain.ChainEpochDirection)
+    (h_gt : ats > self.ctr) : Prop :=
+  let loopSteps := ats.val - (self.ctr.val + 1)
+  let loopSecret := chain.ChainEpochDirection.iterChainSecret self.next.val self.ctr.val loopSteps
+  let ctrAts : U32 := ⟨ats.val, by scalar_tac⟩
+  let finalOkm := nextKeyHkdfOutput loopSecret ctrAts
+  let kh0 :=
+    if ats.val > self.ctr.val + (chain.maxOoo params).val
+    then { data := ⟨[], by simp⟩ : chain.KeyHistory }
+    else self.prev
+  let khPreGc := chain.ChainEpochDirection.iterKeyHistory
+    self.next.val self.ctr.val ats.val params kh0 loopSteps
+  let max_ooo : Nat := (chain.maxOoo params).val
+  let trim_threshold : Nat := (max_ooo * 11 / 10 + 1) * 36
+  let ctr_new : U32 := ⟨ats.val - 1, by scalar_tac⟩
+  (∃ key : alloc.vec.Vec U8,
+    result = core.result.Result.Ok key ∧
+    key.length = 32 ∧
+    key.val = finalOkm.drop 32) ∧
+  self'.ctr = ats.val ∧
+  self'.next.length = 32 ∧
+  self'.next.val = finalOkm.take 32 ∧
+  self'.prev.data.length % 36 = 0 ∧
+  self'.prev.data.length ≤
+    kh0.data.length + 36 * (ats.val - self.ctr.val) ∧
+  self'.prev.data.length ≤ self.prev.data.length + 36 * (ats.val - self.ctr.val) ∧
+  (ats.val > self.ctr.val + (chain.maxOoo params).val →
+    self'.prev.data.length ≤ 36 * (ats.val - self.ctr.val)) ∧
+  self'.prev.data.length ≤ Usize.max ∧
+  self'.prev.data.length ≤ khPreGc.data.length ∧
+  khPreGc.data.length % 36 = 0 ∧
+  kh0.data.length ≤ khPreGc.data.length ∧
+  keyPostGc self' khPreGc max_ooo trim_threshold ctr_new
+
+/-- Full postcondition for `ChainEpochDirection.key`, covering all four cases. -/
+def cedKeyPost (self : chain.ChainEpochDirection) (ats : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (result : core.result.Result (alloc.vec.Vec U8) Error)
+    (self' : chain.ChainEpochDirection) : Prop :=
+  (ats = self.ctr →
+    result = core.result.Result.Err (Error.KeyAlreadyRequested ats) ∧
+    self' = self) ∧
+  (ats < self.ctr →
+    cedKeyLessPost self ats params result self') ∧
+  (ats > self.ctr →
+    ats.val - self.ctr.val > (chain.maxJump params).val →
+    result = core.result.Result.Err (Error.KeyJump self.ctr ats) ∧
+    self' = self) ∧
+  (∀ (h_gt : ats > self.ctr),
+    ats.val - self.ctr.val ≤ (chain.maxJump params).val →
+    cedKeyAdvancePost self ats params result self' h_gt)
+
 end spqr.chain
