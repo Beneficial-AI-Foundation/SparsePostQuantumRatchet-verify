@@ -457,4 +457,111 @@ def cedKeyPost (self : chain.ChainEpochDirection) (ats : U32)
     ats.val - self.ctr.val ≤ (chain.maxJump params).val →
     cedKeyAdvancePost self ats params result self' h_gt)
 
+/-- Bridge lemma: convert raw GC postconditions into the unfolded `keyPostGc` conjunction.
+
+Takes the GC output `gcOut` directly (avoiding struct-projection reduction issues) and
+produces the 5 conjuncts of `keyPostGc` with horizon values rewritten via `h_ctr_eq`. -/
+theorem keyPostGc_of_gc
+    (gcOut khPreGc : chain.KeyHistory)
+    (max_ooo trim_threshold : Nat)
+    (ctr_new current_key : U32)
+    (h_ctr_eq : current_key.val = ctr_new.val)
+    (gc_shrink : gcOut.data.length ≤ khPreGc.data.length)
+    (gc_noop : khPreGc.data.length < trim_threshold → gcOut = khPreGc)
+    (gc_trim : trim_threshold ≤ khPreGc.data.length →
+      ∃ horizon : U32,
+        horizon.val = current_key.val - max_ooo ∧
+        (∀ m, m < gcOut.data.length ∧ m % 36 = 0 →
+          Slice.lexCmpAux core.cmp.OrdU8
+            (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+            (gcOut.data.val.slice m (m + 4)) ≠ ok .gt) ∧
+        (∀ n, n < khPreGc.data.length ∧ n % 36 = 0 →
+          Slice.lexCmpAux core.cmp.OrdU8
+            (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+            (khPreGc.data.val.slice n (n + 4)) ≠ ok .gt →
+          ∃ m, m < gcOut.data.length ∧ m % 36 = 0 ∧
+            gcOut.data.val.slice m (m + 36) =
+              khPreGc.data.val.slice n (n + 36)) ∧
+        (∃ f : Nat → Nat,
+          (∀ m, m < gcOut.data.length ∧ m % 36 = 0 →
+            f m < khPreGc.data.length ∧ (f m) % 36 = 0 ∧
+            gcOut.data.val.slice m (m + 36) =
+              khPreGc.data.val.slice (f m) (f m + 36)) ∧
+          (∀ m₁ m₂, m₁ < gcOut.data.length ∧ m₁ % 36 = 0 →
+            m₂ < gcOut.data.length ∧ m₂ % 36 = 0 →
+            f m₁ = f m₂ → m₁ = m₂)) ∧
+        (∃ g : Nat → Nat,
+          (∀ n, n < khPreGc.data.length ∧ n % 36 = 0 →
+            Slice.lexCmpAux core.cmp.OrdU8
+              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+              (khPreGc.data.val.slice n (n + 4)) ≠ ok .gt →
+            g n < gcOut.data.length ∧ (g n) % 36 = 0 ∧
+            gcOut.data.val.slice (g n) (g n + 36) =
+              khPreGc.data.val.slice n (n + 36)) ∧
+          (∀ n₁ n₂, n₁ < khPreGc.data.length ∧ n₁ % 36 = 0 →
+            n₂ < khPreGc.data.length ∧ n₂ % 36 = 0 →
+            Slice.lexCmpAux core.cmp.OrdU8
+              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+              (khPreGc.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
+            Slice.lexCmpAux core.cmp.OrdU8
+              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+              (khPreGc.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
+            g n₁ = g n₂ → n₁ = n₂))) :
+    (trim_threshold ≤ gcOut.data.length → max_ooo ≤ ctr_new.val →
+      ∃ horizon : U32, horizon.val = ctr_new.val - max_ooo ∧
+        (∀ m, m < gcOut.data.length ∧ m % 36 = 0 →
+          Slice.lexCmpAux core.cmp.OrdU8
+            (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+            (gcOut.data.val.slice m (m + 4)) ≠ ok .gt)) ∧
+    (trim_threshold ≤ khPreGc.data.length → max_ooo ≤ ctr_new.val →
+      ∃ horizon : U32, horizon.val = ctr_new.val - max_ooo ∧
+        (∀ n, n < khPreGc.data.length ∧ n % 36 = 0 →
+          Slice.lexCmpAux core.cmp.OrdU8
+            (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+            (khPreGc.data.val.slice n (n + 4)) ≠ ok .gt →
+          ∃ m, m < gcOut.data.length ∧ m % 36 = 0 ∧
+            gcOut.data.val.slice m (m + 36) =
+              khPreGc.data.val.slice n (n + 36))) ∧
+    (khPreGc.data.length < trim_threshold → gcOut = khPreGc) ∧
+    (trim_threshold ≤ khPreGc.data.length → max_ooo ≤ ctr_new.val →
+      ∃ f : Nat → Nat,
+        (∀ m, m < gcOut.data.length ∧ m % 36 = 0 →
+          f m < khPreGc.data.length ∧ (f m) % 36 = 0 ∧
+          gcOut.data.val.slice m (m + 36) =
+            khPreGc.data.val.slice (f m) (f m + 36)) ∧
+        (∀ m₁ m₂, m₁ < gcOut.data.length ∧ m₁ % 36 = 0 →
+          m₂ < gcOut.data.length ∧ m₂ % 36 = 0 →
+          f m₁ = f m₂ → m₁ = m₂)) ∧
+    (trim_threshold ≤ khPreGc.data.length → max_ooo ≤ ctr_new.val →
+      ∃ horizon : U32, horizon.val = ctr_new.val - max_ooo ∧
+        ∃ g : Nat → Nat,
+          (∀ n, n < khPreGc.data.length ∧ n % 36 = 0 →
+            Slice.lexCmpAux core.cmp.OrdU8
+              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+              (khPreGc.data.val.slice n (n + 4)) ≠ ok .gt →
+            g n < gcOut.data.length ∧ (g n) % 36 = 0 ∧
+            gcOut.data.val.slice (g n) (g n + 36) =
+              khPreGc.data.val.slice n (n + 36)) ∧
+          (∀ n₁ n₂, n₁ < khPreGc.data.length ∧ n₁ % 36 = 0 →
+            n₂ < khPreGc.data.length ∧ n₂ % 36 = 0 →
+            Slice.lexCmpAux core.cmp.OrdU8
+              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+              (khPreGc.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
+            Slice.lexCmpAux core.cmp.OrdU8
+              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
+              (khPreGc.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
+            g n₁ = g n₂ → n₁ = n₂)) := by
+  refine ⟨?_, ?_, gc_noop, ?_, ?_⟩
+  · intro htrim hmo
+    obtain ⟨horizon, hhz, hlive, _, _, _⟩ := gc_trim (le_trans htrim gc_shrink)
+    exact ⟨horizon, by rw [hhz, h_ctr_eq], hlive⟩
+  · intro htrim hmo
+    obtain ⟨horizon, hhz, _, hcomp, _, _⟩ := gc_trim htrim
+    exact ⟨horizon, by rw [hhz, h_ctr_eq], hcomp⟩
+  · intro htrim hmo
+    obtain ⟨_, _, _, _, hf, _⟩ := gc_trim htrim; exact hf
+  · intro htrim hmo
+    obtain ⟨horizon, hhz, _, _, _, hg⟩ := gc_trim htrim
+    exact ⟨horizon, by rw [hhz, h_ctr_eq], hg⟩
+
 end spqr.chain

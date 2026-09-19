@@ -943,7 +943,6 @@ private theorem key_spec_greater_jump_no_clear (self : chain.ChainEpochDirection
               simp only [gt_iff_lt] at *
               simp only [if_neg h_ats_le_ooo]
               rw [maxOoo_if_eq] at kh2_post3 kh2_post4
-              -- Hoist hkv once for reuse across all sub-goals
               have hkv : kh.val + 1 = ats.val := by
                 have h := kh_post1
                 have hle : self.ctr.val + 1 ≤ ats.val := by scalar_tac

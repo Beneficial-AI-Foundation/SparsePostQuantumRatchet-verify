@@ -76,7 +76,9 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
           self.links.head.val + (self.links.length.val - 1
           - (self.current_epoch.val - epoch.val)) := by
         omega
-      simp only [this] at *)
+      simp only [this] at *
+      try (unfold cedKeyPost at r1_post
+           obtain ⟨r1_post1, r1_post2, r1_post3, r1_post4⟩ := r1_post))
     all_goals first
     | assumption
     | (constructor

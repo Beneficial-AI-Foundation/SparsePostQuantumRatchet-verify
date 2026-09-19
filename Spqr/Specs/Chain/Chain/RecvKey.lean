@@ -88,7 +88,9 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
           self.links.head.val +
           (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
         omega
-      simp only [h_phys_rw] at *)
+      simp only [h_phys_rw] at *
+      try (unfold cedKeyPost at r1_post
+           obtain ⟨r1_post1, r1_post2, r1_post3, r1_post4⟩ := r1_post))
     all_goals first
     | assumption
     | (constructor
@@ -115,25 +117,9 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
          · exact r1_post2 h
          · obtain ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, _, h_prevbd, h_clear,
                    h_usize, h_pregcbd, h_pgalign, h_kh0pg, h_gc⟩ := r1_post4 h1 h2
-           refine ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, h_prevbd, h_usize,
+           exact ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, h_prevbd, h_usize,
                   _, _, _, (⟨index.val - 1, by scalar_tac⟩ : U32), rfl, rfl, rfl,
-                  h_pregcbd, h_pgalign, ?_⟩
-           unfold keyPostGc
-           obtain ⟨hgc1, hgc2, hgc3, hgc4, hgc5⟩ := h_gc
-           exact ⟨fun h1 h2 => by obtain ⟨hz, hhz, hm⟩ := hgc1 h1 h2; exact ⟨hz, hhz,
-                  fun m ⟨hlt, hmod⟩ => hm m hlt hmod⟩,
-                  fun h1 h2 => by obtain ⟨hz, hhz, hm⟩ := hgc2 h1 h2; exact ⟨hz, hhz,
-                  fun n
-                  ⟨hlt, hmod⟩ hne => by
-                    obtain ⟨m, hm1, hm2, hm3⟩ := hm n hlt hmod hne; exact ⟨m, hm1, hm2, hm3⟩⟩,
-                  fun h1 => hgc3 h1,
-                  fun h1 h2 => by obtain
-                  ⟨f, hf1, hf2⟩ := hgc4 h1 h2; exact ⟨f, fun m ⟨hlt, hmod⟩ => hf1 m hlt hmod,
-                  fun m1 m2 ⟨h1a, h1b⟩ ⟨h2a, h2b⟩ => hf2 m1 m2 h1a h1b h2a h2b⟩,
-                  fun h1 h2 => by obtain ⟨hz, hhz, g, hg1, hg2⟩ := hgc5 h1 h2; exact ⟨hz, hhz, g,
-                  fun n ⟨hlt, hmod⟩ hne => hg1 n hlt hmod hne,
-                  fun n1 n2 ⟨h1a, h1b⟩ ⟨h2a, h2b⟩ hne1 hne2 =>
-                    hg2 n1 n2 h1a h1b h2a h2b hne1 hne2⟩⟩)
+                  h_pregcbd, h_pgalign, h_gc⟩)
   · obtain ⟨h_e, h_bad⟩ := r_post2
     simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
