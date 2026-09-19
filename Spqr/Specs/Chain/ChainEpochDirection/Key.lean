@@ -533,9 +533,6 @@ theorem key_spec_equal (self : chain.ChainEpochDirection) (ats : U32)
         obtain ⟨idx, key_arr⟩ := y
         step*
 
-theorem less_branch_vacuous {P : Prop} {a b : Nat}
-    (h_lt : a < b) (h_gt : b < a) : P := by omega
-
 @[step]
 theorem key_spec_greater (self : chain.ChainEpochDirection) (ats : U32)
     (params : proto.pq_ratchet.ChainParams)
