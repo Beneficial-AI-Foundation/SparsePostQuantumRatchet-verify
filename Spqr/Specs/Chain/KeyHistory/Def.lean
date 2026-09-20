@@ -108,8 +108,7 @@ Given the original `self`, `current_key`, and `params`, the predicate asserts on
    - (4b) liveness of all result records
    - (4c) completeness: every unexpired source record retained
    - (4d) injective forward provenance map
-   - (4e) injective reverse completeness map
--/
+   - (4e) injective reverse completeness map -/
 def GcPost
     (self : chain.KeyHistory) (current_key : U32)
     (params : proto.pq_ratchet.ChainParams)
