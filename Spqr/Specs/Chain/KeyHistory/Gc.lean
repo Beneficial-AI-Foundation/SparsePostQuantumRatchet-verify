@@ -780,66 +780,9 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
                 let trim_threshold := (max_ooo * 11 / 10 + 1) * 36
                 trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
-      let max_ooo : Nat :=
-        if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
-      let trim_size : Nat := max_ooo * 11 / 10 + 1
-      let trim_threshold : Nat := trim_size * 36
-      -- (1) alignment: result length is a multiple of 36 (whole records)
-      result.data.length % 36 = 0 ∧
-      -- (2) shrinkage: GC only removes records, never grows
-      result.data.length ≤ self.data.length ∧
-      -- (3) no-op when below threshold: if data is small enough, nothing is removed
-      (self.data.length < trim_threshold → result = self) ∧
-      -- (4) when above threshold, GC computes a trim horizon and enforces:
-      (trim_threshold ≤ self.data.length →
-        ∃ horizon : U32,
-         -- (4a) horizon value: `current_key - max_ooo`
-         horizon.val = current_key.val - max_ooo ∧
-          -- (4b) liveness: every record in result is unexpired (counter ≥ horizon)
-          (∀ m, m < result.data.length ∧ m % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (result.data.val.slice m (m + 4)) ≠ ok .gt) ∧
-          -- (4c) completeness: every unexpired record in self.data is retained in result
-          (∀ n, n < self.data.length ∧ n % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (self.data.val.slice n (n + 4)) ≠ ok .gt →
-            ∃ m, m < result.data.length ∧ m % 36 = 0 ∧
-              result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-          -- (4d) provenance with injectivity: there exists an injective mapping
-          --      witnessing that every result record originated from a distinct
-          --      source record (no duplication). Together with (4b) and (4c), this
-          --      ensures multiset(result records) = multiset(live source records).
-          (∃ f : Nat → Nat,
-            (∀ m, m < result.data.length ∧ m % 36 = 0 →
-              f m < self.data.length ∧ (f m) % 36 = 0 ∧
-              result.data.val.slice m (m + 36) =
-                self.data.val.slice (f m) (f m + 36)) ∧
-            (∀ m₁ m₂, m₁ < result.data.length ∧ m₁ % 36 = 0 →
-              m₂ < result.data.length ∧ m₂ % 36 = 0 →
-              f m₁ = f m₂ → m₁ = m₂)) ∧
-          -- (4e) completeness with injectivity: injective reverse mapping from
-          --      unexpired source records to result records. Together with (4d),
-          --      establishes a bijection proving
-          --      multiset(result records) = multiset(unexpired source records).
-          (∃ g : Nat → Nat,
-            (∀ n, n < self.data.length ∧ n % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n (n + 4)) ≠ ok .gt →
-              g n < result.data.length ∧ (g n) % 36 = 0 ∧
-              result.data.val.slice (g n) (g n + 36) =
-                self.data.val.slice n (n + 36)) ∧
-            (∀ n₁ n₂, n₁ < self.data.length ∧ n₁ % 36 = 0 →
-              n₂ < self.data.length ∧ n₂ % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
-              g n₁ = g n₂ → n₁ = n₂))) ⦄ := by
+      GcPost self current_key params result ⦄ := by
+  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
+    RecordsEq recordAt
   unfold gc
   simp only [alloc.vec.Vec.len]
   step*
@@ -946,66 +889,9 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
                 trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val)
     (h_platform : System.Platform.numBits = 64) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
-      let max_ooo : Nat :=
-        if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
-      let trim_size : Nat := max_ooo * 11 / 10 + 1
-      let trim_threshold : Nat := trim_size * 36
-      -- (1) alignment: result length is a multiple of 36 (whole records)
-      result.data.length % 36 = 0 ∧
-      -- (2) shrinkage: GC only removes records, never grows
-      result.data.length ≤ self.data.length ∧
-      -- (3) no-op when below threshold: if data is small enough, nothing is removed
-      (self.data.length < trim_threshold → result = self) ∧
-      -- (4) when above threshold, GC computes a trim horizon and enforces:
-      (trim_threshold ≤ self.data.length →
-        ∃ horizon : U32,
-         -- (4a) horizon value: `current_key - max_ooo`
-         horizon.val = current_key.val - max_ooo ∧
-          -- (4b) liveness: every record in result is unexpired (counter ≥ horizon)
-          (∀ m, m < result.data.length ∧ m % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (result.data.val.slice m (m + 4)) ≠ ok .gt) ∧
-          -- (4c) completeness: every unexpired record in self.data is retained in result
-          (∀ n, n < self.data.length ∧ n % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (self.data.val.slice n (n + 4)) ≠ ok .gt →
-            ∃ m, m < result.data.length ∧ m % 36 = 0 ∧
-              result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-          -- (4d) provenance with injectivity: there exists an injective mapping
-          --      witnessing that every result record originated from a distinct
-          --      source record (no duplication). Together with (4b) and (4c), this
-          --      ensures multiset(result records) = multiset(live source records).
-          (∃ f : Nat → Nat,
-            (∀ m, m < result.data.length ∧ m % 36 = 0 →
-              f m < self.data.length ∧ (f m) % 36 = 0 ∧
-              result.data.val.slice m (m + 36) =
-                self.data.val.slice (f m) (f m + 36)) ∧
-            (∀ m₁ m₂, m₁ < result.data.length ∧ m₁ % 36 = 0 →
-              m₂ < result.data.length ∧ m₂ % 36 = 0 →
-              f m₁ = f m₂ → m₁ = m₂)) ∧
-          -- (4e) completeness with injectivity: injective reverse mapping from
-          --      unexpired source records to result records. Together with (4d),
-          --      establishes a bijection proving
-          --      multiset(result records) = multiset(unexpired source records).
-          (∃ g : Nat → Nat,
-            (∀ n, n < self.data.length ∧ n % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n (n + 4)) ≠ ok .gt →
-              g n < result.data.length ∧ (g n) % 36 = 0 ∧
-              result.data.val.slice (g n) (g n + 36) =
-                self.data.val.slice n (n + 36)) ∧
-            (∀ n₁ n₂, n₁ < self.data.length ∧ n₁ % 36 = 0 →
-              n₂ < self.data.length ∧ n₂ % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
-              g n₁ = g n₂ → n₁ = n₂))) ⦄ := by
+      GcPost self current_key params result ⦄ := by
+  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
+    RecordsEq recordAt
   have h_usize : Usize.max = 2 ^ 64 - 1 := by
     simp [Usize.max, Usize.numBits, h_platform]
   unfold gc

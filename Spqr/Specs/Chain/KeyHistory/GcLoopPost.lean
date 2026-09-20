@@ -90,4 +90,66 @@ def GcLoopPost
       ¬IsExpired trim_horizon self.data n₁ → ¬IsExpired trim_horizon self.data n₂ →
       g n₁ = g n₂ → n₁ = n₂))
 
+/-- Convert a `U32` horizon value to the byte-list form used in lexicographic comparisons. -/
+abbrev horizonBytes (horizon : U32) : List U8 :=
+  horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8)
+
+/-- The `Slice U8` wrapper around `horizonBytes`. -/
+noncomputable abbrev horizonSlice (horizon : U32) : Slice U8 :=
+  ⟨horizonBytes horizon, by scalar_tac⟩
+
+/-- Postcondition predicate for `spqr.chain.KeyHistory.gc`.
+
+Given the original `self`, `current_key`, and `params`, the predicate asserts on `result`:
+1. **Alignment**: `result.data.length % 36 = 0`
+2. **Shrinkage**: `result.data.length ≤ self.data.length`
+3. **No-op below threshold**: small data ⇒ `result = self`
+4. **Above threshold**: exists a `horizon : U32` with value `current_key - max_ooo`, and:
+   - (4b) liveness of all result records
+   - (4c) completeness: every unexpired source record retained
+   - (4d) injective forward provenance map
+   - (4e) injective reverse completeness map
+-/
+def GcPost
+    (self : chain.KeyHistory) (current_key : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (result : chain.KeyHistory) : Prop :=
+  let max_ooo : Nat :=
+    if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
+  let trim_size : Nat := max_ooo * 11 / 10 + 1
+  let trim_threshold : Nat := trim_size * 36
+  -- (1) alignment
+  RecordAligned result.data.length ∧
+  -- (2) shrinkage
+  result.data.length ≤ self.data.length ∧
+  -- (3) no-op below threshold
+  (self.data.length < trim_threshold → result = self) ∧
+  -- (4) above threshold
+  (trim_threshold ≤ self.data.length →
+    ∃ horizon : U32,
+      -- (4a) horizon value
+      horizon.val = current_key.val - max_ooo ∧
+      -- (4b) liveness
+      (∀ m, ValidRecord result.data m →
+        ¬IsExpired (horizonSlice horizon) result.data m) ∧
+      -- (4c) completeness
+      (∀ n, ValidRecord self.data n →
+        ¬IsExpired (horizonSlice horizon) self.data n →
+        ∃ m, ValidRecord result.data m ∧ RecordsEq result.data m self.data n) ∧
+      -- (4d) injective forward provenance
+      (∃ f : Nat → Nat,
+        (∀ m, ValidRecord result.data m →
+          ValidRecord self.data (f m) ∧ RecordsEq result.data m self.data (f m)) ∧
+        (∀ m₁ m₂, ValidRecord result.data m₁ → ValidRecord result.data m₂ →
+          f m₁ = f m₂ → m₁ = m₂)) ∧
+      -- (4e) injective reverse completeness
+      (∃ g : Nat → Nat,
+        (∀ n, ValidRecord self.data n →
+          ¬IsExpired (horizonSlice horizon) self.data n →
+          ValidRecord result.data (g n) ∧ RecordsEq result.data (g n) self.data n) ∧
+        (∀ n₁ n₂, ValidRecord self.data n₁ → ValidRecord self.data n₂ →
+          ¬IsExpired (horizonSlice horizon) self.data n₁ →
+          ¬IsExpired (horizonSlice horizon) self.data n₂ →
+          g n₁ = g n₂ → n₁ = n₂)))
+
 end spqr.chain.KeyHistory
