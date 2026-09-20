@@ -794,7 +794,8 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
       rw [hi4]
       have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
       rw [if_pos hlt] at h_key_ge
-      grind
+      apply h_key_ge
+      simp_all
     · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
       have hi4 : i4.val = 2000 := by
         have := i4_post2.mpr (Or.inl (by scalar_tac))
@@ -840,24 +841,30 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
           rw [if_neg hlt]
           omega
       · intro m hml hml1
-        have := v_post6 m (by grind)
+        have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
         simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
         exact this
       · intro n hn_live h1 h2
         simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
           ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
         obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
-        refine ⟨m, by grind⟩
+        refine ⟨m, by scalar_tac⟩
       · simp only [alloc.vec.Vec.length,
           ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
         refine ⟨f_inv, ?_, ?_⟩
-        · grind
-        · grind
+        · intro m hm1 hm2
+          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
+          exact ⟨ha, hb, hc⟩
+        · intro m₁ m₂ hm1l hm1a hm2l hm2a
+          exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
       · simp only [Array.to_slice, a_post,
           ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
         refine ⟨g_inv, ?_, ?_⟩
-        · grind
-        · grind
+        · intro n hn1 hn2 hn3
+          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
+          exact ⟨ha, hb, hc⟩
+        · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
+          exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live
 
 
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc`** (64-bit platform):
@@ -905,7 +912,8 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
       rw [hi4]
       have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
       rw [if_pos hlt] at h_key_ge
-      grind
+      apply h_key_ge
+      simp_all
     · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
       have hi4 : i4.val = 2000 := by
         have := i4_post2.mpr (Or.inl (by scalar_tac))
@@ -951,23 +959,29 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
           rw [if_neg hlt]
           omega
       · intro m hml hml1
-        have := v_post6 m (by grind)
+        have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
         simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
         exact this
       · intro n hn_live h1 h2
         simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
           ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
         obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
-        refine ⟨m, by grind⟩
+        refine ⟨m, by scalar_tac⟩
       · simp only [alloc.vec.Vec.length,
           ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
         refine ⟨f_inv, ?_, ?_⟩
-        · grind
-        · grind
+        · intro m hm1 hm2
+          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
+          exact ⟨ha, hb, hc⟩
+        · intro m₁ m₂ hm1l hm1a hm2l hm2a
+          exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
       · simp only [Array.to_slice, a_post,
           ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
         refine ⟨g_inv, ?_, ?_⟩
-        · grind
-        · grind
+        · intro n hn1 hn2 hn3
+          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
+          exact ⟨ha, hb, hc⟩
+        · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
+          exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live
 
 end spqr.chain.KeyHistory
