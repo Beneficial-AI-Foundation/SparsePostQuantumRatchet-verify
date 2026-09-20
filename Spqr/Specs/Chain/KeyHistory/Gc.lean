@@ -253,8 +253,6 @@ private theorem slice_eq_of_prefix (a b : List U8) (m : Nat)
         List.Inhabited_getElem_eq_getElem! b (m + n) (by omega)]
     exact h (m + n) (by omega)
 
-set_option maxHeartbeats 150000 in
--- haevy grind
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc_loop`**:
 
 Applies `loop.spec_decr_nat` with measure `self.data.length - i1.val` and the loop-body
