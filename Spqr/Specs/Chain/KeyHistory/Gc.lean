@@ -9,6 +9,7 @@ import Spqr.Specs.Chain.ChainParams.TrimSize
 import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Chain.KeyHistory.Remove
+import Spqr.Specs.Chain.KeyHistory.GcLoopPost
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc`: loop body 0
 
 One iteration of the garbage-collection loop. Given step size `i = 36`, the body inspects position
@@ -272,44 +273,8 @@ theorem gc_loop_spec
     (h_data_aligned : self.data.length % 36 = 0)
     (h_i1_bound : i1.val ≤ self.data.length) :
     gc_loop i self params trim_horizon i1 ⦃ (result : alloc.vec.Vec U8) =>
-      result.length % 36 = 0 ∧
-      result.length ≤ Usize.max ∧
-      result.length ≤ self.data.length ∧
-      (∀ j, j < i1.val → result.val[j]! = self.data.val[j]!) ∧
-      i1.val ≤ result.length ∧
-      (∀ m, i1.val ≤ m ∧  m < result.length ∧  m % 36 = 0 →
-        Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-          (result.val.slice m (m + 4)) ≠ ok .gt) ∧
-      (∀ m, m < result.length ∧ m % 36 = 0 →
-        ∃ n, n < self.data.length ∧ n % 36 = 0 ∧
-          result.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-      (∀ n, n < self.data.length ∧ n % 36 = 0 →
-        Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-          (self.data.val.slice n (n + 4)) ≠ ok .gt →
-        ∃ m, m < result.length ∧ m % 36 = 0 ∧
-          result.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-      (∃ f : Nat → Nat,
-        (∀ m, m < result.length ∧ m % 36 = 0 →
-          f m < self.data.length ∧ (f m) % 36 = 0 ∧
-          result.val.slice m (m + 36) =
-            self.data.val.slice (f m) (f m + 36)) ∧
-        (∀ m₁ m₂, m₁ < result.length ∧ m₁ % 36 = 0 →
-          m₂ < result.length ∧ m₂ % 36 = 0 →
-          f m₁ = f m₂ → m₁ = m₂)) ∧
-      -- completeness with injectivity: injective reverse mapping from unexpired source to result
-      (∃ g : Nat → Nat,
-        (∀ n, n < self.data.length ∧ n % 36 = 0 →
-          Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-            (self.data.val.slice n (n + 4)) ≠ ok .gt →
-          g n < result.length ∧ (g n) % 36 = 0 ∧
-          result.val.slice (g n) (g n + 36) = self.data.val.slice n (n + 36)) ∧
-        (∀ n₁ n₂, n₁ < self.data.length ∧ n₁ % 36 = 0 →
-          n₂ < self.data.length ∧ n₂ % 36 = 0 →
-          Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-            (self.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
-          Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-            (self.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
-          g n₁ = g n₂ → n₁ = n₂))⦄ := by
+      GcLoopPost self trim_horizon i1 result ⦄ := by
+  unfold GcLoopPost
   unfold gc_loop
   apply loop.spec_decr_nat
     (measure := fun (p : chain.KeyHistory × Usize) => p.1.data.length - p.2.val)
@@ -776,10 +741,14 @@ theorem gc_loop_spec
       · intro m ⟨hm1, hm2, hm3⟩
         have : m < k.val := by omega
         exact hlive m ⟨hm1, this, hm3⟩
-      · intro m hm; exact hsubseq m hm
-      · intro n hn hn_live; exact hcomplete n hn hn_live
-      · exact ⟨f_inv, hf_prov, hf_inj⟩
-      · exact ⟨g_inv, hg_prov, hg_inj⟩
+      · intro m hm
+        obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq m hm
+        exact ⟨n, ⟨hn1, hn2⟩, hn3⟩
+      · intro n hn hn_live
+        obtain ⟨m, hm1, hm2, hm3⟩ := hcomplete n hn hn_live
+        exact ⟨m, ⟨hm1, hm2⟩, hm3⟩
+      · exact ⟨f_inv, fun m hm => let ⟨a, b, c⟩ := hf_prov m hm; ⟨⟨a, b⟩, c⟩, hf_inj⟩
+      · exact ⟨g_inv, fun n hn hlive => let ⟨a, b, c⟩ := hg_prov n hn hlive; ⟨⟨a, b⟩, c⟩, hg_inj⟩
   · exact ⟨h_aligned, h_data_aligned, h_bound, h_i1_bound, le_refl _, le_refl _,
       fun j _ => rfl, fun m h => by simp only [alloc.vec.Vec.length] at *; omega,
       fun m ⟨hml, hmal⟩ => ⟨m, hml, hmal, rfl⟩,
@@ -897,6 +866,9 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
       rw [if_neg hlt] at h_key_ge
       scalar_tac
   · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
+    obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
+            v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
+            ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
     rw [i2_post] at i3_post
     simp only [UScalar.ofNatCore_val_eq] at i3_post
     refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
@@ -926,17 +898,26 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
           have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
           rw [if_neg hlt]
           omega
-      · intro m hml
-        have := v_post6 m (by omega) hml
+      · intro m hml hml1
+        have := v_post6 m (by grind)
         simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
         exact this
-      · intro n  hn_live
-        simp only [Array.to_slice, a_post, ne_eq, alloc.vec.Vec.length] at v_post8
-        exact v_post8 n  hn_live
-      · simp only [alloc.vec.Vec.length] at v_post9 v_post10
-        exact ⟨_, v_post9, v_post10⟩
-      · simp only [Array.to_slice, a_post] at v_post11 v_post12
-        exact ⟨_, v_post11, v_post12⟩
+      · intro n hn_live h1 h2
+        simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
+          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
+        obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
+        refine ⟨m, by grind⟩
+      · simp only [alloc.vec.Vec.length,
+          ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
+        refine ⟨f_inv, ?_, ?_⟩
+        · grind
+        · grind
+      · simp only [Array.to_slice, a_post,
+          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
+        refine ⟨g_inv, ?_, ?_⟩
+        · grind
+        · grind
+
 
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc`** (64-bit platform):
 
@@ -1053,6 +1034,9 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
       rw [if_neg hlt] at h_key_ge
       scalar_tac
   · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
+    obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
+            v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
+            ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
     rw [i2_post] at i3_post
     simp only [UScalar.ofNatCore_val_eq] at i3_post
     refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
@@ -1082,16 +1066,24 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
           have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
           rw [if_neg hlt]
           omega
-      · intro m hml
-        have := v_post6 m (by omega) hml
+      · intro m hml hml1
+        have := v_post6 m (by grind)
         simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
         exact this
-      · intro n  hn_live
-        simp only [Array.to_slice, a_post, ne_eq, alloc.vec.Vec.length] at v_post8
-        exact v_post8 n  hn_live
-      · simp only [alloc.vec.Vec.length] at v_post9 v_post10
-        exact ⟨_, v_post9, v_post10⟩
-      · simp only [Array.to_slice, a_post] at v_post11 v_post12
-        exact ⟨_, v_post11, v_post12⟩
+      · intro n hn_live h1 h2
+        simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
+          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
+        obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
+        refine ⟨m, by grind⟩
+      · simp only [alloc.vec.Vec.length,
+          ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
+        refine ⟨f_inv, ?_, ?_⟩
+        · grind
+        · grind
+      · simp only [Array.to_slice, a_post,
+          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
+        refine ⟨g_inv, ?_, ?_⟩
+        · grind
+        · grind
 
 end spqr.chain.KeyHistory
