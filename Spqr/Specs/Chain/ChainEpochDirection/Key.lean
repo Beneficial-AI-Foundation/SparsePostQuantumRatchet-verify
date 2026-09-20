@@ -755,6 +755,8 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
                   i4_succ_eq_ats self ats i4 h_ats_gt i4_post1
                 have h_i5_eq : i5.val = ats.val := by omega
                 simp only [if_pos h_ats_gt_ooo]
+                unfold chain.KeyHistory.GcPost at kh2_post
+                obtain ⟨kh2_post1, kh2_post2, kh2_post3, kh2_post4⟩ := kh2_post
                 rw [maxOoo_if_eq] at kh2_post3 kh2_post4
                 have hkh_eq : kh = { data := ⟨[], by simp⟩ } := by
                   obtain ⟨⟨dl, dp⟩⟩ := kh
@@ -810,20 +812,28 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
                   have hk1 : ((maxOoo params).val * 11 / 10 + 1) * 36 ≤ kh1.data.length :=
                     le_trans htrim kh2_post2
                   obtain ⟨horizon, hhz, hlive, _, _, _⟩ := kh2_post4 hk1
-                  refine ⟨horizon, ?_, hlive⟩
+                  refine ⟨horizon, ?_, fun m hm hmod => hlive m ⟨hm, hmod⟩⟩
                   rw [hhz, h_i4_val]; rfl
                 · intro htrim hmo
                   obtain ⟨horizon, hhz, _, hcomp, _, _⟩ := kh2_post4 htrim
-                  refine ⟨horizon, ?_, hcomp⟩
-                  rw [hhz, h_i4_val]; rfl
+                  refine ⟨horizon, ?_, fun n hn hmod hne => ?_⟩
+                  · rw [hhz, h_i4_val]; rfl
+                  · obtain ⟨m, ⟨hml, hmmod⟩, hmeq⟩ := hcomp n ⟨hn, hmod⟩ hne
+                    exact ⟨m, hml, hmmod, hmeq⟩
                 · intro hlt; exact kh2_post3 hlt
                 · refine ⟨?_, ?_⟩
                   · intro htrim hmo
-                    obtain ⟨horizon, _, _, _, hf, _⟩ := kh2_post4 htrim
-                    exact hf
+                    obtain ⟨horizon, _, _, _, ⟨f, hfprop, hfinj⟩, _⟩ := kh2_post4 htrim
+                    exact ⟨f,
+                      fun m hm hmod => let ⟨hv, hr⟩ := hfprop m ⟨hm, hmod⟩; ⟨hv.1, hv.2, hr⟩,
+                      fun m₁ m₂ hm₁ hmod₁ hm₂ hmod₂ => hfinj m₁ m₂ ⟨hm₁, hmod₁⟩ ⟨hm₂, hmod₂⟩⟩
                   · intro htrim hmo
-                    obtain ⟨horizon, hhz, _, _, _, hg⟩ := kh2_post4 htrim
-                    refine ⟨horizon, ?_, hg⟩
+                    obtain ⟨horizon, hhz, _, _, _, ⟨g, hgprop, hginj⟩⟩ := kh2_post4 htrim
+                    refine ⟨horizon, ?_, g,
+                      fun n hn hmod hne =>
+                        let ⟨hv, hr⟩ := hgprop n ⟨hn, hmod⟩ hne; ⟨hv.1, hv.2, hr⟩,
+                      fun n₁ n₂ hn₁ hmod₁ hn₂ hmod₂ hne₁ hne₂ =>
+                        hginj n₁ n₂ ⟨hn₁, hmod₁⟩ ⟨hn₂, hmod₂⟩ hne₁ hne₂⟩
                     rw [hhz, h_i4_val]; rfl
           · step
             step
@@ -942,6 +952,8 @@ private theorem key_spec_greater_jump_no_clear (self : chain.ChainEpochDirection
                 maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
               simp only [gt_iff_lt] at *
               simp only [if_neg h_ats_le_ooo]
+              unfold chain.KeyHistory.GcPost at kh2_post
+              obtain ⟨kh2_post1, kh2_post2, kh2_post3, kh2_post4⟩ := kh2_post
               rw [maxOoo_if_eq] at kh2_post3 kh2_post4
               have hkv : kh.val + 1 = ats.val := by
                 have h := kh_post1
@@ -975,20 +987,30 @@ private theorem key_spec_greater_jump_no_clear (self : chain.ChainEpochDirection
               · rw [← kh_post4]; exact kh_post5
               · intro htrim hmo
                 obtain ⟨horizon, hhz, hlive, _, _, _⟩ := kh2_post4 (le_trans htrim kh2_post2)
-                refine ⟨horizon, ?_, hlive⟩; rw [hhz, hkv2]; rfl
+                refine ⟨horizon, ?_, fun m hm hmod => hlive m ⟨hm, hmod⟩⟩; rw [hhz, hkv2]; rfl
               · intro htrim hmo
                 rw [kh_post4] at kh2_post4
                 obtain ⟨horizon, hhz, _, hcomp, _, _⟩ := kh2_post4 htrim
-                refine ⟨horizon, ?_, hcomp⟩; rw [hhz, hkv2]; rfl
+                refine ⟨horizon, ?_, fun n hn hmod hne => ?_⟩
+                · rw [hhz, hkv2]; rfl
+                · obtain ⟨m, ⟨hml, hmmod⟩, hmeq⟩ := hcomp n ⟨hn, hmod⟩ hne
+                  exact ⟨m, hml, hmmod, hmeq⟩
               · rw [kh_post4] at kh2_post3; exact kh2_post3
               · refine ⟨?_, ?_⟩
                 · intro htrim hmo
                   rw [kh_post4] at kh2_post4
-                  obtain ⟨horizon, _, _, _, hf, _⟩ := kh2_post4 htrim; exact hf
+                  obtain ⟨horizon, _, _, _, ⟨f, hfprop, hfinj⟩, _⟩ := kh2_post4 htrim
+                  exact ⟨f,
+                    fun m hm hmod => let ⟨hv, hr⟩ := hfprop m ⟨hm, hmod⟩; ⟨hv.1, hv.2, hr⟩,
+                    fun m₁ m₂ hm₁ hmod₁ hm₂ hmod₂ => hfinj m₁ m₂ ⟨hm₁, hmod₁⟩ ⟨hm₂, hmod₂⟩⟩
                 · intro htrim hmo
                   rw [kh_post4] at kh2_post4
-                  obtain ⟨horizon, hhz, _, _, _, hg⟩ := kh2_post4 htrim
-                  refine ⟨horizon, ?_, hg⟩; rw [hhz, hkv2]; rfl
+                  obtain ⟨horizon, hhz, _, _, _, ⟨g, hgprop, hginj⟩⟩ := kh2_post4 htrim
+                  refine ⟨horizon, ?_, g,
+                    fun n hn hmod hne => let ⟨hv, hr⟩ := hgprop n ⟨hn, hmod⟩ hne; ⟨hv.1, hv.2, hr⟩,
+                    fun n₁ n₂ hn₁ hmod₁ hn₂ hmod₂ hne₁ hne₂ =>
+                      hginj n₁ n₂ ⟨hn₁, hmod₁⟩ ⟨hn₂, hmod₂⟩ hne₁ hne₂⟩
+                  rw [hhz, hkv2]; rfl
 
 /-- **Spec theorem for `spqr.chain.ChainEpochDirection.key`** (greater-jump case):
 
