@@ -3,18 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.NextKey
 import Spqr.Specs.Chain.KeyHistory.Get
 import Spqr.Specs.Chain.KeyHistory.Clear
 import Spqr.Specs.Chain.KeyHistory.Gc
 import Spqr.Specs.Chain.ChainParams.MaxJumpOrDefault
-import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
-import Spqr.Specs.Chain.Defs
 import Spqr.Specs.Chain.Chain.Defs
-import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
 import Spqr.Specs.Chain.KeyHistory.Add
-import Spqr.Specs.Aeneas.VecDerefMut
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::key`: loop body 0
 
@@ -89,9 +84,8 @@ theorem body_spec
   step*
   split
   · step*
-    · have h := h_maxooo_bound
-      simp only [maxOoo] at h
-      split_ifs at h
+    · simp only [maxOoo] at h_maxooo_bound
+      split_ifs at h_maxooo_bound
       · scalar_tac
       · have := DEFAULT_CHAIN_PARAMS_spec.2; scalar_tac
     · simp only [Slice.length] at *
@@ -509,8 +503,7 @@ theorem key_spec_equal (self : chain.ChainEpochDirection) (ats : U32)
   · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
       maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
     omega
-  · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-      maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
+  · have h_i2_eq := maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
     split
     · step*
       · rw [i4_post4]
@@ -709,30 +702,30 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
   simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
   split
   · step
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at *
-    intro h_gt; scalar_tac
+    rename_i h
+    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at h
+    scalar_tac
   · simp only [gt_iff_lt, UScalar.lt_equiv, tsub_le_iff_right, alloc.vec.Vec.length,
     UScalarTy.U32_numBits_eq, Nat.reducePow, UScalarTy.U8_numBits_eq, ne_eq, and_imp, WP.spec_ok,
     reduceCtorEq, false_and, exists_const, le_add_iff_nonneg_right, zero_le, true_and, imp_false]
-    intro h_gt
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at *
+    rename_i h
+    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at h
     omega
   · step
-    · simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
+    · rename_i h
+      simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at h
+      omega
     · step
       split
-      · have h_i1_eq : i1.val = (chain.maxJump params).val :=
-          maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
+      · have := maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
         intro h_gt h_jump_le
         simp only [gt_iff_lt] at h_gt
         scalar_tac
       · step
         step
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-          maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
+        · have := maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
           omega
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-            maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
+        · have h_i2_eq:= maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
           split
           · step
             step
@@ -747,8 +740,6 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
                 obtain ⟨idx, key_arr⟩ := y
                 step
                 intros h_gt h_jump_gt h_ats_gt_ooo
-                have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                  maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
                 simp only [gt_iff_lt] at *
                 have h_ats_gt : ats.val > self.ctr.val := by omega
                 have h_i4_eq : i4.val + 1 = ats.val :=
@@ -760,20 +751,21 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
                 rw [maxOoo_if_eq] at kh2_post3 kh2_post4
                 have hkh_eq : kh = { data := ⟨[], by simp⟩ } := by
                   obtain ⟨⟨dl, dp⟩⟩ := kh
-                  simp only [alloc.vec.Vec.length] at kh_post
                   simp only [List.length_eq_zero_iff] at kh_post
-                  subst kh_post; rfl
+                  subst kh_post
+                  rfl
                 have h_pregc_eq :
                     iterKeyHistory (↑self.next) (↑self.ctr) (↑ats) params
                       { data := ⟨[], by simp⟩ } (↑ats - (↑self.ctr + 1)) = kh1 := by
-                  rw [← hkh_eq]; exact i4_post4.symm
+                  rw [← hkh_eq]
+                  exact i4_post4.symm
                 simp only [h_pregc_eq]
                 have h_kh1_mod : kh1.data.length % 36 = 0 := by
-                  rw [i4_post4]; apply iterKeyHistory_data_length_mod_36
+                  rw [i4_post4]
+                  apply iterKeyHistory_data_length_mod_36
                   simp [alloc.vec.Vec.length, kh_post]
                 have h_i4_val : (↑i4 : Nat) = ↑ats - 1 := by omega
-                have h_36bound :
-                    kh1.data.length ≤ 36 * (↑ats - ↑self.ctr) := by
+                have h_36bound : kh1.data.length ≤ 36 * (↑ats - ↑self.ctr) := by
                   have h := i4_post6
                   simp only [alloc.vec.Vec.length, kh_post] at h; omega
                 have h_empty_len :
@@ -786,7 +778,9 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
                     Nat.reducePow, s1_post6, i4_post3]
                   congr 2
                   apply UScalar.val_eq_imp
-                  simp only [UScalar.val]; simp; omega
+                  simp only [UScalar.val]
+                  simp
+                  omega
                 · exact h_i5_eq
                 · simp only [Slice.length] at s1_post4 ⊢
                   simp only [alloc.vec.Vec.length] at i4_post2
@@ -813,7 +807,8 @@ private theorem key_spec_greater_jump_clear (self : chain.ChainEpochDirection) (
                     le_trans htrim kh2_post2
                   obtain ⟨horizon, hhz, hlive, _, _, _⟩ := kh2_post4 hk1
                   refine ⟨horizon, ?_, fun m hm hmod => hlive m ⟨hm, hmod⟩⟩
-                  rw [hhz, h_i4_val]; rfl
+                  rw [hhz, h_i4_val]
+                  rfl
                 · intro htrim hmo
                   obtain ⟨horizon, hhz, _, hcomp, _, _⟩ := kh2_post4 htrim
                   refine ⟨horizon, ?_, fun n hn hmod hne => ?_⟩
@@ -885,13 +880,14 @@ private theorem key_spec_greater_jump_no_clear (self : chain.ChainEpochDirection
   simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
   split
   · step
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at *
-    intro h_gt; scalar_tac
+    rename_i h
+    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at h
+    scalar_tac
   · simp only [gt_iff_lt, UScalar.lt_equiv, tsub_le_iff_right, alloc.vec.Vec.length,
     UScalarTy.U32_numBits_eq, Nat.reducePow, UScalarTy.U8_numBits_eq, ne_eq, and_imp, WP.spec_ok,
     reduceCtorEq, false_and, exists_const, le_add_iff_nonneg_right, zero_le, true_and, imp_false]
-    intro h_gt
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at *
+    rename_i h
+    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at h
     omega
   · step
     · simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
@@ -923,10 +919,6 @@ private theorem key_spec_greater_jump_no_clear (self : chain.ChainEpochDirection
                 obtain ⟨idx, key_arr⟩ := y
                 step
                 intros h_gt h_jump_gt h_ats_le_ooo
-                have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                  maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-                simp only [gt_iff_lt] at *
-                -- In the clear branch, ats > self.ctr + maxOoo, contradiction
                 exfalso
                 apply h_ats_le_ooo
                 have h_split : i3 < ats := by assumption
