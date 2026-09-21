@@ -419,6 +419,9 @@ end spqr.encoding.polynomial.PolyEncoder.from_pb_loop1
 
 namespace spqr.encoding.polynomial.PolyEncoder
 
+/-- The two shapes `from_pb` accepts. The `polys` case also requires non-zero element
+lengths, since `Poly::deserialize` rejects an empty slice whereas the points loop accepts
+one. -/
 def FromPbWellFormed (pb : proto.pq_ratchet.PolynomialEncoder) : Prop :=
   (pb.pts.val = [] ∧ pb.polys.length = 16 ∧
       ∀ j < 16, (pb.polys[j]!).length ≠ 0 ∧ (pb.polys[j]!).length % 2 = 0) ∨
@@ -430,6 +433,8 @@ instance instDecidableFromPbWellFormed (pb : proto.pq_ratchet.PolynomialEncoder)
   unfold FromPbWellFormed
   infer_instance
 
+/-- Postcondition of `from_pb_spec`. Reusing `IntoPbPostCond` pins `from_pb` down as the
+inverse of `into_pb` rather than by restating the byte layout. -/
 def FromPbPostCond (pb : proto.pq_ratchet.PolynomialEncoder)
     (result : core.result.Result PolyEncoder PolynomialError) : Prop :=
   if FromPbWellFormed pb then
@@ -656,6 +661,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
    by `WP.spec_mono`. Not `@[step]` anymore, so that new proofs now consume the
    generalised `from_pb_spec`. -/
 
+/-- The postcondition `from_pb_spec` carried before it was generalised: byte-level
+serialization identities behind implications that say nothing about rejected inputs. -/
 def FromPbPostCondOld (pb : proto.pq_ratchet.PolynomialEncoder)
     (result : core.result.Result PolyEncoder PolynomialError) : Prop :=
   (pb.pts.val = [] → pb.polys.val.length = 16 →
