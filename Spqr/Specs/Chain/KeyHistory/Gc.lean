@@ -254,9 +254,9 @@ private theorem slice_eq_of_prefix (a b : List U8) (m : Nat)
     exact h (m + n) (by omega)
 
 /-- Simplify `alloc.vec.Vec.length` everywhere and close with `omega`. -/
-syntax "vec_omega" : tactic
+syntax "vecOmega" : tactic
 macro_rules
-  | `(tactic| vec_omega) => `(tactic| (simp only [alloc.vec.Vec.length] at *; omega))
+  | `(tactic| vecOmega) => `(tactic| (simp only [alloc.vec.Vec.length] at *; omega))
 
 /-- If `a < b` and both are 36-aligned, then `a + 36 ≤ b`. -/
 private theorem aligned36_step {a b : Nat} (ha : a % 36 = 0) (hb : b % 36 = 0) (h : a < b) :
@@ -503,13 +503,13 @@ theorem gc_loop_spec
           (s.data.val.slice k.val (k.val + 4)) = ok .gt
       · obtain ⟨hlen, hkeq, hal, hib, hbnd', hpre, hsw, htr⟩ := hrem hcmp
         have hk36_bnd : k.val + 36 ≤ s.data.length :=
-          aligned36_step hk_al hs_al (by vec_omega)
+          aligned36_step hk_al hs_al (by vecOmega)
         have hs'_vl : s'.data.val.length = s'.data.length := rfl
         refine ⟨⟨hal, ?_, hbnd', hib, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
         · rw [hlen]
-          vec_omega
+          vecOmega
         · rw [hlen]
-          vec_omega
+          vecOmega
         · rw [hkeq]
           exact hmono
         · intro j hj
@@ -531,7 +531,7 @@ theorem gc_loop_spec
           exact hlive m ⟨hm1.1, hm1.2.1, hm1.2.2⟩ hm2
         · intro m ⟨hml, hmal⟩
           exact subseq_after_remove s.data.val s'.data.val self.data.val k.val m
-            (by vec_omega) hk_al hmal (by vec_omega) (by vec_omega) (by vec_omega) hsw htr
+            (by vecOmega) hk_al hmal (by vecOmega) (by vecOmega) (by vecOmega) hsw htr
             (fun p hp => hsubseq p hp)
         · intro n ⟨hn_lt, hn_al⟩ hn_live
           obtain ⟨m, hm_lt, hm_al, hm_eq⟩ := hcomplete n ⟨hn_lt, hn_al⟩ hn_live
@@ -539,21 +539,21 @@ theorem gc_loop_spec
           · subst hmk_eq
             exact absurd hcmp (by
               rw [timestamp_of_record_eq _ _ _ _ hm_eq
-                (by vec_omega)
-                (by vec_omega)]
+                (by vecOmega)
+                (by vecOmega)]
               exact hn_live)
           · obtain ⟨m', hm'_lt, hm'_al, hm'_eq⟩ := completeness_through_remove
               s.data.val s'.data.val k.val m
-              (by vec_omega)
-              hk_al hm_al hmk_eq hm_lt (by vec_omega) (by vec_omega) hsw htr
+              (by vecOmega)
+              hk_al hm_al hmk_eq hm_lt (by vecOmega) (by vecOmega) hsw htr
             exact ⟨m', hm'_lt, hm'_al, hm'_eq.trans hm_eq⟩
         · let src := fun m => if m = k.val ∧ k.val + 36 < s.data.length
             then s.data.length - 36 else m
           let f' : Nat → Nat := fun m => f_inv (src m)
           refine ⟨f', fun m ⟨hml, hmal⟩ => ?_, fun m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩ hfeq => ?_⟩
           · have ⟨hsrc_lt, hsrc_al, hsrc_eq⟩ := record_at_after_remove
-              s.data.val s'.data.val k.val m (by vec_omega)
-              hk_al hmal (by vec_omega) (by vec_omega) (by vec_omega) hsw htr
+              s.data.val s'.data.val k.val m (by vecOmega)
+              hk_al hmal (by vecOmega) (by vecOmega) (by vecOmega) hsw htr
             have ⟨hf1, hf2, hf3⟩ := hf_prov (src m) ⟨hsrc_lt, hsrc_al⟩
             exact ⟨hf1, hf2, hsrc_eq.trans hf3⟩
           · show m₁ = m₂
@@ -564,16 +564,16 @@ theorem gc_loop_spec
             · have hfeq' : f_inv (s.data.length - 36) = f_inv m₂ := by
                 rw [if_pos h1, if_neg h2] at hfeq; exact hfeq
               have := hf_inj (s.data.length - 36) m₂
-                ⟨by (have := h1.2; vec_omega), by vec_omega⟩
-                ⟨by vec_omega, hm2a⟩ hfeq'
+                ⟨by (have := h1.2; vecOmega), by vecOmega⟩
+                ⟨by vecOmega, hm2a⟩ hfeq'
               rw [hlen] at hm2l; omega
             · have hfeq' : f_inv m₁ = f_inv (s.data.length - 36) := by
                 rw [if_neg h1, if_pos h2] at hfeq; exact hfeq
               have := hf_inj m₁ (s.data.length - 36)
-                ⟨by vec_omega, hm1a⟩
-                ⟨by (have := h2.2; vec_omega), by vec_omega⟩ hfeq'
+                ⟨by vecOmega, hm1a⟩
+                ⟨by (have := h2.2; vecOmega), by vecOmega⟩ hfeq'
               rw [hlen] at hm1l; omega
-            · exact hf_inj m₁ m₂ ⟨by vec_omega, hm1a⟩ ⟨by vec_omega, hm2a⟩
+            · exact hf_inj m₁ m₂ ⟨by vecOmega, hm1a⟩ ⟨by vecOmega, hm2a⟩
                 (by rw [if_neg h1, if_neg h2] at hfeq; exact hfeq)
         · let dst := fun n => if g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length
             then k.val else g_inv n
@@ -584,15 +584,15 @@ theorem gc_loop_spec
             have hgn_ne_k : g_inv n ≠ k.val := by
               intro heq; rw [← heq] at hcmp
               exact expired_contradicts_live _ _ _ _ _ hgn_eq
-                (by vec_omega) (by vec_omega) hcmp hn_live
+                (by vecOmega) (by vecOmega) hcmp hn_live
             obtain ⟨m', hm'_lt, hm'_al, hm'_eq⟩ := completeness_through_remove
               s.data.val s'.data.val k.val (g_inv n)
-              (by vec_omega) hk_al hgn_al hgn_ne_k hgn_lt (by vec_omega) (by vec_omega) hsw htr
+              (by vecOmega) hk_al hgn_al hgn_ne_k hgn_lt (by vecOmega) (by vecOmega) hsw htr
             simp only [g', dst]
             by_cases hg_last_swap : g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length
             · simp only [hg_last_swap]
               have ⟨_, _, hk_eq⟩ := record_at_after_remove s.data.val s'.data.val k.val k.val
-                (by vec_omega) hk_al hk_al (by vec_omega) (by vec_omega) (by vec_omega) hsw htr
+                (by vecOmega) hk_al hk_al (by vecOmega) (by vecOmega) (by vecOmega) hsw htr
               simp only [and_self, hg_last_swap.2, ite_true] at hk_eq
               rw [hg_last_swap.1] at hgn_eq
               have hswap : k.val + 36 < s.data.length := hg_last_swap.2
@@ -602,15 +602,15 @@ theorem gc_loop_spec
               have : ¬(g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length) := hg_last_swap
               have hgn_lt' : g_inv n < s'.data.length := by
                 rw [hlen]
-                have : g_inv n + 36 ≤ s.data.length := by vec_omega
+                have : g_inv n + 36 ≤ s.data.length := by vecOmega
                 by_cases heq_last : g_inv n = s.data.length - 36
                 · have : ¬(k.val + 36 < s.data.length) := fun h => hg_last_swap ⟨heq_last, h⟩
-                  vec_omega
+                  vecOmega
                 · omega
               refine ⟨hgn_lt', hgn_al, ?_⟩
               have ⟨_, _, hsrc_eq⟩ := record_at_after_remove
                 s.data.val s'.data.val k.val (g_inv n)
-                (by vec_omega) hk_al hgn_al hgn_lt' (by vec_omega) (by vec_omega) hsw htr
+                (by vecOmega) hk_al hgn_al hgn_lt' (by vecOmega) (by vecOmega) hsw htr
               have : ¬(g_inv n = k.val ∧ k.val + 36 < s.data.length) := by
                 intro ⟨h, _⟩; exact hgn_ne_k h
               simp only [this, ite_false] at hsrc_eq
@@ -625,7 +625,7 @@ theorem gc_loop_spec
               obtain ⟨_, _, hgni_eq⟩ := hg_prov ni ⟨hni_lt, hni_al⟩ hni_live
               rw [← heq] at hcmp
               exact expired_contradicts_live _ _ _ _ _ hgni_eq
-                (by vec_omega) (by vec_omega) hcmp hni_live
+                (by vecOmega) (by vecOmega) hcmp hni_live
             by_cases h1 : g_inv n₁ = s.data.length - 36 ∧ k.val + 36 < s.data.length <;>
             by_cases h2 : g_inv n₂ = s.data.length - 36 ∧ k.val + 36 < s.data.length
             · exact hg_inj n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live
@@ -636,16 +636,16 @@ theorem gc_loop_spec
               exact (g_ne_k n₁ hn1_lt hn1_al hn1_live hgeq).elim
             · rw [if_neg h1, if_neg h2] at hgeq
               exact hg_inj n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live hgeq
-        · simp only; rw [hkeq] at hib ⊢; rw [hlen] at hib ⊢; vec_omega
+        · simp only; rw [hkeq] at hib ⊢; rw [hlen] at hib ⊢; vecOmega
       · obtain ⟨hself, hkeq, hal, hib, _hbnd, _hal2⟩ := hadv hcmp
         subst hself
         refine ⟨⟨hal, hs_al, hs_bnd, hib, hs_le, ?_, hpres, ?_, hsubseq, hcomplete,
           ⟨f_inv, hf_prov, hf_inj⟩, ⟨g_inv, hg_prov, hg_inj⟩⟩, ?_⟩
-        · vec_omega
+        · vecOmega
         · intro m hm1 hm2
           by_cases hmk : m < k.val
           · exact hlive m ⟨hm1.1, hmk, hm1.2.2⟩ hm2
-          · have hmeq : m = k.val := by vec_omega
+          · have hmeq : m = k.val := by vecOmega
             subst hmeq; exact hcmp hm2
         · simp only; omega
     · obtain ⟨hout, _hnlt⟩ := hcf
@@ -663,7 +663,7 @@ theorem gc_loop_spec
       · exact ⟨f_inv, fun m hm => let ⟨a, b, c⟩ := hf_prov m hm; ⟨⟨a, b⟩, c⟩, hf_inj⟩
       · exact ⟨g_inv, fun n hn hlive => let ⟨a, b, c⟩ := hg_prov n hn hlive; ⟨⟨a, b⟩, c⟩, hg_inj⟩
   · exact ⟨h_aligned, h_data_aligned, h_bound, h_i1_bound, le_refl _, le_refl _,
-      fun j _ => rfl, fun m h => by vec_omega,
+      fun j _ => rfl, fun m h => by vecOmega,
       fun m ⟨hml, hmal⟩ => ⟨m, hml, hmal, rfl⟩,
       fun n ⟨hn_lt, hn_al⟩ _ => ⟨n, hn_lt, hn_al, rfl⟩,
       ⟨fun m => m, fun m ⟨hml, hmal⟩ => ⟨hml, hmal, rfl⟩,

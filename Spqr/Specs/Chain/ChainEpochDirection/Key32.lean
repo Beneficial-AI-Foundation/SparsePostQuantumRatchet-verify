@@ -278,7 +278,7 @@ theorem key_loop_spec_32
               have hle : 36 * (i'.val - i.val) ≤ 36 * (at1.val - i.val) :=
                 Nat.mul_le_mul_left 36 (by omega)
               have hcap := h_kh_cap
-              vec_omega
+              vecOmega
           exact ⟨⟨hvl, by omega, by omega, h_inv_at, h_inv_maxooo,
             by rw [hl]; omega, by omega, by rw [hl]; omega,
             h_cs, h_kh_s, fun _ => by omega, fun h => absurd h (by omega)⟩, by omega⟩
@@ -713,7 +713,7 @@ private theorem key_spec_greater_jump_32_clear (self : chain.ChainEpochDirection
                   simp only [UScalar.val]; simp; omega
                 · exact h_i5_eq
                 · simp only [Slice.length] at s1_post4 ⊢
-                  vec_omega
+                  vecOmega
                 · simp only [s1_post5, i4_post3, UScalarTy.U32_numBits_eq, Nat.reducePow]
                   congr 2
                   apply UScalar.val_eq_imp
@@ -722,9 +722,9 @@ private theorem key_spec_greater_jump_32_clear (self : chain.ChainEpochDirection
                 · simp only [h_empty_len, Nat.zero_add]
                   exact le_trans kh2_post2 h_36bound
                 · have h := le_trans kh2_post2 h_36bound
-                  vec_omega
+                  vecOmega
                 · intro _; exact le_trans kh2_post2 h_36bound
-                · exact le_trans (le_trans kh2_post2 h_36bound) (by vec_omega)
+                · exact le_trans (le_trans kh2_post2 h_36bound) (by vecOmega)
                 · exact kh2_post2
                 · exact h_kh1_mod
                 · simp only [h_empty_len]; exact Nat.zero_le _
@@ -880,7 +880,7 @@ private theorem key_spec_greater_jump_32_no_clear (self : chain.ChainEpochDirect
               · exact le_trans kh2_post2 kh_post6
               · exact le_trans kh2_post2 kh_post6
               · intro h_ooo_gt; omega
-              · exact le_trans (le_trans kh2_post2 kh_post6) (by vec_omega)
+              · exact le_trans (le_trans kh2_post2 kh_post6) (by vecOmega)
               · rw [kh_post4] at kh2_post2; exact kh2_post2
               · exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
               · rw [← kh_post4]; exact kh_post5
