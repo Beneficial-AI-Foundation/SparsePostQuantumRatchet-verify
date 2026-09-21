@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.Defs
-import Spqr.Specs.Chain.KeyHistory.Def
+import Spqr.Specs.Chain.KeyHistory.Defs
 
 /-! # Chain definitions
 

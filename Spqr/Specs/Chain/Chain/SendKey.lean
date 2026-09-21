@@ -278,6 +278,56 @@ Preconditions are guarded by the path on which they are consumed (error paths ne
 **Source**: spqr/src/chain.rs -/
 
 namespace spqr.chain.Chain
+/-- Helper: given `next_key` postconditions on `(p, ced)` and the physical-index proof,
+construct the `sendKeySlotPost` evidence for the target slot. Avoids duplicating the
+proof in both branches of `send_key_spec`. -/
+private theorem sendKeySlotPost_at
+    {ce : chain.ChainEpoch}
+    {p : U32 × alloc.vec.Vec U8}
+    {ced : chain.ChainEpochDirection}
+    (h_p1_val : p.1 = ce.send.ctr.val + 1)
+    (p_post2 : ced.ctr = ce.send.ctr.val + 1)
+    (p_post3 : ced.next.length = ce.send.next.length)
+    (p_post4 : ced.next = (nextKeyHkdfOutput ce.send.next p.1).take 32)
+    (p_post5 : ced.prev = ce.send.prev)
+    (p_post6 : p.2 = (nextKeyHkdfOutput ce.send.next p.1).drop 32)
+    (_h_next32 : ce.send.next.length = 32) :
+    ∃ i : U32, ∃ key : alloc.vec.Vec U8,
+      (core.result.Result.Ok p :
+        core.result.Result (U32 × alloc.vec.Vec U8) Error) =
+        core.result.Result.Ok (i, key) ∧
+      i.val = ce.send.ctr.val + 1 ∧
+      key.length = 32 ∧
+      key.val = (nextKeyHkdfOutput ce.send.next i).drop 32 ∧
+      True ∧
+      ced.ctr = i ∧
+      ced.next.length = ce.send.next.length ∧
+      ced.next.val = (nextKeyHkdfOutput ce.send.next i).take 32 ∧
+      ced.prev = ce.send.prev := by
+  have h_p1 : p.1 = (⟨ce.send.ctr.val + 1, by scalar_tac⟩ : U32) :=
+    UScalar.eq_of_val_eq h_p1_val
+  have h64 : (nextKeyHkdfOutput ce.send.next p.1).length = 64 := by
+    simp [nextKeyHkdfOutput, crypto.hkdf_length]
+  exact ⟨p.1, p.2, rfl, h_p1_val,
+    by simp only [alloc.vec.Vec.length] at p_post6 ⊢;
+       rw [p_post6, List.length_drop, h64],
+    by rw [p_post6, h_p1],
+    trivial,
+    UScalar.eq_of_val_eq (by rw [p_post2, h_p1_val]),
+    p_post3, by rw [p_post4, h_p1], p_post5⟩
+
+/-- Helper: dismiss the error branches when `send_epoch ≤ epoch ≤ current_epoch`
+and `idx < links.length`. -/
+private theorem sendKey_not_error_of_ge_le
+    {epoch : U64} {self : chain.Chain}
+    (h_le : epoch.val ≤ self.current_epoch.val)
+    (h_back : self.current_epoch.val - epoch.val < self.links.length.val) :
+    ∀ (_ : self.send_epoch.val ≤ epoch.val)
+      (_h : epoch.val > self.current_epoch.val ∨
+           self.current_epoch.val - epoch.val ≥ self.links.length.val), False := by
+  intro _ h; exact absurd h (by simp only [not_or, not_lt, not_le]; exact ⟨h_le, by omega⟩)
+
+
 
 /-- **Spec theorem for `spqr.chain.Chain.send_key`**:
 
@@ -347,10 +397,6 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
         obtain ⟨h_ce_eq, h_back_fn⟩ := ce_post
         subst h_ce_eq
         obtain ⟨h_buf2, h_hd2, h_ln2⟩ := h_back_fn { ce with send := ced }
-        have h_p1 : p.1 = (⟨ce.send.ctr.val + 1, by scalar_tac⟩ : U32) :=
-          UScalar.eq_of_val_eq p_post1
-        have h64 : (nextKeyHkdfOutput ce.send.next p.1).length = 64 := by
-          simp [nextKeyHkdfOutput, crypto.hkdf_length]
         simp only [sendKeyPost, sendKeyDequePost, sendKeySlotPost,
           h_idx', h_ei, Nat.sub_self, Nat.add_zero, Nat.sub_zero, h_ce]
         refine ⟨fun h => absurd h (by omega), ?_, fun _ _ _ =>
@@ -362,15 +408,13 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
               fun j hj => by rw [h_buf2, List.getElem?_set_ne (by omega)]⟩,
             fun h => absurd rfl h,
             fun j hj => by rw [h_buf2, List.getElem?_set_ne (by omega)]⟩,
-           by simp only [h_buf2, List.getElem?_set_self h_phys_lt]
-              exact ⟨p.1, p.2, rfl, p_post1,
-                by simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢;
-                   rw [p_post6, List.length_drop, h64],
-                by rw [p_post6, h_p1],
-                trivial,
-                UScalar.eq_of_val_eq (by rw [p_post2, p_post1]),
-                p_post3, by rw [p_post4, h_p1], p_post5⟩⟩⟩
-        · intro _ h; exact absurd h (by simp only [not_or, not_lt, not_le]; exact ⟨h_le, by omega⟩)
+           by have h_p1_eq : p.1 = (⟨ce.send.ctr.val + 1, by scalar_tac⟩ : U32) :=
+                UScalar.eq_of_val_eq p_post1
+              rw [← h_p1_eq] at p_post4 p_post6
+              simp only [h_buf2, List.getElem?_set_self h_phys_lt]
+              exact sendKeySlotPost_at
+                p_post1 p_post2 p_post3 p_post4 p_post5 p_post6 h_next32⟩⟩
+        · intro h1 h2; exact (sendKey_not_error_of_ge_le h_le h_back h1 h2).elim
       · rename_i h_ne
         have h_ei : sendKeyEi self epoch = min idx.val 1 := by
           rw [sendKeyEi, if_neg h_ne, h_idx', chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH_spec]
@@ -408,10 +452,6 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
         obtain ⟨h_ce_eq, h_back_fn⟩ := ce_post
         subst h_ce_eq
         obtain ⟨h_buf2, h_hd2, h_ln2⟩ := h_back_fn { ce with send := ced }
-        have h_p1 : p.1 = (⟨ce.send.ctr.val + 1, by scalar_tac⟩ : U32) :=
-          UScalar.eq_of_val_eq p_post1
-        have h64 : (nextKeyHkdfOutput ce.send.next p.1).length = 64 := by
-          simp [nextKeyHkdfOutput, crypto.hkdf_length]
         have h_phys_lt1' : vd1.head.val + ei.val < vd1.buf.val.length := by
           simpa [alloc.vec.Vec.length] using h_phys_lt1
         simp only [sendKeyPost, sendKeyDequePost, sendKeySlotPost, h_idx', h_ei, h_ce]
@@ -424,15 +464,13 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
             by simp only [h_ln2, h_ln1, h_ln0]; omega,
             fun h => absurd h h_ne,
             ?_, ?_⟩,
-           by simp only [h_buf2, ← h_phys_eq, List.getElem?_set_self h_phys_lt1']
-              exact ⟨p.1, p.2, rfl, p_post1,
-                by simp only [alloc.vec.Vec.length, ← h_p1] at p_post6 ⊢;
-                   rw [p_post6, List.length_drop, h64],
-                by rw [p_post6, h_p1],
-                trivial,
-                UScalar.eq_of_val_eq (by rw [p_post2, p_post1]),
-                p_post3, by rw [p_post4, h_p1], p_post5⟩⟩⟩
-        · intro _ h; exact absurd h (by simp only [not_or, not_lt, not_le]; exact ⟨h_le, by omega⟩)
+           by have h_p1_eq : p.1 = (⟨ce.send.ctr.val + 1, by scalar_tac⟩ : U32) :=
+                UScalar.eq_of_val_eq p_post1
+              rw [← h_p1_eq] at p_post4 p_post6
+              simp only [h_buf2, ← h_phys_eq, List.getElem?_set_self h_phys_lt1']
+              exact sendKeySlotPost_at
+                p_post1 p_post2 p_post3 p_post4 p_post5 p_post6 h_next32⟩⟩
+        · intro h1 h2; exact (sendKey_not_error_of_ge_le h_le h_back h1 h2).elim
         · intro _ j hj1 hj2
           have hj1' : vd.head.val + (0#usize).val ≤ j := by rw [h_hd0, h_zero]; omega
           have hj2' : j < vd.head.val + ei.val := by rw [h_hd0]; omega

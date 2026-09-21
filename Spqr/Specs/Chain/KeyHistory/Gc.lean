@@ -9,7 +9,7 @@ import Spqr.Specs.Chain.ChainParams.TrimSize
 import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Chain.KeyHistory.Remove
-import Spqr.Specs.Chain.KeyHistory.Def
+import Spqr.Specs.Chain.KeyHistory.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc`: loop body 0
 
 One iteration of the garbage-collection loop. Given step size `i = 36`, the body inspects position
@@ -740,6 +740,110 @@ theorem gc_loop_spec
        fun _ _ _ _ _ _ h => h⟩⟩
 
 
+/-! ### Shared tactic macros for `gc_spec` and `gc_spec_64` post-`step*` goals
+
+Both the 32-bit and 64-bit GC spec theorems produce identical proof obligations after
+`step*`. The macros below capture the shared tactic blocks that close the two subgoals
+(the key-ge precondition goal and the postcondition restructuring goal),
+eliminating ~160 lines of duplication across the two theorems. -/
+
+/-- Close the key-ge precondition goal produced by `step*` in `gc_spec` variants.
+Case-splits on `params.max_ooo_keys > 0#u32` and applies `h_key_ge` or `scalar_tac`. -/
+local syntax "gc_close_key_ge_goal" : tactic
+set_option hygiene false in
+macro_rules
+  | `(tactic| gc_close_key_ge_goal) => `(tactic|
+    ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
+      rw [i2_post] at i3_post
+      simp only [UScalar.ofNatCore_val_eq] at i3_post
+      by_cases hpos : params.max_ooo_keys > 0#u32
+      · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
+        have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
+        rw [hi1] at i3_post
+        rw [hi4]
+        have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
+        rw [if_pos hlt] at h_key_ge
+        apply h_key_ge
+        simp_all
+      · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
+        have hi4 : i4.val = 2000 := by
+          have := i4_post2.mpr (Or.inl (by scalar_tac))
+          scalar_tac
+        have hi1_val : i1.val = 2201 := by
+          have := i1_post2.mpr (Or.inl (by scalar_tac))
+          scalar_tac
+        rw [hi1_val] at i3_post
+        have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
+        rw [if_neg hlt] at h_key_ge
+        scalar_tac ))
+
+/-- Close the postcondition-restructuring goal produced by `step*` in `gc_spec` variants.
+Destructures the loop invariant `v_post`, resolves the `max_ooo` case split for the
+below-threshold and above-threshold sub-goals, and reshapes the injective provenance /
+completeness witnesses from the loop's bundled form into the `GcPost` form. -/
+local syntax "gc_close_postcondition_goal" : tactic
+set_option hygiene false in
+macro_rules
+  | `(tactic| gc_close_postcondition_goal) => `(tactic|
+    ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
+      obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
+              v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
+              ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
+      rw [i2_post] at i3_post
+      simp only [UScalar.ofNatCore_val_eq] at i3_post
+      refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
+      · by_cases hpos : params.max_ooo_keys > 0#u32
+        · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
+          rw [hi1] at i3_post
+          have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
+          rw [if_pos hlt'] at h_lt
+          grind
+        · have hi1_val : i1.val = 2201 := by
+            have := i1_post2.mpr (Or.inl (by scalar_tac))
+            scalar_tac
+          rw [hi1_val] at i3_post
+          have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
+          rw [if_neg hlt'] at h_lt
+          scalar_tac
+      · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
+        · by_cases hpos : params.max_ooo_keys > 0#u32
+          · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
+            rw [hi4] at i5_post1
+            have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
+            rw [if_pos hlt]
+            omega
+          · have hi4 : i4.val = 2000 := by
+              have := i4_post2.mpr (Or.inl (by scalar_tac))
+              scalar_tac
+            have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
+            rw [if_neg hlt]
+            omega
+        · intro m hml hml1
+          have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
+          simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
+          exact this
+        · intro n hn_live h1 h2
+          simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
+            ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
+          obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
+          refine ⟨m, by scalar_tac⟩
+        · simp only [alloc.vec.Vec.length,
+            ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
+          refine ⟨f_inv, ?_, ?_⟩
+          · intro m hm1 hm2
+            obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
+            exact ⟨ha, hb, hc⟩
+          · intro m₁ m₂ hm1l hm1a hm2l hm2a
+            exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
+        · simp only [Array.to_slice, a_post,
+            ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
+          refine ⟨g_inv, ?_, ?_⟩
+          · intro n hn1 hn2 hn3
+            obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
+            exact ⟨ha, hb, hc⟩
+          · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
+            exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live ))
+
 /-!**Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc` (32-bit platform)**
 
 32-bit and 64-bit variant of `gc_spec` (proved in `Gc.lean`). Differences from 64-bit:
@@ -767,87 +871,8 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
   unfold gc
   simp only [alloc.vec.Vec.len]
   step*
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    by_cases hpos : params.max_ooo_keys > 0#u32
-    · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-      have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-      rw [hi1] at i3_post
-      rw [hi4]
-      have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-      rw [if_pos hlt] at h_key_ge
-      apply h_key_ge
-      simp_all
-    · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
-      have hi4 : i4.val = 2000 := by
-        have := i4_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      have hi1_val : i1.val = 2201 := by
-        have := i1_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      rw [hi1_val] at i3_post
-      have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-      rw [if_neg hlt] at h_key_ge
-      scalar_tac
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
-            v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
-            ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
-    · by_cases hpos : params.max_ooo_keys > 0#u32
-      · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-        rw [hi1] at i3_post
-        have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
-        rw [if_pos hlt'] at h_lt
-        grind
-      · have hi1_val : i1.val = 2201 := by
-          have := i1_post2.mpr (Or.inl (by scalar_tac))
-          scalar_tac
-        rw [hi1_val] at i3_post
-        have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-        rw [if_neg hlt'] at h_lt
-        scalar_tac
-    · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
-      · by_cases hpos : params.max_ooo_keys > 0#u32
-        · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-          rw [hi4] at i5_post1
-          have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-          rw [if_pos hlt]
-          omega
-        · have hi4 : i4.val = 2000 := by
-            have := i4_post2.mpr (Or.inl (by scalar_tac))
-            scalar_tac
-          have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-          rw [if_neg hlt]
-          omega
-      · intro m hml hml1
-        have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
-        simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
-        exact this
-      · intro n hn_live h1 h2
-        simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
-          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
-        obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
-        refine ⟨m, by scalar_tac⟩
-      · simp only [alloc.vec.Vec.length,
-          ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
-        refine ⟨f_inv, ?_, ?_⟩
-        · intro m hm1 hm2
-          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
-          exact ⟨ha, hb, hc⟩
-        · intro m₁ m₂ hm1l hm1a hm2l hm2a
-          exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
-      · simp only [Array.to_slice, a_post,
-          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
-        refine ⟨g_inv, ?_, ?_⟩
-        · intro n hn1 hn2 hn3
-          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
-          exact ⟨ha, hb, hc⟩
-        · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
-          exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live
+  · gc_close_key_ge_goal
+  · gc_close_postcondition_goal
 
 
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc`** (64-bit platform):
@@ -885,86 +910,7 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
   unfold gc
   simp only [alloc.vec.Vec.len]
   step*
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    by_cases hpos : params.max_ooo_keys > 0#u32
-    · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-      have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-      rw [hi1] at i3_post
-      rw [hi4]
-      have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-      rw [if_pos hlt] at h_key_ge
-      apply h_key_ge
-      simp_all
-    · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
-      have hi4 : i4.val = 2000 := by
-        have := i4_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      have hi1_val : i1.val = 2201 := by
-        have := i1_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      rw [hi1_val] at i3_post
-      have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-      rw [if_neg hlt] at h_key_ge
-      scalar_tac
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
-            v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
-            ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
-    · by_cases hpos : params.max_ooo_keys > 0#u32
-      · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-        rw [hi1] at i3_post
-        have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
-        rw [if_pos hlt'] at h_lt
-        grind
-      · have hi1_val : i1.val = 2201 := by
-          have := i1_post2.mpr (Or.inl (by scalar_tac))
-          scalar_tac
-        rw [hi1_val] at i3_post
-        have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-        rw [if_neg hlt'] at h_lt
-        scalar_tac
-    · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
-      · by_cases hpos : params.max_ooo_keys > 0#u32
-        · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-          rw [hi4] at i5_post1
-          have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-          rw [if_pos hlt]
-          omega
-        · have hi4 : i4.val = 2000 := by
-            have := i4_post2.mpr (Or.inl (by scalar_tac))
-            scalar_tac
-          have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-          rw [if_neg hlt]
-          omega
-      · intro m hml hml1
-        have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
-        simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
-        exact this
-      · intro n hn_live h1 h2
-        simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
-          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
-        obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
-        refine ⟨m, by scalar_tac⟩
-      · simp only [alloc.vec.Vec.length,
-          ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
-        refine ⟨f_inv, ?_, ?_⟩
-        · intro m hm1 hm2
-          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
-          exact ⟨ha, hb, hc⟩
-        · intro m₁ m₂ hm1l hm1a hm2l hm2a
-          exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
-      · simp only [Array.to_slice, a_post,
-          ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
-        refine ⟨g_inv, ?_, ?_⟩
-        · intro n hn1 hn2 hn3
-          obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
-          exact ⟨ha, hb, hc⟩
-        · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
-          exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live
+  · gc_close_key_ge_goal
+  · gc_close_postcondition_goal
 
 end spqr.chain.KeyHistory
