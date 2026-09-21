@@ -254,7 +254,7 @@ private theorem slice_eq_of_prefix (a b : List U8) (m : Nat)
     exact h (m + n) (by omega)
 
 /-- Simplify `alloc.vec.Vec.length` everywhere and close with `omega`. -/
-local syntax "vec_omega" : tactic
+syntax "vec_omega" : tactic
 macro_rules
   | `(tactic| vec_omega) => `(tactic| (simp only [alloc.vec.Vec.length] at *; omega))
 
@@ -419,7 +419,6 @@ private theorem subseq_after_remove
     ∃ n, n < orig_data.length ∧ n % 36 = 0 ∧
       s'_data.slice m (m + 36) = orig_data.slice n (n + 36) := by
   have hm_lt_s : m < s_data.length := by omega
-  -- Use record_at_after_remove to get s'.slice m = s.slice src for some src
   have ⟨hsrc_lt, hsrc_al, hsrc_eq⟩ := record_at_after_remove s_data s'_data k m
     hs_al hk_al hm_al hm_lt_s' hlen hk_bnd hsw htr
   let src := if m = k ∧ k + 36 < s_data.length then s_data.length - 36 else m
