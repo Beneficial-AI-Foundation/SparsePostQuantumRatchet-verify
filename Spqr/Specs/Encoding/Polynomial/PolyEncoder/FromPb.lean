@@ -594,7 +594,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
               ((v[j]!).length = 0 ∨ (v[j]!).length % 2 ≠ 0))
       · rintro ⟨iter', out'⟩ ⟨h_end', jb, hjb1, hjb2, hjb_bad⟩
         simp only at h_end' hjb1 hjb2 ⊢
-        apply WP.spec_mono (h_b0 i v iter' out' (by grind) (by grind) (by omega))
+        apply WP.spec_mono
+          (h_b0 i v iter' out' (h_end' ▸ h_end_le_v) (h_end' ▸ h_end_le_16) (by omega))
         intro cf hcf
         match cf with
         | ControlFlow.done result => exact hcf
@@ -615,7 +616,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
             ∃ j, p.1.start.val ≤ j ∧ j < p.1.end.val ∧ (v[j]!).length % 2 ≠ 0)
       · rintro ⟨iter', out'⟩ ⟨h_end', jb, hjb1, hjb2, hjb_bad⟩
         simp only at h_end' hjb1 hjb2 ⊢
-        apply WP.spec_mono (h_b1 i v iter' out' (by grind) (by grind) (by omega))
+        apply WP.spec_mono
+          (h_b1 i v iter' out' (h_end' ▸ h_end_le_v) (h_end' ▸ h_end_le_16) (by omega))
         intro cf hcf
         match cf with
         | ControlFlow.done result => exact hcf
@@ -716,10 +718,26 @@ theorem from_pb_new_implies_old
   · have h_len' : pb.polys.length = 16 := h_len
     rw [if_pos (show FromPbWellFormed pb from .inl ⟨h_nil, h_len', fun j hj =>
       ⟨h_polys_nonempty h_nil j (by omega), h_polys_even h_nil j (by omega)⟩⟩)] at h_total
-    grind [IntoPbPostCond]
+    match result, h_total with
+    | .Ok ⟨_, .Points _⟩, ⟨_, h_polys_nil, _⟩ => simp [h_polys_nil] at h_len
+    | .Ok ⟨_, .Polys out⟩, ⟨h_idx, _, _, h_body⟩ =>
+      have h_out : out.length = 16 := out.property
+      refine ⟨h_idx.symm, fun j hj => ?_⟩
+      obtain ⟨h_lenj, h_co⟩ := h_body j (by omega)
+      refine ⟨by omega, fun k hk => ?_⟩
+      obtain ⟨e1, e2, e3⟩ := h_co k (by omega)
+      exact ⟨e1.symm, e2.symm, e3.symm⟩
   · rw [if_pos (show FromPbWellFormed pb from .inr ⟨h_nil, h_len, fun j hj =>
       h_pts_even h_nil j (by omega)⟩)] at h_total
-    grind [IntoPbPostCond]
+    match result, h_total with
+    | .Ok ⟨_, .Polys _⟩, ⟨_, h_pts_nil, _⟩ => simp [h_pts_nil] at h_len
+    | .Ok ⟨_, .Points out⟩, ⟨h_idx, _, _, h_body⟩ =>
+      have h_out : out.length = 16 := out.property
+      refine ⟨h_idx.symm, fun j hj => ?_⟩
+      obtain ⟨h_lenj, h_co⟩ := h_body j (by omega)
+      refine ⟨by omega, fun k hk => ?_⟩
+      obtain ⟨e1, e2, e3⟩ := h_co k (by omega)
+      exact ⟨e1.symm, e2.symm, e3.symm⟩
 
 theorem from_pb_spec_old
     (pb : proto.pq_ratchet.PolynomialEncoder)
