@@ -35,7 +35,7 @@ variable {Sym : Type} {N nchunk : ℕ}
 
 /-- An erasure code carrying a proof of its correctness. -/
 -- ANCHOR: ErasureCode_correct
-class ErasureCode_correct (ec: ErasureCode Sym N nchunk) where
+class ErasureCode_correct (ec : ErasureCode Sym N nchunk) where
   /-- ec satisfies the erasure code correctness property. -/
   ec_correct : ec.Correct
 -- ANCHOR_END: ErasureCode_correct
@@ -71,17 +71,37 @@ theorem encodeChunks_eq_model (high low : ErasureCode Sym N nchunk)
   exact Prod.ext rfl (c.ec_implem_encode M i)
 
 /-- A `low` erasureCode that implements a CORRECT `high` erasureCode is itself correct -/
-theorem correct (high low : ErasureCode Sym N nchunk) [c: ErasureCode_correct high]
+theorem correct (high low : ErasureCode Sym N nchunk) [c : ErasureCode_correct high]
     [i : ErasureCode_implem high low] : ErasureCode_correct low where
   ec_correct := by
     intro M I
     have hdec : low.decode (low.encodeChunks M I) = high.decode (high.encodeChunks M I) := by
       rw [encodeChunks_eq_model high low M I]
       exact i.ec_implem_decode M I
-    have hdec : low.decode (low.encodeChunks M I) = high.decode (high.encodeChunks M I) := by
-      rw [encodeChunks_eq_model high low M I]
-      exact i.ec_implem_decode M I
     rw [hdec]
     exact (c.ec_correct M I)
 
+-- ANCHOR: ErasureCode_refines_some_correct
+class ErasureCode_refines_some_correct (low : ErasureCode Sym N nchunk) where
+  /-- assert existence of SOME high ec with same parameters -/
+  ec_ref_high : ErasureCode Sym N nchunk
+
+  /-- assert correctness of the high ec -/
+  ec_ref_correct : ErasureCode_correct ec_ref_high
+
+  /-- assert refinement property -/
+  ec_ref_implem : ErasureCode_implem ec_ref_high low
+
+-- ANCHOR_END: ErasureCode_refines_some_correct
+
+namespace ErasureCode_refines_some_correct
+
+/-- An instance of `ErasureCode_refines_some_correct low` is a witness of `low`'s correctness -/
+theorem refines_correct (low : ErasureCode Sym N nchunk)
+    [r : ErasureCode_refines_some_correct low] : ErasureCode_correct low := by
+  letI : ErasureCode_correct r.ec_ref_high := r.ec_ref_correct
+  letI : ErasureCode_implem r.ec_ref_high low := r.ec_ref_implem
+  exact ErasureCode_implem.correct r.ec_ref_high low
+
+end ErasureCode_refines_some_correct
 end ErasureCode_implem
