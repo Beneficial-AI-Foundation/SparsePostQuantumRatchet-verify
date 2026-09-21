@@ -57,22 +57,22 @@ correspondence proofs and the model’s correctness, and those are exactly the s
 The two code parameters pin down `k`, `hk` and `hk_pos`, and `hk_tab` is carried as a `Fact` so
 that it too can be synthesized. That makes this a genuine `instance`: callers name the two codes
 and typeclass resolution supplies the rest. -/
-noncomputable instance verifiedConcreteErasureCode
+noncomputable instance ConcreteErasureCode_implements_modelErasureCode
     (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
     [hk_tab : Fact (k ∈ ({1, 3, 5, 30, 34, 36} : Finset ℕ))] :
-    VerifiedErasureCode (modelErasureCode k hk hk_pos) (concreteErasureCode k hk hk_pos) where
-  encode_eq_model := encode_toModel k hk hk_pos hk_tab.out
-  decode_eq_model := decode_toModel k hk hk_pos
-  model_correct := modelErasureCode_correct k hk hk_pos
+    ErasureCode_implem (modelErasureCode k hk hk_pos) (concreteErasureCode k hk hk_pos) where
+  ec_implem_encode := encode_toModel k hk hk_pos hk_tab.out
+  ec_implem_decode := decode_toModel k hk hk_pos
 
-/-- Correctness for the six supported table sizes, read off from `verifiedConcreteErasureCode`.
-Honest chunks at distinct indices recover the message when at least `k` are present and decode
-to `none` when fewer are present. -/
-theorem concreteErasureCode_correct
+/-- ConcreteErasureCode_correct now creates directly the instance -/
+instance ConcreteErasureCode_correct
     (k : ℕ) (hk : k ≤ 2 ^ 16) (hk_pos : 0 < k)
-    (hk_tab : k ∈ ({1, 3, 5, 30, 34, 36} : Finset ℕ)) :
-    (concreteErasureCode k hk hk_pos).Correct :=
-  haveI : Fact (k ∈ ({1, 3, 5, 30, 34, 36} : Finset ℕ)) := ⟨hk_tab⟩
-  VerifiedErasureCode.correct (modelErasureCode k hk hk_pos) (concreteErasureCode k hk hk_pos)
+    [hk_tab : Fact (k ∈ ({1, 3, 5, 30, 34, 36} : Finset ℕ))] :
+    ErasureCode_correct (concreteErasureCode k hk hk_pos) := by
+  letI : ErasureCode_correct (modelErasureCode k hk hk_pos) :=
+    ⟨modelErasureCode_correct k hk hk_pos⟩
+  letI : ErasureCode_implem (modelErasureCode k hk hk_pos) (concreteErasureCode k hk hk_pos) :=
+    ConcreteErasureCode_implements_modelErasureCode k hk hk_pos
+  exact ErasureCode_implem.correct (modelErasureCode k hk hk_pos) (concreteErasureCode k hk hk_pos)
 
 end Protocols.ErasureCode
