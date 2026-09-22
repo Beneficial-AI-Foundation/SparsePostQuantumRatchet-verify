@@ -78,6 +78,8 @@ import Spqr.Specs.Chain.Chain.CedForDirection
 import Spqr.Specs.Chain.Chain.Defs
 import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.Chain.New
+import Spqr.Specs.Chain.Chain.RecvKey
+import Spqr.Specs.Chain.Chain.RecvKey32
 import Spqr.Specs.Chain.Chain.SendKey
 import Spqr.Specs.Chain.Chain.SendKey64
 import Spqr.Specs.Chain.ChainEpochDirection.ClearNext
@@ -99,6 +101,7 @@ import Spqr.Specs.Chain.Defs
 import Spqr.Specs.Chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
 import Spqr.Specs.Chain.KeyHistory.Add
 import Spqr.Specs.Chain.KeyHistory.Clear
+import Spqr.Specs.Chain.KeyHistory.Defs
 import Spqr.Specs.Chain.KeyHistory.Gc
 import Spqr.Specs.Chain.KeyHistory.Get
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
