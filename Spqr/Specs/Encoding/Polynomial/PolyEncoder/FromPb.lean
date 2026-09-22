@@ -1,12 +1,14 @@
 /-
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Hoang Le Truong
+Authors: Hoang Le Truong, Markus Dablander
 -/
+import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop body 0
 
 One step of the outer polynomial-deserialization loop. Advances the range iterator and either:
@@ -417,162 +419,229 @@ theorem loop_spec
 
 end spqr.encoding.polynomial.PolyEncoder.from_pb_loop1
 
-/-! # Spec theorem for `spqr::encoding::polynomial::{PolyEncoder}::from_pb`
-
-Reconstructs a `PolyEncoder` from its protobuf representation. Branches on input contents:
-1. **Polys**: `pts` empty, `polys.len() == 16` → deserializes polynomials via `from_pb_loop0`.
-2. **Points**: `polys` empty, `pts.len() == 16` → deserializes points via `from_pb_loop1`.
-3. Otherwise → returns `Err(SerializationInvalid)`.
-
-Each GF(2¹⁶) element is decoded from big-endian byte pairs: `value = hi * 256 + lo`.
-Inverse of `into_pb`.
-
-**Source**: spqr/src/encoding/polynomial.rs -/
-
 namespace spqr.encoding.polynomial.PolyEncoder
 
-theorem from_pb_spec_bytes
-    (pb : proto.pq_ratchet.PolynomialEncoder)
-    (h_polys_nonempty : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length ≠ 0)
-    (h_polys_even : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length % 2 = 0)
-    (h_pts_even : pb.polys.val = [] → ∀ j < pb.pts.length, (pb.pts[j]!).length % 2 = 0) :
-    from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
-      (pb.pts.val = [] → pb.polys.length = 16 →
-        match result with
-        | core.result.Result.Ok encoder =>
-            encoder.idx = pb.idx ∧
-            match encoder.s with
-            | EncoderState.Polys out =>
-                ∀ j < 16, (out[j]!).degree = (pb.polys[j]!).length / 2 ∧
-                    ∀ k < (pb.polys[j]!).length / 2,
-                      (out[j]!.coefficients[k]!).value.val =
-                          256 * ((pb.polys[j]!)[2 * k]!).val + ((pb.polys[j]!)[2 * k + 1]!).val
-            | _ => False
-        | core.result.Result.Err _ => False) ∧
-      (pb.polys.val = [] → pb.pts.length = 16 →
-        match result with
-        | core.result.Result.Ok encoder =>
-            encoder.idx = pb.idx ∧
-            match encoder.s with
-            | EncoderState.Points out =>
-                ∀ j < 16, (out[j]!).value.length = (pb.pts[j]!).length / 2 ∧
-                    ∀ k < (pb.pts[j]!).length / 2,
-                        ((out[j]!).value[k]!).value.val =
-                          256 * ((pb.pts[j]!)[2 * k]!).val +
-                          ((pb.pts[j]!)[2 * k + 1]!).val
-            | _ => False
-        | core.result.Result.Err _ => False) ⦄ := by
-  unfold from_pb
-  step*
-  · grind
-  · grind
-  · refine ⟨fun _ _ => ?_, fun h _ => ?_⟩
-    · cases result with
-      | Err _ => exact result_post
-      | Ok enc =>
-        obtain ⟨h_idx, h_enc⟩ := result_post
-        refine ⟨h_idx, ?_⟩
-        revert h_enc
-        cases enc.s with
-        | Points _ => exact id
-        | Polys out =>
-          intro h_enc
-          exact fun j hj => h_enc ⟨j, by scalar_tac⟩ (by
-            change j < ↑i1; rw [i1_post]; exact hj)
-    · simp_all
-  · grind
-  · grind
-  all_goals simp_all [List.isEmpty_iff, List.isEmpty_eq_false_iff]
-
-/-- **Spec theorem for `encoding.polynomial.PolyEncoder.from_pb`** (byte-level)
-
-Byte-level postcondition via `match` on the result:
-1. **Polys branch**: `pb.pts` empty, `pb.polys.length = 16` → `Ok encoder` with each polynomial
-   satisfying `coeff[k] = 256 * pb.polys[j][2*k] + pb.polys[j][2*k+1]`.
-2. **Points branch**: `pb.polys` empty, `pb.pts.length = 16` → `Ok encoder` with each point
-   satisfying the same big-endian invariant over `pb.pts`.
-
-Composed from `from_pb_loop0.loop_spec` and `from_pb_loop1.loop_spec`. -/
+/-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::from_pb`**
+• The call always succeeds (no panic).
+• If `pb` is well-formed, then the result is `Ok` with an encoder that serializes back to
+  `pb`, stated via `PolyEncoder.IntoPbPostCond`; the `| .Err _ => False` branch rules out failure.
+• On any other `pb` the result is `Err PolynomialError.SerializationInvalid`, the only error
+  value `from_pb` can produce.
+-/
 @[step]
-theorem from_pb_spec
+theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
+    from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
+      FromPbPostCond pb result ⦄ := by
+  unfold FromPbPostCond
+  by_cases h_wf : FromPbWellFormed pb
+  · simp only [if_pos h_wf]
+    obtain ⟨h1, h2, h3⟩ :
+        (pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length ≠ 0) ∧
+        (pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length % 2 = 0) ∧
+        (pb.polys.val = [] → ∀ j < pb.pts.length, (pb.pts[j]!).length % 2 = 0) := by
+      rcases h_wf with ⟨_, h_len, h_el⟩ | ⟨_, h_len, h_el⟩ <;> simp_all [alloc.vec.Vec.length]
+    have h_bytes : from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
+          (pb.pts.val = [] → pb.polys.length = 16 →
+            match result with
+            | core.result.Result.Ok encoder =>
+                encoder.idx = pb.idx ∧
+                match encoder.s with
+                | EncoderState.Polys out =>
+                    ∀ j < 16, (out[j]!).degree = (pb.polys[j]!).length / 2 ∧
+                        ∀ k < (pb.polys[j]!).length / 2,
+                          (out[j]!.coefficients[k]!).value.val =
+                              256 * ((pb.polys[j]!)[2 * k]!).val + ((pb.polys[j]!)[2 * k + 1]!).val
+                | _ => False
+            | core.result.Result.Err _ => False) ∧
+          (pb.polys.val = [] → pb.pts.length = 16 →
+            match result with
+            | core.result.Result.Ok encoder =>
+                encoder.idx = pb.idx ∧
+                match encoder.s with
+                | EncoderState.Points out =>
+                    ∀ j < 16, (out[j]!).value.length = (pb.pts[j]!).length / 2 ∧
+                        ∀ k < (pb.pts[j]!).length / 2,
+                            ((out[j]!).value[k]!).value.val =
+                              256 * ((pb.pts[j]!)[2 * k]!).val +
+                              ((pb.pts[j]!)[2 * k + 1]!).val
+                | _ => False
+            | core.result.Result.Err _ => False) ⦄ := by
+      clear * - pb h1 h2 h3
+      unfold from_pb
+      step*
+      · grind
+      · grind
+      · refine ⟨fun _ _ => ?_, fun h _ => ?_⟩
+        · cases result with
+          | Err _ => exact result_post
+          | Ok enc =>
+            obtain ⟨h_idx, h_enc⟩ := result_post
+            refine ⟨h_idx, ?_⟩
+            revert h_enc
+            cases enc.s with
+            | Points _ => exact id
+            | Polys out =>
+              intro h_enc
+              exact fun j hj => h_enc ⟨j, by scalar_tac⟩ (by
+                change j < ↑i1; rw [i1_post]; exact hj)
+        · simp_all
+      · grind
+      · grind
+      all_goals simp_all [List.isEmpty_iff, List.isEmpty_eq_false_iff]
+    apply WP.spec_mono h_bytes
+    intro result ⟨h_polys, h_pts⟩
+    rcases h_wf with ⟨h_nil, h_len, h_el⟩ | ⟨h_nil, h_len, h_el⟩
+    · match result, h_polys h_nil h_len with
+      | .Ok ⟨_, .Polys out⟩, ⟨h_idx, h_enc⟩ => exact ⟨h_idx.symm, by grind⟩
+    · match result, h_pts h_nil h_len with
+      | .Ok ⟨_, .Points out⟩, ⟨h_idx, h_enc⟩ => exact ⟨h_idx.symm, by grind⟩
+  · simp only [if_neg h_wf]
+    have h_des : ∀ (s : Slice U8),
+        Poly.deserialize s ⦃ (r : core.result.Result Poly PolynomialError) =>
+          match r with
+          | core.result.Result.Ok _ => s.length ≠ 0 ∧ s.length % 2 = 0
+          | core.result.Result.Err e => e = PolynomialError.SerializationInvalid ⦄ := by
+      clear * - pb
+      intro s
+      unfold Poly.deserialize
+      step*
+      simp [alloc.vec.Vec.with_capacity]
+    have h_b0 : ∀ (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8))
+        (iter : core.ops.range.Range Usize) (out : Array Poly 16#usize),
+        iter.end ≤ v.length → iter.end.val ≤ 16 → iter.start.val < iter.end.val →
+        from_pb_loop0.body i v iter out ⦃ cf =>
+          match cf with
+          | ControlFlow.done result =>
+              result = core.result.Result.Err PolynomialError.SerializationInvalid
+          | ControlFlow.cont (iter1, _) =>
+              iter1.start.val = iter.start.val + 1 ∧ iter1.end = iter.end ∧
+              (v[iter.start.val]!).length ≠ 0 ∧ (v[iter.start.val]!).length % 2 = 0 ⦄ := by
+      clear * - pb h_des
+      intro i v iter out h_end_le_v h_end_le_16 h_lt
+      unfold from_pb_loop0.body
+      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
+        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
+      rw [hnext]
+      simp only [bind_tc_ok]
+      obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
+      rw [h_opt_eq]
+      have h_idx : iter.start.val < v.length := by scalar_tac
+      have h_16 : iter.start.val < 16 := by omega
+      step as ⟨v1, hv1⟩
+      step with h_des (alloc.vec.Vec.deref v1) as ⟨r, hr⟩
+      cases r <;> step*
+      simp_all [alloc.vec.Vec.deref, Slice.length, alloc.vec.Vec.length]
+    have h_b1 : ∀ (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8))
+        (iter : core.ops.range.Range Usize) (out : Array Point 16#usize),
+        iter.end ≤ v.length → iter.end.val ≤ 16 → iter.start.val < iter.end.val →
+        from_pb_loop1.body i v iter out ⦃ cf =>
+          match cf with
+          | ControlFlow.done result =>
+              result = core.result.Result.Err PolynomialError.SerializationInvalid
+          | ControlFlow.cont (iter1, _) =>
+              iter1.start.val = iter.start.val + 1 ∧ iter1.end = iter.end ∧
+              (v[iter.start.val]!).length % 2 = 0 ⦄ := by
+      clear * - pb
+      intro i v iter out h_end_le_v h_end_le_16 h_lt
+      unfold from_pb_loop1.body
+      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
+        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
+      rw [hnext]
+      simp only [bind_tc_ok]
+      obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
+      rw [h_opt_eq]
+      have h_idx : iter.start.val < v.length := by scalar_tac
+      have h_16 : iter.start.val < 16 := by omega
+      step*
+      all_goals simp_all [alloc.vec.Vec.len, alloc.vec.Vec.length, alloc.vec.Vec.with_capacity]
+      all_goals grind
+    have h_l0 : ∀ (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8))
+        (iter : core.ops.range.Range Usize) (out : Array Poly 16#usize),
+        iter.end ≤ v.length → iter.end.val ≤ 16 →
+        (∃ j, iter.start.val ≤ j ∧ j < iter.end.val ∧
+          ((v[j]!).length = 0 ∨ (v[j]!).length % 2 ≠ 0)) →
+        from_pb_loop0 iter i v out ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
+          result = core.result.Result.Err PolynomialError.SerializationInvalid ⦄ := by
+      clear * - pb h_b0
+      intro i v iter out h_end_le_v h_end_le_16 h_bad
+      unfold from_pb_loop0
+      apply loop.spec_decr_nat
+        (measure := fun p => p.1.end.val - p.1.start.val)
+        (inv := fun p => p.1.end = iter.end ∧
+            ∃ j, p.1.start.val ≤ j ∧ j < p.1.end.val ∧
+              ((v[j]!).length = 0 ∨ (v[j]!).length % 2 ≠ 0))
+      · rintro ⟨iter', out'⟩ ⟨h_end', jb, hjb1, hjb2, hjb_bad⟩
+        simp only at h_end' hjb1 hjb2 ⊢
+        apply WP.spec_mono
+          (h_b0 i v iter' out' (h_end' ▸ h_end_le_v) (h_end' ▸ h_end_le_16) (by omega))
+        intro cf hcf
+        match cf with
+        | ControlFlow.done result => exact hcf
+        | ControlFlow.cont (iter'', out'') => grind
+      · exact ⟨rfl, h_bad⟩
+    have h_l1 : ∀ (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8))
+        (iter : core.ops.range.Range Usize) (out : Array Point 16#usize),
+        iter.end ≤ v.length → iter.end.val ≤ 16 →
+        (∃ j, iter.start.val ≤ j ∧ j < iter.end.val ∧ (v[j]!).length % 2 ≠ 0) →
+        from_pb_loop1 iter i v out ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
+          result = core.result.Result.Err PolynomialError.SerializationInvalid ⦄ := by
+      clear * - pb h_b1
+      intro i v iter out h_end_le_v h_end_le_16 h_bad
+      unfold from_pb_loop1
+      apply loop.spec_decr_nat
+        (measure := fun p => p.1.end.val - p.1.start.val)
+        (inv := fun p => p.1.end = iter.end ∧
+            ∃ j, p.1.start.val ≤ j ∧ j < p.1.end.val ∧ (v[j]!).length % 2 ≠ 0)
+      · rintro ⟨iter', out'⟩ ⟨h_end', jb, hjb1, hjb2, hjb_bad⟩
+        simp only at h_end' hjb1 hjb2 ⊢
+        apply WP.spec_mono
+          (h_b1 i v iter' out' (h_end' ▸ h_end_le_v) (h_end' ▸ h_end_le_16) (by omega))
+        intro cf hcf
+        match cf with
+        | ControlFlow.done result => exact hcf
+        | ControlFlow.cont (iter'', out'') => grind
+      · exact ⟨rfl, h_bad⟩
+    unfold from_pb
+    obtain ⟨n, hn, hn_post⟩ := WP.spec_imp_exists NUM_POLYS_spec
+    simp only [alloc.vec.Vec.is_empty, alloc.vec.Vec.len, hn, bind_tc_ok]
+    split
+    next h_pts =>
+      have h_pts' : pb.pts.val = [] := by simpa [List.isEmpty_iff] using h_pts
+      split
+      next h_len =>
+        step as ⟨p, hp⟩
+        refine h_l0 _ _ _ _ (by scalar_tac) (by scalar_tac) ?_
+        by_contra h_c
+        push Not at h_c
+        exact h_wf (Or.inl ⟨h_pts', by scalar_tac,
+          fun j hj => h_c j (by simp) (by scalar_tac)⟩)
+      next h_len => simp
+    next h_pts =>
+      split
+      next h_polys =>
+        have h_polys' : pb.polys.val = [] := by simpa [List.isEmpty_iff] using h_polys
+        split
+        next h_ne => simp
+        next h_ne =>
+          refine h_l1 _ _ _ _ (by scalar_tac) (by scalar_tac) ?_
+          by_contra h_c
+          push Not at h_c
+          exact h_wf (Or.inr ⟨h_polys', by scalar_tac,
+            fun j hj => h_c j (by simp) (by scalar_tac)⟩)
+      next h_polys => simp
+
+/-- The old spec theorem for `from_pb`, kept to establish that the refactor lost nothing: it is
+now a corollary of the generalised `from_pb_spec` via `WP.spec_mono. Not `@[step]` anymore, so that
+new proofs consume the now more general, high-level `from_pb_spec` that includes the error case.
+-/
+theorem from_pb_spec_old_partial
     (pb : proto.pq_ratchet.PolynomialEncoder)
     (h_polys_nonempty : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length ≠ 0)
     (h_polys_even : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length % 2 = 0)
     (h_pts_even : pb.polys.val = [] → ∀ j < pb.pts.length, (pb.pts[j]!).length % 2 = 0) :
     from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
-      (pb.pts.val = [] → pb.polys.val.length = 16 →
-        match result with
-        | core.result.Result.Ok encoder =>
-            encoder.idx = pb.idx ∧
-            match encoder.s with
-            | EncoderState.Polys out =>
-                ∀ j < 16, (out[j]!).degree = (pb.polys[j]!).length / 2 ∧
-                    ∀ k < (pb.polys[j]!).length / 2,
-                        (out[j]!.coefficients[k]!).value.val =
-                          256 * ((pb.polys[j]!)[2 * k]!).val + ((pb.polys[j]!)[2 * k + 1]!).val ∧
-                        ((out[j]!.coefficients[k]!).value.val).toGF216 =
-                          (256 * ((pb.polys[j]!)[2 * k]!).val +
-                           ((pb.polys[j]!)[2 * k + 1]!).val).toGF216 ∧
-                        natToBinaryPoly (out[j]!.coefficients[k]!).value.val =
-                          natToBinaryPoly
-                            (256 * ((pb.polys[j]!)[2 * k]!).val +
-                             ((pb.polys[j]!)[2 * k + 1]!).val)
-            | _ => False
-        | core.result.Result.Err _ => False) ∧
-      (pb.polys.val = [] → pb.pts.length = 16 →
-        match result with
-        | core.result.Result.Ok encoder =>
-            encoder.idx = pb.idx ∧
-            match encoder.s with
-            | EncoderState.Points out =>
-                ∀ j < 16, (out[j]!).value.length = (pb.pts[j]!).length / 2 ∧
-                ∀ k < (pb.pts[j]!).length / 2,
-                    ((out[j]!).value[k]!).value.val =
-                    256 * ((pb.pts[j]!)[2 * k]!).val + ((pb.pts[j]!)[2 * k + 1]!).val ∧
-                    (((out[j]!).value[k]!).value.val).toGF216 =
-                      (256 * ((pb.pts[j]!)[2 * k]!).val + ((pb.pts[j]!)[2 * k + 1]!).val).toGF216 ∧
-                    natToBinaryPoly ((out[j]!).value[k]!).value.val =
-                    natToBinaryPoly (256 * ((pb.pts[j]!)[2 * k]!).val +
-                             ((pb.pts[j]!)[2 * k + 1]!).val)
-            | _ => False
-        | core.result.Result.Err _ => False) ⦄ := by
-  have h_raw := from_pb_spec_bytes pb h_polys_nonempty h_polys_even h_pts_even
-  apply WP.spec_mono h_raw
-  intro result ⟨h_polys, h_pts⟩
-  constructor
-  · intro h1 h2
-    have h := h_polys h1 h2
-    revert h
-    match result with
-    | .Err _ => exact id
-    | .Ok encoder =>
-      intro ⟨h_idx, h_enc⟩
-      exact ⟨h_idx, by
-        revert h_enc
-        match encoder.s with
-        | .Points _ => exact id
-        | .Polys out =>
-          intro h_enc j hj
-          obtain ⟨h_deg, h_coeff⟩ := h_enc j hj
-          exact ⟨h_deg, fun k hk => by
-            have hv := h_coeff k hk
-            exact ⟨hv, congr_arg Nat.toGF216 hv, congr_arg natToBinaryPoly hv⟩⟩⟩
-  · intro h1 h2
-    have h := h_pts h1 h2
-    revert h
-    match result with
-    | .Err _ => exact id
-    | .Ok encoder =>
-      intro ⟨h_idx, h_enc⟩
-      exact ⟨h_idx, by
-        revert h_enc
-        match encoder.s with
-        | .Polys _ => exact id
-        | .Points out =>
-          intro h_enc j hj
-          obtain ⟨h_len, h_coeff⟩ := h_enc j hj
-          exact ⟨h_len, fun k hk => by
-            have hv := h_coeff k hk
-            exact ⟨hv, congr_arg Nat.toGF216 hv, congr_arg natToBinaryPoly hv⟩⟩⟩
+      FromPbPostCondOldPartial pb result ⦄ :=
+  WP.spec_mono (from_pb_spec pb)
+    (from_pb_new_implies_old_partial pb h_polys_nonempty h_polys_even h_pts_even)
 
 end spqr.encoding.polynomial.PolyEncoder
