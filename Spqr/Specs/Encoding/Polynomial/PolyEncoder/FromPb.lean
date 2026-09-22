@@ -1,12 +1,14 @@
 /-
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Hoang Le Truong
+Authors: Hoang Le Truong, Markus Dablander
 -/
+import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop body 0
 
 One step of the outer polynomial-deserialization loop. Advances the range iterator and either:
@@ -419,30 +421,6 @@ end spqr.encoding.polynomial.PolyEncoder.from_pb_loop1
 
 namespace spqr.encoding.polynomial.PolyEncoder
 
-/-- The two shapes `from_pb` accepts. The `polys` case also requires non-zero element
-lengths, since `Poly::deserialize` rejects an empty slice whereas the points loop accepts
-one. -/
-def FromPbWellFormed (pb : proto.pq_ratchet.PolynomialEncoder) : Prop :=
-  (pb.pts.val = [] ∧ pb.polys.length = 16 ∧
-      ∀ j < 16, (pb.polys[j]!).length ≠ 0 ∧ (pb.polys[j]!).length % 2 = 0) ∨
-  (pb.polys.val = [] ∧ pb.pts.length = 16 ∧
-      ∀ j < 16, (pb.pts[j]!).length % 2 = 0)
-
-instance instDecidableFromPbWellFormed (pb : proto.pq_ratchet.PolynomialEncoder) :
-    Decidable (FromPbWellFormed pb) := by
-  unfold FromPbWellFormed
-  infer_instance
-
-/-- Postcondition of `from_pb_spec`. Reusing `IntoPbPostCond` pins `from_pb` down as the
-inverse of `into_pb` rather than by restating the byte layout. -/
-def FromPbPostCond (pb : proto.pq_ratchet.PolynomialEncoder)
-    (result : core.result.Result PolyEncoder PolynomialError) : Prop :=
-  if FromPbWellFormed pb then
-    match result with
-    | core.result.Result.Ok encoder => IntoPbPostCond encoder pb
-    | core.result.Result.Err _ => False
-  else result = core.result.Result.Err PolynomialError.SerializationInvalid
-
 /-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::from_pb`**
 • The call always succeeds (no panic).
 • If `pb` is well-formed, then the result is `Ok` with an encoder that serializes back to
@@ -652,101 +630,18 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
             fun j hj => h_c j (by simp) (by scalar_tac)⟩)
       next h_polys => simp
 
-/- The rest of the file is there to establish that the refactor lost nothing: the new spec above
-   generalises the old one, additionally dropping all three input hypotheses and pinning
-   down the error case.
-• `FromPbPostCondOld`: the exact postcondition of the old `from_pb_spec`, with the
-   byte-level, GF(2¹⁶) and binary polynomial identities spelled out.
-• `from_pb_new_implies_old`: a theorem that derives `FromPbPostCondOld` from the new
-  `FromPbPostCond`, given the three hypotheses on `pb` that the old spec assumed.
-• `from_pb_spec_old`: the exact old spec theorem, now proven as a corollary via `from_pb_spec`
-   by `WP.spec_mono`. Not `@[step]` anymore, so that new proofs now consume the
-   generalised `from_pb_spec`. -/
-
-/-- The postcondition `from_pb_spec` carried before it was generalised: byte-level
-serialization identities behind implications that say nothing about rejected inputs. -/
-def FromPbPostCondOld (pb : proto.pq_ratchet.PolynomialEncoder)
-    (result : core.result.Result PolyEncoder PolynomialError) : Prop :=
-  (pb.pts.val = [] → pb.polys.val.length = 16 →
-    match result with
-    | core.result.Result.Ok encoder =>
-        encoder.idx = pb.idx ∧
-        match encoder.s with
-        | EncoderState.Polys out =>
-            ∀ j < 16, (out[j]!).degree = (pb.polys[j]!).length / 2 ∧
-                ∀ k < (pb.polys[j]!).length / 2,
-                    (out[j]!.coefficients[k]!).value.val =
-                      256 * ((pb.polys[j]!)[2 * k]!).val + ((pb.polys[j]!)[2 * k + 1]!).val ∧
-                    ((out[j]!.coefficients[k]!).value.val).toGF216 =
-                      (256 * ((pb.polys[j]!)[2 * k]!).val +
-                       ((pb.polys[j]!)[2 * k + 1]!).val).toGF216 ∧
-                    natToBinaryPoly (out[j]!.coefficients[k]!).value.val =
-                      natToBinaryPoly
-                        (256 * ((pb.polys[j]!)[2 * k]!).val +
-                         ((pb.polys[j]!)[2 * k + 1]!).val)
-        | _ => False
-    | core.result.Result.Err _ => False) ∧
-  (pb.polys.val = [] → pb.pts.length = 16 →
-    match result with
-    | core.result.Result.Ok encoder =>
-        encoder.idx = pb.idx ∧
-        match encoder.s with
-        | EncoderState.Points out =>
-            ∀ j < 16, (out[j]!).value.length = (pb.pts[j]!).length / 2 ∧
-            ∀ k < (pb.pts[j]!).length / 2,
-                ((out[j]!).value[k]!).value.val =
-                256 * ((pb.pts[j]!)[2 * k]!).val + ((pb.pts[j]!)[2 * k + 1]!).val ∧
-                (((out[j]!).value[k]!).value.val).toGF216 =
-                  (256 * ((pb.pts[j]!)[2 * k]!).val + ((pb.pts[j]!)[2 * k + 1]!).val).toGF216 ∧
-                natToBinaryPoly ((out[j]!).value[k]!).value.val =
-                natToBinaryPoly (256 * ((pb.pts[j]!)[2 * k]!).val +
-                         ((pb.pts[j]!)[2 * k + 1]!).val)
-        | _ => False
-    | core.result.Result.Err _ => False)
-
-theorem from_pb_new_implies_old
-    (pb : proto.pq_ratchet.PolynomialEncoder)
-    (h_polys_nonempty : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length ≠ 0)
-    (h_polys_even : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length % 2 = 0)
-    (h_pts_even : pb.polys.val = [] → ∀ j < pb.pts.length, (pb.pts[j]!).length % 2 = 0)
-    (result : core.result.Result PolyEncoder PolynomialError)
-    (h_total : FromPbPostCond pb result) :
-    FromPbPostCondOld pb result := by
-  unfold FromPbPostCond at h_total
-  unfold FromPbPostCondOld
-  refine ⟨fun h_nil h_len => ?_, fun h_nil h_len => ?_⟩
-  · have h_len' : pb.polys.length = 16 := h_len
-    rw [if_pos (show FromPbWellFormed pb from .inl ⟨h_nil, h_len', fun j hj =>
-      ⟨h_polys_nonempty h_nil j (by omega), h_polys_even h_nil j (by omega)⟩⟩)] at h_total
-    match result, h_total with
-    | .Ok ⟨_, .Points _⟩, ⟨_, h_polys_nil, _⟩ => simp [h_polys_nil] at h_len
-    | .Ok ⟨_, .Polys out⟩, ⟨h_idx, _, _, h_body⟩ =>
-      have h_out : out.length = 16 := out.property
-      refine ⟨h_idx.symm, fun j hj => ?_⟩
-      obtain ⟨h_lenj, h_co⟩ := h_body j (by omega)
-      refine ⟨by omega, fun k hk => ?_⟩
-      obtain ⟨e1, e2, e3⟩ := h_co k (by omega)
-      exact ⟨e1.symm, e2.symm, e3.symm⟩
-  · rw [if_pos (show FromPbWellFormed pb from .inr ⟨h_nil, h_len, fun j hj =>
-      h_pts_even h_nil j (by omega)⟩)] at h_total
-    match result, h_total with
-    | .Ok ⟨_, .Polys _⟩, ⟨_, h_pts_nil, _⟩ => simp [h_pts_nil] at h_len
-    | .Ok ⟨_, .Points out⟩, ⟨h_idx, _, _, h_body⟩ =>
-      have h_out : out.length = 16 := out.property
-      refine ⟨h_idx.symm, fun j hj => ?_⟩
-      obtain ⟨h_lenj, h_co⟩ := h_body j (by omega)
-      refine ⟨by omega, fun k hk => ?_⟩
-      obtain ⟨e1, e2, e3⟩ := h_co k (by omega)
-      exact ⟨e1.symm, e2.symm, e3.symm⟩
-
-theorem from_pb_spec_old
+/-- The old spec theorem for `from_pb`, kept to establish that the refactor lost nothing: it is
+now a corollary of the generalised `from_pb_spec` via `WP.spec_mono. Not `@[step]` anymore, so that
+new proofs consume the now more general, high-level `from_pb_spec` that includes the error case.
+-/
+theorem from_pb_spec_old_partial
     (pb : proto.pq_ratchet.PolynomialEncoder)
     (h_polys_nonempty : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length ≠ 0)
     (h_polys_even : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length % 2 = 0)
     (h_pts_even : pb.polys.val = [] → ∀ j < pb.pts.length, (pb.pts[j]!).length % 2 = 0) :
     from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
-      FromPbPostCondOld pb result ⦄ :=
+      FromPbPostCondOldPartial pb result ⦄ :=
   WP.spec_mono (from_pb_spec pb)
-    (from_pb_new_implies_old pb h_polys_nonempty h_polys_even h_pts_even)
+    (from_pb_new_implies_old_partial pb h_polys_nonempty h_polys_even h_pts_even)
 
 end spqr.encoding.polynomial.PolyEncoder
