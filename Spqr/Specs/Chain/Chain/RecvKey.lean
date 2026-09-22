@@ -58,7 +58,7 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
     recv_key self epoch index ⦃ (result :
         (core.result.Result (alloc.vec.Vec U8) Error) × chain.Chain) =>
       recvKeyPost self epoch index result.1 result.2 ⦄ := by
-  unfold recvKeyPost chainFrame recvKeyEpochPost recvKeyAdvancePost
+  unfold recvKeyPost chainFrame recvKeyEpochPost
   simp only [recvKeyPre] at h_target
   unfold recv_key
   step
@@ -88,9 +88,7 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
           self.links.head.val +
           (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
         omega
-      simp only [h_phys_rw] at *
-      try (unfold cedKeyPost at r1_post
-           obtain ⟨r1_post1, r1_post2, r1_post3, r1_post4⟩ := r1_post))
+      simp only [h_phys_rw] at *)
     all_goals first
     | assumption
     | (constructor
@@ -112,14 +110,7 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
              some { ce with recv := ced } :=
            List.getElem?_set_self (by omega)
          rw [h_buf_wb, h_ss]
-         refine ⟨rfl, fun h => ⟨(r1_post1 h).1, (r1_post1 h).2⟩, fun h => ?_,
-                 fun h1 h2 => ⟨(r1_post3 h1 h2).1, (r1_post3 h1 h2).2⟩, fun h1 h2 => ?_⟩
-         · exact r1_post2 h
-         · obtain ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, _, h_prevbd, h_clear,
-                   h_usize, h_pregcbd, h_pgalign, h_kh0pg, h_gc⟩ := r1_post4 h1 h2
-           exact ⟨h_key, h_ctr, h_nlen, h_nval, h_palign, h_prevbd, h_usize,
-                  _, _, _, (⟨index.val - 1, by scalar_tac⟩ : U32), rfl, rfl, rfl,
-                  h_pregcbd, h_pgalign, h_gc⟩)
+         exact ⟨rfl, r1_post⟩)
   · obtain ⟨h_e, h_bad⟩ := r_post2
     simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
       core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
