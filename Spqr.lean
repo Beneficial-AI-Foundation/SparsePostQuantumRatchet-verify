@@ -76,6 +76,7 @@ import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.Chain.AddEpoch
 import Spqr.Specs.Chain.Chain.CedForDirection
 import Spqr.Specs.Chain.Chain.Defs
+import Spqr.Specs.Chain.Chain.Epoch.CallMut
 import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Chain.Chain.RecvKey
