@@ -1,8 +1,9 @@
 /-
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Hoang Le Truong
+Authors: Hoang Le Truong, Markus Dablander
 -/
+import SrcTranslated.Funs
 import Spqr.Math.Poly.ModByMonic
 import Spqr.Math.Poly.Identities.Basic
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
@@ -10,6 +11,7 @@ import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 
 /-! # Spec theorem for `PolyEncoder::into_pb`: loop body 1
 
@@ -438,10 +440,11 @@ theorem into_pb_spec_bytes
       · simp_all
         grind
 
-/-- **Spec theorem for `PolyEncoder.into_pb`**
-(cascading: byte-level + algebraic)
-
-Lifts the byte-level spec to include derived GF(2¹⁶) and polynomial identities. -/
+/-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
+• The call always succeeds (no panic) under the sole hypothesis `2 * len + 2 ≤ Usize.max` on
+  each element's coefficient count `len`.
+• Serialization is faithful, as spelled out by `PolyEncoder.IntoPbPostCond`.
+-/
 @[step]
 theorem into_pb_spec
     (self : PolyEncoder)
@@ -451,34 +454,7 @@ theorem into_pb_spec
     (h_overflow_polys : ∀ polys, self.s = .Polys polys →
         ∀ j < polys.length, 2 * (polys[j]!).degree + 2 ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.PolynomialEncoder) =>
-      result.idx = self.idx ∧
-      match self.s with
-      | .Points points =>
-        result.polys.val = [] ∧
-        result.pts.length = points.length ∧
-        ∀ j < points.length,
-            result.pts[j]!.length = 2 * (points[j]!).value.length ∧
-            ∀ k < (points[j]!).value.length,
-                256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]! =
-                  ((points[j]!).value[k]!).value.val ∧
-                (256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]! : ℕ).toGF216 =
-                  ((points[j]!).value[k]!).value.val.toGF216 ∧
-                natToBinaryPoly (256 * (result.pts[j]!)[2 * k]! + (result.pts[j]!)[2 * k + 1]!) =
-                  natToBinaryPoly (((points[j]!).value[k]!).value.val)
-      | .Polys polys =>
-        result.pts.val = [] ∧
-        result.polys.length = polys.length ∧
-        ∀ j < polys.length,
-            (result.polys[j]!).length =
-              2 * (polys[j]!).degree ∧
-            ∀ k < (polys[j]!).degree,
-                 256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! =
-                  ((polys[j]!).coefficients[k]! ).value.val ∧
-                (256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! : ℕ).toGF216 =
-                  ((polys[j]!).coefficients[k]!).value.val.toGF216 ∧
-                natToBinaryPoly (
-                  256 * (result.polys[j]!)[2 * k]! + (result.polys[j]!)[2 * k + 1]! ) =
-                  natToBinaryPoly (((polys[j]!).coefficients[k]!).value.val) ⦄ := by
+      IntoPbPostCond self result ⦄ := by
   have h_raw := into_pb_spec_bytes self h_overflow_points h_overflow_polys
   apply WP.spec_mono h_raw
   intro result h_post

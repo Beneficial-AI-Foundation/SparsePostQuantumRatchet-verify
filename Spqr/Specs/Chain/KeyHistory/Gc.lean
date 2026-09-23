@@ -9,6 +9,7 @@ import Spqr.Specs.Chain.ChainParams.TrimSize
 import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Chain.KeyHistory.Remove
+import Spqr.Specs.Chain.KeyHistory.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc`: loop body 0
 
 One iteration of the garbage-collection loop. Given step size `i = 36`, the body inspects position
@@ -131,13 +132,29 @@ theorem body_spec
         step*
         refine ⟨h_lt, fun h => absurd h (by simp), fun _ => ⟨i4_post, ?_, ?_⟩⟩
         · rw [i4_post]; omega
-        · rw [i4_post]; grind
+        · rw [i4_post]
+          refine ⟨?_, h_bound, h_data_aligned⟩
+          have h1 : 36 * (i1.val / 36) = i1.val := by
+            have := Nat.div_add_mod i1.val 36; omega
+          have h2 : 36 * (self.data.length / 36) = self.data.length := by
+            have := Nat.div_add_mod self.data.length 36; omega
+          have h3 : self.data.val.length = self.data.length := by
+            simp [alloc.vec.Vec.length]
+          omega
       · simp only [bind_tc_ok, Bool.false_eq_true, if_false]
         rw [h_i]
         step*
         refine ⟨h_lt, fun h => absurd h (by simp), fun _ => ⟨i4_post, ?_, ?_⟩⟩
         · rw [i4_post]; omega
-        · rw [i4_post]; grind
+        · rw [i4_post]
+          refine ⟨?_, h_bound, h_data_aligned⟩
+          have h1 : 36 * (i1.val / 36) = i1.val := by
+            have := Nat.div_add_mod i1.val 36; omega
+          have h2 : 36 * (self.data.length / 36) = self.data.length := by
+            have := Nat.div_add_mod self.data.length 36; omega
+          have h3 : self.data.val.length = self.data.length := by
+            simp [alloc.vec.Vec.length]
+          omega
       · simp only [bind_tc_ok, if_true]
         have h36 : i1 + 36#usize ≤ self.data.length := by scalar_tac
         have hspec := remove_spec self i1 params h36
@@ -147,7 +164,7 @@ theorem body_spec
           fun h => absurd rfl h⟩
         intro j hj
         have := self1_post2 j hj
-        grind
+        simp_all
     · have h4 : i1.val + 4 ≤ self.data.length := by omega
       step*
   · step*
@@ -236,8 +253,179 @@ private theorem slice_eq_of_prefix (a b : List U8) (m : Nat)
         List.Inhabited_getElem_eq_getElem! b (m + n) (by omega)]
     exact h (m + n) (by omega)
 
-set_option maxHeartbeats 1600000 in
--- haevy grind
+/-- Simplify `alloc.vec.Vec.length` everywhere and close with `omega`. -/
+syntax "vecOmega" : tactic
+macro_rules
+  | `(tactic| vecOmega) => `(tactic| (simp only [alloc.vec.Vec.length] at *; omega))
+
+/-- If `a < b` and both are 36-aligned, then `a + 36 ≤ b`. -/
+private theorem aligned36_step {a b : Nat} (ha : a % 36 = 0) (hb : b % 36 = 0) (h : a < b) :
+    a + 36 ≤ b := by
+  have := Nat.div_add_mod a 36; have := Nat.div_add_mod b 36; omega
+
+/-- If a 36-byte record at position `p` in `a` equals the record at position `n` in `b`,
+then the 4-byte timestamp prefixes also match. -/
+private theorem timestamp_of_record_eq (a b : List U8) (p n : Nat)
+    (heq : a.slice p (p + 36) = b.slice n (n + 36))
+    (ha : p + 36 ≤ a.length) (hb : n + 36 ≤ b.length) :
+    a.slice p (p + 4) = b.slice n (n + 4) := by
+  apply slice_eq_of_getElem! _ _ _ _ 4 (by omega) (by omega)
+  intro j hj
+  exact getElem!_of_slice_eq _ _ _ _ 36 heq ha hb j (by omega)
+
+/-- If the record at `k` in `s` has the same timestamp as record `n` in `orig`, and
+`k` is expired, then `n` cannot be unexpired—contradiction yielding `False`. -/
+private theorem expired_contradicts_live
+    (s_data orig_data : List U8) (k n : Nat)
+    (trim_horizon : List U8)
+    (heq : s_data.slice k (k + 36) = orig_data.slice n (n + 36))
+    (hk_bnd : k + 36 ≤ s_data.length) (hn_bnd : n + 36 ≤ orig_data.length)
+    (hcmp : Slice.lexCmpAux core.cmp.OrdU8 trim_horizon
+        (s_data.slice k (k + 4)) = ok .gt)
+    (hn_live : Slice.lexCmpAux core.cmp.OrdU8 trim_horizon
+        (orig_data.slice n (n + 4)) ≠ ok .gt) :
+    False := by
+  rw [timestamp_of_record_eq s_data orig_data k n heq hk_bnd hn_bnd] at hcmp
+  exact absurd hcmp hn_live
+
+
+/-- Read element `k + j` from the swap position: it equals the last record's
+element `data[data.length - 36 + j]`. -/
+private theorem getElem!_swap_at_k (data s'_data : List U8) (k j : Nat)
+    (hlen_al : data.length % 36 = 0)
+    (hk_al : k % 36 = 0) (hk_swap : k + 36 < data.length)
+    (hj : j < 36)
+    (hsw_eq : s'_data = (data.setSlice! k (data.drop (data.length - 36))).take
+        (data.length - 36)) :
+    s'_data[k + j]! = data[data.length - 36 + j]! := by
+  rw [hsw_eq, List.getElem!_take_of_lt _ _ _ (by omega),
+      List.getElem!_setSlice!_middle _ _ _ _
+        ⟨by omega,
+         by simp [List.length_drop]; omega,
+         by omega⟩,
+      List.getElem!_drop]
+  congr 1; omega
+
+/-- After a swap-remove at position `k`, any record at `m ≠ k` reads the same as in `s`. -/
+private theorem getElem!_record_preserved_nonswap
+    (s_data s'_data : List U8) (k m : Nat)
+    (hs_al : s_data.length % 36 = 0)
+    (hk_al : k % 36 = 0) (hm_al : m % 36 = 0)
+    (hm_ne_k : m ≠ k) (hm_lt_s : m < s_data.length)
+    (hlen : s'_data.length = s_data.length - 36)
+    (hk_bnd : k + 36 ≤ s_data.length)
+    (hm_lt_s' : m < s'_data.length)
+    (hsw : k + 36 < s_data.length →
+      s'_data = (s_data.setSlice! k (s_data.drop (s_data.length - 36))).take
+        (s_data.length - 36))
+    (htr : k + 36 = s_data.length → s'_data = s_data.take k) :
+    ∀ j, j < 36 → s'_data[m + j]! = s_data[m + j]! := by
+  intro j hj
+  by_cases hmk2 : k + 36 < s_data.length
+  · have hsw' := hsw hmk2
+    by_cases hm_before_k : m + 36 ≤ k
+    · rw [hsw', List.getElem!_take_of_lt _ _ _ (by omega),
+          List.getElem!_setSlice!_prefix _ _ _ _ (by omega)]
+    · have : k + 36 ≤ m := by omega
+      rw [hsw', List.getElem!_take_of_lt _ _ _ (by omega),
+          List.getElem!_setSlice!_suffix _ _ _ _
+            (by simp [List.length_drop]; omega)]
+  · have hk36 : k + 36 = s_data.length := by omega
+    rw [htr hk36, List.getElem!_take_of_lt _ _ _ (by omega)]
+
+/-- After a swap-remove at `k`, the 36-byte record at position `m` in the shorter array
+equals the record at position `src` in the original array, where `src = len - 36` when
+`m = k` and a swap occurred, and `src = m` otherwise. -/
+private theorem record_at_after_remove
+    (s_data s'_data : List U8) (k m : Nat)
+    (hs_al : s_data.length % 36 = 0) (hk_al : k % 36 = 0) (hm_al : m % 36 = 0)
+    (hm_lt_s' : m < s'_data.length)
+    (hlen : s'_data.length = s_data.length - 36)
+    (hk_bnd : k + 36 ≤ s_data.length)
+    (hsw : k + 36 < s_data.length →
+      s'_data = (s_data.setSlice! k (s_data.drop (s_data.length - 36))).take
+        (s_data.length - 36))
+    (htr : k + 36 = s_data.length → s'_data = s_data.take k) :
+    let src := if m = k ∧ k + 36 < s_data.length then s_data.length - 36 else m
+    src < s_data.length ∧ src % 36 = 0 ∧
+    s'_data.slice m (m + 36) = s_data.slice src (src + 36) := by
+  simp only
+  split
+  · next h =>
+    obtain ⟨hmeq, hswap⟩ := h
+    subst hmeq -- eliminates k, replacing with m
+    refine ⟨by omega, by omega, ?_⟩
+    apply slice_eq_of_getElem! _ _ _ _ 36 (by omega) (by omega)
+    intro j hj
+    exact getElem!_swap_at_k s_data s'_data m j hs_al hk_al hswap hj (hsw hswap)
+  · next h =>
+    have hm_lt_s : m < s_data.length := by omega
+    refine ⟨hm_lt_s, hm_al, ?_⟩
+    have hm_ne_k : m ≠ k := by
+      intro heq; subst heq
+      exact h ⟨rfl, by omega⟩
+    apply slice_eq_of_getElem! _ _ _ _ 36 (by omega) (by omega)
+    exact getElem!_record_preserved_nonswap s_data s'_data k m
+      hs_al hk_al hm_al hm_ne_k hm_lt_s hlen hk_bnd hm_lt_s' hsw htr
+
+/-- After a swap-remove at `k`, given a record at `m` in the old array (`m ≠ k`),
+find its position in the shorter array. If `m` was the last record and a swap happened,
+it moved to `k`; otherwise it stayed at `m`. -/
+private theorem completeness_through_remove
+    (s_data s'_data : List U8) (k m : Nat)
+    (hs_al : s_data.length % 36 = 0) (hk_al : k % 36 = 0) (hm_al : m % 36 = 0)
+    (hm_ne_k : m ≠ k) (hm_lt_s : m < s_data.length)
+    (hlen : s'_data.length = s_data.length - 36)
+    (hk_bnd : k + 36 ≤ s_data.length)
+    (hsw : k + 36 < s_data.length →
+      s'_data = (s_data.setSlice! k (s_data.drop (s_data.length - 36))).take
+        (s_data.length - 36))
+    (htr : k + 36 = s_data.length → s'_data = s_data.take k) :
+    ∃ m', m' < s'_data.length ∧ m' % 36 = 0 ∧
+      s'_data.slice m' (m' + 36) = s_data.slice m (m + 36) := by
+  by_cases hmk_last : m = s_data.length - 36
+  · have hmk2 : k + 36 < s_data.length := by
+      have : m + 36 ≤ s_data.length := by
+        have := Nat.div_add_mod m 36; have := Nat.div_add_mod s_data.length 36; omega
+      omega
+    refine ⟨k, by (rw [hlen]; omega), hk_al, ?_⟩
+    have ⟨_, _, heq⟩ := record_at_after_remove s_data s'_data k k hs_al hk_al hk_al
+      (by rw [hlen]; omega) hlen hk_bnd hsw htr
+    simp only [and_self, ite_true, hmk2] at heq
+    rw [heq, hmk_last]
+  · have hm_lt' : m < s'_data.length := by
+      rw [hlen]
+      have := Nat.div_add_mod m 36; have := Nat.div_add_mod s_data.length 36; omega
+    refine ⟨m, hm_lt', hm_al, ?_⟩
+    have ⟨_, _, heq⟩ := record_at_after_remove s_data s'_data k m hs_al hk_al hm_al
+      hm_lt' hlen hk_bnd hsw htr
+    have : ¬(m = k ∧ k + 36 < s_data.length) := fun ⟨h, _⟩ => hm_ne_k h
+    simp only [this, ite_false] at heq
+    exact heq
+
+private theorem subseq_after_remove
+    (s_data s'_data orig_data : List U8) (k m : Nat)
+    (hs_al : s_data.length % 36 = 0) (hk_al : k % 36 = 0) (hm_al : m % 36 = 0)
+    (hm_lt_s' : m < s'_data.length)
+    (hlen : s'_data.length = s_data.length - 36)
+    (hk_bnd : k + 36 ≤ s_data.length)
+    (hsw : k + 36 < s_data.length →
+      s'_data = (s_data.setSlice! k (s_data.drop (s_data.length - 36))).take
+        (s_data.length - 36))
+    (htr : k + 36 = s_data.length → s'_data = s_data.take k)
+    (hsubseq : ∀ p, p < s_data.length ∧ p % 36 = 0 →
+      ∃ n, n < orig_data.length ∧ n % 36 = 0 ∧
+        s_data.slice p (p + 36) = orig_data.slice n (n + 36)) :
+    ∃ n, n < orig_data.length ∧ n % 36 = 0 ∧
+      s'_data.slice m (m + 36) = orig_data.slice n (n + 36) := by
+  have hm_lt_s : m < s_data.length := by omega
+  have ⟨hsrc_lt, hsrc_al, hsrc_eq⟩ := record_at_after_remove s_data s'_data k m
+    hs_al hk_al hm_al hm_lt_s' hlen hk_bnd hsw htr
+  let src := if m = k ∧ k + 36 < s_data.length then s_data.length - 36 else m
+  obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq src ⟨hsrc_lt, hsrc_al⟩
+  exact ⟨n, hn1, hn2, hsrc_eq.trans hn3⟩
+
+
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc_loop`**:
 
 Applies `loop.spec_decr_nat` with measure `self.data.length - i1.val` and the loop-body
@@ -256,44 +444,8 @@ theorem gc_loop_spec
     (h_data_aligned : self.data.length % 36 = 0)
     (h_i1_bound : i1.val ≤ self.data.length) :
     gc_loop i self params trim_horizon i1 ⦃ (result : alloc.vec.Vec U8) =>
-      result.length % 36 = 0 ∧
-      result.length ≤ Usize.max ∧
-      result.length ≤ self.data.length ∧
-      (∀ j, j < i1.val → result.val[j]! = self.data.val[j]!) ∧
-      i1.val ≤ result.length ∧
-      (∀ m, i1.val ≤ m ∧  m < result.length ∧  m % 36 = 0 →
-        Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-          (result.val.slice m (m + 4)) ≠ ok .gt) ∧
-      (∀ m, m < result.length ∧ m % 36 = 0 →
-        ∃ n, n < self.data.length ∧ n % 36 = 0 ∧
-          result.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-      (∀ n, n < self.data.length ∧ n % 36 = 0 →
-        Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-          (self.data.val.slice n (n + 4)) ≠ ok .gt →
-        ∃ m, m < result.length ∧ m % 36 = 0 ∧
-          result.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-      (∃ f : Nat → Nat,
-        (∀ m, m < result.length ∧ m % 36 = 0 →
-          f m < self.data.length ∧ (f m) % 36 = 0 ∧
-          result.val.slice m (m + 36) =
-            self.data.val.slice (f m) (f m + 36)) ∧
-        (∀ m₁ m₂, m₁ < result.length ∧ m₁ % 36 = 0 →
-          m₂ < result.length ∧ m₂ % 36 = 0 →
-          f m₁ = f m₂ → m₁ = m₂)) ∧
-      -- completeness with injectivity: injective reverse mapping from unexpired source to result
-      (∃ g : Nat → Nat,
-        (∀ n, n < self.data.length ∧ n % 36 = 0 →
-          Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-            (self.data.val.slice n (n + 4)) ≠ ok .gt →
-          g n < result.length ∧ (g n) % 36 = 0 ∧
-          result.val.slice (g n) (g n + 36) = self.data.val.slice n (n + 36)) ∧
-        (∀ n₁ n₂, n₁ < self.data.length ∧ n₁ % 36 = 0 →
-          n₂ < self.data.length ∧ n₂ % 36 = 0 →
-          Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-            (self.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
-          Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
-            (self.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
-          g n₁ = g n₂ → n₁ = n₂))⦄ := by
+      GcLoopPost self trim_horizon i1 result ⦄ := by
+  unfold GcLoopPost
   unfold gc_loop
   apply loop.spec_decr_nat
     (measure := fun (p : chain.KeyHistory × Usize) => p.1.data.length - p.2.val)
@@ -340,6 +492,8 @@ theorem gc_loop_spec
           g n₁ = g n₂ → n₁ = n₂)))
   · intro ⟨s, k⟩ ⟨hk_al, hs_al, hs_bnd, hkb, hs_le, hmono, hpres, hlive, hsubseq, hcomplete,
       ⟨f_inv, hf_prov, hf_inj⟩, ⟨g_inv, hg_prov, hg_inj⟩⟩
+    have hs_vl : s.data.val.length = s.data.length := rfl
+    have hself_vl : self.data.val.length = self.data.length := rfl
     have hspec := gc_loop.body_spec i params trim_horizon s k h_i hs_bnd hk_al hs_al hkb
     apply WP.spec_mono hspec
     intro cf hcf
@@ -348,19 +502,24 @@ theorem gc_loop_spec
       by_cases hcmp : Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
           (s.data.val.slice k.val (k.val + 4)) = ok .gt
       · obtain ⟨hlen, hkeq, hal, hib, hbnd', hpre, hsw, htr⟩ := hrem hcmp
+        have hk36_bnd : k.val + 36 ≤ s.data.length :=
+          aligned36_step hk_al hs_al (by vecOmega)
+        have hs'_vl : s'.data.val.length = s'.data.length := rfl
         refine ⟨⟨hal, ?_, hbnd', hib, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
         · rw [hlen]
-          grind
+          vecOmega
         · rw [hlen]
-          grind
+          vecOmega
         · rw [hkeq]
           exact hmono
         · intro j hj
           have hjk : j < k.val := lt_of_lt_of_le hj hmono
-          grind
+          have h1 := hpre j hjk
+          have h2 := hpres j hj
+          exact h1.trans h2
         · intro m hm1 hm2
-          rw [hkeq] at hm2
-          have hm4 : m + 4 ≤ k.val := by grind
+          rw [hkeq] at hm1 hm2
+          have hm4 : m + 4 ≤ k.val := by scalar_tac
           have hibk : k.val ≤ s'.data.length := by rw [hkeq] at hib; exact hib
           have hsl : s'.data.val.slice m (m + 4) = s.data.val.slice m (m + 4) := by
             apply slice_eq_of_prefix
@@ -368,272 +527,126 @@ theorem gc_loop_spec
             · exact le_trans hm4 hkb
             · intro j hj
               exact hpre j (by omega)
-          grind
+          rw [hsl] at hm2
+          exact hlive m ⟨hm1.1, hm1.2.1, hm1.2.2⟩ hm2
         · intro m ⟨hml, hmal⟩
-          have hml_s : m < s.data.length := by grind
-          by_cases hmk : m + 36 ≤ k.val
-          · obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq m ⟨hml_s, hmal⟩
-            have hml36 : m + 36 ≤ s'.data.length := by
-              have : s'.data.length % 36 = 0 := by rw [hlen]; grind
-              grind
-            have hn36 : n + 36 ≤ self.data.length := by grind
-            refine ⟨n, hn1, hn2,
-              slice_eq_of_getElem! _ _ _ _ 36 hml36 hn36 fun j hj => ?_⟩
-            change (s'.data)[m + j]! = (self.data)[n + j]!
-            rw [hpre (m + j) (by omega)]
-            exact getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) hn36 j hj
-          · by_cases hmk2 : k.val + 36 < s.data.length
-            · have hsw' := hsw hmk2
-              by_cases hmeq : m = k.val
-              · subst hmeq
-                have hlast_m : s.data.length - 36 < s.data.length := by omega
-                have hlast_al : (s.data.length - 36) % 36 = 0 := by grind
-                obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq (s.data.length - 36) ⟨hlast_m, hlast_al⟩
-                have hn36' : n + 36 ≤ self.data.length := by grind
-                refine ⟨n, hn1, hn2,
-                  slice_eq_of_getElem! _ _ _ _ 36 (by grind) hn36' fun j hj => ?_⟩
-                rw [hsw', List.getElem!_take_of_lt _ _ _ (by omega),
-                    List.getElem!_setSlice!_middle _ _ _ _
-                      ⟨by omega, by simp [List.length_drop]; grind, by grind⟩,
-                    List.getElem!_drop]
-                have key := getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) hn36' j hj
-                have : s.data.val.length - 36 + j = s.data.val.length - 36 + (j + k.val - k.val) :=
-                  by omega
-                rw [this] at key
-                grind
-              · have hm_gt36 : k.val + 36 ≤ m := by grind
-                obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq m ⟨hml_s, hmal⟩
-                have hn36' : n + 36 ≤ self.data.length := by grind
-                refine ⟨n, hn1, hn2,
-                  slice_eq_of_getElem! _ _ _ _ 36 (by grind) hn36' fun j hj => ?_⟩
-                rw [hsw', List.getElem!_take_of_lt _ _ _ (by grind),
-                    List.getElem!_setSlice!_suffix _ _ _ _ (by simp [List.length_drop]; omega)]
-                exact getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) hn36' j hj
-            · have hk36 : k.val + 36 = s.data.length := by grind
-              have htr' := htr hk36
-              have hml' : m < k.val := by grind
-              obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq m ⟨hml_s, hmal⟩
-              have hn36' : n + 36 ≤ self.data.length := by grind
-              refine ⟨n, hn1, hn2,
-                slice_eq_of_getElem! _ _ _ _ 36 (by grind) hn36' fun j hj => ?_⟩
-              rw [htr', List.getElem!_take_of_lt _ _ _ (by grind)]
-              exact getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) hn36' j hj
+          exact subseq_after_remove s.data.val s'.data.val self.data.val k.val m
+            (by vecOmega) hk_al hmal (by vecOmega) (by vecOmega) (by vecOmega) hsw htr
+            (fun p hp => hsubseq p hp)
         · intro n ⟨hn_lt, hn_al⟩ hn_live
           obtain ⟨m, hm_lt, hm_al, hm_eq⟩ := hcomplete n ⟨hn_lt, hn_al⟩ hn_live
           by_cases hmk_eq : m = k.val
           · subst hmk_eq
-            have h4 : s.data.val.slice k.val (k.val + 4) =
-                self.data.val.slice n (n + 4) := by
-              apply slice_eq_of_getElem! _ _ _ _ 4 (by grind) (by grind)
-              intro j hj
-              exact getElem!_of_slice_eq _ _ _ _ 36 hm_eq (by grind) (by grind) j (by omega)
-            rw [h4] at hcmp; exact absurd hcmp hn_live
-          · by_cases hmk_last : m = s.data.length - 36
-            · by_cases hmk2 : k.val + 36 < s.data.length
-              · have hsw' := hsw hmk2
-                refine ⟨k.val, by (rw [hlen]; omega), hk_al,
-                  slice_eq_of_getElem! _ _ _ _ 36 (by grind) (by grind) fun j hj => ?_⟩
-                rw [hsw', List.getElem!_take_of_lt _ _ _ (by grind),
-                    List.getElem!_setSlice!_middle _ _ _ _
-                      ⟨by omega, by simp [List.length_drop]; grind, by grind⟩,
-                    List.getElem!_drop]
-                have key := getElem!_of_slice_eq _ _ _ _ 36 hm_eq (by grind) (by grind) j hj
-                convert key using 2
-                omega
-              · have : k.val + 36 = s.data.length := by grind
-                omega
-            · have hm_lt' : m < s'.data.length := by
-                rw [hlen]
-                have : m + 36 ≤ s.data.length := by
-                  have := Nat.mod_add_div m 36
-                  have := Nat.mod_add_div s.data.length 36
-                  grind
-                omega
-              refine ⟨m, hm_lt', hm_al,
-                slice_eq_of_getElem! _ _ _ _ 36 (by grind) (by grind) fun j hj => ?_⟩
-              by_cases hmk2 : k.val + 36 < s.data.length
-              · have hsw' := hsw hmk2
-                rw [hsw', List.getElem!_take_of_lt _ _ _ (by grind)]
-                by_cases hm_before_k : m + 36 ≤ k.val
-                · rw [List.getElem!_setSlice!_prefix _ _ _ _ (by omega)]
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hm_eq (by grind) (by grind) j hj
-                · have : k.val + 36 ≤ m := by grind
-                  rw [List.getElem!_setSlice!_suffix _ _ _ _
-                    (by simp [List.length_drop]; omega)]
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hm_eq (by grind) (by grind) j hj
-              · have hk36 : k.val + 36 = s.data.length := by grind
-                rw [htr hk36, List.getElem!_take_of_lt _ _ _ (by grind)]
-                exact getElem!_of_slice_eq _ _ _ _ 36 hm_eq (by grind) (by grind) j hj
-        · let f' : Nat → Nat := fun m =>
-            if m = k.val ∧ k.val + 36 < s.data.length then f_inv (s.data.length - 36)
-            else f_inv m
+            exact absurd hcmp (by
+              rw [timestamp_of_record_eq _ _ _ _ hm_eq
+                (by vecOmega)
+                (by vecOmega)]
+              exact hn_live)
+          · obtain ⟨m', hm'_lt, hm'_al, hm'_eq⟩ := completeness_through_remove
+              s.data.val s'.data.val k.val m
+              (by vecOmega)
+              hk_al hm_al hmk_eq hm_lt (by vecOmega) (by vecOmega) hsw htr
+            exact ⟨m', hm'_lt, hm'_al, hm'_eq.trans hm_eq⟩
+        · let src := fun m => if m = k.val ∧ k.val + 36 < s.data.length
+            then s.data.length - 36 else m
+          let f' : Nat → Nat := fun m => f_inv (src m)
           refine ⟨f', fun m ⟨hml, hmal⟩ => ?_, fun m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩ hfeq => ?_⟩
-          · change f' m < self.data.length ∧ (f' m) % 36 = 0 ∧
-              s'.data.val.slice m (m + 36) = self.data.val.slice (f' m) (f' m + 36)
-            simp only [f']
-            by_cases hmeq_and_swap : m = k.val ∧ k.val + 36 < s.data.length
-            · simp only [hmeq_and_swap]
-              obtain ⟨hmeq, hswap⟩ := hmeq_and_swap
-              subst hmeq
-              have hlast_m : s.data.length - 36 < s.data.length := by omega
-              have hlast_al : (s.data.length - 36) % 36 = 0 := by grind
-              obtain ⟨hn1, hn2, hn3⟩ := hf_prov (s.data.length - 36) ⟨hlast_m, hlast_al⟩
-              refine ⟨hn1, hn2, ?_⟩
-              have hsw' := hsw hswap
-              apply slice_eq_of_getElem! _ _ _ _ 36 (by grind) (by grind)
-              intro j hj
-              rw [hsw', List.getElem!_take_of_lt _ _ _ (by omega),
-                  List.getElem!_setSlice!_middle _ _ _ _
-                    ⟨by omega, by simp [List.length_drop]; grind, by grind⟩,
-                  List.getElem!_drop]
-              have key := getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) (by grind) j hj
-              have : s.data.val.length - 36 + j = s.data.val.length - 36 + (j + k.val - k.val) :=
-                by omega
-              rw [this] at key
-              grind
-            · simp only [hmeq_and_swap, if_false]
-              have hml_s : m < s.data.length := by grind
-              obtain ⟨hn1, hn2, hn3⟩ := hf_prov m ⟨hml_s, hmal⟩
-              refine ⟨hn1, hn2, ?_⟩
-              apply slice_eq_of_getElem! _ _ _ _ 36 (by grind) (by grind)
-              intro j hj
-              by_cases hmk2 : k.val + 36 < s.data.length
-              · have hsw' := hsw hmk2
-                have hm_ne_k : m ≠ k.val := by
-                  intro heq; exact hmeq_and_swap ⟨heq, hmk2⟩
-                by_cases hmk : m + 36 ≤ k.val
-                · rw [hsw', List.getElem!_take_of_lt _ _ _ (by omega),
-                      List.getElem!_setSlice!_prefix _ _ _ _ (by omega)]
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) (by grind) j hj
-                · have hm_gt : k.val + 36 ≤ m := by grind
-                  rw [hsw', List.getElem!_take_of_lt _ _ _ (by grind),
-                      List.getElem!_setSlice!_suffix _ _ _ _ (by simp [List.length_drop]; omega)]
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) (by grind) j hj
-              · have hk36 : k.val + 36 = s.data.length := by grind
-                have hml' : m < k.val := by
-                  have : ¬(m = k.val ∧ k.val + 36 < s.data.length) := hmeq_and_swap
-                  grind
-                rw [htr hk36, List.getElem!_take_of_lt _ _ _ (by grind)]
-                exact getElem!_of_slice_eq _ _ _ _ 36 hn3 (by grind) (by grind) j hj
+          · have ⟨hsrc_lt, hsrc_al, hsrc_eq⟩ := record_at_after_remove
+              s.data.val s'.data.val k.val m (by vecOmega)
+              hk_al hmal (by vecOmega) (by vecOmega) (by vecOmega) hsw htr
+            have ⟨hf1, hf2, hf3⟩ := hf_prov (src m) ⟨hsrc_lt, hsrc_al⟩
+            exact ⟨hf1, hf2, hsrc_eq.trans hf3⟩
           · show m₁ = m₂
-            simp only [f'] at hfeq
+            simp only [f', src] at hfeq
             by_cases h1 : m₁ = k.val ∧ k.val + 36 < s.data.length <;>
             by_cases h2 : m₂ = k.val ∧ k.val + 36 < s.data.length
             · exact h1.1.trans h2.1.symm
             · have hfeq' : f_inv (s.data.length - 36) = f_inv m₂ := by
                 rw [if_pos h1, if_neg h2] at hfeq; exact hfeq
-              have hm2_s : m₂ < s.data.length := by grind
-              have hlast : s.data.length - 36 < s.data.length := by omega
-              have hlast_al : (s.data.length - 36) % 36 = 0 := by grind
-              have hm2_eq := hf_inj (s.data.length - 36) m₂ ⟨hlast, hlast_al⟩ ⟨hm2_s, hm2a⟩ hfeq'
-              rw [hlen] at hm2l
-              omega
+              have := hf_inj (s.data.length - 36) m₂
+                ⟨by (have := h1.2; vecOmega), by vecOmega⟩
+                ⟨by vecOmega, hm2a⟩ hfeq'
+              rw [hlen] at hm2l; omega
             · have hfeq' : f_inv m₁ = f_inv (s.data.length - 36) := by
                 rw [if_neg h1, if_pos h2] at hfeq; exact hfeq
-              have hm1_s : m₁ < s.data.length := by grind
-              have hlast : s.data.length - 36 < s.data.length := by omega
-              have hlast_al : (s.data.length - 36) % 36 = 0 := by grind
-              have hm1_eq := hf_inj m₁ (s.data.length - 36) ⟨hm1_s, hm1a⟩ ⟨hlast, hlast_al⟩ hfeq'
-              rw [hlen] at hm1l
-              omega
-            · have hfeq' : f_inv m₁ = f_inv m₂ := by
-                rw [if_neg h1, if_neg h2] at hfeq; exact hfeq
-              have hm1_s : m₁ < s.data.length := by grind
-              have hm2_s : m₂ < s.data.length := by grind
-              exact hf_inj m₁ m₂ ⟨hm1_s, hm1a⟩ ⟨hm2_s, hm2a⟩ hfeq'
-        · let g' : Nat → Nat := fun n =>
-            if g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length then k.val
-            else g_inv n
+              have := hf_inj m₁ (s.data.length - 36)
+                ⟨by vecOmega, hm1a⟩
+                ⟨by (have := h2.2; vecOmega), by vecOmega⟩ hfeq'
+              rw [hlen] at hm1l; omega
+            · exact hf_inj m₁ m₂ ⟨by vecOmega, hm1a⟩ ⟨by vecOmega, hm2a⟩
+                (by rw [if_neg h1, if_neg h2] at hfeq; exact hfeq)
+        · let dst := fun n => if g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length
+            then k.val else g_inv n
+          let g' : Nat → Nat := dst
           refine ⟨g', fun n ⟨hn_lt, hn_al⟩ hn_live => ?_,
             fun n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live hgeq => ?_⟩
           · obtain ⟨hgn_lt, hgn_al, hgn_eq⟩ := hg_prov n ⟨hn_lt, hn_al⟩ hn_live
-            simp only [g']
+            have hgn_ne_k : g_inv n ≠ k.val := by
+              intro heq; rw [← heq] at hcmp
+              exact expired_contradicts_live _ _ _ _ _ hgn_eq
+                (by vecOmega) (by vecOmega) hcmp hn_live
+            obtain ⟨m', hm'_lt, hm'_al, hm'_eq⟩ := completeness_through_remove
+              s.data.val s'.data.val k.val (g_inv n)
+              (by vecOmega) hk_al hgn_al hgn_ne_k hgn_lt (by vecOmega) (by vecOmega) hsw htr
+            simp only [g', dst]
             by_cases hg_last_swap : g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length
-            · obtain ⟨hg_last, hswap⟩ := hg_last_swap
-              simp only [show g_inv n = s.data.length - 36 from hg_last,
-                show k.val + 36 < s.data.length from hswap, and_self, ite_true]
-              refine ⟨by (rw [hlen]; omega), hk_al, ?_⟩
-              have hsw' := hsw hswap
-              apply slice_eq_of_getElem! _ _ _ _ 36 (by grind) (by grind)
-              intro j hj
-              rw [hsw', List.getElem!_take_of_lt _ _ _ (by grind),
-                  List.getElem!_setSlice!_middle _ _ _ _
-                    ⟨by omega, by simp [List.length_drop]; grind, by grind⟩,
-                  List.getElem!_drop]
-              have key := getElem!_of_slice_eq _ _ _ _ 36 hgn_eq (by grind) (by grind) j hj
-              rw [hg_last] at key; convert key using 2; omega
-            · simp only [hg_last_swap, if_false]
-              have hgn_ne_k : g_inv n ≠ k.val := by
-                intro heq
-                have h4_eq : s.data.val.slice k.val (k.val + 4) =
-                    self.data.val.slice n (n + 4) := by
-                  rw [← heq]
-                  apply slice_eq_of_getElem! _ _ _ _ 4 (by grind) (by grind)
-                  intro j hj
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hgn_eq (by grind) (by grind) j (by omega)
-                rw [h4_eq] at hcmp; exact absurd hcmp hn_live
+            · simp only [hg_last_swap]
+              have ⟨_, _, hk_eq⟩ := record_at_after_remove s.data.val s'.data.val k.val k.val
+                (by vecOmega) hk_al hk_al (by vecOmega) (by vecOmega) (by vecOmega) hsw htr
+              simp only [and_self, hg_last_swap.2, ite_true] at hk_eq
+              rw [hg_last_swap.1] at hgn_eq
+              have hswap : k.val + 36 < s.data.length := hg_last_swap.2
+              refine ⟨?_, hk_al, hk_eq.trans hgn_eq⟩
+              simp [alloc.vec.Vec.length] at hlen hswap ⊢; omega
+            · simp only [hg_last_swap, ite_false]
+              have : ¬(g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length) := hg_last_swap
               have hgn_lt' : g_inv n < s'.data.length := by
                 rw [hlen]
-                have : g_inv n + 36 ≤ s.data.length := by grind
+                have : g_inv n + 36 ≤ s.data.length := by vecOmega
                 by_cases heq_last : g_inv n = s.data.length - 36
                 · have : ¬(k.val + 36 < s.data.length) := fun h => hg_last_swap ⟨heq_last, h⟩
-                  have : k.val + 36 = s.data.length := by grind
-                  omega
+                  vecOmega
                 · omega
               refine ⟨hgn_lt', hgn_al, ?_⟩
-              apply slice_eq_of_getElem! _ _ _ _ 36 (by grind) (by grind)
-              intro j hj
-              by_cases hmk2 : k.val + 36 < s.data.length
-              · have hsw' := hsw hmk2
-                rw [hsw', List.getElem!_take_of_lt _ _ _ (by grind)]
-                by_cases hgn_before_k : g_inv n + 36 ≤ k.val
-                · rw [List.getElem!_setSlice!_prefix _ _ _ _ (by omega)]
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hgn_eq (by grind) (by grind) j hj
-                · have : k.val + 36 ≤ g_inv n := by grind
-                  rw [List.getElem!_setSlice!_suffix _ _ _ _ (by simp [List.length_drop]; omega)]
-                  exact getElem!_of_slice_eq _ _ _ _ 36 hgn_eq (by grind) (by grind) j hj
-              · have hk36 : k.val + 36 = s.data.length := by grind
-                rw [htr hk36, List.getElem!_take_of_lt _ _ _ (by grind)]
-                exact getElem!_of_slice_eq _ _ _ _ 36 hgn_eq (by grind) (by grind) j hj
+              have ⟨_, _, hsrc_eq⟩ := record_at_after_remove
+                s.data.val s'.data.val k.val (g_inv n)
+                (by vecOmega) hk_al hgn_al hgn_lt' (by vecOmega) (by vecOmega) hsw htr
+              have : ¬(g_inv n = k.val ∧ k.val + 36 < s.data.length) := by
+                intro ⟨h, _⟩; exact hgn_ne_k h
+              simp only [this, ite_false] at hsrc_eq
+              exact hsrc_eq.trans hgn_eq
           · show n₁ = n₂
-            simp only [g'] at hgeq
+            simp only [g', dst] at hgeq
+            have g_ne_k : ∀ ni, ni < self.data.length → ni % 36 = 0 →
+                Slice.lexCmpAux core.cmp.OrdU8 trim_horizon.val
+                  (self.data.val.slice ni (ni + 4)) ≠ ok .gt →
+                g_inv ni ≠ k.val := by
+              intro ni hni_lt hni_al hni_live heq
+              obtain ⟨_, _, hgni_eq⟩ := hg_prov ni ⟨hni_lt, hni_al⟩ hni_live
+              rw [← heq] at hcmp
+              exact expired_contradicts_live _ _ _ _ _ hgni_eq
+                (by vecOmega) (by vecOmega) hcmp hni_live
             by_cases h1 : g_inv n₁ = s.data.length - 36 ∧ k.val + 36 < s.data.length <;>
             by_cases h2 : g_inv n₂ = s.data.length - 36 ∧ k.val + 36 < s.data.length
             · exact hg_inj n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live
                 (by rw [h1.1, h2.1])
             · rw [if_pos h1, if_neg h2] at hgeq
-              have hgn2_eq_k : g_inv n₂ = k.val := hgeq.symm
-              obtain ⟨_, _, hgn2_sl⟩ := hg_prov n₂ ⟨hn2_lt, hn2_al⟩ hn2_live
-              have h4_eq : s.data.val.slice k.val (k.val + 4) =
-                  self.data.val.slice n₂ (n₂ + 4) := by
-                rw [← hgn2_eq_k]
-                apply slice_eq_of_getElem! _ _ _ _ 4 (by grind) (by grind)
-                intro j hj
-                exact getElem!_of_slice_eq _ _ _ _ 36 hgn2_sl (by grind) (by grind) j (by omega)
-              rw [h4_eq] at hcmp; exact absurd hcmp hn2_live
+              exact (g_ne_k n₂ hn2_lt hn2_al hn2_live hgeq.symm).elim
             · rw [if_neg h1, if_pos h2] at hgeq
-              have hgn1_eq_k : g_inv n₁ = k.val := hgeq
-              obtain ⟨_, _, hgn1_sl⟩ := hg_prov n₁ ⟨hn1_lt, hn1_al⟩ hn1_live
-              have h4_eq : s.data.val.slice k.val (k.val + 4) =
-                  self.data.val.slice n₁ (n₁ + 4) := by
-                rw [← hgn1_eq_k]
-                apply slice_eq_of_getElem! _ _ _ _ 4 (by grind) (by grind)
-                intro j hj
-                exact getElem!_of_slice_eq _ _ _ _ 36 hgn1_sl (by grind) (by grind) j (by omega)
-              rw [h4_eq] at hcmp; exact absurd hcmp hn1_live
+              exact (g_ne_k n₁ hn1_lt hn1_al hn1_live hgeq).elim
             · rw [if_neg h1, if_neg h2] at hgeq
               exact hg_inj n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live hgeq
-        · simp only; rw [hlen] at hib ⊢; grind
+        · simp only; rw [hkeq] at hib ⊢; rw [hlen] at hib ⊢; vecOmega
       · obtain ⟨hself, hkeq, hal, hib, _hbnd, _hal2⟩ := hadv hcmp
         subst hself
         refine ⟨⟨hal, hs_al, hs_bnd, hib, hs_le, ?_, hpres, ?_, hsubseq, hcomplete,
           ⟨f_inv, hf_prov, hf_inj⟩, ⟨g_inv, hg_prov, hg_inj⟩⟩, ?_⟩
-        · grind
+        · vecOmega
         · intro m hm1 hm2
           by_cases hmk : m < k.val
-          · grind
-          · have hmeq : m = k.val := by grind
-            grind
+          · exact hlive m ⟨hm1.1, hmk, hm1.2.2⟩ hm2
+          · have hmeq : m = k.val := by vecOmega
+            subst hmeq; exact hcmp hm2
         · simp only; omega
     · obtain ⟨hout, _hnlt⟩ := hcf
       subst hout
@@ -641,12 +654,16 @@ theorem gc_loop_spec
       · intro m ⟨hm1, hm2, hm3⟩
         have : m < k.val := by omega
         exact hlive m ⟨hm1, this, hm3⟩
-      · intro m hm; exact hsubseq m hm
-      · intro n hn hn_live; exact hcomplete n hn hn_live
-      · exact ⟨f_inv, hf_prov, hf_inj⟩
-      · exact ⟨g_inv, hg_prov, hg_inj⟩
+      · intro m hm
+        obtain ⟨n, hn1, hn2, hn3⟩ := hsubseq m hm
+        exact ⟨n, ⟨hn1, hn2⟩, hn3⟩
+      · intro n hn hn_live
+        obtain ⟨m, hm1, hm2, hm3⟩ := hcomplete n hn hn_live
+        exact ⟨m, ⟨hm1, hm2⟩, hm3⟩
+      · exact ⟨f_inv, fun m hm => let ⟨a, b, c⟩ := hf_prov m hm; ⟨⟨a, b⟩, c⟩, hf_inj⟩
+      · exact ⟨g_inv, fun n hn hlive => let ⟨a, b, c⟩ := hg_prov n hn hlive; ⟨⟨a, b⟩, c⟩, hg_inj⟩
   · exact ⟨h_aligned, h_data_aligned, h_bound, h_i1_bound, le_refl _, le_refl _,
-      fun j _ => rfl, fun m h => by grind,
+      fun j _ => rfl, fun m h => by vecOmega,
       fun m ⟨hml, hmal⟩ => ⟨m, hml, hmal, rfl⟩,
       fun n ⟨hn_lt, hn_al⟩ _ => ⟨n, hn_lt, hn_al, rfl⟩,
       ⟨fun m => m, fun m ⟨hml, hmal⟩ => ⟨hml, hmal, rfl⟩,
@@ -654,6 +671,112 @@ theorem gc_loop_spec
       ⟨fun n => n, fun n ⟨hn_lt, hn_al⟩ _ => ⟨hn_lt, hn_al, rfl⟩,
        fun _ _ _ _ _ _ h => h⟩⟩
 
+
+
+
+/-! ### Shared tactic macros for `gc_spec` and `gc_spec_64` post-`step*` goals
+
+Both the 32-bit and 64-bit GC spec theorems produce identical proof obligations after
+`step*`. The macros below capture the shared tactic blocks that close the two subgoals
+(the key-ge precondition goal and the postcondition restructuring goal),
+eliminating ~160 lines of duplication across the two theorems. -/
+
+/-- Close the key-ge precondition goal produced by `step*` in `gc_spec` variants.
+Case-splits on `params.max_ooo_keys > 0#u32` and applies `h_key_ge` or `scalar_tac`. -/
+local syntax "gc_close_key_ge_goal" : tactic
+set_option hygiene false in
+macro_rules
+  | `(tactic| gc_close_key_ge_goal) => `(tactic|
+    ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
+      rw [i2_post] at i3_post
+      simp only [UScalar.ofNatCore_val_eq] at i3_post
+      by_cases hpos : params.max_ooo_keys > 0#u32
+      · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
+        have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
+        rw [hi1] at i3_post
+        rw [hi4]
+        have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
+        rw [if_pos hlt] at h_key_ge
+        apply h_key_ge
+        simp_all
+      · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
+        have hi4 : i4.val = 2000 := by
+          have := i4_post2.mpr (Or.inl (by scalar_tac))
+          scalar_tac
+        have hi1_val : i1.val = 2201 := by
+          have := i1_post2.mpr (Or.inl (by scalar_tac))
+          scalar_tac
+        rw [hi1_val] at i3_post
+        have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
+        rw [if_neg hlt] at h_key_ge
+        scalar_tac ))
+
+/-- Close the postcondition-restructuring goal produced by `step*` in `gc_spec` variants.
+Destructures the loop invariant `v_post`, resolves the `max_ooo` case split for the
+below-threshold and above-threshold sub-goals, and reshapes the injective provenance /
+completeness witnesses from the loop's bundled form into the `GcPost` form. -/
+local syntax "gc_close_postcondition_goal" : tactic
+set_option hygiene false in
+macro_rules
+  | `(tactic| gc_close_postcondition_goal) => `(tactic|
+    ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
+      obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
+              v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
+              ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
+      rw [i2_post] at i3_post
+      simp only [UScalar.ofNatCore_val_eq] at i3_post
+      refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
+      · by_cases hpos : params.max_ooo_keys > 0#u32
+        · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
+          rw [hi1] at i3_post
+          have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
+          rw [if_pos hlt'] at h_lt
+          grind
+        · have hi1_val : i1.val = 2201 := by
+            have := i1_post2.mpr (Or.inl (by scalar_tac))
+            scalar_tac
+          rw [hi1_val] at i3_post
+          have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
+          rw [if_neg hlt'] at h_lt
+          scalar_tac
+      · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
+        · by_cases hpos : params.max_ooo_keys > 0#u32
+          · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
+            rw [hi4] at i5_post1
+            have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
+            rw [if_pos hlt]
+            omega
+          · have hi4 : i4.val = 2000 := by
+              have := i4_post2.mpr (Or.inl (by scalar_tac))
+              scalar_tac
+            have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
+            rw [if_neg hlt]
+            omega
+        · intro m hml hml1
+          have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
+          simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
+          exact this
+        · intro n hn_live h1 h2
+          simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
+            ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
+          obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
+          refine ⟨m, by scalar_tac⟩
+        · simp only [alloc.vec.Vec.length,
+            ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
+          refine ⟨f_inv, ?_, ?_⟩
+          · intro m hm1 hm2
+            obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
+            exact ⟨ha, hb, hc⟩
+          · intro m₁ m₂ hm1l hm1a hm2l hm2a
+            exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
+        · simp only [Array.to_slice, a_post,
+            ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
+          refine ⟨g_inv, ?_, ?_⟩
+          · intro n hn1 hn2 hn3
+            obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
+            exact ⟨ha, hb, hc⟩
+          · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
+            exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live ))
 
 /-!**Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc` (32-bit platform)**
 
@@ -676,132 +799,15 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
                 let trim_threshold := (max_ooo * 11 / 10 + 1) * 36
                 trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
-      let max_ooo : Nat :=
-        if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
-      let trim_size : Nat := max_ooo * 11 / 10 + 1
-      let trim_threshold : Nat := trim_size * 36
-      -- (1) alignment: result length is a multiple of 36 (whole records)
-      result.data.length % 36 = 0 ∧
-      -- (2) shrinkage: GC only removes records, never grows
-      result.data.length ≤ self.data.length ∧
-      -- (3) no-op when below threshold: if data is small enough, nothing is removed
-      (self.data.length < trim_threshold → result = self) ∧
-      -- (4) when above threshold, GC computes a trim horizon and enforces:
-      (trim_threshold ≤ self.data.length →
-        ∃ horizon : U32,
-         -- (4a) horizon value: `current_key - max_ooo`
-         horizon.val = current_key.val - max_ooo ∧
-          -- (4b) liveness: every record in result is unexpired (counter ≥ horizon)
-          (∀ m, m < result.data.length ∧ m % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (result.data.val.slice m (m + 4)) ≠ ok .gt) ∧
-          -- (4c) completeness: every unexpired record in self.data is retained in result
-          (∀ n, n < self.data.length ∧ n % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (self.data.val.slice n (n + 4)) ≠ ok .gt →
-            ∃ m, m < result.data.length ∧ m % 36 = 0 ∧
-              result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-          -- (4d) provenance with injectivity: there exists an injective mapping
-          --      witnessing that every result record originated from a distinct
-          --      source record (no duplication). Together with (4b) and (4c), this
-          --      ensures multiset(result records) = multiset(live source records).
-          (∃ f : Nat → Nat,
-            (∀ m, m < result.data.length ∧ m % 36 = 0 →
-              f m < self.data.length ∧ (f m) % 36 = 0 ∧
-              result.data.val.slice m (m + 36) =
-                self.data.val.slice (f m) (f m + 36)) ∧
-            (∀ m₁ m₂, m₁ < result.data.length ∧ m₁ % 36 = 0 →
-              m₂ < result.data.length ∧ m₂ % 36 = 0 →
-              f m₁ = f m₂ → m₁ = m₂)) ∧
-          -- (4e) completeness with injectivity: injective reverse mapping from
-          --      unexpired source records to result records. Together with (4d),
-          --      establishes a bijection proving
-          --      multiset(result records) = multiset(unexpired source records).
-          (∃ g : Nat → Nat,
-            (∀ n, n < self.data.length ∧ n % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n (n + 4)) ≠ ok .gt →
-              g n < result.data.length ∧ (g n) % 36 = 0 ∧
-              result.data.val.slice (g n) (g n + 36) =
-                self.data.val.slice n (n + 36)) ∧
-            (∀ n₁ n₂, n₁ < self.data.length ∧ n₁ % 36 = 0 →
-              n₂ < self.data.length ∧ n₂ % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
-              g n₁ = g n₂ → n₁ = n₂))) ⦄ := by
+      GcPost self current_key params result ⦄ := by
+  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
+    RecordsEq recordAt
   unfold gc
   simp only [alloc.vec.Vec.len]
   step*
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    by_cases hpos : params.max_ooo_keys > 0#u32
-    · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-      have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-      rw [hi1] at i3_post
-      rw [hi4]
-      have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-      rw [if_pos hlt] at h_key_ge
-      grind
-    · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
-      have hi4 : i4.val = 2000 := by
-        have := i4_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      have hi1_val : i1.val = 2201 := by
-        have := i1_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      rw [hi1_val] at i3_post
-      have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-      rw [if_neg hlt] at h_key_ge
-      scalar_tac
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
-    · by_cases hpos : params.max_ooo_keys > 0#u32
-      · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-        rw [hi1] at i3_post
-        have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
-        rw [if_pos hlt'] at h_lt
-        grind
-      · have hi1_val : i1.val = 2201 := by
-          have := i1_post2.mpr (Or.inl (by scalar_tac))
-          scalar_tac
-        rw [hi1_val] at i3_post
-        have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-        rw [if_neg hlt'] at h_lt
-        scalar_tac
-    · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
-      · by_cases hpos : params.max_ooo_keys > 0#u32
-        · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-          rw [hi4] at i5_post1
-          have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-          rw [if_pos hlt]
-          omega
-        · have hi4 : i4.val = 2000 := by
-            have := i4_post2.mpr (Or.inl (by scalar_tac))
-            scalar_tac
-          have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-          rw [if_neg hlt]
-          omega
-      · intro m hml
-        have := v_post6 m (by omega) hml
-        simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
-        exact this
-      · intro n  hn_live
-        simp only [Array.to_slice, a_post, ne_eq, alloc.vec.Vec.length] at v_post8
-        exact v_post8 n  hn_live
-      · simp only [alloc.vec.Vec.length] at v_post9 v_post10
-        exact ⟨_, v_post9, v_post10⟩
-      · simp only [Array.to_slice, a_post] at v_post11 v_post12
-        exact ⟨_, v_post11, v_post12⟩
+  · gc_close_key_ge_goal
+  · gc_close_postcondition_goal
+
 
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc`** (64-bit platform):
 
@@ -830,133 +836,15 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
                 trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val)
     (h_platform : System.Platform.numBits = 64) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
-      let max_ooo : Nat :=
-        if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
-      let trim_size : Nat := max_ooo * 11 / 10 + 1
-      let trim_threshold : Nat := trim_size * 36
-      -- (1) alignment: result length is a multiple of 36 (whole records)
-      result.data.length % 36 = 0 ∧
-      -- (2) shrinkage: GC only removes records, never grows
-      result.data.length ≤ self.data.length ∧
-      -- (3) no-op when below threshold: if data is small enough, nothing is removed
-      (self.data.length < trim_threshold → result = self) ∧
-      -- (4) when above threshold, GC computes a trim horizon and enforces:
-      (trim_threshold ≤ self.data.length →
-        ∃ horizon : U32,
-         -- (4a) horizon value: `current_key - max_ooo`
-         horizon.val = current_key.val - max_ooo ∧
-          -- (4b) liveness: every record in result is unexpired (counter ≥ horizon)
-          (∀ m, m < result.data.length ∧ m % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (result.data.val.slice m (m + 4)) ≠ ok .gt) ∧
-          -- (4c) completeness: every unexpired record in self.data is retained in result
-          (∀ n, n < self.data.length ∧ n % 36 = 0 →
-            Slice.lexCmpAux core.cmp.OrdU8
-              (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-              (self.data.val.slice n (n + 4)) ≠ ok .gt →
-            ∃ m, m < result.data.length ∧ m % 36 = 0 ∧
-              result.data.val.slice m (m + 36) = self.data.val.slice n (n + 36)) ∧
-          -- (4d) provenance with injectivity: there exists an injective mapping
-          --      witnessing that every result record originated from a distinct
-          --      source record (no duplication). Together with (4b) and (4c), this
-          --      ensures multiset(result records) = multiset(live source records).
-          (∃ f : Nat → Nat,
-            (∀ m, m < result.data.length ∧ m % 36 = 0 →
-              f m < self.data.length ∧ (f m) % 36 = 0 ∧
-              result.data.val.slice m (m + 36) =
-                self.data.val.slice (f m) (f m + 36)) ∧
-            (∀ m₁ m₂, m₁ < result.data.length ∧ m₁ % 36 = 0 →
-              m₂ < result.data.length ∧ m₂ % 36 = 0 →
-              f m₁ = f m₂ → m₁ = m₂)) ∧
-          -- (4e) completeness with injectivity: injective reverse mapping from
-          --      unexpired source records to result records. Together with (4d),
-          --      establishes a bijection proving
-          --      multiset(result records) = multiset(unexpired source records).
-          (∃ g : Nat → Nat,
-            (∀ n, n < self.data.length ∧ n % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n (n + 4)) ≠ ok .gt →
-              g n < result.data.length ∧ (g n) % 36 = 0 ∧
-              result.data.val.slice (g n) (g n + 36) =
-                self.data.val.slice n (n + 36)) ∧
-            (∀ n₁ n₂, n₁ < self.data.length ∧ n₁ % 36 = 0 →
-              n₂ < self.data.length ∧ n₂ % 36 = 0 →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₁ (n₁ + 4)) ≠ ok .gt →
-              Slice.lexCmpAux core.cmp.OrdU8
-                (horizon.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8))
-                (self.data.val.slice n₂ (n₂ + 4)) ≠ ok .gt →
-              g n₁ = g n₂ → n₁ = n₂))) ⦄ := by
+      GcPost self current_key params result ⦄ := by
+  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
+    RecordsEq recordAt
   have h_usize : Usize.max = 2 ^ 64 - 1 := by
     simp [Usize.max, Usize.numBits, h_platform]
   unfold gc
   simp only [alloc.vec.Vec.len]
   step*
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    by_cases hpos : params.max_ooo_keys > 0#u32
-    · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-      have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-      rw [hi1] at i3_post
-      rw [hi4]
-      have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-      rw [if_pos hlt] at h_key_ge
-      grind
-    · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
-      have hi4 : i4.val = 2000 := by
-        have := i4_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      have hi1_val : i1.val = 2201 := by
-        have := i1_post2.mpr (Or.inl (by scalar_tac))
-        scalar_tac
-      rw [hi1_val] at i3_post
-      have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-      rw [if_neg hlt] at h_key_ge
-      scalar_tac
-  · simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-    rw [i2_post] at i3_post
-    simp only [UScalar.ofNatCore_val_eq] at i3_post
-    refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
-    · by_cases hpos : params.max_ooo_keys > 0#u32
-      · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-        rw [hi1] at i3_post
-        have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
-        rw [if_pos hlt'] at h_lt
-        grind
-      · have hi1_val : i1.val = 2201 := by
-          have := i1_post2.mpr (Or.inl (by scalar_tac))
-          scalar_tac
-        rw [hi1_val] at i3_post
-        have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-        rw [if_neg hlt'] at h_lt
-        scalar_tac
-    · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
-      · by_cases hpos : params.max_ooo_keys > 0#u32
-        · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-          rw [hi4] at i5_post1
-          have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-          rw [if_pos hlt]
-          omega
-        · have hi4 : i4.val = 2000 := by
-            have := i4_post2.mpr (Or.inl (by scalar_tac))
-            scalar_tac
-          have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-          rw [if_neg hlt]
-          omega
-      · intro m hml
-        have := v_post6 m (by omega) hml
-        simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
-        exact this
-      · intro n  hn_live
-        simp only [Array.to_slice, a_post, ne_eq, alloc.vec.Vec.length] at v_post8
-        exact v_post8 n  hn_live
-      · simp only [alloc.vec.Vec.length] at v_post9 v_post10
-        exact ⟨_, v_post9, v_post10⟩
-      · simp only [Array.to_slice, a_post] at v_post11 v_post12
-        exact ⟨_, v_post11, v_post12⟩
+  · gc_close_key_ge_goal
+  · gc_close_postcondition_goal
 
 end spqr.chain.KeyHistory

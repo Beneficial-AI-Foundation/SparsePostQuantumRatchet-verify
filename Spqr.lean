@@ -75,8 +75,13 @@ import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.Chain.AddEpoch
 import Spqr.Specs.Chain.Chain.CedForDirection
+import Spqr.Specs.Chain.Chain.Defs
 import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.Chain.New
+import Spqr.Specs.Chain.Chain.RecvKey
+import Spqr.Specs.Chain.Chain.RecvKey32
+import Spqr.Specs.Chain.Chain.SendKey
+import Spqr.Specs.Chain.Chain.SendKey64
 import Spqr.Specs.Chain.ChainEpochDirection.ClearNext
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
 import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
@@ -96,6 +101,7 @@ import Spqr.Specs.Chain.Defs
 import Spqr.Specs.Chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
 import Spqr.Specs.Chain.KeyHistory.Add
 import Spqr.Specs.Chain.KeyHistory.Clear
+import Spqr.Specs.Chain.KeyHistory.Defs
 import Spqr.Specs.Chain.KeyHistory.Gc
 import Spqr.Specs.Chain.KeyHistory.Get
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
@@ -177,6 +183,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
@@ -222,6 +229,7 @@ import Spqr.Specs.Serialize.Error.From
 import Spqr.Specs.Util.Compare
 import Spqr.Specs.Util.Inz
 import Spqr.Specs.Util.IsNonZero
+import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
 import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.IntoPb
 import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
