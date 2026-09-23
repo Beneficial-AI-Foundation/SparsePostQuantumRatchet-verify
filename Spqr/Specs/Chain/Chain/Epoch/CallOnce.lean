@@ -16,9 +16,11 @@ are `some`, or `Err StateDecode` if either is `none`.
 
 open Aeneas Aeneas.Std Result spqr
 
-namespace spqr.chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+namespace spqr.chain.Chain.from_pb.closure_1.Insts
+namespace CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
 
-/-- **Spec theorem for `spqr.chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once`**:
+/-- **Spec theorem for `spqr.chain.Chain.from_pb.closure_1.
+Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once`**:
 
 Delegates to `call_mut`, drops closure state, and returns the inner result.
 Both `some` → `Ok { send, recv }`; either `none` → `Err StateDecode`.
@@ -38,4 +40,5 @@ theorem call_once_spec (c : chain.Chain.from_pb.closure_1)
   step*
   exact r_post
 
-end spqr.chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+end CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
+end spqr.chain.Chain.from_pb.closure_1.Insts
