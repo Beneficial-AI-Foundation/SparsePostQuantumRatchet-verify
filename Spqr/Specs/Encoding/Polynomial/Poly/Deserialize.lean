@@ -132,37 +132,64 @@ Three stages:
   2. **Allocation**: pre-allocates a coefficient vector of capacity `serialized.len() / 2`.
   3. **Deserialization loop**: decodes each byte pair and appends the `GF16` coefficient.
 
-This is the inverse of `Poly::serialize`. -/
+This is intended to be the inverse of `Poly::serialize`, but it is **not** on the zero
+polynomial: `Poly::zero` has no coefficients, so `serialize` yields `[]`, which `deserialize`
+rejects with `SerializationInvalid` (see `docs/defects.md`, item 16). -/
 
 
 namespace spqr.encoding.polynomial.Poly
 
 /-- **Spec theorem for `encoding.polynomial.Poly.deserialize`**:
 
-Deserializes a byte slice into a `Poly` over GF(2¹⁶).
+Total characterisation of `Poly::deserialize` over GF(2¹⁶), stated **without** any assumption
+on the shape of the input so that the error behaviour is pinned down rather than assumed away:
 
-Rejects empty or odd-length input. Otherwise, drives the deserialization loop to produce a
-coefficient vector satisfying:
-  * `poly.degree = serialized.length / 2`
-  * For every `j < serialized.length / 2`:
-      `(poly.coefficients.val[j]!).value.val = 256 * serialized[2*j]! + serialized[2*j+1]!`
+  * **Err branch** — the result is `Err SerializationInvalid` **iff**
+    `serialized.length = 0 ∨ serialized.length % 2 = 1`. In particular the empty slice — which is
+    exactly `Poly::serialize` of the zero polynomial (`serialize_spec`, `zero_spec`) — is rejected,
+    so `deserialize ∘ serialize` is not the identity on `Poly::zero`. This is the Rust defect
+    recorded as item 16 in `docs/defects.md`; the `is_empty()` check is the culprit, the loop
+    itself handles length 0 correctly.
+  * **Ok branch** — for non-empty, even-length input:
+      - `poly.degree = serialized.length / 2`
+      - `∀ j < serialized.length / 2`,
+        `poly.coefficients[j]!.value.val = 256 * serialized[2*j]! + serialized[2*j+1]!`
 
-Preconditions: input is non-empty with even length, and operations do not overflow `Usize`. -/
+The only remaining precondition is the `Usize` non-overflow side condition
+`serialized.length / 2 + 1 ≤ Usize.max`, needed by the loop's `i + 1` range increment. -/
 @[step]
 theorem deserialize_spec
     (serialized : Slice U8)
-    (h_nonempty : serialized.length ≠ 0)
-    (h_even : serialized.length % 2 = 0)
     (h_overflow : serialized.length / 2 + 1 ≤ Usize.max) :
     deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
       match result with
       | core.result.Result.Ok poly =>
+          serialized.length ≠ 0 ∧
+          serialized.length % 2 = 0 ∧
           poly.degree = serialized.length / 2 ∧
           ∀ j < serialized.length / 2,
             poly.coefficients[j]!.value.val = 256 * serialized[2 * j]! + serialized[2 * j + 1]!
-      | core.result.Result.Err _ => False ⦄ := by
+      | core.result.Result.Err e =>
+          e = PolynomialError.SerializationInvalid ∧
+          (serialized.length = 0 ∨ serialized.length % 2 = 1) ⦄ := by
   unfold Poly.deserialize degree
   step*
-  simp [alloc.vec.Vec.with_capacity]
+  · -- side condition of the loop: the freshly allocated vector is empty
+    simp [alloc.vec.Vec.with_capacity]
+  · -- non-empty, even length: the loop produces the coefficients
+    simp_all
+
+/-- **Corollary (defect 16 witness)**: the byte string `Poly::serialize` produces for the zero
+polynomial — the empty slice — is rejected by `Poly::deserialize`. Hence `deserialize` is not a
+left inverse of `serialize` on `Poly::zero`. -/
+theorem deserialize_empty_is_err
+    (serialized : Slice U8)
+    (h_empty : serialized.length = 0) :
+    deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
+      result = core.result.Result.Err PolynomialError.SerializationInvalid ⦄ := by
+  apply WP.spec_mono (deserialize_spec serialized (by simp only [h_empty]; scalar_tac))
+  rintro (poly | e) h
+  · exact absurd h_empty h.1
+  · simp [h.1]
 
 end spqr.encoding.polynomial.Poly

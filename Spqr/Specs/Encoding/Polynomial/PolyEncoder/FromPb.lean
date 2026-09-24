@@ -62,15 +62,14 @@ theorem body_spec
   simp only [bind_tc_ok]
   by_cases h_lt : iter.start.val < iter.end.val
   · step*
-    · simp_all [alloc.vec.Vec.deref]
-    · simp_all [alloc.vec.Vec.deref]
     · simp_all only [ne_eq, List.length_eq_zero_iff,
         not_true_eq_false, reduceCtorEq, false_and, implies_true,
           true_and]
       have hderef : ∀ (w : alloc.vec.Vec U8), w.deref = w := fun _ => rfl
       simp [*]
       grind
-    · cases r <;> simp_all
+    · -- `Err` branch of `Poly::deserialize` is ruled out by `h_nonempty` / `h_even`
+      cases r <;> simp_all [alloc.vec.Vec.deref]
   · grind
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 0
