@@ -19,8 +19,8 @@ open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.mat
 
 namespace spqr.encoding.polynomial.PolyEncoder
 
-/-- Default `Inhabited` instance for `Point` (empty value vector), needed for the `[j]!`
-lookups in `IntoPbPostCond`. -/
+/-- Canonical `Inhabited` instance for `Point` (empty value vector): the filler for every
+`[j]!` lookup on `Point` collections in the specs. -/
 instance instInhabitedPoint : Inhabited encoding.polynomial.Point :=
   ⟨⟨alloc.vec.Vec.new _⟩⟩
 

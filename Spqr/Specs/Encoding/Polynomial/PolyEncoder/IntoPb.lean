@@ -120,8 +120,6 @@ Invariant: `v.val.length == iter.start.val`.
 
 namespace spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
 
-instance instInhabitedPoint_spqr : Inhabited encoding.polynomial.Point := ⟨⟨alloc.vec.Vec.new _⟩⟩
-
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.into_pb_loop0.body`**:
 
 One step of the outer serialization loop. Retrieves index `j` from the range iterator, serializes

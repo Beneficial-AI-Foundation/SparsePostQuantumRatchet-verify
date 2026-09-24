@@ -131,14 +131,6 @@ open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomi
 
 namespace spqr.encoding.polynomial.PolyEncoder.chunk_at_loop
 
-/-! ## Inhabited instances -/
-
-/-- Default `Inhabited` instance for `Poly` (empty coefficient vector). -/
-instance : Inhabited encoding.polynomial.Poly := ⟨⟨alloc.vec.Vec.new _⟩⟩
-
-/-- Default `Inhabited` instance for `Point` (empty value vector). -/
-instance : Inhabited encoding.polynomial.Point := ⟨⟨alloc.vec.Vec.new _⟩⟩
-
 /-! ## Spec theorem for the chunk_at serialization loop -/
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.chunk_at_loop`**:
@@ -397,14 +389,6 @@ The proof composes `chunk_at_loop.loop_spec`, `Vec::index` with `RangeFull`,
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 
 namespace spqr.encoding.polynomial.PolyEncoder
-
-/-! ## Inhabited instances -/
-
-/-- Default `Inhabited` instance for `Poly` (empty coefficient vector). -/
-instance : Inhabited encoding.polynomial.Poly := ⟨⟨alloc.vec.Vec.new _⟩⟩
-
-/-- Default `Inhabited` instance for `Point` (empty value vector). -/
-instance : Inhabited encoding.polynomial.Point := ⟨⟨alloc.vec.Vec.new _⟩⟩
 
 /-! ## Spec theorems -/
 
