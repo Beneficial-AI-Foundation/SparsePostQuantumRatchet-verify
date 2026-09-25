@@ -6,7 +6,9 @@
     "aeneas-extract": "tsx scripts/aeneas-extract.ts",
     "src-diff": "tsx scripts/src-diff.ts",
     "verification-status": "lake exe status",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "docs:json": "lake exe docsjson",
+    "docs:rust": "bash scripts/build-rust-docs.sh"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
