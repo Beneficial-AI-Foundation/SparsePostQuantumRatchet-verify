@@ -134,7 +134,7 @@ Three stages:
 
 This is intended to be the inverse of `Poly::serialize`, but it is **not** on the zero
 polynomial: `Poly::zero` has no coefficients, so `serialize` yields `[]`, which `deserialize`
-rejects with `SerializationInvalid` (see `docs/defects.md`, item 16). -/
+rejects with `SerializationInvalid`. -/
 
 
 namespace spqr.encoding.polynomial.Poly
@@ -174,10 +174,8 @@ theorem deserialize_spec
           (serialized.length = 0 ∨ serialized.length % 2 = 1) ⦄ := by
   unfold Poly.deserialize degree
   step*
-  · -- side condition of the loop: the freshly allocated vector is empty
-    simp [alloc.vec.Vec.with_capacity]
-  · -- non-empty, even length: the loop produces the coefficients
-    simp_all
+  · simp [alloc.vec.Vec.with_capacity]
+  · simp_all
 
 /-- **Corollary (defect 16 witness)**: the byte string `Poly::serialize` produces for the zero
 polynomial — the empty slice — is rejected by `Poly::deserialize`. Hence `deserialize` is not a
