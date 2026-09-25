@@ -148,7 +148,7 @@ on the shape of the input so that the error behaviour is pinned down rather than
     `serialized.length = 0 ∨ serialized.length % 2 = 1`. In particular the empty slice — which is
     exactly `Poly::serialize` of the zero polynomial (`serialize_spec`, `zero_spec`) — is rejected,
     so `deserialize ∘ serialize` is not the identity on `Poly::zero`. This is the Rust defect
-    recorded as item 16 in `docs/defects.md`; the `is_empty()` check is the culprit, the loop
+    recorded; the `is_empty()` check is the culprit, the loop
     itself handles length 0 correctly.
   * **Ok branch** — for non-empty, even-length input:
       - `poly.degree = serialized.length / 2`
