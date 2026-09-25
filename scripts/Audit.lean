@@ -21,6 +21,7 @@ Section 4 writes `sorry-manifest.txt` (machine-readable, one line per
 Reference: https://lean-lang.org/doc/reference/latest/ValidatingProofs/
 -/
 import Spqr
+import Protocols
 
 open Lean Elab Command
 
@@ -38,7 +39,7 @@ run_cmd liftTermElabM do
   let mut specsModuleNames : Array Name := #[]
   for h : i in [:moduleNames.size] do
     let m := moduleNames[i]
-    if m.getRoot == `Spqr || m.getRoot == `SrcTranslated then
+    if m.getRoot == `Spqr || m.getRoot == `SrcTranslated || m.getRoot == `Protocols then
       projectModuleIdxs := projectModuleIdxs.insert i
       projectModuleNames := projectModuleNames.push m
       if m.toString.startsWith "Spqr.Specs" then
@@ -236,6 +237,9 @@ run_cmd liftTermElabM do
   if projTrust then logInfo m!"⚠  `Lean.trustCompiler` found in project."
   else logInfo m!"✓  No `Lean.trustCompiler` in project."
   logInfo m!"\nTotal custom axioms: {projAllCustom.size}"
+  logInfo m!"\n--- Protocols custom axioms ---"
+  for a in projAllCustom.toArray do
+    if a.getRoot == `Protocols then logInfo m!"  • {a}"
 
   -- ── SECTION 4: Machine-readable sorry manifest ──────────────────────────
 
