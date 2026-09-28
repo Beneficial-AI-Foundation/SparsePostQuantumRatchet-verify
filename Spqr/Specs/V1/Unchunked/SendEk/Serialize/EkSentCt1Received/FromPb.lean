@@ -59,7 +59,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
         simp only [core.option.Option.as_ref, core.option.Option.ok_or,
           core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
         step*
-        simp only [← a_post1, ← a_post2]
+        simp only [a_post, authenticator.serialize.Authenticator.FunctionalModels.fromPb]
     · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.ct1 = 960#usize)]
       simp [hct, WP.spec_ok]
   · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.dk = 2400#usize)]

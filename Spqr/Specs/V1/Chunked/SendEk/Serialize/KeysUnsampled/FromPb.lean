@@ -46,6 +46,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.chunked.KeysUnsampled) :
             uc := { epoch := u.epoch,
                     auth := { root_key := a.root_key, mac_key := a.mac_key } } } ⦄ := by
   unfold from_pb
-  step* <;> grind
+  step* <;> grind [v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels.fromPb,
+    authenticator.serialize.Authenticator.FunctionalModels.fromPb]
 
 end spqr.v1.chunked.send_ek.serialize.KeysUnsampled
