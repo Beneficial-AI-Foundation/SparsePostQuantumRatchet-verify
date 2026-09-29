@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
 import SrcTranslated.Funs
+import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-! # Spec theorem for `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled::into_pb`
 
@@ -18,21 +20,16 @@ converted with `Authenticator::into_pb` (a plain field copy) and wrapped in
 -/
 
 open Aeneas Aeneas.Std Result
-
 namespace spqr.v1.unchunked.send_ek.serialize.KeysUnsampled
 
 /-- **Spec theorem for `v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb`**:
-
 • The call always succeeds (no panic).
-• The result's `epoch` equals `self.epoch`.
-• The result's `auth` is `some` of the protobuf form of `self.auth`,
-  carrying the same `root_key` and `mac_key`. -/
+• The result is exactly the functional model `FunctionalModels.intoPb self`. -/
 @[step]
 theorem into_pb_spec (self : v1.unchunked.send_ek.KeysUnsampled) :
     into_pb self ⦃ (result : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) =>
-      result.epoch = self.epoch ∧
-      result.auth = some { root_key := self.auth.root_key,
-                           mac_key := self.auth.mac_key } ⦄ := by
-  simp [into_pb, authenticator.serialize.Authenticator.into_pb]
+      result = FunctionalModels.intoPb self ⦄ := by
+  unfold into_pb FunctionalModels.intoPb
+  step*
 
 end spqr.v1.unchunked.send_ek.serialize.KeysUnsampled

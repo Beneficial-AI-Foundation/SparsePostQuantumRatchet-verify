@@ -5,6 +5,7 @@ Authors: Liao Zhang
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-! # Spec theorem for `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled::from_pb`
 
@@ -20,25 +21,16 @@ direction is `into_pb`.
 -/
 
 open Aeneas Aeneas.Std Result
-
 namespace spqr.v1.unchunked.send_ek.serialize.KeysUnsampled
 
 /-- **Spec theorem for `v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb`**:
-
 • The call always succeeds (no panic).
-• If `pb.auth` is missing, the result is `Err Error.StateDecode`.
-• Otherwise the result is `Ok` with `epoch` copied verbatim and the `auth`
-  key vectors preserved. -/
+• The result is exactly the functional model `FunctionalModels.fromPb pb`. -/
 @[step]
 theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
     from_pb pb ⦃ (result : core.result.Result v1.unchunked.send_ek.KeysUnsampled Error) =>
-      match pb.auth with
-      | none => result = .Err Error.StateDecode
-      | some a =>
-        result = .Ok {
-          epoch := pb.epoch,
-          auth := { root_key := a.root_key, mac_key := a.mac_key } } ⦄ := by
-  unfold from_pb
+      result = FunctionalModels.fromPb pb ⦄ := by
+  unfold from_pb FunctionalModels.fromPb
   match pb.auth with
   | none =>
     simp only [core.option.Option.as_ref, core.option.Option.ok_or,
@@ -49,6 +41,5 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
     simp only [core.option.Option.as_ref, core.option.Option.ok_or,
       core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
     step*
-    simp only [← a_post1, ← a_post2]
 
 end spqr.v1.unchunked.send_ek.serialize.KeysUnsampled
