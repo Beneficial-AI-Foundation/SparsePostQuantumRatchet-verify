@@ -5,20 +5,19 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
-/-!
-# Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_mut`
+/-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_mut`
 
 Closure mapping `ChainEpoch` to `pqrpb::chain::Epoch` by calling `into_pb` on
 `send`/`recv` and wrapping in `some`. Closure state `c` is unchanged. Infallible.
 
-**Source**: spqr/src/chain.rs, lines 423:21-426:17
--/
+**Source**: spqr/src/chain.rs -/
 
 open Aeneas Aeneas.Std Result spqr
 
 namespace spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
 
-/-- **Spec theorem for `spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut`**:
+/-- **Spec theorem for `spqr.chain.Chain.into_pb.closure.Insts.
+CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut`**:
 
 Maps `tupled_args : ChainEpoch` to a `proto.pq_ratchet.chain.Epoch` whose `send`/`recv`
 are `some (into_pb ...)` of the corresponding directions. Returns closure `c` unchanged.
