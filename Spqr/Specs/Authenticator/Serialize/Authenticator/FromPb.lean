@@ -5,6 +5,7 @@ Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::authenticator::serialize::Authenticator::from_pb`
@@ -26,15 +27,13 @@ namespace spqr.authenticator.serialize.Authenticator
 
 /-- **Spec theorem for `spqr::authenticator::serialize::Authenticator::from_pb`**
 • The call always succeeds (no panic).
-• The result's `root_key` equals `pb.root_key`.
-• The result's `mac_key` equals `pb.mac_key`.
+• The result is exactly the functional model `FunctionalModels.fromPb pb`.
 -/
 @[step]
 theorem from_pb_spec (pb : proto.pq_ratchet.Authenticator) :
     from_pb pb ⦃ (result : authenticator.Authenticator) =>
-      result.root_key = pb.root_key ∧
-      result.mac_key = pb.mac_key ⦄ := by
-  unfold from_pb
+      result = FunctionalModels.fromPb pb ⦄ := by
+  unfold from_pb FunctionalModels.fromPb
   step*
 
 end spqr.authenticator.serialize.Authenticator
