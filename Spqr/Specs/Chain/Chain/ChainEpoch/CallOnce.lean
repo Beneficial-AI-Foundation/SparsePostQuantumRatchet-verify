@@ -5,8 +5,7 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut
-/-!
-# Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_once`
+/-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_once`
 
 `FnOnce::call_once` for the `Chain::into_pb` closure. Delegates to `call_mut`,
 discards the closure component, and returns the protobuf `Epoch` with `send` and
@@ -18,7 +17,8 @@ open Aeneas Aeneas.Std Result spqr
 
 namespace spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
 
-/-- **Spec theorem for `spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once`**:
+/-- **Spec theorem for `spqr.chain.Chain.into_pb.closure.Insts.
+CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once`**:
 
 Delegates to `call_mut`, discards the closure, and returns an `Epoch` whose `send`
 and `recv` fields are `some { ctr, next, prev }` built from `ce`. Always succeeds.
