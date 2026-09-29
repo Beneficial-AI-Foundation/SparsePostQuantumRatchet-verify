@@ -72,6 +72,7 @@ import Spqr.Specs.Authenticator.Authenticator.Update
 import Spqr.Specs.Authenticator.Authenticator.VerifyCt
 import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
+import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.Chain.AddEpoch
 import Spqr.Specs.Chain.Chain.CedForDirection
@@ -267,4 +268,5 @@ import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSentCt1Received.IntoPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FromPb
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.IntoPb

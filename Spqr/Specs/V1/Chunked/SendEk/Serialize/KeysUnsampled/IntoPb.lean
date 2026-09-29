@@ -37,6 +37,7 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysUnsampled) :
                                              mac_key := self.uc.auth.mac_key } } } ⦄ := by
   unfold into_pb
   step*
-  simp only [← ku_post1, ← ku_post2]
+  simp only [ku_post, v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels.intoPb,
+    authenticator.serialize.Authenticator.FunctionalModels.intoPb]
 
 end spqr.v1.chunked.send_ek.serialize.KeysUnsampled

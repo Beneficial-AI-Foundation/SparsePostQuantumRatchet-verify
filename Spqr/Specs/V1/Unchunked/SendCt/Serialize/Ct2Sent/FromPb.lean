@@ -49,7 +49,6 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) :
     simp only [core.option.Option.as_ref, core.option.Option.ok_or,
                core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
     step*
-    obtain ⟨root_key, mac_key⟩ := a
-    simp_all
+    simp_all [authenticator.serialize.Authenticator.FunctionalModels.fromPb]
 
 end spqr.v1.unchunked.send_ct.serialize.Ct2Sent

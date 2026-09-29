@@ -56,7 +56,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
       simp only [core.option.Option.as_ref, core.option.Option.ok_or,
         core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
       step*
-      simp only [← a_post1, ← a_post2]
+      simp only [a_post, authenticator.serialize.Authenticator.FunctionalModels.fromPb]
   · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.hdr = 64#usize)]
     simp [hhdr, WP.spec_ok]
 
