@@ -195,17 +195,20 @@ theorem epochs_disjoint {s₀ : States} {ks₀ : List EpochSecret} (h₁ : Run s
   exact List.disjoint_of_nodup_append this
 
 /-- The epochs of the keys a run emits strictly increase. -/
+@[correctness_spec, braid_spec "§1.1"]
 theorem epochs_strictly_increase (h : Run s s' ks) :
     (ks.map (·.epoch.val)).Pairwise (· < ·) := by
   rw [(epochs_consecutive h).1]
   exact List.pairwise_lt_range'
 
 /-- A run from the state `init_a` returns emits its `n` keys at epochs `1, 2, …, n`. -/
+@[correctness_spec, braid_spec "§1.1"]
 theorem epochs_from_init_a {k : Slice Std.U8} {s₀ : States} (hi : States.init_a k = ok s₀)
     (h : Run s₀ s' ks) : ks.map (·.epoch.val) = List.range' 1 ks.length := by
   rw [(epochs_consecutive h).1, keyFloor_init_a hi]
 
 /-- A run from the state `init_b` returns emits its `n` keys at epochs `1, 2, …, n`. -/
+@[correctness_spec, braid_spec "§1.1"]
 theorem epochs_from_init_b {k : Slice Std.U8} {s₀ : States} (hi : States.init_b k = ok s₀)
     (h : Run s₀ s' ks) : ks.map (·.epoch.val) = List.range' 1 ks.length := by
   rw [(epochs_consecutive h).1, keyFloor_init_b hi]
