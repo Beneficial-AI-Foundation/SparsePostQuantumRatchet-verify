@@ -80,6 +80,8 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+public import Spqr.Specs.Braid.StateMachine.EpochDispatch.Equal
+public import Spqr.Specs.Braid.StateMachine.EpochDispatch.Guards
 public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection

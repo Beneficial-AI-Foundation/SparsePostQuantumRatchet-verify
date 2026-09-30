@@ -1,0 +1,782 @@
+/-
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE-APACHE.
+Authors: Lacramioara Astefanoaei
+-/
+module
+
+public import SrcTranslated.Funs
+public meta import Spqr.Auxiliary.SpecTags
+public import Spqr.Auxiliary.Aeneas.Result
+public import Spqr.Auxiliary.Aeneas.SpecImpExists
+public import Spqr.Specs.Braid.StateMachine.EpochDispatch.Guards
+
+/-! # `States::recv` on a message from the state's own epoch
+
+When `msg.epoch` equals the state's epoch, every arm of `States::recv` matches on the payload
+type. This module compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2.5.
+
+* `recv_of_eq_unexpected`: a payload type the state does not act on (`States.Expects`) leaves
+  the state unchanged and emits no key.
+* `recv_of_eq_refines`: for every payload, an `Ok` result has the successor state name and key
+  presence that `specRecvEq` gives, and an `Err` happens exactly when `specRecvEq` raises.
+
+`specRecvEq` transcribes the spec's `Receive` bodies at the level of state names and key
+presence; the fields of the successor and the key's value are not compared. It includes the
+code's two extra acceptances, `Ct1Ack true` in `EkReceivedCt1Sampled` (D3) and `Ek` chunks in
+`Ct1Acknowledged` (D4). A chunk that completes a decoder takes the transition if the completed
+message passes the state's check (`States.Accepts`) and raises if it fails (`States.Rejects`).
+The check is stated with the code's own call: `recv_ct2` (`VfyCt`), `verify_hdr` (`VfyHdr`) and
+`ek_matches_header`, on the message split with `take` / `drop`.
+
+Both theorems are in the "if it returns `Ok`" form: they say nothing about calls that panic, and
+nothing about whether a completing chunk exists.
+
+Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
+(p. 10) and marked `# Transition (n)` in the pseudocode of that section.
+
+## References
+
+* [ML-KEM Braid] R. Schmidt, *The ML-KEM Braid Protocol*, Rev. 1, last updated 2025-09-26.
+  <https://signal.org/docs/specifications/mlkembraid/mlkembraid.pdf>
+
+**Source**: spqr/src/v1/chunked/states.rs:275-533, spqr/src/v1/chunked/send_ek.rs,
+spqr/src/v1/chunked/send_ct.rs -/
+
+@[expose] public section
+
+open Aeneas Aeneas.Std Result
+
+namespace spqr.v1.chunked.states
+
+/-- The payload types a state acts on when the message is from its own epoch: the
+`msg.type ==` tests of the `Receive` functions in ML-KEM Braid §2.5, plus `Ct1Ack true` in
+`EkReceivedCt1Sampled` (D3) and `Ek` in `Ct1Acknowledged` (D4). -/
+def States.Expects : States → MessagePayload → Prop
+  | .KeysSampled _, .Ct1 _ => True
+  | .HeaderSent _, .Ct1 _ => True
+  | .Ct1Received _, .Ct2 _ => True
+  | .EkSentCt1Received _, .Ct2 _ => True
+  | .NoHeaderReceived _, .Hdr _ => True
+  | .Ct1Sampled _, .Ek _ => True
+  | .Ct1Sampled _, .EkCt1Ack _ => True
+  | .EkReceivedCt1Sampled _, .EkCt1Ack _ => True
+  | .EkReceivedCt1Sampled _, .Ct1Ack true => True
+  | .Ct1Acknowledged _, .EkCt1Ack _ => True
+  | .Ct1Acknowledged _, .Ek _ => True
+  | _, _ => False
+
+/-- The chunk completes the decoder with message `m`: the spec's `decoder.add_chunk(msg.data)`,
+then `decoder.has_message()` and `decoder.message()`. -/
+def decodes (d : encoding.polynomial.PolyDecoder) (c : encoding.Chunk)
+    (m : alloc.vec.Vec Std.U8) : Prop :=
+  ∃ d', encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk d c = ok d' ∧
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message d' = ok (some m)
+
+/-- The payload's chunk completes, with message `m`, the decoder the state feeds it to. The
+pairs are `HeaderSent` on `Ct1`, `EkSentCt1Received` on `Ct2`, `NoHeaderReceived` on `Hdr`, and
+`Ct1Sampled` and `Ct1Acknowledged` on `Ek` and `EkCt1Ack`. On every other pair this is
+`False`. -/
+def States.Decodes : States → MessagePayload → alloc.vec.Vec Std.U8 → Prop
+  | .HeaderSent st, .Ct1 c, m => decodes st.receiving_ct1 c m
+  | .EkSentCt1Received st, .Ct2 c, m => decodes st.receiving_ct2 c m
+  | .NoHeaderReceived st, .Hdr c, m => decodes st.receiving_hdr c m
+  | .Ct1Sampled st, .Ek c, m => decodes st.receiving_ek c m
+  | .Ct1Sampled st, .EkCt1Ack c, m => decodes st.receiving_ek c m
+  | .Ct1Acknowledged st, .Ek c, m => decodes st.receiving_ek c m
+  | .Ct1Acknowledged st, .EkCt1Ack c, m => decodes st.receiving_ek c m
+  | _, _, _ => False
+
+/-- The check the spec runs on a completed message `m` passes: `VfyCt` after decapsulation in
+`EkSentCt1Received` (the inner result of the code's `recv_ct2`, whose only inner error is
+`verify_ct`'s) on `m` split into ciphertext and MAC, `VfyHdr` on `m` split into header and MAC in
+`NoHeaderReceived`, and the `ek`
+integrity check `SHA3-256(ek_seed || ek_vector) = hek` in `Ct1Sampled` and `Ct1Acknowledged`.
+`HeaderSent` takes transition (3) without a check. -/
+def States.CheckPasses : States → alloc.vec.Vec Std.U8 → Prop
+  | .EkSentCt1Received st, m =>
+      ∃ (i : Std.Usize) (ct2 mac : alloc.vec.Vec Std.U8)
+          (v : v1.unchunked.send_ct.NoHeaderReceived × EpochSecret),
+        incremental_mlkem768.CIPHERTEXT2_SIZE = ok i ∧
+        ct2.val = m.val.take i.val ∧ mac.val = m.val.drop i.val ∧
+        v1.unchunked.send_ek.EkSentCt1Received.recv_ct2 st.uc ct2 mac = ok (.Ok v)
+  | .NoHeaderReceived st, m =>
+      ∃ (i : Std.Usize) (hdr mac : alloc.vec.Vec Std.U8), incremental_mlkem768.HEADER_SIZE = ok i ∧
+        hdr.val = m.val.take i.val ∧ mac.val = m.val.drop i.val ∧
+        authenticator.Authenticator.verify_hdr st.uc.auth st.uc.epoch
+          (alloc.vec.Vec.deref hdr) (alloc.vec.Vec.deref mac) = ok (.Ok ())
+  | .Ct1Sampled st, m => incremental_mlkem768.ek_matches_header m st.uc.hdr = ok true
+  | .Ct1Acknowledged st, m => incremental_mlkem768.ek_matches_header m st.uc.hdr = ok true
+  | _, _ => True
+
+/-- Some message completes the state's decoder from this payload and passes the code's check
+(`CheckPasses`). On it, `specRecvEq` takes the state's numbered transition. -/
+def States.Accepts (s : States) (p : MessagePayload) : Prop :=
+  ∃ m, s.Decodes p m ∧ s.CheckPasses m
+
+/-- The chunk completes the state's decoder and the completed message fails the state's check:
+the spec raises. -/
+def States.Rejects (s : States) (p : MessagePayload) : Prop :=
+  ∃ m, s.Decodes p m ∧ ¬ s.CheckPasses m
+
+/-- The state names of ML-KEM Braid §2.5, the abstraction the comparison is made at. -/
+inductive SpecState where
+  | KeysUnsampled | KeysSampled | HeaderSent | Ct1Received | EkSentCt1Received
+  | NoHeaderReceived | HeaderReceived | Ct1Sampled | EkReceivedCt1Sampled | Ct1Acknowledged
+  | Ct2Sampled
+  deriving DecidableEq
+
+/-- The spec name of a code state. -/
+def States.name : States → SpecState
+  | .KeysUnsampled _ => .KeysUnsampled
+  | .KeysSampled _ => .KeysSampled
+  | .HeaderSent _ => .HeaderSent
+  | .Ct1Received _ => .Ct1Received
+  | .EkSentCt1Received _ => .EkSentCt1Received
+  | .NoHeaderReceived _ => .NoHeaderReceived
+  | .HeaderReceived _ => .HeaderReceived
+  | .Ct1Sampled _ => .Ct1Sampled
+  | .EkReceivedCt1Sampled _ => .EkReceivedCt1Sampled
+  | .Ct1Acknowledged _ => .Ct1Acknowledged
+  | .Ct2Sampled _ => .Ct2Sampled
+
+open Classical in
+/-- ML-KEM Braid §2.5 `Receive` for a message from the state's own epoch, observed as the
+successor's name and whether a key is emitted, or `none` when the spec raises. Numbered cases are
+the spec's transitions; a chunk that completes the decoder takes the transition if the completed
+message passes the check and raises if it fails, and an incomplete one stays. Any payload the
+state does not expect is a no-op. D3 and D4 are the code's extra acceptances. -/
+noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecState × Bool) :=
+  let stay := some (s.name, false)
+  let complete (n : SpecState) (key : Bool) (otherwise : Option (SpecState × Bool)) :=
+    if s.Accepts p then some (n, key) else if s.Rejects p then none else otherwise
+  match s, p with
+  | .KeysSampled _, .Ct1 _ => some (.HeaderSent, false)                   -- (2)
+  | .HeaderSent _, .Ct1 _ => complete .Ct1Received false stay            -- (3)
+  | .Ct1Received _, .Ct2 _ => some (.EkSentCt1Received, false)           -- (4)
+  | .EkSentCt1Received _, .Ct2 _ => complete .NoHeaderReceived true stay -- (5)
+  | .NoHeaderReceived _, .Hdr _ => complete .HeaderReceived false stay   -- (6)
+  | .Ct1Sampled _, .Ek _ => complete .EkReceivedCt1Sampled false stay    -- (10)
+  | .Ct1Sampled _, .EkCt1Ack _ =>
+      complete .Ct2Sampled false (some (.Ct1Acknowledged, false))        -- (9), (8)
+  | .EkReceivedCt1Sampled _, .EkCt1Ack _ => some (.Ct2Sampled, false)    -- (12)
+  | .EkReceivedCt1Sampled _, .Ct1Ack true => some (.Ct2Sampled, false)   -- D3
+  | .Ct1Acknowledged _, .EkCt1Ack _ => complete .Ct2Sampled false stay   -- (11)
+  | .Ct1Acknowledged _, .Ek _ => complete .Ct2Sampled false stay         -- D4
+  | _, _ => stay
+
+/-! ## Support lemmas
+
+The code's slicing of a completed message, and the uniqueness of the message a chunk
+completes. -/
+
+private theorem as_slice_val {v : alloc.vec.Vec Std.U8} {s : Slice Std.U8}
+    (h : alloc.vec.Vec.as_slice Global v = ok s) : s.val = v.val := by
+  simp only [alloc.vec.Vec.as_slice, ok.injEq] at h; subst h; exact Slice.from_val _ _
+
+private theorem index_from_val {s s1 : Slice Std.U8} {i : Std.Usize}
+    (h : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U8) s
+      { start := i } = ok s1) : s1.val = s.val.drop i.val := by
+  simp only [Slice.index_SliceIndexRangeFromUsizeSliceInst,
+    core.slice.index.SliceIndexRangeFromUsizeSlice.index] at h
+  split at h
+  · simp only [ok.injEq] at h; subst h; exact Slice.from_val _ _
+  · exact absurd h fail_not_ok
+
+private theorem index_to_val {s s1 : Slice Std.U8} {i : Std.Usize}
+    (h : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeToUsizeSlice Std.U8) s
+      { «end» := i } = ok s1) : s1.val = s.val.take i.val := by
+  simp only [Slice.index_SliceIndexRangeToUsizeSliceInst,
+    core.slice.index.SliceIndexRangeToUsizeSlice.index] at h
+  split at h
+  · simp only [ok.injEq] at h; subst h; simp [List.slice]
+  · exact absurd h fail_not_ok
+
+private theorem to_vec_val {s : Slice Std.U8} {v : alloc.vec.Vec Std.U8}
+    (h : alloc.slice.Slice.to_vec core.clone.CloneU8 s = ok v) : v.val = s.val := by
+  obtain ⟨w, hw, hp⟩ := WP.spec_imp_exists
+    (alloc.slice.Slice.to_vec_spec core.clone.CloneU8 s (fun _ _ => rfl))
+  rw [hw, ok.injEq] at h; subst h; rw [hp]; rfl
+
+/-- A chunk completes a decoder with at most one message: `add_chunk` and `decoded_message` are
+functions. -/
+theorem decodes_unique {d : encoding.polynomial.PolyDecoder} {c : encoding.Chunk}
+    {m m' : alloc.vec.Vec Std.U8} (h : decodes d c m) (h' : decodes d c m') : m = m' := by
+  obtain ⟨d1, h1, h2⟩ := h; obtain ⟨d2, h3, h4⟩ := h'
+  rw [h1, ok.injEq] at h3; subst h3
+  rw [h2, ok.injEq, Option.some.injEq] at h4; exact h4
+
+/-! ### The chunk handlers
+
+For each state that accumulates chunks: if the chunk handler returns, its result tells whether
+the chunk completes a message and whether that message passes `CheckPasses`.
+
+* A result that keeps receiving means that no message completes the decoder.
+* A result that stops receiving means that a completed message passes the check.
+* `Err` means that a completed message fails the check.
+
+`recv_header_check` and `recv_ek_check` give the same split for the unchunked calls that the
+handlers make. -/
+
+open core.result.Result.Insts.CoreOpsTry (branch_eq_continue)
+
+/-- If the decoder is still incomplete after the chunk, the chunk completes it with no message. -/
+theorem not_decodes_of_none {d d' : encoding.polynomial.PolyDecoder} {c : encoding.Chunk}
+    (h1 : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk d c = ok d')
+    (h2 : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message d' = ok none)
+    (m : alloc.vec.Vec Std.U8) : ¬ decodes d c m := by
+  rintro ⟨d'', h3, h4⟩
+  rw [h1, ok.injEq] at h3; subst h3
+  rw [h2, ok.injEq] at h4; cases h4
+
+/-- If `HeaderSent::recv_ct1_chunk` returns `r`, then `r = StillReceiving` means that no message
+completes the decoder. `r = Done`, the move to `Ct1Received` by transition (3), means that a
+message completes it. There is no check. -/
+theorem HeaderSent_recv_ct1_chunk_outcome (st : send_ek.HeaderSent) (e : Std.U64)
+    (c : encoding.Chunk) {r : send_ek.HeaderSentRecvChunk}
+    (h : send_ek.HeaderSent.recv_ct1_chunk st e c = ok r) :
+    match r with
+    | .StillReceiving _ => ∀ m, ¬ decodes st.receiving_ct1 c m
+    | .Done _ => ∃ m, decodes st.receiving_ct1 c m := by
+  simp only [send_ek.HeaderSent.recv_ct1_chunk, bind_eq_ok] at h
+  obtain ⟨_, -, d', hd, o, ho, h⟩ := h
+  cases o with
+  | none =>
+    simp only [ok.injEq] at h; subst h
+    exact not_decodes_of_none hd ho
+  | some m =>
+    obtain ⟨_, -, h⟩ := bind_eq_ok.1 h
+    simp only [ok.injEq] at h; subst h
+    exact ⟨m, d', hd, ho⟩
+
+
+private theorem branch_eq_break {T E : Type} {r : core.result.Result T E}
+    {res : core.result.Result Never E}
+    (h : core.result.Result.Insts.CoreOpsTry.branch r = ok (.Break res)) :
+    ∃ e, r = .Err e := by
+  cases r with
+  | Ok v => simp [core.result.Result.Insts.CoreOpsTry.branch] at h
+  | Err e => exact ⟨e, rfl⟩
+
+/-- The code's split of a completed message `m` at `i` is `take i` / `drop i`. -/
+private theorem split_vals {m : alloc.vec.Vec Std.U8} {i : Std.Usize} {s s1 s2 : Slice Std.U8}
+    {lo hi : alloc.vec.Vec Std.U8}
+    (hs : alloc.vec.Vec.as_slice Global m = ok s)
+    (hs1 : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U8) s
+      { start := i } = ok s1)
+    (hhi : alloc.slice.Slice.to_vec core.clone.CloneU8 s1 = ok hi)
+    (hs2 : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeToUsizeSlice Std.U8) s
+      { «end» := i } = ok s2)
+    (hlo : alloc.slice.Slice.to_vec core.clone.CloneU8 s2 = ok lo) :
+    lo.val = m.val.take i.val ∧ hi.val = m.val.drop i.val := by
+  refine ⟨?_, ?_⟩
+  · rw [to_vec_val hlo, index_to_val hs2, as_slice_val hs]
+  · rw [to_vec_val hhi, index_from_val hs1, as_slice_val hs]
+
+/-- If `EkSentCt1Received::recv_ct2_chunk` returns `r`, then:
+
+* `Ok StillReceiving` means that no message completes the decoder.
+* `Ok Done`, transition (5), means that a message `m` completes it and `recv_ct2` accepts `m`
+  split into ciphertext and MAC.
+* `Err` means that a message `m` completes it and `recv_ct2` rejects the split. -/
+theorem EkSentCt1Received_recv_ct2_chunk_outcome (st : send_ek.EkSentCt1Received) (e : Std.U64)
+    (c : encoding.Chunk) {r : core.result.Result send_ek.EkSentCt1ReceivedRecvChunk Error}
+    (h : send_ek.EkSentCt1Received.recv_ct2_chunk st e c = ok r) :
+    match r with
+    | .Ok (.StillReceiving _) => ∀ m, ¬ decodes st.receiving_ct2 c m
+    | .Ok (.Done _) => ∃ m, decodes st.receiving_ct2 c m ∧
+        (States.EkSentCt1Received st).CheckPasses m
+    | .Err _ => ∃ m, decodes st.receiving_ct2 c m ∧
+        ¬ (States.EkSentCt1Received st).CheckPasses m := by
+  simp only [send_ek.EkSentCt1Received.recv_ct2_chunk, bind_eq_ok] at h
+  obtain ⟨_, -, d', hd, o, ho, h⟩ := h
+  cases o with
+  | none =>
+    simp only [ok.injEq] at h; subst h
+    exact not_decodes_of_none hd ho
+  | some m =>
+    simp only [bind_eq_ok] at h
+    obtain ⟨s, hs, i, hi, s1, hs1, mac, hmac, s2, hs2, ct2, hct, res, hres, cf, hcf, h⟩ := h
+    obtain ⟨hlo, hhi⟩ := split_vals hs hs1 hmac hs2 hct
+    cases cf with
+    | Continue val =>
+      obtain rfl := branch_eq_continue hcf
+      obtain ⟨uc, sec⟩ := val
+      simp only [uncurry_apply_pair, bind_eq_ok, ok.injEq] at h
+      obtain ⟨_, -, _, -, _, -, _, -, rfl⟩ := h
+      exact ⟨m, ⟨d', hd, ho⟩, i, ct2, mac, (uc, sec), hi, hlo, hhi, hres⟩
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
+      subst h
+      refine ⟨m, ⟨d', hd, ho⟩, ?_⟩
+      rintro ⟨i', ct2', mac', v, hi', hlo', hhi', hres'⟩
+      rw [hi, ok.injEq] at hi'; subst hi'
+      obtain rfl : ct2' = ct2 := alloc.vec.Vec.ext _ _ (by rw [hlo', hlo])
+      obtain rfl : mac' = mac := alloc.vec.Vec.ext _ _ (by rw [hhi', hhi])
+      rw [hres, ok.injEq] at hres'; cases hres'
+
+
+/-- If `NoHeaderReceived::recv_header` returns, an `Ok` result means that `verify_hdr` accepts
+the header and MAC. An `Err` result means that `verify_hdr` returns an inner `Err` on them. -/
+theorem recv_header_check (uc : v1.unchunked.send_ct.NoHeaderReceived) (e : Std.U64)
+    (hdr mac : alloc.vec.Vec Std.U8)
+    {r : core.result.Result v1.unchunked.send_ct.HeaderReceived Error}
+    (h : v1.unchunked.send_ct.NoHeaderReceived.recv_header uc e hdr mac = ok r) :
+    match r with
+    | .Ok _ => authenticator.Authenticator.verify_hdr uc.auth uc.epoch
+        (alloc.vec.Vec.deref hdr) (alloc.vec.Vec.deref mac) = ok (.Ok ())
+    | .Err _ => ∃ err, authenticator.Authenticator.verify_hdr uc.auth uc.epoch
+        (alloc.vec.Vec.deref hdr) (alloc.vec.Vec.deref mac) = ok (.Err err) := by
+  simp only [v1.unchunked.send_ct.NoHeaderReceived.recv_header, bind_eq_ok] at h
+  obtain ⟨_, -, res, hres, cf, hcf, h⟩ := h
+  cases cf with
+  | Continue val =>
+    obtain rfl := branch_eq_continue hcf
+    simp only [ok.injEq] at h; subst h
+    exact hres
+  | Break rs =>
+    obtain ⟨err, rfl⟩ := branch_eq_break hcf
+    simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+      core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+    subst hcf
+    simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+      bind_tc_eq, bind_eq_ok] at h
+    obtain ⟨_, -, h⟩ := h
+    simp only [ok.injEq] at h; subst h
+    exact ⟨err, hres⟩
+
+/-- If `NoHeaderReceived::recv_hdr_chunk` returns `r`, then:
+
+* `Ok StillReceiving` means that no message completes the decoder.
+* `Ok Done`, transition (6), means that a message `m` completes it and `verify_hdr` accepts `m`
+  split into header and MAC.
+* `Err` means that a message `m` completes it and `verify_hdr` rejects the split. -/
+theorem NoHeaderReceived_recv_hdr_chunk_outcome (st : send_ct.NoHeaderReceived) (e : Std.U64)
+    (c : encoding.Chunk) {r : core.result.Result send_ct.NoHeaderReceivedRecvChunk Error}
+    (h : send_ct.NoHeaderReceived.recv_hdr_chunk st e c = ok r) :
+    match r with
+    | .Ok (.StillReceiving _) => ∀ m, ¬ decodes st.receiving_hdr c m
+    | .Ok (.Done _) => ∃ m, decodes st.receiving_hdr c m ∧
+        (States.NoHeaderReceived st).CheckPasses m
+    | .Err _ => ∃ m, decodes st.receiving_hdr c m ∧
+        ¬ (States.NoHeaderReceived st).CheckPasses m := by
+  simp only [send_ct.NoHeaderReceived.recv_hdr_chunk, bind_eq_ok] at h
+  obtain ⟨_, -, d', hd, o, ho, h⟩ := h
+  cases o with
+  | none =>
+    simp only [ok.injEq] at h; subst h
+    exact not_decodes_of_none hd ho
+  | some m =>
+    simp only [bind_eq_ok] at h
+    obtain ⟨s, hs, i, hi, s1, hs1, mac, hmac, s2, hs2, hdr, hhdr, _, -, _, -, res, hres, cf, hcf,
+      h⟩ := h
+    obtain ⟨hlo, hhi⟩ := split_vals hs hs1 hmac hs2 hhdr
+    have hchk := recv_header_check _ _ _ _ hres
+    cases cf with
+    | Continue val =>
+      obtain rfl := branch_eq_continue hcf
+      simp only [bind_eq_ok, ok.injEq] at h
+      obtain ⟨_, -, rfl⟩ := h
+      exact ⟨m, ⟨d', hd, ho⟩, i, hdr, mac, hi, hlo, hhi, hchk⟩
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
+      subst h
+      obtain ⟨verr, hv⟩ := hchk
+      refine ⟨m, ⟨d', hd, ho⟩, ?_⟩
+      rintro ⟨i', hdr', mac', hi', hlo', hhi', hv'⟩
+      rw [hi, ok.injEq] at hi'; subst hi'
+      obtain rfl : hdr' = hdr := alloc.vec.Vec.ext _ _ (by rw [hlo', hlo])
+      obtain rfl : mac' = mac := alloc.vec.Vec.ext _ _ (by rw [hhi', hhi])
+      rw [hv, ok.injEq] at hv'; cases hv'
+
+
+/-- If `Ct1Sent::recv_ek` returns, an `Ok` result means that `ek_matches_header` gives `true`.
+An `Err` result means that it gives `false`. -/
+theorem recv_ek_check (uc : v1.unchunked.send_ct.Ct1Sent) (e : Std.U64)
+    (ek : alloc.vec.Vec Std.U8)
+    {r : core.result.Result v1.unchunked.send_ct.Ct1SentEkReceived Error}
+    (h : v1.unchunked.send_ct.Ct1Sent.recv_ek uc e ek = ok r) :
+    match r with
+    | .Ok _ => incremental_mlkem768.ek_matches_header ek uc.hdr = ok true
+    | .Err _ => incremental_mlkem768.ek_matches_header ek uc.hdr = ok false := by
+  simp only [v1.unchunked.send_ct.Ct1Sent.recv_ek, bind_eq_ok] at h
+  obtain ⟨_, -, b, hb, h⟩ := h
+  cases b <;> simp only [Bool.false_eq_true, ite_false, ite_true, ok.injEq] at h <;> subst h <;>
+    exact hb
+
+/-- A completed message on which `ek_matches_header` returns `false` fails the `ek` check. -/
+theorem ek_fail_of_err {d d' : encoding.polynomial.PolyDecoder} {c : encoding.Chunk}
+    {m : alloc.vec.Vec Std.U8} {hdr : alloc.vec.Vec Std.U8}
+    (hd : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk d c = ok d')
+    (ho : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message d' =
+      ok (some m))
+    (hb : incremental_mlkem768.ek_matches_header m hdr = ok false) :
+    ∃ m, decodes d c m ∧ ¬ incremental_mlkem768.ek_matches_header m hdr = ok true :=
+  ⟨m, ⟨d', hd, ho⟩, fun h => by rw [hb, ok.injEq] at h; cases h⟩
+
+/-- Let `ack` be the flag argument. `States::recv` sets it to `true` for an `EkCt1Ack` payload
+and to `false` for `Ek`. If `Ct1Sampled::recv_ek_chunk` returns `r`, then:
+
+* `Ok StillReceivingStillSending` means that `ack = false` and no message completes the
+  decoder. `States::recv` maps this result to `Ct1Sampled`.
+* `Ok StillReceiving` means that `ack = true` and no message completes the decoder.
+  `States::recv` maps it to `Ct1Acknowledged`, transition (8).
+* `Ok StillSending` means that `ack = false` and a completed message passes the `ek` check.
+  `States::recv` maps it to `EkReceivedCt1Sampled`, transition (10).
+* `Ok Done` means that `ack = true` and a completed message passes the check.
+  `States::recv` maps it to `Ct2Sampled`, transition (9).
+* `Err` means that a completed message fails the check. -/
+theorem Ct1Sampled_recv_ek_chunk_outcome (st : send_ct.Ct1Sampled) (e : Std.U64)
+    (c : encoding.Chunk) (ack : Bool)
+    {r : core.result.Result send_ct.Ct1SampledRecvChunk Error}
+    (h : send_ct.Ct1Sampled.recv_ek_chunk st e c ack = ok r) :
+    match r with
+    | .Ok (.StillReceivingStillSending _) => ack = false ∧ ∀ m, ¬ decodes st.receiving_ek c m
+    | .Ok (.StillReceiving _) => ack = true ∧ ∀ m, ¬ decodes st.receiving_ek c m
+    | .Ok (.StillSending _) => ack = false ∧ ∃ m, decodes st.receiving_ek c m ∧
+        (States.Ct1Sampled st).CheckPasses m
+    | .Ok (.Done _) => ack = true ∧ ∃ m, decodes st.receiving_ek c m ∧
+        (States.Ct1Sampled st).CheckPasses m
+    | .Err _ => ∃ m, decodes st.receiving_ek c m ∧ ¬ (States.Ct1Sampled st).CheckPasses m := by
+  simp only [send_ct.Ct1Sampled.recv_ek_chunk, bind_eq_ok] at h
+  obtain ⟨d', hd, o, ho, h⟩ := h
+  cases o with
+  | none =>
+    cases ack <;> simp only [Bool.false_eq_true, ite_false, ite_true, ok.injEq] at h <;> subst h <;>
+      exact ⟨rfl, not_decodes_of_none hd ho⟩
+  | some m =>
+    simp only [bind_eq_ok] at h
+    obtain ⟨res, hres, cf, hcf, h⟩ := h
+    have hchk := recv_ek_check _ _ _ hres
+    cases cf with
+    | Continue val =>
+      obtain rfl := branch_eq_continue hcf
+      cases ack
+      · simp only [Bool.false_eq_true, ite_false, ok.injEq] at h; subst h
+        exact ⟨rfl, m, ⟨d', hd, ho⟩, hchk⟩
+      · simp only [ite_true, bind_eq_ok, Prod.exists, uncurry_apply_pair, ok.injEq] at h
+        obtain ⟨_, _, _, -, _, -, rfl⟩ := h
+        exact ⟨rfl, m, ⟨d', hd, ho⟩, hchk⟩
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
+      subst h
+      exact ek_fail_of_err hd ho hchk
+
+/-- If `Ct1Acknowledged::recv_ek_chunk` returns `r`, then:
+
+* `Ok StillReceiving` means that no message completes the decoder.
+* `Ok Done` means that a completed message passes the `ek` check. On an `EkCt1Ack` payload this
+  is transition (11). On an `Ek` payload it is D4.
+* `Err` means that a completed message fails the check. -/
+theorem Ct1Acknowledged_recv_ek_chunk_outcome (st : send_ct.Ct1Acknowledged) (e : Std.U64)
+    (c : encoding.Chunk) {r : core.result.Result send_ct.Ct1AcknowledgedRecvChunk Error}
+    (h : send_ct.Ct1Acknowledged.recv_ek_chunk st e c = ok r) :
+    match r with
+    | .Ok (.StillReceiving _) => ∀ m, ¬ decodes st.receiving_ek c m
+    | .Ok (.Done _) => ∃ m, decodes st.receiving_ek c m ∧
+        (States.Ct1Acknowledged st).CheckPasses m
+    | .Err _ => ∃ m, decodes st.receiving_ek c m ∧
+        ¬ (States.Ct1Acknowledged st).CheckPasses m := by
+  simp only [send_ct.Ct1Acknowledged.recv_ek_chunk, bind_eq_ok] at h
+  obtain ⟨d', hd, o, ho, h⟩ := h
+  cases o with
+  | none =>
+    simp only [ok.injEq] at h; subst h
+    exact not_decodes_of_none hd ho
+  | some m =>
+    simp only [bind_eq_ok] at h
+    obtain ⟨res, hres, cf, hcf, h⟩ := h
+    have hchk := recv_ek_check _ _ _ hres
+    cases cf with
+    | Continue val =>
+      obtain rfl := branch_eq_continue hcf
+      simp only [bind_eq_ok, Prod.exists, uncurry_apply_pair, ok.injEq] at h
+      obtain ⟨_, _, _, -, _, -, rfl⟩ := h
+      exact ⟨m, ⟨d', hd, ho⟩, hchk⟩
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
+      subst h
+      exact ek_fail_of_err hd ho hchk
+
+
+private theorem not_accepts_rejects {s : States} {p : MessagePayload}
+    {d : encoding.polynomial.PolyDecoder}
+    {c : encoding.Chunk} (hD : ∀ m, s.Decodes p m ↔ decodes d c m)
+    (h : ∀ m, ¬ decodes d c m) : ¬ s.Accepts p ∧ ¬ s.Rejects p :=
+  ⟨fun ⟨m, hm, _⟩ => h m ((hD m).1 hm), fun ⟨m, hm, _⟩ => h m ((hD m).1 hm)⟩
+
+private theorem accepts_of {s : States} {p : MessagePayload} {d : encoding.polynomial.PolyDecoder}
+    {c : encoding.Chunk} (hD : ∀ m, s.Decodes p m ↔ decodes d c m)
+    (h : ∃ m, decodes d c m ∧ s.CheckPasses m) : s.Accepts p :=
+  let ⟨m, hm, hc⟩ := h; ⟨m, (hD m).2 hm, hc⟩
+
+private theorem rejects_of {s : States} {p : MessagePayload} {d : encoding.polynomial.PolyDecoder}
+    {c : encoding.Chunk} (hD : ∀ m, s.Decodes p m ↔ decodes d c m)
+    (h : ∃ m, decodes d c m ∧ ¬ s.CheckPasses m) : ¬ s.Accepts p ∧ s.Rejects p := by
+  obtain ⟨m, hm, hc⟩ := h
+  refine ⟨?_, m, (hD m).2 hm, hc⟩
+  rintro ⟨m', hm', hc'⟩
+  obtain rfl := decodes_unique hm ((hD m').1 hm')
+  exact hc hc'
+
+/-- A message from the state's own epoch with a payload type the state does not act on
+leaves the state unchanged and emits no key. -/
+@[correctness_spec, braid_spec "§2.5"]
+theorem recv_of_eq_unexpected (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
+    (hp : ¬ s.Expects msg.payload) :
+    States.recv s msg = ok (.Ok { key := none, state := s }) := by
+  obtain ⟨e, p⟩ := msg
+  cases s <;> rcases p with _ | _ | _ | _ | (_ | _) | _ | _ <;>
+    simp only [States.epochOf, States.Expects, not_true_eq_false] at h hp ⊢ <;>
+    simp only [States.recv, send_ek.KeysUnsampled.epoch, send_ek.KeysSampled.epoch,
+      send_ek.HeaderSent.epoch, send_ek.Ct1Received.epoch, send_ek.EkSentCt1Received.epoch,
+      send_ct.NoHeaderReceived.epoch, send_ct.HeaderReceived.epoch, send_ct.Ct1Sampled.epoch,
+      send_ct.EkReceivedCt1Sampled.epoch, send_ct.Ct1Acknowledged.epoch,
+      send_ct.Ct2Sampled.epoch, lift, core.cmp.impls.OrdU64.cmp, bind_ok, h,
+      Nat.compare_eq_eq.2 rfl, Bool.false_eq_true, ite_false]
+  all_goals rfl
+
+/-- For every message from the state's own epoch, `States.recv` agrees with the spec's `Receive`
+on the successor's name and on whether a key is emitted, and returns an error exactly when the
+spec raises. -/
+@[correctness_spec, braid_spec "§2.5"]
+theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
+    (r : core.result.Result Recv Error) (hr : States.recv s msg = ok r) :
+    match r with
+    | .Ok ⟨key, s'⟩ => specRecvEq s msg.payload = some (s'.name, key.isSome)
+    | .Err _ => specRecvEq s msg.payload = none := by
+  obtain ⟨e, p⟩ := msg
+  cases s <;> rcases p with _ | c | c | c | (_ | _) | c | c <;>
+    simp only [States.epochOf] at h <;>
+    simp only [States.recv, send_ek.KeysUnsampled.epoch, send_ek.KeysSampled.epoch,
+      send_ek.HeaderSent.epoch, send_ek.Ct1Received.epoch, send_ek.EkSentCt1Received.epoch,
+      send_ct.NoHeaderReceived.epoch, send_ct.HeaderReceived.epoch, send_ct.Ct1Sampled.epoch,
+      send_ct.EkReceivedCt1Sampled.epoch, send_ct.Ct1Acknowledged.epoch,
+      send_ct.Ct2Sampled.epoch, lift, core.cmp.impls.OrdU64.cmp, bind_ok, h,
+      Nat.compare_eq_eq.2 rfl, Bool.false_eq_true, ite_false, ite_true] at hr
+  all_goals try (rw [ok.injEq] at hr; subst hr; rfl)
+  case KeysSampled.Ct1 st _ =>
+    obtain ⟨hs, -, hr⟩ := bind_eq_ok.1 hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Received.Ct2 st _ =>
+    obtain ⟨hs, -, hr⟩ := bind_eq_ok.1 hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case EkReceivedCt1Sampled.EkCt1Ack st _ =>
+    obtain ⟨hs, -, hr⟩ := bind_eq_ok.1 hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case EkReceivedCt1Sampled.Ct1Ack.true st _ =>
+    obtain ⟨hs, -, hr⟩ := bind_eq_ok.1 hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case HeaderSent.Ct1 st _ =>
+    obtain ⟨res, hres, hr⟩ := bind_eq_ok.1 hr
+    have ho := HeaderSent_recv_ct1_chunk_outcome _ _ _ hres
+    have hD : ∀ m, (States.HeaderSent st).Decodes (.Ct1 c) m ↔ decodes st.receiving_ct1 c m :=
+      fun _ => Iff.rfl
+    cases res <;> rw [ok.injEq] at hr <;> subst hr <;> simp only [specRecvEq]
+    · obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+      rw [if_neg hA, if_neg hR]; rfl
+    · obtain ⟨m, hm⟩ := ho
+      rw [if_pos (accepts_of hD ⟨m, hm, trivial⟩)]; rfl
+  case EkSentCt1Received.Ct2 st _ =>
+    simp only [bind_eq_ok] at hr
+    obtain ⟨res, hres, cf, hcf, hr⟩ := hr
+    have ho := EkSentCt1Received_recv_ct2_chunk_outcome _ _ _ hres
+    have hD : ∀ m, (States.EkSentCt1Received st).Decodes (.Ct2 c) m ↔
+        decodes st.receiving_ct2 c m := fun _ => Iff.rfl
+    cases cf with
+    | Continue v =>
+      obtain rfl := branch_eq_continue hcf
+      cases v with
+      | StillReceiving st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+        rw [if_neg hA, if_neg hR]; rfl
+      | Done p =>
+        obtain ⟨st1, sec⟩ := p
+        change ok (core.result.Result.Ok
+          { key := some sec, state := States.NoHeaderReceived st1 }) = ok r at hr
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        rw [if_pos (accepts_of hD ho)]; rfl
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
+      subst hr; simp only [specRecvEq]
+      obtain ⟨hA, hR⟩ := rejects_of hD ho
+      rw [if_neg hA, if_pos hR]
+  case NoHeaderReceived.Hdr st _ =>
+    simp only [bind_eq_ok] at hr
+    obtain ⟨res, hres, cf, hcf, hr⟩ := hr
+    have ho := NoHeaderReceived_recv_hdr_chunk_outcome _ _ _ hres
+    have hD : ∀ m, (States.NoHeaderReceived st).Decodes (.Hdr c) m ↔
+        decodes st.receiving_hdr c m := fun _ => Iff.rfl
+    cases cf with
+    | Continue v =>
+      obtain rfl := branch_eq_continue hcf
+      cases v with
+      | StillReceiving st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+        rw [if_neg hA, if_neg hR]; rfl
+      | Done st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        rw [if_pos (accepts_of hD ho)]; rfl
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
+      subst hr; simp only [specRecvEq]
+      obtain ⟨hA, hR⟩ := rejects_of hD ho
+      rw [if_neg hA, if_pos hR]
+  case Ct1Acknowledged.EkCt1Ack st _ =>
+    simp only [bind_eq_ok] at hr
+    obtain ⟨res, hres, cf, hcf, hr⟩ := hr
+    have ho := Ct1Acknowledged_recv_ek_chunk_outcome _ _ _ hres
+    have hD : ∀ m, (States.Ct1Acknowledged st).Decodes (.EkCt1Ack c) m ↔
+        decodes st.receiving_ek c m := fun _ => Iff.rfl
+    cases cf with
+    | Continue v =>
+      obtain rfl := branch_eq_continue hcf
+      cases v with
+      | StillReceiving st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+        rw [if_neg hA, if_neg hR]; rfl
+      | Done st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        rw [if_pos (accepts_of hD ho)]; rfl
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
+      subst hr; simp only [specRecvEq]
+      obtain ⟨hA, hR⟩ := rejects_of hD ho
+      rw [if_neg hA, if_pos hR]
+  case Ct1Acknowledged.Ek st _ =>
+    simp only [bind_eq_ok] at hr
+    obtain ⟨res, hres, cf, hcf, hr⟩ := hr
+    have ho := Ct1Acknowledged_recv_ek_chunk_outcome _ _ _ hres
+    have hD : ∀ m, (States.Ct1Acknowledged st).Decodes (.Ek c) m ↔
+        decodes st.receiving_ek c m := fun _ => Iff.rfl
+    cases cf with
+    | Continue v =>
+      obtain rfl := branch_eq_continue hcf
+      cases v with
+      | StillReceiving st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+        rw [if_neg hA, if_neg hR]; rfl
+      | Done st1 =>
+        rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
+        rw [if_pos (accepts_of hD ho)]; rfl
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
+      subst hr; simp only [specRecvEq]
+      obtain ⟨hA, hR⟩ := rejects_of hD ho
+      rw [if_neg hA, if_pos hR]
+  case Ct1Sampled.None st _ =>
+    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Sampled.Hdr st _ =>
+    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Sampled.Ct1Ack.false st _ =>
+    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Sampled.Ct1Ack.true st _ =>
+    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Sampled.Ct1 st _ =>
+    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Sampled.Ct2 st _ =>
+    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
+    rw [ok.injEq] at hr; subst hr; rfl
+  case Ct1Sampled.Ek st _ =>
+    obtain ⟨res, hres, hr⟩ := bind_eq_ok.1 hr
+    simp only [bind_eq_ok] at hr
+    obtain ⟨cf, hcf, hr⟩ := hr
+    have ho := Ct1Sampled_recv_ek_chunk_outcome _ _ _ _ hres
+    have hD : ∀ m, (States.Ct1Sampled st).Decodes (.Ek c) m ↔
+        decodes st.receiving_ek c m := fun _ => Iff.rfl
+    cases cf with
+    | Continue v =>
+      obtain rfl := branch_eq_continue hcf
+      cases v <;> rw [ok.injEq] at hr <;> subst hr <;> simp only [specRecvEq] <;>
+        simp only [Bool.false_eq_true, false_and] at ho
+      all_goals first
+        | (obtain ⟨-, ho⟩ := ho; obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+           rw [if_neg hA, if_neg hR]; rfl)
+        | (obtain ⟨-, ho⟩ := ho; rw [if_pos (accepts_of hD ho)]; rfl)
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
+      subst hr; simp only [specRecvEq]
+      obtain ⟨hA, hR⟩ := rejects_of hD ho
+      rw [if_neg hA, if_pos hR]
+  case Ct1Sampled.EkCt1Ack st _ =>
+    obtain ⟨res, hres, hr⟩ := bind_eq_ok.1 hr
+    simp only [bind_eq_ok] at hr
+    obtain ⟨cf, hcf, hr⟩ := hr
+    have ho := Ct1Sampled_recv_ek_chunk_outcome _ _ _ _ hres
+    have hD : ∀ m, (States.Ct1Sampled st).Decodes (.EkCt1Ack c) m ↔
+        decodes st.receiving_ek c m := fun _ => Iff.rfl
+    cases cf with
+    | Continue v =>
+      obtain rfl := branch_eq_continue hcf
+      cases v <;> rw [ok.injEq] at hr <;> subst hr <;> simp only [specRecvEq] <;>
+        simp only [Bool.true_eq_false, false_and] at ho
+      all_goals first
+        | (obtain ⟨-, ho⟩ := ho; obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
+           rw [if_neg hA, if_neg hR]; rfl)
+        | (obtain ⟨-, ho⟩ := ho; rw [if_pos (accepts_of hD ho)]; rfl)
+    | Break rs =>
+      obtain ⟨err, rfl⟩ := branch_eq_break hcf
+      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
+        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
+      subst hcf
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
+      subst hr; simp only [specRecvEq]
+      obtain ⟨hA, hR⟩ := rejects_of hD ho
+      rw [if_neg hA, if_pos hR]
+
+end spqr.v1.chunked.states
