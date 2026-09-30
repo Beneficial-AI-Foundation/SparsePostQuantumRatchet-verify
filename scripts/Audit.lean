@@ -11,7 +11,7 @@ collects the transitive axiom closure and reports non-builtin ones.
 Any `Spqr.*` module not imported by the root `Spqr` module will not be
 scanned.  Ensure new modules are re-exported from `Spqr.lean`.
 
-Section 1 focuses on `Spqr.Specs.*` and `Spqr.BraidSpecs.*` (hand-written proofs).
+Section 1 focuses on `Spqr.Specs.*` (hand-written proofs).
 Section 2 traces how `sorry` reaches specs theorems.
 Section 3 gives a full project summary.
 Section 4 writes `sorry-manifest.txt` (machine-readable, one line per
@@ -41,7 +41,7 @@ run_cmd liftTermElabM do
     if m.getRoot == `Spqr || m.getRoot == `SrcTranslated then
       projectModuleIdxs := projectModuleIdxs.insert i
       projectModuleNames := projectModuleNames.push m
-      if m.toString.startsWith "Spqr.Specs" || m.toString.startsWith "Spqr.BraidSpecs" then
+      if m.toString.startsWith "Spqr.Specs" then
         specsModuleIdxs := specsModuleIdxs.insert i
         specsModuleNames := specsModuleNames.push m
 
@@ -97,7 +97,7 @@ run_cmd liftTermElabM do
   logInfo m!"\n╔══════════════════════════════════════════════════════╗"
   logInfo m!"║  SECTION 1: Hand-written specs (Spqr.Specs.*)        ║"
   logInfo m!"╚══════════════════════════════════════════════════════╝"
-  logInfo m!"Theorems+axioms in Spqr.Specs.*, Spqr.BraidSpecs.*: {specsThms.size}"
+  logInfo m!"Theorems+axioms in Spqr.Specs.*: {specsThms.size}"
 
   let mut specsSorry := false
   let mut specsTrust := false
