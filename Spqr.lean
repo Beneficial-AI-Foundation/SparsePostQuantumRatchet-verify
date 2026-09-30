@@ -240,6 +240,7 @@ public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.IntoPb
+public import Spqr.Specs.V1.Chunked.States.Run
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
