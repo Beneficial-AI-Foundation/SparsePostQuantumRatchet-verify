@@ -1,5 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
