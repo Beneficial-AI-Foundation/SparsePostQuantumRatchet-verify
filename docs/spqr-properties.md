@@ -19,8 +19,8 @@ Status values:
 
 | Status | Meaning |
 |--------|---------|
-| Proved | Theorem on `main`, no `sorry`, no hand-written axiom beyond `hkdf_to_slice_spec` |
-| Proved (branch) | Theorem exists only on `la/lean-v1-protocol-proofs`; not merged. Those proofs also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. Merging requires replacing them with theorems. |
+| Proved | Theorem on `main`, no `sorry`, and no hand-written axiom beyond the three §1 documents: `hkdf_to_slice_spec`, `libcrux_hmac.hmac_sha256_tag32_spec` and `KeyPairCompressedBytes.from_seed_spec`. §1 carries each one's location, postcondition and whether it is avoidable; this cell names them only so that a `Proved` row can be checked against its own definition |
+| Proved (branch) | Theorem exists only on `la/lean-v1-protocol-proofs` (draft PR #46); not merged. Those proofs also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. The last two are false as stated, since both reach `generate`, which can fail; they need a premise, not just a proof. Merging requires replacing all three with theorems. |
 | Open | Statement fixed, no theorem yet |
 | Axiom | Cannot be a theorem: the code calls an opaque library function |
 
@@ -128,18 +128,34 @@ Requires the KEM axiom of PROP-3.
 
 Each party outputs at most one key per epoch.
 
-Source: Spec §1.1; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:361-368
+Source: Spec §1.1; SCKA Fig. 1; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:361-368
 
 Structural part: exactly two arms of the state machine return a key,
 `HeaderReceived.send` (spec transition 7, `states.rs:203-220`) and
 `EkSentCt1Received.recv` on a completing `Ct2` chunk (transition 5,
 `states.rs:361-368`). All other `send` arms and all other `recv` arms return
-`key = None`. Trace part: a party never re-enters either state at the same
-epoch, because `HeaderReceived` leaves to `Ct1Sampled` on send and
-`EkSentCt1Received` leaves to `NoHeaderReceived(epoch + 1)` on emission.
+`key = None`. Trace part: over any run of successful `send`/`recv` calls by one
+party, from any starting state, no two emitted keys carry the same epoch (SCKA
+Fig. 1, `Send-P` line 14 and `Receive-P` line 7; App. B.1 "Unique epochs"). The
+keys come out at consecutive epochs: `HeaderReceived@e` emits `e` and moves to
+`Ct1Sampled@e`, whose next key can only be at `e + 1`, and `EkSentCt1Received@e`
+emits `e` and moves to `NoHeaderReceived@(e + 1)`.
 
-Status: send half **Proved (branch)** (`Send.lean`, one theorem per variant);
-recv half and trace part **Open**.
+Theorem: PROP-21 is `spqr.v1.chunked.states.epochs_nodup`, in
+`Spqr/Specs/V1/Chunked/States/EpochUniqueness.lean`. The Lean names and docstrings do not
+carry the ID; this row is the mapping.
+
+Status: **Proved (draft PR #574, branch `la/prop-21`, not yet on `main`)**, conditional on
+aeneas#1043, in `Spqr/Specs/V1/Chunked/States/EpochUniqueness.lean`. The structural part is
+`send_key_epoch` and `recv_key_epoch` (only these arms can emit) with their converses
+`send_HeaderReceived_key_isSome` and `recv_EkSentCt1Received_key_isSome` (those arms always
+emit when they succeed); the trace part is `epochs_nodup`, via
+`epochs_consecutive` (keys at `keyFloor s, keyFloor s + 1, …`) and
+`epochs_strictly_increase`. Every theorem over runs inherits `sorryAx` from
+`States.send` through the map-iterator `next := sorry` (aeneas#1043); `recv_key_epoch`
+does not. Scope: the crate with overflow checks, or a release run in which no call
+overflows (Spec §3.8); `States`, not the public API. Statement ACCEPT:
+`docs/statement-reviews/PROP-21-trace-and-recv-half-2.md`.
 
 ### PROP-22 Epoch agreement
 
@@ -165,7 +181,8 @@ Source: Spec §1.1; src/lib.rs:298; src/lib.rs:430
 With `t_snd = msg.epoch - 1` this says: a party at state epoch `e` has emitted
 keys for epochs `1..e-1`. Trace property over the v1 machine plus the chain
 (`chain.add_epoch` is called with every emitted key, `lib.rs:298,430`).
-Status: **Open**.
+Status: **Open**. PROP-21's `epochs_consecutive` is groundwork: it already says a
+run's keys come out at consecutive epochs from `keyFloor s`, with no gaps.
 
 ---
 
@@ -577,8 +594,8 @@ returns `Err(Error::EpochOutOfRange(msg.epoch))`, with the single exception of
 returns `Ok { state, key = None }`, the state unchanged, for every variant. The
 spec's no-op on a future epoch is asserted nowhere in this catalog.
 
-Status: Less and Greater rows **Proved (branch)** (`Recv.lean`, one theorem
-per variant); Equal rows **Open**.
+Status: Less and Greater rows **Proved (branch)** (`Spqr/Specs/States/Recv.lean` on
+`la/lean-v1-protocol-proofs`, draft PR #46, one theorem per variant); Equal rows **Open**.
 
 ### PROP-47 Transition refinement
 
@@ -613,7 +630,10 @@ where the spec emits `None`; `Ct1Ack(false)` is emitted by no arm. Decided
 statement for the receive arms (D3, D4): transition 12 accepts
 `Ct1Ack(true) | EkCt1Ack(_)` and transition 11 accepts `Ek | EkCt1Ack`, in both
 cases a strict superset of the spec's single accepted type, with any other
-payload at the matching epoch leaving the state unchanged.
+payload at the matching epoch leaving the state unchanged. The `EkSentCt1Received` send
+arm is partly proved on `la/lean-v1-protocol-proofs` (draft PR #46) as
+`send_EkSentCt1Received_ct1_ack`: `Ok`, payload `Ct1Ack(true)`, `key = None`, state and
+rng unchanged. It does not state the message epoch.
 
 State contents match the spec's per-state lists, with one representational
 difference: `ek_seed` and `hek` are held as a single 64-byte `hdr`
@@ -669,9 +689,12 @@ The emitted `EpochSecret.epoch` is the epoch being negotiated: in
 transition 7 it is `state.epoch`; in transition 5 it is the pre-increment
 epoch while the new state carries `epoch + 1` (`unchunked/send_ek.rs:163-166`).
 This is the value `chain.add_epoch` asserts to be `current_epoch + 1`
-(PROP-9). Status: **Open**.
+(PROP-9). Status: **Proved (draft PR #574, branch `la/prop-21`)** as support lemmas of
+PROP-21 (`send_key_epoch`, `recv_key_epoch`), not as a target of its own: each theorem is
+about one call, which the statement review ruled Single path
+(`docs/statement-reviews/PROP-49-key-epoch-1.md`).
 
-Source: Spec §2.5; src/v1/unchunked/send_ek.rs:163-166
+Source: Spec §2.5; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:361-368; src/v1/unchunked/send_ek.rs:163-166
 
 ---
 
@@ -705,7 +728,7 @@ here are grounded in the code.
 | ID | Statement | Source | Status |
 |----|-----------|--------|--------|
 | PROP-9 | `add_epoch(es)` with `es.epoch = current_epoch + 1` sets `current_epoch = es.epoch`, derives `next_root` and the new link's send/recv seeds from HKDF(`next_root`, `es.secret`, 96), appends one link, leaves `dir`, `send_epoch`, `params` unchanged | `src/chain.rs:350-368` | **Proved** `add_epoch_spec` (`Spqr/Specs/Chain/Chain/AddEpoch.lean`) |
-| PROP-14 | `send_key(epoch)` with `epoch < send_epoch` returns `Err(SendKeyEpochDecreased(send_epoch, epoch))` | `src/chain.rs:384-387` | **Proved (branch)** |
+| PROP-14 | `send_key(epoch)` with `epoch < send_epoch` returns `Err(SendKeyEpochDecreased(send_epoch, epoch))` | `src/chain.rs:384-387` | **Proved** `send_key_spec`, first case (`Spqr/Specs/Chain/Chain/SendKey.lean`, #546) |
 | PROP-17 | `ChainEpochDirection::key(at)`: `at > ctr ∧ at - ctr > max_jump` → `Err(KeyJump(ctr, at))`; `at = ctr` → `Err(KeyAlreadyRequested(at))`; `at < ctr` → `prev.get` | `src/chain.rs:247-260` | **Proved** `key_spec_greater_jump`, `key_spec_equal`, `key_spec_less` (`Spqr/Specs/Chain/ChainEpochDirection/Key.lean`) |
 | PROP-29 | `epoch_idx(e)`: `Ok(links.len() - 1 - (current_epoch - e))` iff `e ≤ current_epoch` and the difference is below `links.len()`, else `Err(EpochOutOfRange(e))` | `src/chain.rs:372-382` | **Open** |
 | PROP-10 | When `send_key` moves `send_epoch` forward it pops links older than `EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH = 1` and clears the send seed of every earlier link; receive seeds are untouched, and `KeyHistory` entries are removed on `get` or trimmed by `gc` | `src/chain.rs:389-399`; `src/chain.rs:314`; `src/chain.rs:145-168`; `src/chain.rs:200` | **Open** |
@@ -713,6 +736,7 @@ here are grounded in the code.
 | PROP-12b | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `src/chain.rs:184-210` | **Open**; `get_loop_spec` gives the per-slot behaviour |
 | PROP-37 | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `src/v1/chunked/states/serialize.rs:12-49`; `src/v1/chunked/send_ek/serialize.rs:10-112`; `src/v1/chunked/send_ct/serialize.rs:11-151` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for `KeysUnsampled` |
 | PROP-38 | `Chain::from_pb(c.into_pb()) = ok c` | `src/chain.rs:414-452` | **Open**; both functions depend on prost `sorry`s |
+| PROP-51 | Along any run of one party's state machine, feeding the emitted keys in order to `add_epoch` never fails, the `assert!(epoch_secret.epoch == self.current_epoch + 1)` included, provided the chain starts one epoch behind the run (`current_epoch + 1 = keyFloor s`, true for `Chain::new` with either init state) and the link buffer has room; the chain ends one behind the run. Over the state machine and `add_epoch` only: no `send_key`/`recv_key`, no serialization, chain present | `src/lib.rs:296-300`; `src/lib.rs:428-431`; `src/chain.rs:350-368`; `src/chain.rs:329-350` | **Open**; statement drafted (`docs/statements/PROP-51-chain-epoch-sync.md`), review pending; needs PROP-21 and PROP-9 |
 
 Finding: PROP-37's statement above is **false as written** (found 2026-09-15), for
 two independent reasons. The row is annotated rather than restated: its corrected
@@ -818,12 +842,12 @@ inline.
 | PROP-10 | 10 | Open |
 | PROP-12a | 10 | Proved |
 | PROP-12b | 10 | Open |
-| PROP-14 | 10 | Proved (branch) |
+| PROP-14 | 10 | Proved |
 | PROP-15 | 7 | Proved |
 | PROP-16 | 9 | Open |
 | PROP-17 | 10 | Proved |
 | PROP-18 | 5 | Proved |
-| PROP-21 | 2 | Proved (branch), send half; recv half and trace part Open |
+| PROP-21 | 2 | Proved (PR branch), conditional on aeneas#1043 |
 | PROP-22 | 2 | Open |
 | PROP-23 | 2 | Open |
 | PROP-24 | 5 | Open |
@@ -843,8 +867,9 @@ inline.
 | PROP-45 | 5 | Open |
 | PROP-47 | 8 | Open |
 | PROP-48 | 8 | Open |
-| PROP-49 | 8 | Open |
+| PROP-49 | 8 | Proved (PR branch), support lemmas of PROP-21 |
 | PROP-50 | 8 | Open |
+| PROP-51 | 10 | Open; statement drafted, review pending |
 | LEAN-ENC-1 | 4 | Proved |
 | LEAN-ENC-2 | 4 | Axiom |
 | LEAN-GF | 4 | Proved |
