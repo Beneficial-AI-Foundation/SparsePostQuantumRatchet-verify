@@ -40,7 +40,6 @@ theorem roundtrip_fromPb_intoPb (x : chain.ChainEpochDirection) :
 
 /-- **Round trip `intoPb ∘ fromPb` for
 `spqr::chain::ChainEpochDirection`** -/
-@[simp]
 theorem roundtrip_intoPb_fromPb (pb : proto.pq_ratchet.chain.epoch.EpochDirection)
     (x : chain.ChainEpochDirection) (h : fromPb pb = .Ok x) :
     intoPb x = pb := by
