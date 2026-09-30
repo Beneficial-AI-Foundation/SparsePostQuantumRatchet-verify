@@ -5,8 +5,9 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
-/-!
-# Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb::closure#1::call_mut`
+import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+
+/-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb::closure#1::call_mut`
 
 Closure converting a protobuf `Epoch` into `ChainEpoch` by unwrapping and converting
 its `send`/`recv` fields. Returns `Err StateDecode` if either field is `none`.
@@ -44,24 +45,27 @@ theorem call_mut_spec (c : chain.Chain.from_pb.closure_1)
       core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
     step*
     rcases r1 with ⟨ced1⟩ | ⟨e1⟩
-    · obtain ⟨hc1, hn1, hp1⟩ := r1_post
-      simp only [bind_tc_ok]
+    · simp only [chain.ChainEpochDirection.FunctionalModels.fromPb,
+        core.result.Result.Ok.injEq] at r1_post
+      subst r1_post; simp only [bind_tc_ok]
       step*
       rcases r3 with ⟨ced2⟩ | ⟨e2⟩
-      · obtain ⟨hc2, hn2, hp2⟩ := r3_post
-        simp only [bind_tc_ok, WP.spec_ok]
-        simp only [← hc1, ← hn1, ← hp1, ← hc2, ← hn2, ← hp2]
-      · exact absurd r3_post (by simp)
-    · exact absurd r1_post (by simp)
+      · simp only [chain.ChainEpochDirection.FunctionalModels.fromPb,
+          core.result.Result.Ok.injEq] at r3_post
+        subst r3_post; simp only [bind_tc_ok, WP.spec_ok]
+      · exact absurd r3_post (by simp [chain.ChainEpochDirection.FunctionalModels.fromPb])
+    · exact absurd r1_post (by simp [chain.ChainEpochDirection.FunctionalModels.fromPb])
   | some _, none =>
     simp only [core.option.Option.ok_or,
       core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
     step*
     rcases r1 with ⟨ced1⟩ | ⟨e1⟩
-    · simp only [bind_tc_ok,
+    · simp only [chain.ChainEpochDirection.FunctionalModels.fromPb,
+        core.result.Result.Ok.injEq] at r1_post
+      subst r1_post; simp only [bind_tc_ok,
         core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
         core.convert.FromSame.from, WP.spec_ok]
-    · exact absurd r1_post (by simp)
+    · exact absurd r1_post (by simp [chain.ChainEpochDirection.FunctionalModels.fromPb])
   | none, _ =>
     simp only [core.option.Option.ok_or,
       core.result.Result.Insts.CoreOpsTry.branch,
