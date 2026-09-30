@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 COMMENT_FILE = ".sorry-delta-comment.md"
-SPECS_MODULE_PREFIX = "Spqr.Specs"
+SPECS_MODULE_PREFIXES = ("Spqr.Specs", "Spqr.BraidSpecs")
 MAX_ROWS = 50
 
 
@@ -50,9 +50,9 @@ def parse_line(line: str) -> tuple[str, str, str]:
 
 
 def is_specs_line(line: str) -> bool:
-    """Match modules that Audit.lean considers specs: name == or starts with Spqr.Specs."""
+    """Match modules that Audit.lean considers specs: under Spqr.Specs or Spqr.BraidSpecs."""
     mod = line.split()[0] if line.split() else ""
-    return mod == SPECS_MODULE_PREFIX or mod.startswith(SPECS_MODULE_PREFIX + ".")
+    return any(mod == p or mod.startswith(p + ".") for p in SPECS_MODULE_PREFIXES)
 
 
 def build_body(new_specs_lines: list[str]) -> str:
@@ -62,7 +62,7 @@ def build_body(new_specs_lines: list[str]) -> str:
     lines = [
         "### Sorry Delta — hand-written specs",
         "",
-        f"**{count} new sorry-tainted declaration{s} in `Spqr.Specs.*`:**",
+        f"**{count} new sorry-tainted declaration{s} in `Spqr.Specs.*` and `Spqr.BraidSpecs.*`:**",
         "",
         "| Module | Declaration | Kind |",
         "|--------|-------------|------|",
