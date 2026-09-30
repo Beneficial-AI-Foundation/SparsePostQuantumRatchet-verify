@@ -7,11 +7,6 @@ import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
-import Spqr.BraidSpecs.Scka.EpochUniqueness
-import Spqr.BraidSpecs.Scka.EpochUniqueness.CalleeEpoch
-import Spqr.BraidSpecs.Scka.EpochUniqueness.KeyFloor
-import Spqr.BraidSpecs.Scka.EpochUniqueness.UnchunkedEpoch
-import Spqr.BraidSpecs.StateMachine.Run
 import Spqr.Crypto.Hkdf
 import Spqr.Crypto.RFC5869
 import Spqr.Lint.Basic
@@ -80,6 +75,11 @@ import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+import Spqr.Specs.Braid.Scka.EpochUniqueness
+import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
+import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
+import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+import Spqr.Specs.Braid.StateMachine.Run
 import Spqr.Specs.Chain.Chain.AddEpoch
 import Spqr.Specs.Chain.Chain.CedForDirection
 import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut

@@ -3,7 +3,7 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import Spqr.BraidSpecs.Scka.EpochUniqueness.KeyFloor
+import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 
 /-! # Per-participant epoch uniqueness
 
@@ -29,7 +29,7 @@ shared secret. Here `σ₀`, the randomness `rngᵢ` and the messages `msgᵢ` a
   state, has emitted exactly the epochs `1, …, keyFloor s' - 1`, where `s'` is where it ends.
 
 The per-call case analysis and the induction over runs they rest on are in
-`Spqr.BraidSpecs.Scka.EpochUniqueness.KeyFloor`, together with the structural facts:
+`Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor`, together with the structural facts:
 `send_key_epoch`, `recv_key_epoch` and their converses `send_HeaderReceived_key_isSome`,
 `recv_EkSentCt1Received_key_isSome` say that a call emits a key exactly in transitions (7)
 and (5).
