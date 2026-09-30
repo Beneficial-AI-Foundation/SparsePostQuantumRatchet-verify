@@ -8,6 +8,7 @@ public import Spqr.Auxiliary.Aeneas.SpecRefl
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Auxiliary.SpecTags
 public import Spqr.Crypto.Hkdf
 public import Spqr.Crypto.RFC5869
 public import Spqr.Lint.Basic

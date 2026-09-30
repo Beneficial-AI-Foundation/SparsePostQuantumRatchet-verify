@@ -3,6 +3,7 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
+import Spqr.Auxiliary.SpecTags
 import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 
 /-! # Per-participant epoch uniqueness
@@ -177,6 +178,7 @@ variable {s s' : States} {ks : List EpochSecret}
 /-- Each party outputs at most one key per epoch: the keys a run emits carry pairwise
 distinct epochs. This is ML-KEM Braid spec §1.1, p. 4, and SCKA Fig. 1, `Send-P` line 14
 and `Receive-P` line 7. -/
+@[correctness_spec, braid_spec "§1.1"]
 theorem epochs_nodup (h : Run s s' ks) : (ks.map (·.epoch)).Nodup := by
   apply List.Nodup.of_map (fun e : Std.U64 => e.val)
   rw [List.map_map]
