@@ -241,6 +241,7 @@ public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.IntoPb
 public import Spqr.Specs.V1.Chunked.States.EpochUniqueness.CalleeEpoch
+public import Spqr.Specs.V1.Chunked.States.EpochUniqueness.KeyFloor
 public import Spqr.Specs.V1.Chunked.States.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.V1.Chunked.States.Run
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
