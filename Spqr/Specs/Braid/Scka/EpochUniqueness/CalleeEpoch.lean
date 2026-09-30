@@ -7,11 +7,11 @@ import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
 import Spqr.Auxiliary.Aeneas.Result
 import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.BraidSpecs.Scka.EpochUniqueness.UnchunkedEpoch
+import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 
 /-! # Epochs of the states returned by the chunked `send` / `recv` callees
 
-Support lemmas for `Spqr.BraidSpecs.Scka.EpochUniqueness`, which proves that each party
+Support lemmas for `Spqr.Specs.Braid.Scka.EpochUniqueness`, which proves that each party
 outputs at most one key per epoch.
 
 For each callee of an arm of `States::send` or `States::recv`, a lemma says that if the
@@ -20,7 +20,7 @@ epoch instead: `EkSentCt1Received::recv_ct2_chunk` on `Done`, and
 `Ct2Sampled::recv_next_epoch`. Where the function also emits a key, the key carries the input
 epoch. All are in the "if it returns `Ok`" form, so none needs a premise about the opaque KEM,
 MAC, encoder or decoder stubs. The lemmas for the unchunked functions these callees reach are in
-`Spqr.BraidSpecs.Scka.EpochUniqueness.UnchunkedEpoch`.
+`Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch`.
 
 Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its
 Fig. 1 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.

@@ -10,7 +10,7 @@ import Spqr.Auxiliary.Aeneas.Scalar
 
 /-! # Epochs of the states returned by the unchunked callees of the chunked states
 
-Support lemmas for `Spqr.BraidSpecs.Scka.EpochUniqueness.CalleeEpoch`. The chunked
+Support lemmas for `Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch`. The chunked
 `send_ek` and `send_ct` states wrap an unchunked state `uc`, and their transitions call
 `NoHeaderReceived::recv_header`, `EkSentCt1Received::recv_ct2`, `Ct1Sent::recv_ek`,
 `Ct1SentEkReceived::send_ct2` and `HeaderReceived::send_ct1` of the unchunked layer. For each,
