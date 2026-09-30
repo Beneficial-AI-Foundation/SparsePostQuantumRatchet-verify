@@ -6,12 +6,12 @@ Authors: Lacramioara Astefanoaei
 import SrcTranslated.Funs
 import SrcTranslated.FunsExternal
 import Spqr.Auxiliary.Aeneas.Result
-import Spqr.Specs.V1.Chunked.States.EpochUniqueness.CalleeEpoch
-import Spqr.Specs.V1.Chunked.States.Run
+import Spqr.BraidSpecs.Scka.EpochUniqueness.CalleeEpoch
+import Spqr.BraidSpecs.StateMachine.Run
 
 /-! # The epoch of the next key a state can emit
 
-Support lemmas for `Spqr.Specs.V1.Chunked.States.EpochUniqueness`, which proves that each party
+Support lemmas for `Spqr.BraidSpecs.Scka.EpochUniqueness`, which proves that each party
 outputs at most one key per epoch. The argument is explained there.
 
 `keyFloor s` is the epoch the next key emitted from `s` would carry. `send_step` and
