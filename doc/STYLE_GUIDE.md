@@ -111,7 +111,8 @@ Braid specs state properties from the ML-KEM Braid specification that range over
 
 - Place the file in a folder named after the section of the ML-KEM Braid spec the property comes from, not after a Rust source file: e.g. `Spqr/Specs/Braid/Scka/` for §1.1 (the SCKA interface) and `Spqr/Specs/Braid/StateMachine/` for §2.5.
 - Name the file after the property in UpperCamelCase, e.g. `EpochUniqueness.lean`. Lemmas needed only by that property go in a folder of the same name next to it.
-- The module docstring states the property in words, cites the section of the Braid spec (and of the SCKA paper, where relevant) it comes from, and gives the Rust source lines it covers.
+- The module docstring of the property file states the property in words, cites the section of the Braid spec (and of the SCKA paper, where relevant) it comes from, and gives the Rust source lines it covers.
+- The module docstring of a lemma file says which property it supports and gives the Rust source it covers: line ranges where its lemmas are about one contiguous region, otherwise the source file paths.
 - Theorem names say what the result is and follow the [Mathlib naming guidelines][mathlib-naming], e.g. `epochs_nodup`, rather than `<function>_spec`. They are not tagged `@[step]`.
 - Tag the theorem that states the property, not its support lemmas, with `@[correctness_spec, braid_spec "§x.y"]` (from `Spqr.Auxiliary.SpecTags`), giving the Braid spec section. Write the tags in the theorem's own `@[…]` header rather than in a separate `attribute` command, and keep `,` and `]` out of the section argument.
 - A property over runs may take successful calls as hypotheses (`f args = ok r`) instead of using `⦃ ... ⦄`.
