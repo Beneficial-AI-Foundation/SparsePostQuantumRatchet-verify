@@ -71,4 +71,22 @@ def readTranslation : IO (Array TransFun) := do
   let transJson ← IO.ofExcept (Json.parse transStr)
   return parseTranslation transJson
 
+/-- Parse the `functions` AND `globals` arrays of `translation.json`. Globals share the
+functions' record shape, and constants carry spec theorems too (e.g. `MACSIZE_spec`,
+`COMPLETE_POINTS_POLYS_34_spec`) — the rustdoc panels need them.
+
+Unlike the lenient per-field accessors, the top-level structure is checked strictly: a
+schema change that renames or drops either array must fail loudly instead of silently
+producing docs with missing panels. -/
+def readTranslationWithGlobals : IO (Array TransFun) := do
+  let transStr ← IO.FS.readFile Utils.Config.translationJsonPath
+  let transJson ← IO.ofExcept (Json.parse transStr)
+  let getArr (k : String) : IO (Array Json) := do
+    match (transJson.getObjVal? k).toOption.bind (Json.getArr? · |>.toOption) with
+    | some a => pure a
+    | none => throw <| IO.userError s!"translation.json: missing or non-array '{k}' key"
+  let fns ← getArr "functions"
+  let gbs ← getArr "globals"
+  return (fns ++ gbs).map parseTransFun
+
 end Utils.Lib.Translation
