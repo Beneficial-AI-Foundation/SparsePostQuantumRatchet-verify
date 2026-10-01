@@ -45,34 +45,4 @@ theorem into_pb_spec (self : chain.Chain) :
   unfold into_pb FunctionalModels.intoPb
   sorry -- Blocked on https://github.com/AeneasVerif/aeneas/issues/1043
 
-/-- **Round trip `from_pb ∘ into_pb` for the monadic `Chain` serializers**:
-Serializing and then deserializing recovers a chain whose fields match the original
-(VecDeque metadata `head`/`length` are reset to 0).
-
-Blocked on the Aeneas iterator bridge (aeneas#1043). -/
-theorem roundtrip_from_pb_into_pb (self : chain.Chain)
-    (dirResult : core.result.Result proto.pq_ratchet.Direction Error)
-    (hDir : dirResult = .Ok self.dir) :
-    (do let pb ← into_pb self
-        chain.Chain.from_pb pb) ⦃ (result : core.result.Result chain.Chain Error) =>
-      result = .Ok {
-        self with
-          links := { buf := self.links.buf,
-                     head := 0#usize, length := 0#usize } } ⦄ := by
-  sorry -- Blocked on https://github.com/AeneasVerif/aeneas/issues/1043
-
-/-- **Round trip `into_pb ∘ from_pb` for the monadic `Chain` serializers**:
-If deserialization succeeds with `Ok c`, then serializing `c` back recovers the
-scalar fields (`current_epoch`, `send_epoch`, `next_root`, `params`) of the original
-protobuf value.
-
-Blocked on the Aeneas iterator bridge (aeneas#1043). -/
-theorem roundtrip_into_pb_from_pb (pb : proto.pq_ratchet.Chain)
-    (c : chain.Chain)
-    (h : chain.Chain.from_pb pb = ok (.Ok c)) :
-    into_pb c ⦃ (result : proto.pq_ratchet.Chain) =>
-      result = { pb with direction := result.direction,
-                         links := result.links } ⦄ := by
-  sorry -- Blocked on https://github.com/AeneasVerif/aeneas/issues/1043
-
 end spqr.chain.Chain

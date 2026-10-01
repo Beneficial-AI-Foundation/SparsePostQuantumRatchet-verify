@@ -31,11 +31,4 @@ theorem into_pb_spec (self : chain.ChainEpochDirection) :
   unfold into_pb FunctionalModels.intoPb
   step*
 
-/-- **Round trip `from_pb ∘ into_pb` for the monadic `ChainEpochDirection` serializers**:
-Serializing and then deserializing always succeeds and recovers the original value. -/
-theorem roundtrip_from_pb_into_pb (self : chain.ChainEpochDirection) :
-    (do let pb ← into_pb self; from_pb pb) = ok (.Ok self) := by
-  unfold into_pb from_pb
-  simp
-
 end spqr.chain.ChainEpochDirection

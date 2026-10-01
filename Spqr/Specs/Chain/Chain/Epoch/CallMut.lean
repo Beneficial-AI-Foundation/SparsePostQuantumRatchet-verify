@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
 import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+import Spqr.Specs.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb::closure#1::call_mut`
 
@@ -22,23 +23,17 @@ namespace CoreOpsFunctionFnMutTupleEpochResultChainEpochError
 /-- **Spec theorem for `spqr.chain.Chain.from_pb.closure_1.Insts
 .CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut`**:
 
-Converts a protobuf `Epoch` to `ChainEpoch`. Returns `Ok` with repackaged `send`/`recv`
-directions if both are `some`, otherwise `Err StateDecode`. Closure value `c` is unchanged. -/
+Converts a protobuf `Epoch` to `ChainEpoch` via the functional model `epochFromPb`.
+Closure value `c` is unchanged. -/
 @[step]
 theorem call_mut_spec (c : chain.Chain.from_pb.closure_1)
     (tupled_args : proto.pq_ratchet.chain.Epoch) :
     call_mut c tupled_args ⦃ (result : (core.result.Result chain.ChainEpoch Error) ×
       chain.Chain.from_pb.closure_1) =>
-      match tupled_args.send, tupled_args.recv with
-      | some s, some r =>
-          result.1 = core.result.Result.Ok {
-            send := { ctr := s.ctr, next := s.next, prev := { data := s.prev } },
-            recv := { ctr := r.ctr, next := r.next, prev := { data := r.prev } } } ∧
-          result.2 = c
-      | _, _ =>
-          result.1 = core.result.Result.Err Error.StateDecode ∧
-          result.2 = c ⦄ := by
+      result.1 = Chain.FunctionalModels.epochFromPb tupled_args ∧ result.2 = c ⦄ := by
   unfold call_mut
+  simp only [Chain.FunctionalModels.epochFromPb,
+    ChainEpochDirection.FunctionalModels.fromPb]
   match tupled_args.send, tupled_args.recv with
   | some s, some r =>
     simp only [core.option.Option.ok_or,

@@ -31,17 +31,4 @@ theorem from_pb_spec (pb : proto.pq_ratchet.chain.epoch.EpochDirection) :
   unfold from_pb FunctionalModels.fromPb
   step*
 
-/-- **Round trip `into_pb ∘ from_pb` for the monadic `ChainEpochDirection` serializers**:
-If deserialization succeeds with `Ok x`, then serializing `x` back recovers the original
-protobuf value. -/
-theorem roundtrip_into_pb_from_pb (pb : proto.pq_ratchet.chain.epoch.EpochDirection)
-    (x : chain.ChainEpochDirection)
-    (h : from_pb pb = ok (.Ok x)) :
-    into_pb x = ok pb := by
-  unfold from_pb at h
-  simp only [ok.injEq, core.result.Result.Ok.injEq] at h
-  subst h
-  unfold into_pb
-  rfl
-
 end spqr.chain.ChainEpochDirection

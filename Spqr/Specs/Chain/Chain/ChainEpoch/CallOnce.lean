@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut
 import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+import Spqr.Specs.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_once`
 
@@ -22,16 +23,12 @@ namespace spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChain
 /-- **Spec theorem for `spqr.chain.Chain.into_pb.closure.Insts.
 CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once`**:
 
-Delegates to `call_mut`, discards the closure, and returns an `Epoch` whose `send`
-and `recv` fields are `some (FunctionalModels.intoPb ...)` of the corresponding
-directions. Always succeeds. -/
+• The call always succeeds (no panic).
+• The result is exactly the functional model `Chain.FunctionalModels.epochIntoPb ce`. -/
 @[step]
 theorem call_once_spec (c : chain.Chain.into_pb.closure) (ce : chain.ChainEpoch) :
     call_once c ce ⦃ (result : proto.pq_ratchet.chain.Epoch) =>
-      result.send = some
-        (chain.ChainEpochDirection.FunctionalModels.intoPb ce.send) ∧
-      result.recv = some
-        (chain.ChainEpochDirection.FunctionalModels.intoPb ce.recv) ⦄ := by
+      result = Chain.FunctionalModels.epochIntoPb ce ⦄ := by
   unfold call_once
   step*
 
