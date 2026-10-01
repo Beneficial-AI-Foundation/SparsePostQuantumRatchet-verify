@@ -15,7 +15,7 @@ Maintained by [The Beneficial AI Foundation](https://www.beneficialaifoundation.
 | [`src/`](./src/) | Rust source of the SPQR crate (pinned upstream commit, with any local edits captured in [`src-modifications.diff`](./src-modifications.diff)). |
 | [`SrcTranslated/`](./SrcTranslated/) | Aeneas-auto-generated Lean files (`Types.lean`, `Funs.lean`, never edited by hand) plus hand-written externals (`TypesExternal.lean`, `FunsExternal.lean`). |
 | [`Spqr/Math/`](./Spqr/Math/) | Project-wide mathematical infrastructure, implemented in Lean. |
-| [`Spqr/Specs/`](./Spqr/Specs/) | Lean spec theorem files for individual Rust functions, organised to mirror the Rust module tree. |
+| [`Spqr/Specs/`](./Spqr/Specs/) | Lean spec theorem files: specs of individual Rust functions, organised to mirror the Rust module tree, and in `Braid/`, specs of ML-KEM Braid properties over runs of the state machine, organised by the Braid spec's sections. |
 | [`aeneas-config.yml`](./aeneas-config.yml) | Aeneas extraction configuration. |
 | [`scripts/`](./scripts/) | Project tooling scripts (extraction, diffing, linting, auditing). |
 | [`doc/`](./doc/) | Style and workflow/PR guides. |
