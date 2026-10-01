@@ -168,28 +168,56 @@ Serializes a polynomial's GF(2¹⁶) coefficients into a byte vector: allocate a
 `2 * n`, then encode each coefficient's `u16` value as two big-endian bytes. The result has length
 `2 * n` with `result[2*j] * 256 + result[2*j+1] = coefficients[j].value` for every `j`.
 
+`serialize` is **total and never fails** — in particular it does *not* special-case the zero
+polynomial. Since `Poly::zero` has an empty coefficient vector (`zero_spec`), `serialize` of the
+zero polynomial is the empty byte string `[]`, which `Poly::deserialize` rejects with
+`SerializationInvalid` (`deserialize_spec`). Hence `deserialize ∘ serialize` is **not** the
+identity on `Poly::zero`; see `docs/defects.md`, item 16.
+
 **Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.Poly
 
 /-- **Spec theorem for `encoding.polynomial.Poly.serialize`**:
 
-Serializes a `Poly`'s GF(2¹⁶) coefficients into a big-endian byte vector by allocating an empty
-vector and running `serialize_loop` to completion. Result: length `2 * n` with
-`hi * 256 + lo = (coefficients[j]!).value.val` for every `j < n`. The precondition
-`2 * n + 2 ≤ Usize.max` guards both the capacity computation and the per-step append. Proved by
-composing `Vec.with_capacity` with `serialize_loop.loop_spec`. -/
+Total characterisation of `Poly::serialize`, stated for **every** `Poly` (including the zero
+polynomial) so that the defect-16 behaviour is pinned down rather than assumed away:
+
+  * `result.length = 2 * self.degree` — two big-endian bytes per coefficient, no header, no
+    padding. Consequently `result = [] ↔ self.coefficients = []`: the zero polynomial and *only*
+    the zero polynomial serialises to the empty byte string, which `deserialize` rejects.
+  * `serialized.length % 2 = 0` — the output always passes `deserialize`'s parity check; the
+    emptiness check is therefore the *only* way a `serialize` output can be rejected.
+  * For every `j < self.degree`:
+      `256 * result[2*j]! + result[2*j+1]! = (self.coefficients[j]!).value.val`.
+
+The precondition `2 * self.degree + 2 ≤ Usize.max` guards the capacity computation and the
+per-step append. Proved by composing `Vec.with_capacity` with `serialize_loop.loop_spec`. -/
 @[step]
 theorem serialize_spec
     (self : Poly)
     (h_overflow : 2 * self.degree + 2 ≤ Usize.max) :
     serialize self ⦃ (result : alloc.vec.Vec U8) =>
       result.length = 2 * self.degree ∧
+      result.length % 2 = 0 ∧
+      (result.val = [] ↔ self.coefficients.val = []) ∧
       ∀ j < self.degree,
         256 * result[2 * j]! + result[2 * j +1]! = (self.coefficients[j]!).value.val ⦄ := by
   unfold serialize degree
   step*
   all_goals (simp_all [degree]; grind [alloc.vec.Vec.with_capacity])
 
+/-- **Corollary (defect 16 witness, `serialize` side)**: a polynomial with no coefficients — the
+representation `Poly::zero` produces (`zero_spec`) — serialises to the empty byte string. Combined
+with `deserialize_empty_is_err`, `Poly::deserialize (Poly::serialize zero)` is
+`Err SerializationInvalid`, so the two functions are not inverses on the zero polynomial. -/
+theorem serialize_zero_eq_nil
+    (self : Poly)
+    (h_zero : self.coefficients.val = []) :
+    serialize self ⦃ (result : alloc.vec.Vec U8) => result.val = [] ⦄ := by
+  have h_deg : self.degree = 0 := by simp [degree, h_zero]
+  apply WP.spec_mono (serialize_spec self (by rw [h_deg]; scalar_tac))
+  intro result h
+  exact h.2.2.1.mpr h_zero
 
 end spqr.encoding.polynomial.Poly
