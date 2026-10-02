@@ -11,6 +11,7 @@ import Spqr.Crypto.RFC5869
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
 import Spqr.Math.Gf16.Basic
+import Spqr.Math.Gf16.Equiv
 import Spqr.Math.Gf16.Field
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Gf2Poly.Basic
@@ -38,6 +39,8 @@ import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
 import Spqr.Math.Poly.Lagrange.CountNonSkip
 import Spqr.Math.Poly.Lagrange.DenomProd
+import Spqr.Math.Poly.Lagrange.EvalAtNode
+import Spqr.Math.Poly.Lagrange.Interpolant
 import Spqr.Math.Poly.Lagrange.InterpolantSum
 import Spqr.Math.Poly.LinearFactors.Basic
 import Spqr.Math.Poly.LinearFactors.Degree
