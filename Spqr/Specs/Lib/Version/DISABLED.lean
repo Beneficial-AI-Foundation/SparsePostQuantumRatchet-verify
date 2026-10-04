@@ -1,45 +1,27 @@
 /-
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
-/-!
-# Spec theorem for `spqr::Version::DISABLED`
+/-! # Spec theorem for `spqr::{spqr::proto::pq_ratchet::Version}::DISABLED`
 
-`Version::DISABLED` is a named constant alias for `Version::V0`, indicating that the SPQR
-post-quantum ratchet protocol is disabled.  When a client initializes with `version = DISABLED`,
-no inner V1 state is constructed and the protocol operates in pass-through mode (empty states,
-empty messages, no key material).
+`DISABLED` is an alias for `Version.V0`, indicating a disabled post-quantum ratchet.
+The spec asserts `Version.DISABLED = .V0`.
 
-The constant is declared `@[global_simps, irreducible]` in the Aeneas extraction, meaning it will
-not unfold by default but is available as a simp lemma via `@[global_simps]`.
-
-**Source**: spqr/src/lib.rs (line 239)
--/
+**Source**: spqr/src/lib.rs -/
 
 open Aeneas Aeneas.Std Result
 
-namespace spqr
+namespace spqr.Version
 
-/--
-**Spec theorem for `spqr.Version.DISABLED`**:
+/-- **Spec theorem for `spqr.Version.DISABLED`**:
 
-• `Version.DISABLED` is defined as `proto.pq_ratchet.Version.V0`.
-• This is a pure constant definition with no computation or error paths.
-• It is the complement of `Version.MAX` (which equals `V1`).
-
-The result satisfies the identity:
-
-  `Version.DISABLED = proto.pq_ratchet.Version.V0`
-
-The proof unfolds the `@[irreducible]` definition to expose the underlying `V0` value.
-
-**Source**: spqr/src/lib.rs (line 239)
--/
+`DISABLED` equals `Version.V0`. -/
 @[simp]
-theorem Version.DISABLED_spec :
-    Version.DISABLED = proto.pq_ratchet.Version.V0 := by
-  unfold Version.DISABLED; rfl
+theorem DISABLED_spec :
+    DISABLED = proto.pq_ratchet.Version.V0 := by
+  unfold DISABLED
+  rfl
 
-end spqr
+end spqr.Version

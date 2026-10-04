@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
+import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::authenticator::serialize::Authenticator::into_pb`
@@ -24,14 +25,12 @@ namespace spqr.authenticator.serialize.Authenticator
 
 /-- **Spec theorem for `spqr::authenticator::serialize::Authenticator::into_pb`**
 • The call always succeeds (no panic).
-• The result's `root_key` equals `self.root_key`.
-• The result's `mac_key` equals `self.mac_key`.
+• The result is exactly the functional model `FunctionalModels.intoPb self`.
 -/
 @[step]
 theorem into_pb_spec (self : authenticator.Authenticator) :
     into_pb self ⦃ (result : proto.pq_ratchet.Authenticator) =>
-      result.root_key = self.root_key ∧
-      result.mac_key = self.mac_key ⦄ := by
-  simp [into_pb]
+      result = FunctionalModels.intoPb self ⦄ := by
+  simp [into_pb, FunctionalModels.intoPb]
 
 end spqr.authenticator.serialize.Authenticator

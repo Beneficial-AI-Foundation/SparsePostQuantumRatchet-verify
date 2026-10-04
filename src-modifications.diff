@@ -8,12 +8,6 @@ Upstream Commit: f2589fef855c10f39d72634dab3d14654dd410bf
 
 ---
 
-<<<<<<< HEAD
-diff -Naur --no-dereference a/src/.DS_Store b/src/.DS_Store
---- a/src/.DS_Store
-+++ b/src/.DS_Store
-@@ -0,0 +1 @@
-=======
 diff -Naur --no-dereference a/src/chain.rs b/src/chain.rs
 --- a/src/chain.rs
 +++ b/src/chain.rs
@@ -525,4 +519,3 @@ diff -Naur --no-dereference a/src/v1/chunked/states.rs b/src/v1/chunked/states.r
                          Self::KeysUnsampled(state.recv_next_epoch(msg.epoch))
                      } else {
                          return Err(Error::EpochOutOfRange(msg.epoch));
->>>>>>> 8e7413df8f523d9bb84377ccdae42c8cb8626520

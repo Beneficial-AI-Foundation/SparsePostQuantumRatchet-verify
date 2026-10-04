@@ -1,9 +1,5 @@
 /-
-<<<<<<< HEAD
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
-=======
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
->>>>>>> 323abb23ea297aa116adeb54d44a0ab5037942f5
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
@@ -36,14 +32,7 @@ The result satisfies the emptiness postcondition:
 
   `result.val = []`
 
-<<<<<<< HEAD
-i.e., the returned vector contains no bytes, representing the V0 (disabled) protocol state.
-
-**Source**: spqr/src/lib.rs (lines 47:0-49:1)
--/
-=======
 i.e., the returned vector contains no bytes, representing the V0 (disabled) protocol state. -/
->>>>>>> 323abb23ea297aa116adeb54d44a0ab5037942f5
 @[step]
 theorem empty_state_spec :
     empty_state ⦃ (result : alloc.vec.Vec U8) =>

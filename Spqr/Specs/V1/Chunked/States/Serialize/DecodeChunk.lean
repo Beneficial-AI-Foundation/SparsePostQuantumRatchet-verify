@@ -103,6 +103,6 @@ theorem decode_chunk_spec
       obtain ⟨ha, _halen⟩ := r1_post
       refine ⟨by scalar_tac, n, by scalar_tac,
         ⟨hn1, hn10, hnlen, by rw [i1_post, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
-      rw [ha, s_post1, at3_post, hat2]
+      simp [*]
 
 end spqr.v1.chunked.states.serialize

@@ -38,10 +38,12 @@ theorem poly_identity_from
     (g : GF16) (s : GF216)
     (hlen : v.length = coeffs.length)
     (hpos : 0 < coeffs.length)
-    (hv0_zero : (v[0]!).toGF216 = 0)
+    (hv0_zero : ∀ (h0 : 0 < v.length),
+        (v.get ⟨0, h0⟩).toGF216 = 0)
     (hH0 : hornerAccum g coeffs 0 = 0)
-    (hvk : ∀ k, 0 < k →
-        (v[k]!).toGF216 = s * hornerAccum g coeffs k) :
+    (hvk : ∀ k (hk : k < v.length), 0 < k →
+        (v.get ⟨k, hk⟩).toGF216 =
+          s * hornerAccum g coeffs k) :
     listToGF216Poly v * (X - C (g.toGF216)) =
       X * C s * listToGF216Poly coeffs := by
   rw [GF216Poly.sub_eq_add, mul_add, mul_comm (listToGF216Poly v) (C (g.toGF216)),
@@ -55,7 +57,8 @@ theorem poly_identity_from
     rw [coeff_mul_X_zero, coeff_X_mul_zero, zero_add, mul_zero]
     simp only [listToGF216Poly_coeff]
     split
-    · grind
+    · rename_i h0v
+      rw [hv0_zero h0v, mul_zero]
     · rename_i h0v; push Not at h0v; omega
   · have hm_pos : 0 < m := Nat.pos_of_ne_zero hm0
     have hcoeff_v_X : (listToGF216Poly v * X).coeff m =
@@ -76,6 +79,8 @@ theorem poly_identity_from
       by_cases hm1_zero : m - 1 = 0
       · have hm_eq_1 : m = 1 := by omega
         subst hm_eq_1; simp only [Nat.sub_self]
+        rw [hv0_zero (by omega),
+            hvk 1 (by omega) (by omega), zero_add]
         have hH0_unf :=
           hornerAccum_unfold g coeffs 0 (by omega)
         rw [hH0] at hH0_unf
@@ -83,11 +88,19 @@ theorem poly_identity_from
             (coeffs.get ⟨0, by omega⟩).toGF216 =
               α * hornerAccum g coeffs 1 :=
           GF216_eq_of_add_eq_zero hH0_unf.symm
-        grind
+        rw [hcoeff0]; ring
       · have hm1_pos : 0 < m - 1 := by omega
+        rw [hvk (m - 1) hm1_lt_v hm1_pos,
+            hvk m hm_lt_v hm_pos]
+        rw [show s * hornerAccum g coeffs (m - 1) +
+              α * (s * hornerAccum g coeffs m) =
+            s * (hornerAccum g coeffs (m - 1) +
+              α * hornerAccum g coeffs m) from by ring]
+        congr 1
         have hm_succ : m - 1 + 1 = m := by omega
         have := hornerAccum_cancel g coeffs (m - 1) hm1_lt_c
-        grind
+        rw [hm_succ] at this
+        exact this
     · push Not at hm_lt
       by_cases hm_eq : m = coeffs.length
       · subst hm_eq
@@ -111,9 +124,14 @@ theorem poly_identity_from
           simp only [List.get_eq_getElem]; exact hH_last.symm
         rw [hH_last_get]
         by_cases h_pos : 0 < coeffs.length - 1
-        · grind
+        · exact hvk (coeffs.length - 1) hm1_lt_v h_pos
         · have h0 : coeffs.length - 1 = 0 := by omega
-          grind
+          have hv_eq : v.get ⟨coeffs.length - 1, hm1_lt_v⟩ =
+              v.get ⟨0, by omega⟩ := by
+            congr 1; exact Fin.ext h0
+          rw [show (v.get ⟨coeffs.length - 1, hm1_lt_v⟩).toGF216 =
+              (v.get ⟨0, by omega⟩).toGF216 from by rw [hv_eq]]
+          rw [hv0_zero (by omega), h0, hH0, mul_zero]
       · have hm_gt : coeffs.length < m := by omega
         rw [dif_neg (show ¬(m - 1 < v.length) from by omega),
             dif_neg (show ¬(m < v.length) from by omega),

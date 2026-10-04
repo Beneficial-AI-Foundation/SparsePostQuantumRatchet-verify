@@ -23,26 +23,6 @@ open Aeneas Aeneas.Std Result
 
 namespace spqr.encoding.polynomial
 
-<<<<<<< HEAD
-/-- Bridge between the Aeneas-generated `collect.default` (with `Map.Insts` whose
-`next := sorry`, see https://github.com/AeneasVerif/aeneas/issues/1043) and the
-external `Map.Insts.collect` (with proper `mapIteratorTransformer`). -/
-theorem collect_default_bridge {N : Usize}
-    (m : core.iter.adapters.map.Map (core.slice.iter.Iter (PolyConst N))
-      (const_polys_to_polys.closure N)) :
-    core.iter.traits.iterator.Iterator.collect.default
-      (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-        (core.iter.traits.iterator.IteratorSliceIter (PolyConst N))
-        (const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly N))
-      (core.iter.traits.collect.FromIteratorVec Poly) m =
-    core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
-      (core.iter.traits.iterator.IteratorSliceIter (PolyConst N))
-      (const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly N)
-      (core.iter.traits.collect.FromIteratorVec Poly) m := by
-  sorry -- Blocked on https://github.com/AeneasVerif/aeneas/issues/1043
-
-=======
->>>>>>> 323abb23ea297aa116adeb54d44a0ab5037942f5
 /--
 **Spec theorem for `encoding.polynomial.const_polys_to_polys`**:
 

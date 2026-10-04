@@ -1,29 +1,22 @@
 /-
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
+Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
-/-!
-# Spec theorem for `spqr::{impl core::cmp::PartialEq<spqr::SecretOutput> for spqr::SecretOutput}::eq`
+/-! # Spec theorem for
+`spqr::{impl core::cmp::PartialEq<spqr::SecretOutput> for spqr::SecretOutput}::eq`
 
-`SecretOutput::eq` is the auto-derived `PartialEq` implementation for the `SecretOutput` enum.
-It performs structural equality: two `SecretOutput` values are equal if and only if they are the
-same variant (`None`, `Send`, or `Recv`) and, for the `Send` and `Recv` variants, their inner
-`Vec<u8>` payloads are element-wise equal.
+Structural equality for `SecretOutput`: same variant and equal inner `Vec<u8>` payloads.
+Compares discriminants first; delegates to `PartialEqVec.eq` for `Send`/`Recv` payloads.
 
-The extracted Lean code first compares discriminants; if they differ, it returns `false`.
-When they match, it delegates to `PartialEqVec.eq` on the inner vectors for the `Send`/`Send`
-and `Recv`/`Recv` cases, and returns `true` for the `None`/`None` case.
-
-**Source**: spqr/src/lib.rs (line 73)
--/
+**Source**: spqr/src/lib.rs -/
 
 open Aeneas Aeneas.Std Result
 
 namespace spqr.SecretOutput.Insts.CoreCmpPartialEqSecretOutput
 
-/-- Helper: `List.allM` with `PartialEqU8.eq` on zipped lists decides list equality. -/
+/-- `List.allM` with `PartialEqU8.eq` on zipped lists decides list equality. -/
 private lemma allM_zip_u8_post
     (xs ys : List Std.U8) (h_len : xs.length = ys.length) :
     ∃ b : Bool,
@@ -57,7 +50,7 @@ private lemma allM_zip_u8_post
           simp only [Bool.false_eq_true, false_iff]
           intro h; exact hxy (List.cons.inj h).1⟩
 
-/-- `Vec<u8>` equality via `PartialEqVec.eq core.cmp.PartialEqU8` is propositional equality. -/
+/-- `PartialEqVec.eq` on `Vec<u8>` is propositional equality. -/
 @[step]
 private theorem eq_vec_u8_spec
     (v1 v2 : alloc.vec.Vec Std.U8) :
@@ -77,55 +70,34 @@ private theorem eq_vec_u8_spec
 /--
 **Spec theorem for `spqr.SecretOutput.Insts.CoreCmpPartialEqSecretOutput.eq`**:
 
-• Takes two `SecretOutput` values `self` and `other`.
-• Compares them structurally:
-  - `None` vs `None` → `true`
-  - `Send(a)` vs `Send(b)` → element-wise equality of the inner `Vec<u8>` values
-  - `Recv(a)` vs `Recv(b)` → element-wise equality of the inner `Vec<u8>` values
-  - Different variants → `false`
-• The function always succeeds (no panic) for any pair of `SecretOutput` inputs.
-
-The result satisfies the structural equality postcondition:
-
-  `(self = .None ∧ other = .None → result = true) ∧`
-  `(∀ a b, self = .Send a ∧ other = .Send b → (result = true ↔ a = b)) ∧`
-  `(∀ a b, self = .Recv a ∧ other = .Recv b → (result = true ↔ a = b)) ∧`
-  `(variant mismatch → result = false)`
-
-The proof unfolds `eq` and discharges the resulting goals with `step*`.
+Structural equality on two `SecretOutput` values: `true` iff `self = other`.
+Always succeeds (no panic). Proved by case-splitting and `step*`.
 
 **Source**: spqr/src/lib.rs (line 73)
 -/
 @[step]
 theorem eq_spec (self other : spqr.SecretOutput) :
     eq self other ⦃ (result : Bool) =>
-      (self = .None ∧ other = .None → result = true) ∧
-      (∀ a b, self = .Send a → other = .Send b → (result = true ↔ a = b)) ∧
-      (∀ a b, self = .Recv a → other = .Recv b → (result = true ↔ a = b)) ∧
-      ((self = .None ∧ (∃ s, other = .Send s ∨ other = .Recv s)) ∨
-       ((∃ s, self = .Send s ∨ self = .Recv s) ∧ other = .None) ∨
-       ((∃ s, self = .Send s) ∧ (∃ s, other = .Recv s)) ∨
-       ((∃ s, self = .Recv s) ∧ (∃ s, other = .Send s)) →
-       result = false) ⦄ := by
+      result = true ↔ self = other ⦄ := by
   unfold eq
   match self, other with
   | .None, .None =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .None, .Send _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .None, .Recv _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Send _, .None =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Send a, .Send b =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Send _, .Recv _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Recv _, .None =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Recv _, .Send _ =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
   | .Recv a, .Recv b =>
-    simp only [read_discriminant, SecretOutput.read_discriminant]; step*; simp_all
+    simp only [read_discriminant, SecretOutput.read_discriminant]; step*
 
 end spqr.SecretOutput.Insts.CoreCmpPartialEqSecretOutput

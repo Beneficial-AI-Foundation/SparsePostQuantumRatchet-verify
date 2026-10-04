@@ -11,6 +11,7 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallOnce
 import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.MapCollectBridge
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.SliceIterEnumMapCollect
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 
 
 /-!
@@ -32,9 +33,6 @@ open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomi
 open PolyEncoder.point_at.closure_1  core.iter.adapters.map.Map
 
 namespace spqr.encoding.polynomial.PolyEncoder.point_at_loop
-
-/-- Default `Inhabited` instance for `Point` (empty value vector). -/
-instance instInhabitedPoint_spqr : Inhabited encoding.polynomial.Point := ⟨⟨alloc.vec.Vec.new _⟩⟩
 
 /-! ## Helper lemmas for the enumerate-map-collect pipeline -/
 

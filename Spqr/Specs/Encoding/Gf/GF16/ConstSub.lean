@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Math.Gf16.Field
+
 /-!
 # Spec theorem for `spqr::encoding::gf::GF16::const_sub`
 

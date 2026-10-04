@@ -10,7 +10,7 @@ export interface Substitution {
 
 export interface AeneasConfig {
   aeneas: {
-    commit: string;
+    tag: string;
     repo: string;
   };
   upstream: {
@@ -81,7 +81,7 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   const config = raw as unknown as AeneasConfig;
 
   // Validate required fields
-  if (!config.aeneas?.commit) throw new Error("Missing required field: aeneas.commit");
+  if (!config.aeneas?.tag) throw new Error("Missing required field: aeneas.tag");
   if (!config.aeneas?.repo) throw new Error("Missing required field: aeneas.repo");
   if (!config.crate?.dir) throw new Error("Missing required field: crate.dir");
 

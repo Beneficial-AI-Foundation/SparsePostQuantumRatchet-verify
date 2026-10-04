@@ -7,6 +7,7 @@ import SrcTranslated.Funs
 import Spqr.Math.Gf16.Field
 import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
+import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
 /-!
 # Spec theorem for `spqr::encoding::gf::unaccelerated::mul`

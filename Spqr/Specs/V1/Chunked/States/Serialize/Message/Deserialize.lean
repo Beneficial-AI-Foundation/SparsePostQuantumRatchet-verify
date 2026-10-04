@@ -38,9 +38,15 @@ namespace spqr.v1.chunked.states.serialize
 -- Shorten the `?`-desugaring (`from_residual`) and `map_err`-closure names used in the proof.
 open core.result.Result.Insts Message.deserialize
 
-set_option maxHeartbeats 400000 in
--- the default budget is not enough: the tag `match` is proved branch by branch (eight of them,
--- five applying `decode_chunk_spec`), each closing its goal with its own `scalar_tac`/`omega`s
+/-- Discharge a `?`-propagated error branch. -/
+local macro "close_err" : tactic =>
+  `(tactic| simp_all only [core.result.Result.map_err_Ok, core.result.Result.map_err_Err,
+    closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError,
+    closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once,
+    closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError,
+    closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once,
+    CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+    core.convert.FromSame.from, bind_tc_ok, WP.spec_ok])
 
 /-- **Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
@@ -80,85 +86,58 @@ theorem Message.deserialize_spec
   -- and bridges the Bool/Prop gap together with `b_post`.
   case hbound => simp_all [List.length_pos_iff]
   match r with
-  | .Err e =>
-    simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-    exact r_post2.1
+  | .Err _ => close_err
   | .Ok epochV =>
-    obtain ⟨h1lt, n₁, hat1, hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩ := r_post2
+    obtain ⟨-, n₁, hat₁, hblk₁⟩ :
+        1 < from1.length ∧ ∃ n, _ = 1 + n ∧ varintBlockAt (↑from1) 1 n ↑epochV := by
+      assumption
     step*
     match r1 with
-    | .Err e =>
-      simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-        core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-      exact r1_post2.1
+    | .Err _ => close_err
     | .Ok idx64 =>
-      obtain ⟨hatlt, n₂, hat2, hn₂1, hn₂10, hn₂len, hidx64, hterm₂, hcont₂⟩ := r1_post2
+      obtain ⟨-, n₂, hat₂, hblk₂⟩ :
+          _ < from1.length ∧ ∃ n, _ = _ + n ∧ varintBlockAt (↑from1) _ n ↑idx64 := by
+        assumption
       step*
       match r2 with
-      | .Err _ =>
-        simp only [core.result.Result.map_err_Err,
-          closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError,
-          closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once,
-          CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-          core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+      | .Err _ => close_err
       | .Ok idx =>
-        obtain ⟨_, hidx⟩ := r2_post
+        obtain ⟨-, hidx⟩ : _ ∧ idx.val = idx64.val := by assumption
         simp only [core.result.Result.map_err_Ok, bind_tc_ok]
         step*
+        rw [hat₁, ← hidx] at hblk₂
+        have h0 : (from1.val[0]!).val = 1 := by
+          rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
+        have hbyte : (from1.val[1 + n₁ + n₂]!).val = i3.val := by
+          rw [show (1 + n₁ + n₂ : ℕ) = at1.val by omega,
+            getElem!_pos from1.val at1.val (by scalar_tac), ← i3_post]
         split at r4_post
-        -- The eight tag branches fall into three groups closed by multi-tag `case`:
-        -- the five chunk-carrying tags (1 Hdr, 2 Ek, 3 EkCt1Ack, 5 Ct1, 6 Ct2) produce
-        -- syntactically identical goals — the script below never names the payload
-        -- constructor — as do the two chunk-less tags (0 None, 4 Ct1Ack).
         case h_2 | h_3 | h_4 | h_6 | h_7 =>
           -- tags 1, 2, 3, 5, 6: a chunk block follows
           subst r4_post
           simp only [core.result.Result.map_err_Ok, bind_tc_ok]
           step*
           match r6 with
-          | .Err e =>
-            simp only [CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-              core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-            exact r6_post2
+          | .Err _ => close_err
           | .Ok c =>
-            -- `chunkBlockAt`'s varint block is not in tail position, hence the inner `⟨…⟩`.
-            obtain ⟨n₃, hat4, ⟨hn₃1, hn₃10, _, hcidx, hterm₃, hcont₃⟩, hat4len, hcdata⟩ :=
-              r6_post2
-            refine ⟨by scalar_tac, by scalar_tac, by omega, ?_, n₁, n₂, ?_, ?_,
-              by scalar_tac, ?_, n₃, ?_, by omega⟩
-            · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-            · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-            · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-              exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-            · simp only [payloadTag]
-              rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-                getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-              assumption
-            · rw [show (2 + n₁ + n₂ : ℕ) = ↑at3 by omega]
-              exact ⟨⟨hn₃1, hn₃10, by scalar_tac, hcidx, hterm₃, hcont₃⟩, by scalar_tac, hcdata⟩
+            obtain ⟨n₃, hat₃, hcblk, hclen, hcdata⟩ :
+                ∃ n, _ = _ + n + 32 ∧ chunkBlockAt (↑from1) _ n c := by assumption
+            have hat2v : at2.val = 2 + n₁ + n₂ := by omega
+            rw [hat2v] at hcblk hclen hcdata
+            refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, h0, n₁, n₂, hblk₁, hblk₂,
+              by scalar_tac, ?_, n₃, ⟨hcblk, hclen, hcdata⟩, by scalar_tac⟩
+            simp only [payloadTag]; rw [hbyte]; omega
         case h_1 | h_5 =>
-          -- tags 0 (None) and 4 (Ct1Ack): no chunk block, the cursor stops after the tag byte
           subst r4_post
           simp only [core.result.Result.map_err_Ok, bind_tc_ok]
           step*
-          refine ⟨by scalar_tac, by scalar_tac, by omega, ?_, n₁, n₂, ?_, ?_,
-            by scalar_tac, ?_, by omega⟩
-          · rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-          · exact ⟨hn₁1, hn₁10, hn₁len, hepoch, hterm₁, hcont₁⟩
-          · rw [show (1 + n₁ : ℕ) = ↑at1 from hat1.symm]
-            exact ⟨hn₂1, hn₂10, hn₂len, by rw [hidx, hidx64], hterm₂, hcont₂⟩
-          · simp only [payloadTag]
-            rw [show (1 + n₁ + n₂ : ℕ) = ↑at2 by omega,
-              getElem!_pos from1.val at2.val (by scalar_tac), ← i3_post]
-            assumption
+          refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, h0, n₁, n₂, hblk₁, hblk₂,
+            by scalar_tac, ?_, ?_⟩
+          · simp only [payloadTag]; rw [hbyte]; omega
+          · scalar_tac
         case h_8 =>
-          -- tag > 6: decode error
+          -- tag > 6: `MessageType::try_from` fails and `map_err` turns it into `MsgDecode`
           subst r4_post
-          simp only [core.result.Result.map_err_Err,
-            closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError,
-            closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once,
-            CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-            core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+          close_err
 
 end spqr.v1.chunked.states.serialize

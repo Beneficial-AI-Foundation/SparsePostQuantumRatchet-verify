@@ -61,6 +61,7 @@ lemma getElem!_toGF216_eq_coeff
       grind
     rw [this]; exact GF16.toGF216_eq_zero _ (by rfl)
 
+
 /-! ## Injectivity of `toGF216` at zero -/
 
 /-- If `n.toGF216 = 0` and `n < 2^16`, then `n = 0`.

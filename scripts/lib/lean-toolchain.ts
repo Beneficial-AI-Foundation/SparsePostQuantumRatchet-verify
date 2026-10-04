@@ -3,12 +3,12 @@ import path from "node:path";
 import chalk from "chalk";
 
 /**
- * Sync the project's lean-toolchain file with the one from the aeneas repo.
+ * Sync the project's lean-toolchain file with the one shipped in the aeneas release bundle.
  * No-op if either file is missing.
  */
 export function syncLeanToolchain(root: string): void {
   const projectToolchain = path.join(root, "lean-toolchain");
-  const aeneasToolchain = path.join(root, ".aeneas", "aeneas", "backends", "lean", "lean-toolchain");
+  const aeneasToolchain = path.join(root, ".aeneas", "backends", "lean", "lean-toolchain");
 
   if (!fs.existsSync(aeneasToolchain) || !fs.existsSync(projectToolchain)) return;
 

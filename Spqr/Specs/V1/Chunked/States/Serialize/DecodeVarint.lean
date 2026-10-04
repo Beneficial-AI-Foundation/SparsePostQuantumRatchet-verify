@@ -316,7 +316,7 @@ theorem decode_varint_spec
     step*
     have hd : done1 = true := by assumption
     obtain ⟨h1, h2, h3⟩ := out_post3 hd
-    exact ⟨by scalar_tac, by scalar_tac, i3.val, at2_post, h1, by scalar_tac, by scalar_tac,
+    exact ⟨by scalar_tac, by scalar_tac, i3.val, ‹_›, h1, by scalar_tac, by scalar_tac,
       out_post2, h2, h3⟩
 
 end spqr.v1.chunked.states.serialize

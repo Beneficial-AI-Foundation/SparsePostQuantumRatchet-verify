@@ -72,8 +72,6 @@ Interpret a `GF16` field element as an element of `GF216 = GF(2¹⁶)`, using th
 -/
 noncomputable def toGF216 (g : GF16) : GF216 := g.value.val.toGF216
 
-instance : Inhabited GF16 := ⟨⟨⟨0, by scalar_tac⟩⟩⟩
-
 end spqr.encoding.gf.GF16
 
 deriving instance Inhabited for spqr.encoding.gf.GF16

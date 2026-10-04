@@ -12,8 +12,8 @@ import Spqr.Math.Gf2Poly.Basic
 /-!
 # The SPQR irreducible polynomial polyGF2
 
-Definition of `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`, its basic properties (monic,
-degree 16, ≠ 1), and the bridge lemma `natToBinaryPoly 0x1100b = polyGF2`.
+Definition of `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`, its basic properties
+(monic, degree 16, ≠ 1), and the bridge lemma `natToBinaryPoly 0x1100b = polyGF2`.
 -/
 
 open Polynomial
@@ -39,7 +39,7 @@ lemma natToBinaryPoly_polyGF2 :
   rcases Nat.lt_or_ge m 17 with hlt | hge
   · interval_cases m <;> decide
   · have htb : Nat.testBit (0x1100b : Nat) m = false := by
-      apply Nat.testBit_lt_two_pow
+      apply Nat.testBit_eq_false_of_lt
       exact lt_of_lt_of_le (by norm_num : (0x1100b : Nat) < 2 ^ 17)
         (Nat.pow_le_pow_right (by norm_num) hge)
     simp only [htb, ↓reduceIte, show m ≠ 16 from by omega, show m ≠ 12 from by omega,
@@ -73,7 +73,5 @@ lemma polyGF2_modByMonic_idem (p : BinaryPoly) :
     (p %ₘ polyGF2) %ₘ polyGF2 = p %ₘ polyGF2 :=
   Polynomial.modByMonic_eq_of_dvd_sub polyGF2_monic
     (polyGF2_dvd_modByMonic_sub p)
-
-
 
 end spqr.math.gf

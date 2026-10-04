@@ -114,27 +114,9 @@ theorem add_chunk_spec_poly_decoder
               (if poly_idx < np ∨ ((selfs j).pts.val[poly]!).val.length < np
                then
                  (∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
-                 match ((selfs j).pts.val[poly]!).val.getLast? with
-                 | none =>
-                     ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
-                 | some last =>
-                   match Pt.Insts.CoreCmpOrd.cmp p last with
-                   | ok Ordering.gt =>
-                       ((selfs (j + 1)).pts.val[poly]!).val = ((selfs j).pts.val[poly]!).val ++ [p]
-                   | ok Ordering.eq =>
-                       ((selfs (j + 1)).pts.val[poly]!).val =
-                       ((selfs j).pts.val[poly]!).val.dropLast ++ [p]
-                   | ok Ordering.lt =>
-                       ∃ (m : Nat),
-                         m ≤ ((selfs j).pts.val[poly]!).val.length ∧
-                         (((selfs (j + 1)).pts.val[poly]!).val =
-                             ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                             ((selfs j).pts.val[poly]!).val.drop m ∨
-                          (m < ((selfs j).pts.val[poly]!).val.length ∧
-                           ((selfs (j + 1)).pts.val[poly]!).val =
-                             ((selfs j).pts.val[poly]!).val.take m ++ [p] ++
-                             ((selfs j).pts.val[poly]!).val.drop (m + 1)))
-                   | _ => False
+                 PolyDecoder.Insts.SpqrEncodingDecoder.IsSortedPushResult
+                   ((selfs j).pts.val[poly]!).val
+                   ((selfs (j + 1)).pts.val[poly]!).val p
                else
                  selfs (j + 1) = selfs j) ⦄ := by
   apply add_chunk_spec_lift PolyDecoder.Insts.SpqrEncodingDecoder (some pd0) chunk (by simp)

@@ -10,8 +10,8 @@ import Spqr.Math.Gf16.Field
 # Spec theorem for `spqr::encoding::gf::{impl ops::AddAssign<&GF16> for GF16}::add_assign`
 
 In GF(2¹⁶) — the Galois field with 65 536 elements — addition is simply bitwise XOR of the two
-16-bit underlying values.  This follows from the fact that GF(2¹⁶) has characteristic 2, so addition
-of polynomial coefficients is addition in GF(2), which is XOR.
+16-bit underlying values.  This follows from the fact that GF(2¹⁶) has characteristic 2, so
+addition of polynomial coefficients is addition in GF(2), which is XOR.
 
 Note that in GF(2¹⁶), addition and subtraction coincide:
   `a + b = a - b = a ⊕ b`
@@ -24,8 +24,7 @@ open Aeneas Aeneas.Std Result spqr.math.gf spqr.encoding.gf
 
 namespace spqr.encoding.gf.GF16.Insts.CoreOpsArithAddAssignShared0GF16
 
-/--
-**Spec theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddAssignShared0GF16.add_assign`**:
+/-- **Spec theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithAddAssignShared0GF16.add_assign`**:
 
 The result satisfies the GF(2¹⁶)-level postcondition:
 
@@ -33,10 +32,10 @@ The result satisfies the GF(2¹⁶)-level postcondition:
 @[step]
 theorem add_assign_spec (self other : GF16) :
     add_assign self other ⦃ (result : GF16) =>
-      result.toGF216 =  self.toGF216 + other.toGF216 ⦄ := by
+      result.toGF216 = self.toGF216 + other.toGF216 ⦄ := by
   unfold add_assign
   step*
-  simp_all only [UScalar.val_xor, toGF216, Nat.toGF216, natToBinaryPoly_xor, map_add]
+  simp_all only [UScalar.val_xor, GF16.toGF216, Nat.toGF216, natToBinaryPoly_xor, map_add]
 
 end spqr.encoding.gf.GF16.Insts.CoreOpsArithAddAssignShared0GF16
 

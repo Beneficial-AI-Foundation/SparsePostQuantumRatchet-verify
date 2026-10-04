@@ -4,11 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
-import Spqr.Specs.Aeneas.U16FromBeBytes
 
 
-/-!
-# Spec Theorem for `Pt::deserialize`
+/-! # Spec Theorem for `Pt::deserialize`
 
 Specification and proof for `encoding.polynomial.Pt.deserialize`, which deserializes a 4-byte
 big-endian array into a GF(2¹⁶) cartesian point `Pt { x, y }`.

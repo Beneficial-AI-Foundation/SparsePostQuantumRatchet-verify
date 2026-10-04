@@ -32,7 +32,7 @@ theorem body_spec
     (xs : alloc.vec.Vec GF16)
     (h_ge2 : 2 ≤ iter.start.val)
     (h_inv : iter.start = xs.length)
-    (h_len : xs.length ≤ Usize.max) :
+    (h_len : xs.length + 1 ≤ Usize.max) :
     body iter xs ⦃ cf =>
       match cf with
       | ControlFlow.done xs' =>
@@ -72,7 +72,8 @@ theorem loop_spec
     (xs : alloc.vec.Vec GF16)
     (h_ge2 : 2 ≤ iter.start.val)
     (h_inv : iter.start = xs.length)
-    (h_pow : ∀ j < xs.length, (xs[j]!).toGF216 = x.toGF216 ^ j) :
+    (h_pow : ∀ j < xs.length, (xs[j]!).toGF216 = x.toGF216 ^ j)
+    (h_len : max xs.length iter.end + 1 ≤ Usize.max) :
     compute_at_loop0 iter xs ⦃ (result : alloc.vec.Vec GF16) =>
       (∀ j < result.length, (result[j]!).toGF216 = x.toGF216 ^ j) ∧
       result.length = max xs.length iter.end ⦄ := by
@@ -86,7 +87,7 @@ theorem loop_spec
         p.1.start = p.2.length ∧
         iter.start ≤ p.1.start ∧
         p.1.start ≤ max iter.start iter.end ∧
-        p.2.length  ≤ Usize.max ∧
+        p.2.length + 1 ≤ Usize.max ∧
         (∀ j < p.2.length, (p.2[j]!).toGF216 = x.toGF216 ^ j))
   · rintro ⟨iter', xs'⟩ ⟨h_end', h_ge2', h_inv', h_start_le', h_bound', h_len', h_pow'⟩
     simp only  at h_end' h_ge2' h_inv' h_start_le' h_bound' h_len' h_pow' ⊢
@@ -218,7 +219,8 @@ namespace spqr.encoding.polynomial.Poly
   `(self.toGF216Poly).eval (x.toGF216)` in `GF216 = GaloisField 2 16`. -/
 @[step]
 theorem compute_at_spec
-    (self : Poly) (x : GF16) :
+    (self : Poly) (x : GF16)
+    (h_len : self.degree + 1 ≤ Usize.max) :
     compute_at self x ⦃ (result : GF16) =>
       result.toGF216  = self.evalAt x ⦄ := by
   unfold compute_at
@@ -235,7 +237,7 @@ theorem compute_at_spec
   have h_xs2_len : xs2.length = 2 := by grind
   have h_xs2_pow : ∀ j < xs2.length, (xs2[j]!).toGF216 = x.toGF216 ^ j := by grind
   step with compute_at_loop0.loop_spec x { start := 2#usize, «end» := self.coefficients.len }
-    xs2 (by scalar_tac) h_xs2_len.symm h_xs2_pow
+    xs2 (by scalar_tac) h_xs2_len.symm h_xs2_pow (by simp_all [degree]; grind)
     as ⟨xs3, h_xs3_pow, h_xs3_len⟩
   have h_xs3_ge : self.degree ≤ xs3.length := by
     have hle := h_xs3_len

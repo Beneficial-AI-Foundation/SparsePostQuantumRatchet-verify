@@ -1,9 +1,5 @@
 /-
-<<<<<<< HEAD
-Copyright 2026 The Beneficial AI Foundation. All rights reserved.
-=======
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
->>>>>>> 323abb23ea297aa116adeb54d44a0ab5037942f5
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
@@ -12,21 +8,8 @@ import SrcTranslated.Funs
 /-!
 # Spec theorem for `<[T; N] as TryFrom<&[T]>>::try_from`
 
-<<<<<<< HEAD
-In Rust's standard library, `<[T; N] as TryFrom<&[T]>>::try_from(slice)` attempts to convert a
-slice `&[T]` into a fixed-size array `[T; N]`.  It succeeds with `Ok(array)` when
-`slice.len() == N`, and fails otherwise.
-
-When the element type has a `Copy` (clone) that is the identity (as for all scalar types), the
-resulting array contains exactly the same elements as the input slice.
-
-The Aeneas-extracted Lean function `core.array.TryFromArrayCopySlice.try_from` mirrors this
-behavior.  This is used in deserialization code (e.g. `Pt::deserialize`) to handle the
-`.try_into().unwrap()` idiom for converting sub-slices to fixed-size arrays.
-=======
 Converts a slice `&[T]` to `[T; N]`, succeeding when `slice.len() == N`. With identity `Copy`,
 the array elements equal the slice elements. Used in `.try_into().unwrap()` idioms.
->>>>>>> 323abb23ea297aa116adeb54d44a0ab5037942f5
 
 **Source**: core/src/array/mod.rs (TryFrom impl for [T; N])
 -/
@@ -38,12 +21,7 @@ namespace Aeneas.Std.core.array.TryFromArrayCopySlice
 /--
 **Spec theorem for `core.array.TryFromArrayCopySlice.try_from`**:
 
-<<<<<<< HEAD
-When the input slice `s` has length exactly `N` and the type's `Copy` (clone) is the identity
-(as for all scalar types), `try_from` succeeds with `Ok a` where `a.val = s.val`.
-=======
 If `s.length = N` and `Copy` is the identity, returns `Ok a` with `a.val = s.val`.
->>>>>>> 323abb23ea297aa116adeb54d44a0ab5037942f5
 
 **Source**: core/src/array/mod.rs (TryFrom impl for [T; N])
 -/

@@ -1,6 +1,5 @@
 import Aeneas
 import SrcTranslated.Types
-import Spqr.Auxiliary.LibcruxHmac.HmacBytes
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
@@ -143,6 +142,46 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_eq
     (s : Slice T) (arr : Array U N) :
     Slice.Insts.CoreCmpPartialEqArray.eq cmpPartialEqInst s arr =
       Slice.partialEqAux cmpPartialEqInst s.val arr.val := rfl
+
+/-- `Slice.partialEqAux` with a homogeneous `PartialEq` always succeeds, and for U8
+    the result `b = true ↔ xs = ys`. -/
+private theorem partialEqAux_U8_spec :
+    ∀ (xs ys : List Std.U8),
+    ∃ b : Bool, Slice.partialEqAux core.cmp.PartialEqU8 xs ys = ok b ∧
+      (b = true ↔ xs = ys) := by
+  intro xs
+  induction xs with
+  | nil =>
+    intro ys; cases ys with
+    | nil => exact ⟨true, by unfold Slice.partialEqAux; rfl, by simp⟩
+    | cons _ _ => exact ⟨false, by unfold Slice.partialEqAux; rfl, by simp⟩
+  | cons a xs ih =>
+    intro ys; cases ys with
+    | nil => exact ⟨false, by unfold Slice.partialEqAux; rfl, by simp⟩
+    | cons c ys =>
+      unfold Slice.partialEqAux
+      simp only [core.cmp.PartialEqU8, liftFun2, core.cmp.impls.PartialEqU8.eq, bind_tc_ok]
+      by_cases hab : a = c
+      · subst hab
+        simp only [decide_true, ↓reduceIte]
+        obtain ⟨r, hr, hiff⟩ := ih ys
+        exact ⟨r, hr, by constructor <;> intro h <;> simp_all⟩
+      · simp only [show decide (a = c) = false from by simp [hab]]
+        exact ⟨false, rfl, by simp [hab]⟩
+
+/-- `Slice.Insts.CoreCmpPartialEqArray.eq` with `PartialEqU8` always succeeds and
+    `b = true ↔ s.val = arr.val`. -/
+@[step]
+theorem Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec
+    {N : Std.Usize}
+    (s : Slice Std.U8) (arr : Array Std.U8 N) :
+    Slice.Insts.CoreCmpPartialEqArray.eq core.cmp.PartialEqU8 s arr
+    ⦃ b => b = true ↔ s.val = arr.val ⦄ := by
+  simp only [Slice.Insts.CoreCmpPartialEqArray.eq_eq]
+  have ⟨b, hb, hiff⟩ := partialEqAux_U8_spec s.val arr.val
+  rw [hb]
+  simp only [WP.spec_ok]
+  exact hiff
 
 /-- Implementation helper for `core.array.from_fn`
     (`[core::array::from_fn]`,
@@ -491,26 +530,9 @@ def
   Result (core.iter.adapters.enumerate.Enumerate (core.iter.adapters.enumerate.Enumerate I)) :=
     core.iter.traits.iterator.Iterator.enumerate.default self
 
-/-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::take]:
-    Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::take] -/
-@[rust_fun
-  "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::take"]
-def
-  core.iter.adapters.enumerate.Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.take
-  {I : Type} {Clause0_Item : Type} (_traitsiteratorIteratorInst :
-  core.iter.traits.iterator.Iterator I Clause0_Item) :
-  core.iter.adapters.enumerate.Enumerate I → Std.Usize → Result
-    (core.iter.adapters.take.Take (core.iter.adapters.enumerate.Enumerate I)) :=
-  fun iter n => ok ⟨iter, n⟩
-
 /-- [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<(usize, Clause0_Item)> for core::iter::adapters::enumerate::Enumerate<I>}::map]:
     Source: '/rustc/library/core/src/iter/adapters/enumerate.rs', lines 62:0-64:16
-    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map]
-
-    Concrete model: wraps the enumerate iterator and mapping function into a `Map`
-    adapter struct.  No elements are consumed; iteration is deferred to
-    `Map.collect` or `Map.next`. -/
+    Name pattern: [core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map] -/
 @[rust_fun
   "core::iter::adapters::enumerate::{core::iter::traits::iterator::Iterator<core::iter::adapters::enumerate::Enumerate<@I>, (usize, @Clause0_Item)>}::map"]
 def
@@ -539,13 +561,7 @@ def
 
 /-- [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}::collect]:
     Source: '/rustc/library/core/src/iter/adapters/map.rs', lines 99:0-101:27
-    Name pattern: [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect]
-
-    Concrete model: drives the underlying iterator `I` to completion, applies
-    `FnMut.call_mut` to each element to produce a `B`, then collects all `B`
-    items into `B1` via `FromIterator.from_iter`.  Internally constructs an
-    `Iterator (Map I F) B` instance whose `next` composes the underlying
-    iterator's `next` with the mapping function. -/
+    Name pattern: [core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect] -/
 @[rust_fun
   "core::iter::adapters::map::{core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>}::collect"]
 def core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
@@ -744,18 +760,12 @@ theorem core.option.Option.ok_or_spec {T E : Type} (o : Option T) (e : E) :
 
 /-- [core::option::{core::clone::Clone for core::option::Option<T>}::clone]:
     Source: '/rustc/library/core/src/option.rs', lines 2261:4-2261:27
-    Name pattern: [core::option::{core::clone::Clone<core::option::Option<@T>>}::clone]
-
-    Concrete model of Rust's `<Option<T> as Clone>::clone`:
-      `None.clone()     = None`
-      `Some(x).clone()  = Some(x.clone())` -/
+    Name pattern: [core::option::{core::clone::Clone<core::option::Option<@T>>}::clone] -/
 @[rust_fun
   "core::option::{core::clone::Clone<core::option::Option<@T>>}::clone"]
-def core.option.Option.Insts.CoreCloneClone.clone
+axiom core.option.Option.Insts.CoreCloneClone.clone
   {T : Type} (cloneCloneInst : core.clone.Clone T) :
   Option T → Result (Option T)
-  | some x => do let x' ← cloneCloneInst.clone x; ok (some x')
-  | none => ok none
 
 /-- [core::option::{core::default::Default for core::option::Option<T>}::default]:
     Source: '/rustc/library/core/src/option.rs', lines 2297:4-2297:29
@@ -870,51 +880,32 @@ theorem core.result.Result.unwrap_or_spec {T E : Type}
 
 /-- [core::result::{core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, E>}::branch]:
     Source: '/rustc/library/core/src/result.rs', lines 2172:4-2172:64
-    Name pattern: [core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch]
-
-    Concrete model of Rust's `<Result<T,E> as Try>::branch`: given a
-    `core.result.Result T E`, returns `ControlFlow.Continue v` for `Ok v`
-    and `ControlFlow.Break (Err e)` for `Err e`.  The outer `Result` is
-    always `ok` (the call never panics). -/
+    Name pattern: [core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch] -/
 @[rust_fun
-  "core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>>}::branch"]
+  "core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch"]
 def core.result.Result.Insts.CoreOpsTry_traitTry.branch
   {T : Type} {E : Type} :
   core.result.Result T E → Result (core.ops.control_flow.ControlFlow
     (core.result.Result core.convert.Infallible E) T) :=
   fun r =>
     match r with
-    | core.result.Result.Ok v =>
-      ok (core.ops.control_flow.ControlFlow.Continue v)
-    | core.result.Result.Err e =>
-      ok (core.ops.control_flow.ControlFlow.Break
-        (core.result.Result.Err e))
+    | .Ok v => ok (.Continue v)
+    | .Err e => ok (.Break (.Err e))
 
-@[simp, step_simps]
-theorem core.result.Result.Insts.CoreOpsTry_traitTryTResultInfallibleE.branch_spec
-  {T : Type} {E : Type} (r : core.result.Result T E) :
-  (core.result.Result.Insts.CoreOpsTry_traitTry.branch r)
-    = match r with
-      | core.result.Result.Ok v =>
-        ok (core.ops.control_flow.ControlFlow.Continue v)
-      | core.result.Result.Err e =>
-        ok (core.ops.control_flow.ControlFlow.Break
-          (core.result.Result.Err e)) := by
-  cases r <;> simp [core.result.Result.Insts.CoreOpsTry_traitTry.branch]
-
-
+/-- **Spec theorem for `Try::branch` on `Result`** (the desugaring of `?`):
+`Ok v` continues with `v`; `Err e` breaks with the residual `Err e`. -/
+@[step]
+theorem core.result.Result.Insts.CoreOpsTry_traitTry.branch_spec
+    {T E : Type} (r : core.result.Result T E) :
+    core.result.Result.Insts.CoreOpsTry_traitTry.branch r ⦃ cf =>
+      cf = match r with
+        | .Ok v => .Continue v
+        | .Err e => .Break (.Err e) ⦄ := by
+  rcases r with v | e <;> simp [core.result.Result.Insts.CoreOpsTry_traitTry.branch]
 
 /-- [core::result::{core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, F>}::from_residual]:
     Source: '/rustc/library/core/src/result.rs', lines 2187:4-2187:70
-    Name pattern: [core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual]
-
-    Concrete model of Rust's
-    `<Result<T,F> as FromResidual<Result<Infallible, E>>>::from_residual`:
-    given a residual `Err e` (with `e : E`), apply the `From<F, E>` conversion
-    to obtain `f : F`, and return `Err f` wrapped in the outer `Result`.
-    The `Ok x` branch is logically impossible because `core::convert::Infallible`
-    is the empty type, so `x : Infallible` admits no constructor.  The outer
-    `Result` is `ok` whenever `convertFromInst.from_` succeeds. -/
+    Name pattern: [core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual] -/
 @[rust_fun
   "core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual"]
 def
@@ -944,17 +935,18 @@ theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.f
 (`[core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]`,
 Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42).
 
-Lexicographic comparison of two lists, delegating per-element to the `Ord`
-instance: the first non-`Equal` element comparison decides the result; if one
-list is a prefix of the other, the shorter list compares as `Less`. -/
-private def Slice.lexCmpAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
+Lexicographic comparison of two element lists, delegating per-element to the
+`Ord` instance and short-circuiting on the first non-`eq` result. -/
+def Slice.lexCmpAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
     List T → List T → Result Ordering
   | [], [] => ok .eq
   | [], _ :: _ => ok .lt
   | _ :: _, [] => ok .gt
   | a :: xs, b :: ys => do
     let o ← cmpOrdInst.cmp a b
-    if o = Ordering.eq then Slice.lexCmpAux cmpOrdInst xs ys else ok o
+    match o with
+    | .eq => Slice.lexCmpAux cmpOrdInst xs ys
+    | o => ok o
 
 /-- [core::slice::cmp::{core::cmp::Ord for [T]}::cmp]:
     Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42
@@ -1077,11 +1069,7 @@ theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_sp
 
 /-- [core::slice::iter::{core::iter::traits::iterator::Iterator<&'a (T)> for core::slice::iter::Iter<'a, T>}::map]:
     Source: '/rustc/library/core/src/slice/iter/macros.rs', lines 153:8-153:45
-    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map]
-
-    Concrete model: wraps the slice iterator and mapping function into a `Map`
-    adapter struct.  No elements are consumed; iteration is deferred to
-    `Map.collect` or `Map.next`. -/
+    Name pattern: [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map] -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::map"]
 def core.slice.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.map
@@ -1172,7 +1160,7 @@ end core.slice.Slice
 Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
 
 Resolve a `RangeBounds` lower bound to a concrete start index. -/
-private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
+def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
   match b with
   | .Included i => i.val
   | .Excluded i => i.val + 1
@@ -1183,7 +1171,7 @@ private def Slice.copyWithinStart (b : core.ops.range.Bound Std.Usize) : Nat :=
 Source: '/rustc/library/core/src/slice/mod.rs', lines 4354:4-4356:16).
 
 Resolve a `RangeBounds` upper bound to a concrete end index (`len` when open). -/
-private def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
+def Slice.copyWithinEnd (b : core.ops.range.Bound Std.Usize) (len : Nat) : Nat :=
   match b with
   | .Included i => i.val + 1
   | .Excluded i => i.val
@@ -1453,7 +1441,7 @@ theorem alloc.slice.Slice.concat_eq
 Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
 
 Package an element list as a `Vec`, failing if it would exceed `Usize.max`. -/
-private def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
+def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
   if h : l.length ≤ Std.Usize.max then ok ⟨l, h⟩ else fail .panic
 
 /-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
@@ -1462,7 +1450,7 @@ Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
 
 Flatten a list of borrowable chunks: borrow each `V` to a `Slice T`, clone its
 elements, and concatenate the results into one element list. -/
-private def Slice.concatListAux {T V : Type} (corecloneCloneInst : core.clone.Clone T)
+def Slice.concatListAux {T V : Type} (corecloneCloneInst : core.clone.Clone T)
     (coreborrowBorrowVSliceInst : core.borrow.Borrow V (Slice T)) :
     List V → Result (List T)
   | [] => ok []
@@ -1589,26 +1577,18 @@ theorem alloc.vec.Vec.truncate_spec
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::as_slice]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 1733:4-1733:40
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::as_slice]
-
-    Concrete model of Rust's `Vec::as_slice`: returns the contiguous slice
-    view of the vector's elements.  The Aeneas representation of `Slice T`
-    and `alloc.vec.Vec T` share the same underlying `List T` together with
-    the `length ≤ Usize.max` proof, so this is precisely the `deref`
-    coercion (`⟨v.val, v.property⟩`).  The outer `Result` is always `ok`
-    (the call never panics). -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::as_slice] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::as_slice"]
 def alloc.vec.Vec.as_slice
-  {T : Type} (_A : Type) (v : alloc.vec.Vec T) : Result (Slice T) :=
-  ok ⟨v.val, v.property⟩
+  {T : Type} (A : Type) : alloc.vec.Vec T → Result (Slice T) :=
+  fun v => ok ⟨v.val, v.property⟩
 
-/-- **Spec theorem for `alloc.vec.Vec.as_slice`**: the call always succeeds
-    and returns the slice whose underlying list is exactly the vector's
-    underlying list. -/
-@[simp, step_simps, step]
+/-- **Spec theorem for `Vec::as_slice`**: the slice view shares the vector's
+elements. -/
+@[step]
 theorem alloc.vec.Vec.as_slice_spec
     {T : Type} (A : Type) (v : alloc.vec.Vec T) :
-    alloc.vec.Vec.as_slice A v ⦃ (s : Slice T) => s.val = v.val ⦄ := by
+    alloc.vec.Vec.as_slice A v ⦃ s => s.val = v.val ⦄ := by
   simp [alloc.vec.Vec.as_slice]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::remove]:
@@ -1678,21 +1658,18 @@ theorem alloc.vec.Vec.clear_spec
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::is_empty]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2956:4-2956:40
-    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::is_empty]
-
-    Concrete model of Rust's `Vec::is_empty`: returns `true` iff the vector
-    has no elements.  The outer `Result` is always `ok` (the call never panics). -/
+    Name pattern: [alloc::vec::{alloc::vec::Vec<@T>}::is_empty] -/
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::is_empty"]
 def alloc.vec.Vec.is_empty
-  {T : Type} (_A : Type) (v : alloc.vec.Vec T) : Result Bool :=
-  ok (v.length = 0)
+  {T : Type} (A : Type) : alloc.vec.Vec T → Result Bool :=
+  fun v => ok v.val.isEmpty
 
-@[simp, step_simps, step]
+/-- **Spec theorem for `Vec::is_empty`**: `true` iff the underlying list is empty. -/
+@[step]
 theorem alloc.vec.Vec.is_empty_spec
     {T : Type} (A : Type) (v : alloc.vec.Vec T) :
-    alloc.vec.Vec.is_empty A v ⦃ b => b = (v.length = 0) ⦄ := by
-  simp only [alloc.vec.Vec.is_empty, alloc.vec.Vec.length,
-    List.length_eq_zero_iff, eq_iff_iff, WP.spec_ok, decide_eq_true_eq]
+    alloc.vec.Vec.is_empty A v ⦃ b => b = v.val.isEmpty ⦄ := by
+  simp [alloc.vec.Vec.is_empty]
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::split_off]:
     Source: '/rustc/library/alloc/src/vec/mod.rs', lines 2989:4-2991:17
@@ -1758,94 +1735,20 @@ axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.chunk
 
 /-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::remaining]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2891:4-2891:32
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining]
-
-    Concrete model of Rust's `<&[u8] as Buf>::remaining`: returns the length of
-    the slice (the number of bytes that can still be read).  The outer `Result`
-    is always `ok` (the call never panics). -/
+    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining] -/
 @[rust_fun
   "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining"]
-def Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
-  : Slice Std.U8 → Result Std.Usize :=
-  fun s => ok (Slice.len s)
-
-/-- **Spec theorem for `<&[u8] as Buf>::remaining`**: the call always succeeds
-    and returns the slice's length as a `Usize`. -/
-@[simp, step_simps]
-theorem Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining_spec
-    (s : Slice Std.U8) :
-    Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining s
-      ⦃ (n : Std.Usize) => n = Slice.len s ⦄ := by
-  simp [Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining]
-
-
-
+axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
+  : Slice Std.U8 → Result Std.Usize
 
 /-- [libcrux_hmac::hmac]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-hmac-0.0.6/src/hmac.rs', lines 51:0-51:90
-    Name pattern: [libcrux_hmac::hmac]
-
-    Concrete model of Rust's `libcrux_hmac::hmac`: given an HMAC algorithm,
-    a key (`Slice U8`), a payload (`Slice U8`), and an optional tag length
-    (`Option Usize`), produces the HMAC tag as a `Vec<u8>`.
-
-    The underlying cryptographic computation is kept uninterpreted: the
-    result is `spec.hmac_vec alg key.val payload.val tag_len` (see
-    `Spqr.Aux.LibcruxHmac.HmacBytes`), whose bytes come from an opaque raw
-    function but whose *length* is fully specified, mirroring Rust's
-    `tag_length.unwrap_or(tag_size(alg))`:
-
-    * `tag_len = some l` ↦ the tag has exactly `l` bytes;
-    * `tag_len = none`   ↦ the tag has the digest length of the chosen
-      `libcrux_hmac::Algorithm` (`Sha1 ↦ 20`, `Sha256 ↦ 32`, `Sha384 ↦ 48`,
-      `Sha512 ↦ 64`, cf. `Algorithm.hash_len` in
-      `Spqr.Aux.LibcruxHmac.HashLen`).
-
-    The outer `Result` is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_hmac::hmac] -/
 @[rust_fun "libcrux_hmac::hmac"]
-def libcrux_hmac.hmac
+axiom libcrux_hmac.hmac
   :
   libcrux_hmac.Algorithm → Slice Std.U8 → Slice Std.U8 → Option Std.Usize
-    → Result (alloc.vec.Vec Std.U8) :=
-  fun alg key payload tag_len =>
-    ok (spec.hmac_vec alg key.val payload.val tag_len)
-
-/-- **Spec theorem for `libcrux_hmac.hmac`**: the call always succeeds and
-    returns the modelled HMAC tag `spec.hmac_vec alg key.val payload.val
-    tag_len`; in particular its byte length is the effective tag length
-    `spec.hmac_tag_len alg tag_len` (the requested `tag_len` when present,
-    and otherwise the digest length `alg.hash_len` of the hash algorithm). -/
-@[simp, step_simps]
-theorem libcrux_hmac.hmac_spec
-    (alg : libcrux_hmac.Algorithm) (key payload : Slice Std.U8)
-    (tag_len : Option Std.Usize) :
-    libcrux_hmac.hmac alg key payload tag_len ⦃ (v : alloc.vec.Vec Std.U8) =>
-      v = spec.hmac_vec alg key.val payload.val tag_len ∧
-      v.val.length = spec.hmac_tag_len alg tag_len ⦄ := by
-  simp [libcrux_hmac.hmac]
-
-/-- **Spec theorem for `libcrux_hmac.hmac` with `tag_length = None`**: the
-    returned tag has exactly the digest length of the hash algorithm
-    (`Sha1 ↦ 20`, `Sha256 ↦ 32`, `Sha384 ↦ 48`, `Sha512 ↦ 64`), mirroring
-    Rust's default `tag_size(alg)`. -/
-@[step]
-theorem libcrux_hmac.hmac_none_spec
-    (alg : libcrux_hmac.Algorithm) (key payload : Slice Std.U8) :
-    libcrux_hmac.hmac alg key payload none ⦃ (v : alloc.vec.Vec Std.U8) =>
-      v.val.length = alg.hash_len ⦄ := by
-  simp [libcrux_hmac.hmac]
-
-/-- **Spec theorem for `libcrux_hmac.hmac` with `tag_length = Some l`**: the
-    returned tag has exactly the requested length `l`. -/
-@[step]
-theorem libcrux_hmac.hmac_some_spec
-    (alg : libcrux_hmac.Algorithm) (key payload : Slice Std.U8)
-    (l : Std.Usize) :
-    libcrux_hmac.hmac alg key payload (some l) ⦃ (v : alloc.vec.Vec Std.U8) =>
-      v.val.length = l.val ⦄ := by
-  simp [libcrux_hmac.hmac]
-
-
+    → Result (alloc.vec.Vec Std.U8)
 
 /-- **Axiom claim:** If `key.length ≤ u32::MAX` and `data.length ≤ u32::MAX`, then
 `libcrux_hmac::hmac(Sha256, key, data, Some(32))` is panic-free and returns an
@@ -1898,24 +1801,9 @@ axiom libcrux_hmac.hmac_sha256_tag32_spec
 
 /-- [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
-    Name pattern: [libcrux_ml_kem::constants::SHARED_SECRET_SIZE]
-
-    Concrete model of Rust's `libcrux_ml_kem::constants::SHARED_SECRET_SIZE`:
-    the (fixed) byte length of the ML-KEM shared secret, which is `32` (as
-    defined in the upstream `libcrux-ml-kem-0.0.7/src/constants.rs`).  The
-    outer `Result` is always `ok` (the constant never panics). -/
+    Name pattern: [libcrux_ml_kem::constants::SHARED_SECRET_SIZE] -/
 @[rust_const "libcrux_ml_kem::constants::SHARED_SECRET_SIZE"]
-def libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize :=
-  ok 32#usize
-
-/-- **Spec theorem for `libcrux_ml_kem.constants.SHARED_SECRET_SIZE`**:
-    the constant always succeeds and returns `32#usize`. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.constants.SHARED_SECRET_SIZE_spec :
-    libcrux_ml_kem.constants.SHARED_SECRET_SIZE
-      ⦃ (n : Std.Usize) => n = 32#usize ⦄ := by
-  simp [libcrux_ml_kem.constants.SHARED_SECRET_SIZE]
-
+axiom libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}::fmt]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
@@ -1937,119 +1825,38 @@ axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<LEN>}::len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 174:4-174:31
-    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len]
-
-    Concrete model of Rust's `Ciphertext2::<LEN>::len`: returns the const
-    generic `LEN`, i.e. the (fixed) byte length of the ciphertext.  The outer
-    `Result` is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len"]
-def libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
-  (LEN : Std.Usize) : Result Std.Usize := ok LEN
-
-/-- **Spec theorem for `Ciphertext2::<LEN>::len`**: the call always succeeds
-    and returns the const generic `LEN`. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len_spec
-    (LEN : Std.Usize) :
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len LEN
-      ⦃ (n : Std.Usize) => n = LEN ⦄ := by
-  simp [libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len]
-
+axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
+  (LEN : Std.Usize) : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk1_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 26:8-26:39
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk1_len]
-
-    Concrete model of Rust's `mlkem768::incremental::pk1_len`: returns the
-    (fixed) byte length of the first part of the ML-KEM 768 incremental
-    public key, which is `64` (as witnessed by the extracted type
-    `KeyPairCompressedBytes.pk1 : Array U8 64#usize`).  The outer `Result`
-    is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk1_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk1_len"]
-def libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize :=
-  ok 64#usize
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.pk1_len`**:
-    the call always succeeds and returns `64#usize`. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.pk1_len_spec :
-    libcrux_ml_kem.mlkem768.incremental.pk1_len
-      ⦃ (n : Std.Usize) => n = 64#usize ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.pk1_len]
+axiom libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk2_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 31:8-31:39
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk2_len]
-
-    Concrete model of Rust's `mlkem768::incremental::pk2_len`: returns the
-    (fixed) byte length of the second part of the ML-KEM 768 incremental
-    public key, which is `1152` (as witnessed by the extracted type
-    `KeyPairCompressedBytes.pk2 : Array U8 1152#usize`).  The outer `Result`
-    is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk2_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk2_len"]
-def libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize :=
-  ok 1152#usize
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.pk2_len`**:
-    the call always succeeds and returns `1152#usize`. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.pk2_len_spec :
-    libcrux_ml_kem.mlkem768.incremental.pk2_len
-      ⦃ (n : Std.Usize) => n = 1152#usize ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.pk2_len]
+axiom libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encaps_state_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 59:8-59:48
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encaps_state_len]
-
-    Concrete model of Rust's `mlkem768::incremental::encaps_state_len`: returns
-    the (fixed) byte length of the ML-KEM 768 incremental encapsulation state,
-    which is `2080` (as witnessed by the extracted type of
-    `encapsulate2`, whose first argument is `Array U8 2080#usize`).  The outer
-    `Result` is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encaps_state_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encaps_state_len"]
-def libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize :=
-  ok 2080#usize
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.encaps_state_len`**:
-    the call always succeeds and returns `2080#usize`. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.encaps_state_len_spec :
-    libcrux_ml_kem.mlkem768.incremental.encaps_state_len
-      ⦃ (n : Std.Usize) => n = 2080#usize ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.encaps_state_len]
+axiom libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 407:8-407:111
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2]
-
-    Concrete model of Rust's `mlkem768::incremental::encapsulate2`: given the
-    encapsulation state (`Array U8 2080`) and the second part of the public
-    key (`Array U8 1152`), produces a `Ciphertext2<128>` of fixed byte length
-    `128`.  Since the underlying cryptographic computation is opaque, we model
-    the result by returning the `default` inhabitant of
-    `Ciphertext2 128#usize` (i.e. a ciphertext whose inner `Array U8 128`
-    is the all-zero array).  The outer `Result` is always `ok` (the call
-    never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate2"]
-def libcrux_ml_kem.mlkem768.incremental.encapsulate2
+axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
   :
   Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
-    (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :=
-  fun _ _ => ok ⟨default⟩
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.encapsulate2`**:
-    the call always succeeds and returns the `default` inhabitant of
-    `Ciphertext2 128#usize`, i.e. a ciphertext whose inner `Array U8 128` is
-    the all-zero array. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.encapsulate2_spec
-    (st : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
-    libcrux_ml_kem.mlkem768.incremental.encapsulate2 st pk2
-      ⦃ (ct : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) =>
-        ct = ⟨default⟩ ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.encapsulate2]
+    (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
@@ -2067,7 +1874,6 @@ axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
     (seed : Array Std.U8 64#usize) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed
       ⦃ fun kp => kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄
-
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
@@ -2108,19 +1914,9 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_spec
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1, WP.spec_ok]
   exact ⟨Array.length_eq _, rfl⟩
 
-
-
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 275:12-275:49
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]
-
-    Concrete model of Rust's `KeyPairCompressedBytes::pk2`: returns the second
-    part of the ML-KEM 768 incremental compressed public key, a fixed-size
-    array of `1152` bytes.  Since `KeyPairCompressedBytes` is an opaque
-    (axiomatised) type whose contents we cannot inspect, we model the result
-    by returning the `default` inhabitant of `Array U8 1152#usize` (i.e. the
-    all-zero array).  The outer `Result` is always `ok` (the call never
-    panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2"]
 def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
@@ -2158,15 +1954,7 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_spec
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 283:12-283:54
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]
-
-    Concrete model of Rust's `KeyPairCompressedBytes::sk`: returns the secret
-    key part of the ML-KEM 768 incremental compressed key pair, a fixed-size
-    array of `2400` bytes.  Since `KeyPairCompressedBytes` is an opaque
-    (axiomatised) type whose contents we cannot inspect, we model the result
-    by returning the `default` inhabitant of `Array U8 2400#usize` (i.e. the
-    all-zero array).  The outer `Result` is always `ok` (the call never
-    panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk"]
 def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
@@ -2192,107 +1980,35 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]
-
-    Concrete model of Rust's `mlkem768::incremental::validate_pk_bytes`: given
-    the two byte slices representing the two parts of an ML-KEM 768 incremental
-    public key, performs validation and returns either `Ok(())` on success or
-    `Err(Error)` on failure.  Since the underlying cryptographic validation is
-    opaque, we model the result by always returning `Ok ()` (i.e. validation
-    succeeds).  The outer `Result` is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes"]
-def libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+axiom libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   :
   Slice Std.U8 → Slice Std.U8 → Result (core.result.Result Unit
-    libcrux_ml_kem.ind_cca.incremental.types.Error) :=
-  fun _ _ => ok (core.result.Result.Ok ())
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes`**:
-    the call always succeeds and returns `Ok ()` (validation succeeds). -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes_spec
-    (pk1 pk2 : Slice Std.U8) :
-    libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes pk1 pk2
-      ⦃ (r : core.result.Result Unit libcrux_ml_kem.ind_cca.incremental.types.Error) =>
-        r = core.result.Result.Ok () ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes]
+    libcrux_ml_kem.ind_cca.incremental.types.Error)
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 344:8-349:39
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate1]
-
-    Concrete model of Rust's `mlkem768::incremental::encapsulate1`: given the
-    first part of the public key (`pk1 : Slice U8`), a 32-byte randomness
-    seed, and the two mutable byte slices representing the encapsulation
-    state and shared secret buffer (`state`, `ss`), produces a
-    `Ciphertext1<960>` of fixed byte length `960` wrapped in an outer
-    `Result`, together with the (unchanged) `state` and `ss` slices.
-    Since the underlying cryptographic computation is opaque, we model
-    the result by returning the `default` inhabitant of
-    `Ciphertext1 960#usize` (i.e. a ciphertext whose inner `Array U8 960`
-    is the all-zero array), wrapped in `Ok`, and threading the input
-    `state` and `ss` slices through unchanged.  The outer `Result` is
-    always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate1] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate1"]
-def libcrux_ml_kem.mlkem768.incremental.encapsulate1
+axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1
   :
   Slice Std.U8 → Array Std.U8 32#usize → Slice Std.U8 → Slice Std.U8 →
     Result ((core.result.Result
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
     libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice
-    Std.U8)) :=
-  fun _pk1 _randomness state ss =>
-    ok (core.result.Result.Ok ⟨default⟩, state, ss)
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.encapsulate1`**:
-    the call always succeeds and returns
-    `(Ok ⟨default⟩, state, ss)`, i.e. an all-zero `Ciphertext1 960#usize`
-    wrapped in `Ok`, together with the input `state` and `ss` slices
-    unchanged. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.encapsulate1_spec
-    (pk1 : Slice Std.U8) (randomness : Array Std.U8 32#usize)
-    (state ss : Slice Std.U8) :
-    libcrux_ml_kem.mlkem768.incremental.encapsulate1 pk1 randomness state ss
-      ⦃ (res : (core.result.Result
-          (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
-          libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice Std.U8)) =>
-        res = (core.result.Result.Ok
-                (⟨default⟩ : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize),
-              state, ss) ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.encapsulate1]
+    Std.U8))
 
 /-- [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]
-
-    Concrete model of Rust's `mlkem768::incremental::decapsulate_compressed_key`:
-    given the secret key (`Array U8 2400`), and the two ciphertext parts
-    `Ciphertext1<960>` and `Ciphertext2<128>`, produces the shared secret as
-    a fixed-size array of `32` bytes.  Since the underlying cryptographic
-    computation is opaque, we model the result by returning the `default`
-    inhabitant of `Array U8 32#usize` (i.e. the all-zero array).  The outer
-    `Result` is always `ok` (the call never panics). -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key"]
-def libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
+axiom libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
   :
   Array Std.U8 2400#usize →
     libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize →
     libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize → Result
-    (Array Std.U8 32#usize) :=
-  fun _ _ _ => ok default
-
-/-- **Spec theorem for `libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key`**:
-    the call always succeeds and returns the `default` inhabitant of
-    `Array U8 32#usize`, i.e. the all-zero array. -/
-@[simp, step_simps]
-theorem libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key_spec
-    (sk : Array Std.U8 2400#usize)
-    (ct1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
-    (ct2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
-    libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key sk ct1 ct2
-      ⦃ (a : Array Std.U8 32#usize) => a = default ⦄ := by
-  simp [libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key]
+    (Array Std.U8 32#usize)
 
 /-- [prost::encoding::bool::encode]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 263:12-263:82
@@ -2794,43 +2510,13 @@ axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.clear
 
 /-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::decode]:
     Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
-    Visibility: public
-
-    Concrete model of Rust's `<PqRatchetState as prost::Message>::decode`:
-    given a buffer, constructs a default `PqRatchetState` via the supplied
-    `Default` instance and returns `Ok` wrapping that default value.
-
-    This models the successful-decode path of prost's `Message::decode`
-    default method, which creates `Self::default()`, merges the buffer
-    contents into it, and returns the result.  Since the deserialization
-    logic (wire-format parsing, field merging) is opaque in our model,
-    we return the default value directly.  The outer `Result` is always
-    `ok` (the call never panics). -/
-def proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.decode
+    Visibility: public -/
+axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.decode
   {T1 : Type} (coredefaultDefaultPqRatchetStateInst : core.default.Default
   proto.pq_ratchet.PqRatchetState) (bytesbufbuf_implBufInst :
   bytes.buf.buf_impl.Buf T1) :
   T1 → Result (core.result.Result proto.pq_ratchet.PqRatchetState
-    prost.error.DecodeError) :=
-  fun _buf => do
-    let default_val ← coredefaultDefaultPqRatchetStateInst.default
-    ok (core.result.Result.Ok default_val)
-
-/-- **Spec theorem for `PqRatchetState::decode`**: the call always succeeds
-    and returns `Ok default_val`, where `default_val` is the value obtained
-    from the `Default` instance.  The per-field contents are definitional in
-    the `Default` instance. -/
-@[simp, step_simps]
-theorem proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.decode_eq
-    {T1 : Type} (coredefaultDefaultPqRatchetStateInst : core.default.Default
-    proto.pq_ratchet.PqRatchetState) (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T1)
-    (buf : T1) :
-    proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.decode
-      coredefaultDefaultPqRatchetStateInst bytesbufbuf_implBufInst buf =
-    (do
-      let default_val ← coredefaultDefaultPqRatchetStateInst.default
-      ok (core.result.Result.Ok default_val)) := rfl
+    prost.error.DecodeError)
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::encode_raw]:
     Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57
@@ -3972,136 +3658,29 @@ axiom
   T1 → Result (core.result.Result proto.pq_ratchet.chain.epoch.EpochDirection
     prost.error.DecodeError)
 
+namespace spqr.kdf
+
+/- See `hkdf_to_slice_spec` in `Spqr/Specs/Kdf/HkdfToSlice.lean`: this function implements
+RFC 5869. -/
+
 /-- [spqr::kdf::hkdf_to_slice]:
     Source: 'src/kdf.rs', lines 14:0-18:1
     Visibility: public -/
-opaque kdf.hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
+opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
     Result (Slice Std.U8)
 
-/-- RFC 5869 HKDF-SHA256:
+end spqr.kdf
 
-If `okm.length ≤ 255 * 32` then `kdf::hkdf_to_slice(salt, ikm, info, okm)` is panic-free and returns
-a slice of length `okm.length`.
-
-The function `spqr::kdf::hkdf_to_slice` relies on:
-- `hkdf::Hkdf::extract` which implements the RFC5869 HKDF-Extract operation,
-- `hkdf::Hkdf::expand` which implements the RFC5869 HKDF-Expand operation,
-- `sha2::Sha256`, the SHA-256 hasher.
-
-https://datatracker.ietf.org/doc/html/rfc5869 -/
-@[step]
-axiom kdf.hkdf_to_slice_spec (salt ikm info okm : Slice U8) (h : okm.length ≤ 255 * 32) :
-    kdf.hkdf_to_slice salt ikm info okm ⦃ (out : Slice U8) => out.length = okm.length ⦄
-
-/-- Forward declaration of `Poly.lagrange_interpolate` (defined in Funs.lean).
-    Takes a slice of points and returns the interpolated polynomial. -/
-axiom decodedMsg_lagrangeInterpolate
-  : Slice encoding.polynomial.Pt → Result encoding.polynomial.Poly
-
-/-- Forward declaration of `Poly.compute_at` (defined in Funs.lean).
-    Evaluates the polynomial at the given GF16 point. -/
-axiom decodedMsg_computeAt
-  : encoding.polynomial.Poly → encoding.gf.GF16 → Result encoding.gf.GF16
-
-/-- Helper: find y-coordinate for a `Pt` with matching `x.value` in a list of `Pt`s.
-    Models `binary_search` on `SortedSet<Pt>` where `Pt` equality is by `x.value`. -/
-private def decodedMsg_findY (pts : List encoding.polynomial.Pt) (x_val : Std.U16)
-    : Option encoding.gf.GF16 :=
-  match pts.find? (fun pt => pt.x.value == x_val) with
-  | some pt => some pt.y
-  | none => none
-
-/-- Helper: compute `necessary_points` as a pure `Nat`, mirroring the monadic
-    `PolyDecoder.necessary_points`. -/
-private def decodedMsg_necessaryPts (pts_needed : Nat) (poly : Nat) : Nat :=
-  let ppp := pts_needed / 16
-  let pr := pts_needed % 16
-  if poly < pr then ppp + 1 else ppp
-
-/-- Helper: first loop — check all 16 polynomials have enough points and collect
-    their truncated point slices.  Returns `none` if any polynomial is short;
-    otherwise `some` of the 16 collected slices. -/
-private def decodedMsg_collectPoints
-    (self : encoding.polynomial.PolyDecoder)
-    (i : Nat) (acc : List (Slice encoding.polynomial.Pt)) :
-    Result (Option (List (Slice encoding.polynomial.Pt))) :=
-  if h : i ≥ self.pts.val.length then ok (some acc)
-  else do
-    let np := decodedMsg_necessaryPts self.pts_needed.val i
-    let ss := self.pts.val[i]'(by omega)
-    if ss.val.length < np then ok none
-    else
-      let slice : Slice encoding.polynomial.Pt :=
-        ⟨ss.val.take np, by have := ss.property; simp [List.length_take]; omega⟩
-      decodedMsg_collectPoints self (i + 1) (acc ++ [slice])
-termination_by self.pts.val.length - i
-decreasing_by omega
-
-/-- Helper: main reconstruction loop — for each index `i` in `[start, pts_needed)`,
-    look up or interpolate the y value and push two big-endian bytes onto `out`.
-
-    This mirrors the Rust loop at lines 935–962 of `polynomial.rs`.  The lazy
-    polynomial cache (`polys: [Option<Poly>; 16]`) is not threaded through
-    because `lagrange_interpolate` is a pure function: recomputing it gives
-    the same result, so omitting the cache affects only performance, not
-    the returned byte sequence. -/
-private noncomputable def decodedMsg_reconstruct
-    (self : encoding.polynomial.PolyDecoder)
-    (points_vecs : List (Slice encoding.polynomial.Pt))
-    (i : Nat) (out : alloc.vec.Vec Std.U8) :
-    Result (alloc.vec.Vec Std.U8) :=
-  if i ≥ self.pts_needed.val then ok out
-  else do
-    let poly := i % 16
-    let poly_idx := i / 16
-    -- Construct the x-coordinate as U16
-    let x_u16 : Std.U16 := UScalar.ofNatCore poly_idx (by sorry)
-    -- Look up in pts[poly] by x value, or interpolate
-    let y ← match self.pts.val[poly]? with
-      | none => fail .panic
-      | some ss =>
-        match decodedMsg_findY ss.val x_u16 with
-        | some y_found => ok y_found
-        | none =>
-          match points_vecs[poly]? with
-          | none => fail .panic
-          | some slice => do
-            let p ← decodedMsg_lagrangeInterpolate slice
-            decodedMsg_computeAt p { value := x_u16 }
-    -- Push two bytes: high byte then low byte of y.value
-    let hi_u16 ← y.value >>> 8#i32
-    let hi ← lift (UScalar.cast .U8 hi_u16)
-    let out1 ← alloc.vec.Vec.push out hi
-    let lo ← lift (UScalar.cast .U8 y.value)
-    let out2 ← alloc.vec.Vec.push out1 lo
-    decodedMsg_reconstruct self points_vecs (i + 1) out2
-termination_by self.pts_needed.val - i
+/-- [spqr::encoding::gf::mul2_u16]:
+    Source: 'src/encoding/gf.rs', lines 216:0-225:1 -/
+axiom encoding.gf.mul2_u16
+  : Std.U16 → Std.U16 → Std.U16 → Result (Std.U16 × Std.U16)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]:
     Source: 'src/encoding/polynomial.rs', lines 911:4-963:5
-    Visibility: public
-
-    Concrete model of Rust's `PolyDecoder::decoded_message`:
-    If `is_complete` is true, returns `none`.
-    Otherwise, checks that all 16 polynomials have enough points;
-    if any is short, returns `none`.
-    If all have enough, reconstructs the message by iterating over
-    `pts_needed` entries, looking up or interpolating y values, and
-    encoding each as two big-endian bytes into a `Vec<u8>`. -/
-noncomputable def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-  (self : encoding.polynomial.PolyDecoder) :
-  Result (Option (alloc.vec.Vec Std.U8)) := do
-  if self.is_complete then
-    ok none
-  else do
-    let collect_result ← decodedMsg_collectPoints self 0 []
-    match collect_result with
-    | none => ok none
-    | some points_vecs => do
-      let out := alloc.vec.Vec.new Std.U8
-      let result ← decodedMsg_reconstruct self points_vecs 0 out
-      ok (some result)
-
+    Visibility: public -/
+axiom encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+  : encoding.polynomial.PolyDecoder → Result (Option (alloc.vec.Vec Std.U8))
 
 /-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
     Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1 -/
@@ -4157,27 +3736,23 @@ def
   (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A):
     Result ((Option T) × (alloc.collections.vec_deque.into_iter.IntoIter T A)) :=
         let deq: alloc.collections.vec_deque.VecDeque T A := intoIter.inner
-        let len := deq.length
-        -- strictly speaking, we don't need to ITE here.
-        -- If length = 0 then (in `else`) newInner = inner and get? returns none, but
-        -- this way short-circuits computation
+        -- Growing-list model (consistent with pop_front / push_back):
+        -- `head` advances linearly, `length` decrements, no wrap-around.
         if (deq.length == 0#usize) then ok (none, intoIter)
         else
-          do
-            -- "`self[0]`, if it exists, is `buf[head]`. `head < buf.capacity()`, unless `buf.capacity() == 0` when `head == 0`."
-            -- [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#108]
-            -- Therefore, instead of modifying the buffer, the iteration over deq only needs
-            -- to cycle through the head index to yield all elements
-            let newhead ←
-              -- "if `len == 0`, the exact value of `head` is unimportant"  [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#112]
-              if len == 0#usize then ok deq.head
-              else (Usize.wrapping_add deq.head 1#usize) % len -- mod actually never fails, since len !=0
-            let newInner: alloc.collections.vec_deque.VecDeque T A:= {
-              buf := deq.buf,
-              head := newhead,
-              length := len
-            }
-            ok (deq.buf.get? deq.head, {inner:= newInner})
+          if hidx : deq.head < deq.buf.length then
+            do
+              let elem := deq.buf.val[deq.head.val]'hidx
+              let head' ← deq.head + 1#usize
+              let len'  ← deq.length - 1#usize
+              let newInner: alloc.collections.vec_deque.VecDeque T A := {
+                buf := deq.buf,
+                head := head',
+                length := len'
+              }
+              ok (some elem, {inner := newInner})
+          else
+            fail .panic
 
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49

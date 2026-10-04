@@ -25,4 +25,12 @@
  ["defsWithUnderscore",
   "spqr.encoding.polynomial.PolyEncoder.point_at_loop.instInhabitedPoint_spqr"],
  ["defsWithUnderscore",
-  "spqr.encoding.polynomial.PolyEncoder.point_at_loop.instInhabitedPoint"]]
+  "spqr.encoding.polynomial.PolyEncoder.point_at_loop.instInhabitedPoint"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels.intoPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels.fromPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.chunked.send_ek.serialize.KeysUnsampled.FunctionalModels.intoPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.chunked.send_ek.serialize.KeysUnsampled.FunctionalModels.fromPb"]]

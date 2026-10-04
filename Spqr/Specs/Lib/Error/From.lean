@@ -1,36 +1,60 @@
 /-
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Liao Zhang
+Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
+/-!
+# Spec theorem for
+# `spqr::{impl core::convert::From<spqr::encoding::EncodingError> for spqr::Error}::from`
 
-/-! # Spec theorem for
-`spqr::encoding::{impl core::convert::From<spqr::encoding::polynomial::PolynomialError>`
-`for spqr::encoding::EncodingError}::from`
+Lifts an encoding error into `spqr::Error` via the `Error::EncodingDecoding` constructor.
+A pure, infallible, injective constructor application.
 
-This is the `From` conversion that lifts a `polynomial::PolynomialError` into the wider
-`EncodingError` type, letting the `?` operator turn a polynomial-layer error into an
-encoding-layer error automatically.
-
-**Source**: src/encoding.rs (lines 18:0-22:1)
--/
+**Source**: spqr/src/lib.rs -/
 
 open Aeneas Aeneas.Std Result
 
-namespace spqr.encoding.EncodingError.Insts.CoreConvertFromPolynomialError
+namespace spqr.Error.Insts.CoreConvertFromEncodingError
 
-/-- **Spec theorem for
-`impl From<PolynomialError> for EncodingError::from`**:
+/-- **Spec theorem for `spqr.Error.Insts.CoreConvertFromEncodingError.from`**:
 
-• The call always succeeds (no panic).
-• The result is exactly the input error wrapped by the `EncodingError.PolynomialError`
-  constructor:
-    `from value = ok (EncodingError.PolynomialError value)`. -/
+• Wraps `e : encoding.EncodingError` in `Error.EncodingDecoding`.
+• Always succeeds: returns `ok (Error.EncodingDecoding e)`.
+
+Postcondition: `result = Error.EncodingDecoding e`. -/
 @[step]
-theorem from_spec (value : encoding.polynomial.PolynomialError) :
-    «from» value ⦃ (result : encoding.EncodingError) =>
-      result = encoding.EncodingError.PolynomialError value ⦄ := by
-  simp [«from»]
+theorem from_spec (e : encoding.EncodingError) :
+    «from» e ⦃ (result : Error) =>
+      result = Error.EncodingDecoding e ⦄ := by
+  unfold «from»
+  simp
 
-end spqr.encoding.EncodingError.Insts.CoreConvertFromPolynomialError
+end spqr.Error.Insts.CoreConvertFromEncodingError
+
+/-! # Spec theorem for `spqr::{impl From<authenticator::Error> for Error}::from`
+
+Maps every `authenticator::Error` to `Error::MacVerifyFailed`. The mapping is
+**lossy**: the specific authenticator error is discarded so MAC verification
+failures do not leak their failure mode.
+
+**Source**: spqr/src/lib.rs -/
+
+open Aeneas Aeneas.Std Result
+
+namespace spqr.Error.Insts.CoreConvertFromError
+
+/-- **Spec theorem for `spqr.Error.Insts.CoreConvertFromError.from`**:
+
+• Discards the input `v : authenticator.Error`.
+• Always succeeds: returns `ok Error.MacVerifyFailed` (constant mapping).
+
+Postcondition: `result = Error.MacVerifyFailed`. -/
+@[step]
+theorem from_spec (v : authenticator.Error) :
+    Error.Insts.CoreConvertFromError.from v ⦃ (result : Error) =>
+      result = Error.MacVerifyFailed ⦄ := by
+  unfold Error.Insts.CoreConvertFromError.from
+  simp_all
+
+end spqr.Error.Insts.CoreConvertFromError

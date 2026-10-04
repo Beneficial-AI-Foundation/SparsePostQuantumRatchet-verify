@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
+
 /-!
 # Spec theorem for `spqr::encoding::gf::GF16::const_mul`
 
