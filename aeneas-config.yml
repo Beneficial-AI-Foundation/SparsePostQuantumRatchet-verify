@@ -54,6 +54,9 @@ aeneas_args:
     - emit-json # writes translation.json
   dest: "." # output directory (project root)
   subdir: "SrcTranslated" # sub-folder for files (sets import paths to SrcTranslated.*)
+  # Remove once the repo migrates to the module system:
+  # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/632
+  use_lean_modules: false
 
 # Post-extraction find/replace applied to generated Lean files.
 tweaks:
