@@ -3736,27 +3736,23 @@ def
   (intoIter: alloc.collections.vec_deque.into_iter.IntoIter T A):
     Result ((Option T) × (alloc.collections.vec_deque.into_iter.IntoIter T A)) :=
         let deq: alloc.collections.vec_deque.VecDeque T A := intoIter.inner
-        let len := deq.length
-        -- strictly speaking, we don't need to ITE here.
-        -- If length = 0 then (in `else`) newInner = inner and get? returns none, but
-        -- this way short-circuits computation
+        -- Growing-list model (consistent with pop_front / push_back):
+        -- `head` advances linearly, `length` decrements, no wrap-around.
         if (deq.length == 0#usize) then ok (none, intoIter)
         else
-          do
-            -- "`self[0]`, if it exists, is `buf[head]`. `head < buf.capacity()`, unless `buf.capacity() == 0` when `head == 0`."
-            -- [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#108]
-            -- Therefore, instead of modifying the buffer, the iteration over deq only needs
-            -- to cycle through the head index to yield all elements
-            let newhead ←
-              -- "if `len == 0`, the exact value of `head` is unimportant"  [https://doc.rust-lang.org/src/alloc/collections/vec_deque/mod.rs.html#112]
-              if len == 0#usize then ok deq.head
-              else (Usize.wrapping_add deq.head 1#usize) % len -- mod actually never fails, since len !=0
-            let newInner: alloc.collections.vec_deque.VecDeque T A:= {
-              buf := deq.buf,
-              head := newhead,
-              length := len
-            }
-            ok (deq.buf.get? deq.head, {inner:= newInner})
+          if hidx : deq.head < deq.buf.length then
+            do
+              let elem := deq.buf.val[deq.head.val]'hidx
+              let head' ← deq.head + 1#usize
+              let len'  ← deq.length - 1#usize
+              let newInner: alloc.collections.vec_deque.VecDeque T A := {
+                buf := deq.buf,
+                head := head',
+                length := len'
+              }
+              ok (some elem, {inner := newInner})
+          else
+            fail .panic
 
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::map]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 43:0-43:49
