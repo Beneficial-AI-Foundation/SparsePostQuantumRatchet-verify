@@ -354,6 +354,10 @@ impl Poly {
 }
 
 // For Protocol V1 with MLKEM-768: N <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1
+//
+// TEMPORARY WORKAROUND — remove this `#[derive(Copy, Clone)]` once
+// [ISSUE LINK TO BE INSERTED] is resolved.
+#[derive(Copy, Clone)]
 struct PolyConst<const N: usize> {
     coefficients: [GF16; N],
 }
