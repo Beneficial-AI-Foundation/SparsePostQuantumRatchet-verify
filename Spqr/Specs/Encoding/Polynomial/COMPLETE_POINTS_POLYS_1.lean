@@ -31,22 +31,24 @@ theorem COMPLETE_POINTS_POLYS_1_spec :
       (result.val[0]).degree = 0 ∧
       listToGF216Poly (result.val[0]).coefficients.val = 1 ⦄ := by
   unfold COMPLETE_POINTS_POLYS_1
-  step*
-  have h := result_post2 0 (by omega) (by grind) (by grind)
+  apply WP.spec_mono (lagrange_polys_for_complete_points_spec _ (by scalar_tac) (by scalar_tac))
+  rintro result ⟨ones1, h_pts, h_poly⟩
+  have h := h_poly 0 (by scalar_tac) (by grind) (by grind)
   rw [condProdLinearFactors_skip _ _ 0 (by grind [List.length_take]),
       condProdLinearFactors_ge _ _ 1 (by simp [List.length_take]),
       lagrangeDenomProd_skip _ _ 0 (by grind [List.length_take]) ,
       lagrangeDenomProd_eq_one_of_le _ _ 1 (by simp [List.length_take])] at h
   · simp only [Nat.reducePow, Nat.reduceSub, one_pow, mul_one] at h
-    have h_y := (result_post1 0 (by omega)).2
+    have h_y := (h_pts 0 (by scalar_tac)).2
     constructor
     · grind
     · constructor
       · unfold PolyConst.degree
         rw [h]
         simp
-      · grind [ GF16.ONE_toGF216]
-  · grind
-  · grind
+      · simp only [Array.getElem!_Nat_eq] at h_y
+        rw [h, h_y, GF16.ONE_toGF216, Polynomial.C_1]
+  · simp
+  · simp
 
 end spqr.encoding.polynomial

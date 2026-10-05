@@ -55,15 +55,14 @@ theorem body_spec
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.start < iter.end
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
     have h_2i_lt : 2 * iter.start < serialized.length := by grind
     have h_2i1_lt : 2 * iter.start + 1 < serialized.length := by grind
     step*
-    exact ⟨h_lt, h_start1, h_end1, g, coefficients1_post, by
-      simp_all [Array.make, Nat.mul_comm]⟩
+    exact ⟨h_lt, h_start1, h_end1, g, ‹_›, by simp_all [Array.make, Nat.mul_comm]⟩
   · grind
 
 end spqr.encoding.polynomial.Poly.deserialize_loop

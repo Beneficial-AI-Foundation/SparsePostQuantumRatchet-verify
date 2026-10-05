@@ -91,7 +91,7 @@ theorem body_spec
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.start < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -157,7 +157,22 @@ theorem loop_spec
     have h_end_val : iter'.end = iter.end := by rw [h_end']
     have h_body := body_spec v iter' out' (by grind) (by grind)
     apply WP.spec_mono h_body
-    grind
+    rintro (⟨iter1, out1⟩ | out'') h
+    · obtain ⟨h_lt, h_s1, h_e1, hi, lo, h_out1, h_hilo⟩ := h
+      refine ⟨⟨by grind, by grind, by simp [h_out1]; grind, ?_⟩, by grind⟩
+      intro j hj
+      simp only [alloc.vec.Vec.getElem!_Nat_eq, h_out1]
+      by_cases hj' : j < iter'.start.val
+      · rw [List.getElem!_append_left _ _ _ (by grind),
+          List.getElem!_append_left _ _ _ (by grind)]
+        exact h_pre' j hj'
+      · have hj_eq : j = iter'.start.val := by grind
+        subst hj_eq
+        rw [List.getElem!_append_right _ _ _ (by grind),
+          List.getElem!_append_right _ _ _ (by grind)]
+        simp [h_out_len', h_hilo]
+    · obtain ⟨rfl, h_nlt⟩ := h
+      exact ⟨by grind, fun j hj => h_pre' j (by grind)⟩
   · exact ⟨rfl, h_start_le, h_out_len, (by grind)⟩
 
 end spqr.encoding.polynomial.Poly.serialize_loop

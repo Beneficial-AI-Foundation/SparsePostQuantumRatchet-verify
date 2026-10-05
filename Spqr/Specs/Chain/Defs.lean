@@ -84,7 +84,7 @@ noncomputable def iterKeyHistory
     (params : proto.pq_ratchet.ChainParams) (kh : chain.KeyHistory) (n : Nat) :
     chain.KeyHistory :=
   let d := iterKeyHistoryData secret base target params kh.data.val n
-  if h : d.length ≤ Usize.max then { data := ⟨d, h⟩ }
+  if h : d.length ≤ Usize.max then { data := alloc.vec.Vec.from d h }
   else kh
 
 /-- Length bound for `iterKeyHistoryData`: each iteration adds at most 36 bytes
@@ -145,7 +145,7 @@ theorem iterKeyHistory_data_length_mod_36
     (iterKeyHistory secret base target params kh n).data.length % 36 = 0 := by
   simp only [iterKeyHistory, alloc.vec.Vec.length]
   split
-  · exact iterKeyHistoryData_length_mod_36 secret base target params kh.data.val n h_aligned
+  · simpa using iterKeyHistoryData_length_mod_36 secret base target params kh.data.val n h_aligned
   · exact h_aligned
 
 end spqr.chain.ChainEpochDirection

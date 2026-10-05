@@ -37,7 +37,7 @@ theorem ced_for_direction_spec (genr8r : Slice U8) (dir : proto.pq_ratchet.Direc
         | .B2A => genr8r.val.slice 64 96) ⦄ := by
   unfold ced_for_direction
   match dir with
-  | .A2B => step*
-  | .B2A => step*
+  | .A2B => step*; subst_vars; simp_all [alloc.vec.Vec.deref, alloc.vec.Vec.val]
+  | .B2A => step*; subst_vars; simp_all [alloc.vec.Vec.deref, alloc.vec.Vec.val]
 
 end spqr.chain.Chain

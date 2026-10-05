@@ -17,10 +17,10 @@ with the unchanged state. Postconditions (coefficient preservation, polynomial i
 open Aeneas Aeneas.Std Result
 
 namespace spqr.encoding.polynomial.const_polys_to_polys
-namespace closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
+namespace closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
 
 /-- **Spec theorem for `encoding.polynomial.const_polys_to_polys.
-closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut`**:
+closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut`**:
 
 Always succeeds. Delegates to `PolyConst.to_poly` and returns the result with the closure
 state unchanged. Guarantees:
@@ -40,5 +40,5 @@ theorem call_mut_spec
   unfold call_mut
   step*
 
-end closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly
+end closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
 end spqr.encoding.polynomial.const_polys_to_polys

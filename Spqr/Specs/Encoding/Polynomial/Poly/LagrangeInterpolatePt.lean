@@ -63,26 +63,30 @@ theorem lagrange_interpolate_pt_spec
   have h_template_pos : 0 < template.degree:= by grind[degree]
   have h_root_template : template.evalAt (pts[i]!).x = 0 := by
     unfold Poly.evalAt
-    grind[prodLinearFactors_eval_root]
+    rw [h_template_eq, Slice.getElem!_Usize_eq]
+    exact prodLinearFactors_eval_root _ _ _ _ (Nat.zero_le _) hi hi
   step with lagrange_interpolate_complete_spec template pts i hi h_template_pos h_root_template as
     ⟨result1, h_r1_len, h_r1_id⟩
   step
   · grind[degree]
   constructor
   · grind[degree]
-  · have h_prod_root : (prodLinearFactors pts 0 pts.length).eval (GF16.toGF216 (pts[i]).x) = 0 := by
-      unfold Poly.evalAt at h_root_template
-      grind
+  · have hget : pts.val[i.val]! = pts.val[i.val] := getElem!_pos _ _ _
+    rw [Slice.getElem!_Usize_eq, hget] at h_r1_id
+    have h_prod_root :
+        (prodLinearFactors pts 0 pts.length).eval (GF16.toGF216 (pts.val[i.val]).x) = 0 := by
+      rw [← hget]; exact prodLinearFactors_eval_root _ _ _ _ (Nat.zero_le _) hi hi
+    rw [h_template_eq] at h_r1_id
     have h_r1_coeff0 : result1.toGF216Poly.coeff 0 = 0 :=
-      coeff_zero_eq_zero_of_X_mul_identity result1.toGF216Poly
-        (GF16.toGF216 (pts[i]!).x) (lagrangeScaleGF216 (pts[i]!) pts.val)
-        (prodLinearFactors pts 0 pts.length) (by grind) (by grind)
+      coeff_zero_eq_zero_of_X_mul_identity _ _ _ _ h_r1_id h_prod_root
     have h_r1_X_factor : result1.toGF216Poly =
       X * listToGF216Poly (result1.coefficients.val.drop 1) := by
       unfold Poly.toGF216Poly
       exact listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one result1.coefficients.val h_r1_coeff0
+    have hv : (↑v : List GF16) = result1.coefficients.val.drop 1 := by
+      rw [‹(↑v : List GF16) = _›, List.eraseIdx_zero, List.drop_one]
     unfold Poly.toGF216Poly
     apply mul_left_cancel₀ Polynomial.X_ne_zero
-    grind
+    rw [hv, ← mul_assoc, ← h_r1_X_factor, h_r1_id, mul_assoc]
 
 end spqr.encoding.polynomial.Poly

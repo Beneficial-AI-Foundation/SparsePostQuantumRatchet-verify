@@ -26,6 +26,6 @@ theorem new_spec :
       result.data.length = 0 ⦄ := by
   unfold new
   step*
-  simp only [alloc.vec.Vec.length, alloc.vec.Vec.with_capacity, alloc.vec.Vec.new, List.length_nil]
+  simp [alloc.vec.Vec.length, alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]
 
 end spqr.chain.KeyHistory

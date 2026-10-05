@@ -243,11 +243,18 @@ theorem lagrange_interpolate_complete_spec
   step*
   · grind[degree]
   · -- success path (b = true)
-    rename_i _ _ _ _ _ _ hb
-    have hpi_eq : pi = pts[i]! := by grind
-    have hlv_zero := b_post.mp hb
+    have hpi_eq : pi = pts[i]! := by rw [‹pi = _›]; simp [hi]
+    have hpi1 : pi1 = pi := ‹_›
+    obtain hlen_v : v.val.length = self.coefficients.val.length := ‹_›
+    obtain hv0 : ∀ (h0 : 0 < v.val.length),
+        (v.val.get ⟨0, h0⟩).toGF216 = hornerAccum pi1.x self.coefficients.val 0 := ‹_›
+    obtain hvk : ∀ k (hk : k < v.val.length), 0 < k →
+        (v.val.get ⟨k, hk⟩).toGF216 = scale.toGF216 * hornerAccum pi1.x self.coefficients.val k :=
+      ‹_›
+    obtain hb_iff : b = true ↔ left_val.value = GF16.ZERO.value := ‹_›
+    have hlv_zero := hb_iff.mp ‹b = true›
     have hH0 : hornerAccum pi1.x self.coefficients.val 0 = 0 := by
-      rw [← v_post3 (by grind)]
+      rw [← hv0 (by grind)]
       have hlv_get : left_val = v.val.get ⟨0, by grind⟩ := by grind
       rw [← hlv_get]
       have hval_zero : left_val.value.val = 0 := by
@@ -259,19 +266,21 @@ theorem lagrange_interpolate_complete_spec
         lagrangeScaleGF216 (pts[i])
           pts.val := by
       unfold lagrangeScaleGF216
-      rw [pi1_post1] at scale_post
-      rw [scale_post]
-      rw [iter_post1, iter_post2] at pi1_post2
-      simp only [GF16.ONE_toGF216,
-        one_mul] at pi1_post2
+      obtain hden : denominator.toGF216 =
+          GF16.ONE.toGF216 * lagrangeDenomProd pi.x iter.slice.val iter.i := ‹_›
+      obtain hsc : scale.toGF216 = pi1.y.toGF216 * denominator.toGF216 ^ (2 ^ 16 - 2) := ‹_›
+      rw [hpi1] at hsc
+      rw [hsc]
+      rw [‹iter.slice = pts›, ‹iter.i = 0›] at hden
+      simp only [GF16.ONE_toGF216, one_mul] at hden
       grind
-    rw [pi1_post1] at v_post2 v_post3 hH0
-    rw [hpi_eq] at v_post2 v_post3 hH0
+    rw [hpi1] at hv0 hvk hH0
+    rw [hpi_eq] at hv0 hvk hH0
     constructor
-    · exact v_post1
+    · exact hlen_v
     · unfold Poly.toGF216Poly
       apply poly_identity_from
-      · exact v_post1
+      · exact hlen_v
       · exact hlen
       · grind
       · grind
@@ -288,11 +297,14 @@ theorem lagrange_interpolate_complete_spec
         (pts[i]).x self.coefficients.val 0 = 0 := by
       rw [hornerAccum_zero_eq_eval]
       unfold Poly.evalAt Poly.toGF216Poly at heval
-      grind
+      have hget : pts[i]! = pts[i] := by simp [hi]
+      rw [hget] at heval
+      exact heval
     have hlv_val_zero : left_val.value.val = 0 :=
       GF16_toGF216_eq_zero_imp left_val (by grind)
     have hlv_eq_zero : left_val.value = spqr.encoding.gf.GF16.ZERO.value :=
       UScalar.eq_of_val_eq (by simp only [spqr.encoding.gf.GF16.ZERO]; exact hlv_val_zero)
-    exact absurd (b_post.mpr hlv_eq_zero) ‹¬b = true›
+    obtain hb_iff : b = true ↔ left_val.value = GF16.ZERO.value := ‹_›
+    exact absurd (hb_iff.mpr hlv_eq_zero) ‹¬b = true›
 
 end spqr.encoding.polynomial.Poly

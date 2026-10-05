@@ -40,15 +40,9 @@ theorem encode_bytes_spec_lift
       | _ => False ⦄ := by
   unfold encode_bytes
   step with h_inner
-  cases r with
-  | Ok val =>
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok, WP.spec_ok]
-    assumption
-  | Err e =>
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, WP.spec_ok]
-    assumption
+  cases r <;> simpa [core.result.Result.Insts.CoreOpsTry.branch,
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+    core.convert.FromSame.from]
 
 /-- **`encode_bytes` spec for `Option<PolyEncoder>`**:
 
@@ -81,13 +75,11 @@ theorem encode_bytes_spec_poly_encoder
   step with h_inner
   cases r with
   | Ok val =>
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok, WP.spec_ok]
     obtain ⟨idx, s⟩ := val
-    cases s <;> assumption
+    cases s <;> simpa [core.result.Result.Insts.CoreOpsTry.branch]
   | Err e =>
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, WP.spec_ok]
-    assumption
+    simpa [core.result.Result.Insts.CoreOpsTry.branch,
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+      core.convert.FromSame.from]
 
 end spqr.core.option.Option.Insts.SpqrEncodingEncoder

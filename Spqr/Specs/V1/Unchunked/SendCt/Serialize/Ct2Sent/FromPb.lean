@@ -40,15 +40,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.Ct2Sent) :
                                            mac_key := a.mac_key } } ⦄ := by
   unfold from_pb
   match pb.auth with
-  | none =>
-    simp [core.option.Option.as_ref, core.option.Option.ok_or,
-          core.result.Result.Insts.CoreOpsTry.branch,
-          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-          core.convert.FromSame.from]
+  | none => step* <;> simp_all
   | some a' =>
-    simp only [core.option.Option.as_ref, core.option.Option.ok_or,
-               core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
-    step*
-    simp_all [authenticator.serialize.Authenticator.FunctionalModels.fromPb]
+    step* <;> simp_all [authenticator.serialize.Authenticator.FunctionalModels.fromPb]
 
 end spqr.v1.unchunked.send_ct.serialize.Ct2Sent

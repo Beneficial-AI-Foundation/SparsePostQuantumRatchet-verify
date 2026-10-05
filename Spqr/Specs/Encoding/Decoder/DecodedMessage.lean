@@ -49,7 +49,7 @@ theorem decoded_message_spec_lift
     decoded_message DecoderInst self ⦃ (result : Option (alloc.vec.Vec Std.U8)) =>
       P result ⦄ := by
   unfold decoded_message
-  simp only [core.option.Option.as_ref, bind_tc_ok]
+  simp only [core.option.Option.as_ref]
   step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨value, h_eq⟩
   exact h_inner value h_eq
 

@@ -142,9 +142,33 @@ private theorem sortedInsert_push_result (l : List Pt) (p : Pt)
   exact ⟨idx, opt, newList, h_si,
     ⟨by have := h_res.length_le; omega, by omega⟩, h_res⟩
 
-set_option maxHeartbeats 800000 in
--- The proof unfolds the full `SortedSet.push` case analysis (empty/gt/eq/lt) for each of
--- the three code paths of the loop body, which exceeds the default heartbeat budget.
+/-- `SortedSet.push` on `Pt` (with capacity) always succeeds and yields an
+    `IsSortedPushResult`, whichever `getLast?`/`compare` branch is taken. -/
+private theorem push_sorted_result (ss : sorted_vec.SortedSet Pt) (p : Pt)
+    (h_cap : ss.val.length + 1 ≤ Usize.max) :
+    sorted_vec.SortedSet.push Pt.Insts.CoreCmpOrd ss p ⦃ r =>
+      IsSortedPushResult ss.val r.2.val p ⦄ := by
+  rcases hL : ss.val.getLast? with _ | last
+  · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_empty _ ss p h_cap hL)
+    rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
+    rw [h]; exact isSortedPushResult_append _ _
+  · have hne : ss.val ≠ [] := by intro h'; simp [h'] at hL
+    rcases hc : compare p.x.value.val last.x.value.val
+    · obtain ⟨idx, opt, newList, h_si, hbnd, h_res⟩ := sortedInsert_push_result ss.val p h_cap
+      apply WP.spec_mono (sorted_vec.SortedSet.push_spec_lt _ ss p h_cap last hL
+        (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last)
+        idx opt newList h_si hbnd)
+      rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
+      rw [h]; exact h_res
+    · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_eq _ ss p h_cap last hL
+        (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last))
+      rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
+      rw [h]; exact isSortedPushResult_dropLast_append _ _ hne
+    · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_gt _ ss p h_cap last hL
+        (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last))
+      rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
+      rw [h]; exact isSortedPushResult_append _ _
+
 /-- **Spec theorem for `body` (Lagrange-enriched)**:
 
 Strengthens `body_spec_base` with `poly < 16` and `poly_idx = chunk.index.val` via
@@ -190,252 +214,99 @@ theorem body_spec
                IsSortedPushResult (self.pts.val[poly]!).val (self1.pts.val[poly]!).val p
              else
                self1 = self) ⦄ := by
-  unfold body sorted_vec.SortedSet.push
-  step*
-  · -- goal 1: poly_idx < i10, push branch
-    have h_iter_lt : iter.start.val < iter.end.val := by
-      by_contra h_neg; push Not at h_neg
-      rw [(o_post1 (by omega)).1] at ‹o = some i›; simp at *
-    have h_i_eq : i = iter.start := by
-      rw [(o_post2 h_iter_lt).1] at ‹o = some i›; exact (Option.some.inj ‹_›).symm
-    have h_i1_val : i1.val = chunk.index.val := by
-      rw [i1_post]; exact U16.cast_Usize_val_eq chunk.index
-    have h_total : total_idx.val = chunk.index.val * 16 + i.val := by
-      rw [total_idx_post, i2_post, h_i1_val]
-    have h_poly_val : poly.val = i.val % 16 := by rw [poly_post, h_total]; omega
-    have h_i_lt_16 : i.val < 16 := by rw [h_i_eq]; scalar_tac
-    have h_poly_eq_i : poly.val = i.val := by omega
-    have h_poly_idx_val : poly_idx.val = chunk.index.val := by
-      rw [poly_idx_post, h_total]; omega
-    have h_ss_eq_set : ss = (self.pts.val)[poly.val]! := by
-      rw [ss_post1]; rw [getElem!_pos (h := by simp ; omega)]
-    have h_cap : ss.val.length + 1 ≤ Usize.max := by
-      rw [h_ss_eq_set]; exact h_push_cap poly.val (by omega)
-    simp only [dif_pos h_cap]
-    obtain ⟨_, h_start1, h_end1⟩ := o_post2 h_iter_lt
-    have h_y_val : y.value.val =
+  unfold body
+  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
+    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
+  rw [hnext]
+  simp only [bind_ok]
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
+    rw [h_opt_eq]
+    step as ⟨i1, h_i1⟩
+    step as ⟨i2, h_i2⟩
+    step as ⟨total_idx, h_total⟩
+    step as ⟨poly, h_poly⟩
+    step as ⟨poly_idx, h_pidx⟩
+    step as ⟨i3, h_i3⟩
+    step as ⟨x, h_x⟩
+    step as ⟨i4, h_i4⟩
+    step as ⟨i5, h_i5⟩
+    step as ⟨y1, h_y1⟩
+    step as ⟨i6, h_i6⟩
+    step as ⟨i7, h_i7⟩
+    step as ⟨y2, h_y2⟩
+    step as ⟨i8, h_i8, _⟩
+    step as ⟨i9, h_i9⟩
+    step as ⟨y, h_y⟩
+    step as ⟨i10, h_i10⟩
+    have h_i_lt_16 : iter.start.val < 16 := by omega
+    have h_i1v : i1.val = chunk.index.val := by rw [h_i1]; exact U16.cast_Usize_val_eq chunk.index
+    have h_poly' : poly.val = iter.start.val := by rw [h_poly, h_total, h_i2]; omega
+    have h_pidx' : poly_idx.val = chunk.index.val := by rw [h_pidx, h_total, h_i2]; omega
+    have h_px : x.value.val = chunk.index.val := by
+      rw [h_x, h_i3]; simp [UScalar.cast_val_eq, h_pidx']
+    have h_py : y.value.val =
         (chunk.data.val[iter.start.val * 2]!).val * 256 +
         (chunk.data.val[iter.start.val * 2 + 1]!).val := by
-      simp [y_post, i9_post, i8_post1, y1_post, y2_post, i5_post, i7_post,
-            i4_post, i6_post, UScalar.cast_val_eq, h_i_eq]
+      simp [h_y, h_i9, h_i8, h_y1, h_y2, h_i5, h_i7, h_i4, h_i6, UScalar.cast_val_eq]
       grind [u8_shl8_mod_u16_size]
-    set p : Pt := { x := x, y := y }
-    have h_cond : (chunk.index.val * 16 + iter.start.val) / 16 <
-        self.pts_needed.val / 16 +
-          if (chunk.index.val * 16 + iter.start.val) % 16 < self.pts_needed.val % 16 then
-            1 else 0 := by
-      have h_lt := ‹poly_idx < i10›
-      simp only [UScalar.lt_equiv, h_poly_idx_val, i10_post, h_i_eq] at h_lt
-      convert h_lt using 1 <;> grind
-    have h_poly_val : poly.val = iter.start.val := by rw [h_poly_eq_i, h_i_eq]
-    have h_px : p.x.value.val = poly_idx.val := by simp [p, x_post, i3_post]; grind
-    have h_poly_nat : (chunk.index.val * 16 + iter.start.val) % 16 = poly.val := by
-      rw [h_poly_val]; omega
-    have h_plt : poly.val < self.pts.val.length := by rw [Std.Array.length_eq]; grind
+    have h_mod : (chunk.index.val * 16 + iter.start.val) % 16 = iter.start.val := by omega
+    have h_div : (chunk.index.val * 16 + iter.start.val) / 16 = chunk.index.val := by omega
+    have h_plt : poly.val < self.pts.val.length := by simp; omega
+    have h_cap : ((self.pts.val)[poly.val]!).val.length + 1 ≤ Usize.max :=
+      h_push_cap _ (by omega)
+    have h_ss_eq : (self.pts.val)[poly.val]'(by omega) = (self.pts.val)[poly.val]! := by
+      rw [getElem!_pos (h := by omega)]
+    simp only [h_mod, h_div]
     split
-    · -- getLast? = none (empty set)
-      simp only [bind_tc_ok]; step*
-      refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-      have h_empty : ss.val = [] := by
-        cases h_ss : ss.val with | nil => rfl | cons hd tl => simp [h_ss, List.getLast?_cons] at *
-      split <;> split
-      all_goals first
-        | (exact ⟨fun k hk => by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-            by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]
-               rw [h_poly_nat, list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq_set]
-               exact isSortedPushResult_append ss.val p⟩)
-        | step*
-    · -- getLast? = some last
-      rename_i last hLast
-      have h_cmp_spec := Pt.Insts.CoreCmpOrd.cmp_spec p last
-      have hne : ss.val ≠ [] := by intro h'; simp [h'] at hLast
-      rcases h_cmp : Pt.Insts.CoreCmpOrd.cmp p last with ord | err | _
-      · simp only [bind_tc_ok]
-        rcases ord with _ | _ | _
-        · -- Lt: sortedInsert
-          obtain ⟨idx, opt, newList, h_si, hbnd, h_push_result⟩ :=
-            sortedInsert_push_result ss.val p h_cap
-          simp only [h_si, dif_pos hbnd, bind_tc_ok]; step*
-          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-          rw [h_ss_eq_set] at h_push_result
-          split <;> split
-          all_goals first
-            | (exact ⟨fun k' hk' => by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-                by simp only [ss_post2, Aeneas.Std.Array.set_val_eq];
-                   convert h_push_result using 2 <;> grind⟩)
-            | step*
-        · -- Eq: dropLast append
-          simp only [bind_tc_ok]; step*
-          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-          split <;> split
-          all_goals first
-            | (exact ⟨fun k' hk' => by
-                  simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-                by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]
-                   rw [h_poly_nat, list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq_set]
-                   exact isSortedPushResult_dropLast_append ss.val p hne⟩)
-            | step*
-        · -- Gt: append
-          simp only [bind_tc_ok]; step*
-          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-          split <;> split
-          all_goals first
-            | (exact ⟨fun k' hk' => by
-                  simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-                by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]
-                   rw [h_poly_nat, list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq_set]
-                   exact isSortedPushResult_append ss.val p⟩)
-            | step*
-      · simp [h_cmp] at h_cmp_spec
-      · simp [h_cmp] at h_cmp_spec
-  · -- goal 2: ¬(poly_idx < np) but pts[poly].len < np, push branch
-    have h_iter_lt : iter.start.val < iter.end.val := by
-      by_contra h_neg; push Not at h_neg
-      rw [(o_post1 (by omega)).1] at ‹o = some i›; simp at *
-    have h_i_eq : i = iter.start := by
-      rw [(o_post2 h_iter_lt).1] at ‹o = some i›; exact (Option.some.inj ‹_›).symm
-    have h_i1_val : i1.val = chunk.index.val := by
-      rw [i1_post]; exact U16.cast_Usize_val_eq chunk.index
-    have h_total : total_idx.val = chunk.index.val * 16 + i.val := by
-      rw [total_idx_post, i2_post, h_i1_val]
-    have h_poly_val : poly.val = i.val % 16 := by rw [poly_post, h_total]; omega
-    have h_i_lt_16 : i.val < 16 := by rw [h_i_eq]; scalar_tac
-    have h_poly_eq_i : poly.val = i.val := by omega
-    have h_poly_idx_val : poly_idx.val = chunk.index.val := by
-      rw [poly_idx_post, h_total]; omega
-    have h_ss_eq_set : ss = (self.pts.val)[poly.val]! := by
-      rw [ss_post1]; rw [getElem!_pos (h := by simp; omega)]
-    have h_cap : ss.val.length + 1 ≤ Usize.max := by
-      rw [h_ss_eq_set]; exact h_push_cap poly.val (by omega)
-    simp only [dif_pos h_cap]
-    obtain ⟨_, h_start1, h_end1⟩ := o_post2 h_iter_lt
-    have h_y_val : y.value.val =
-        (chunk.data.val[iter.start.val * 2]!).val * 256 +
-        (chunk.data.val[iter.start.val * 2 + 1]!).val := by
-      simp [y_post, i9_post, i8_post1, y1_post, y2_post, i5_post, i7_post,
-            i4_post, i6_post, UScalar.cast_val_eq, h_i_eq]
-      grind [u8_shl8_mod_u16_size]
-    set p : Pt := { x := x, y := y }
-    have h_poly_val : poly.val = iter.start.val := by rw [h_poly_eq_i, h_i_eq]
-    have h_v_len : v.val.length < i12.val := by
-      have h := ‹alloc.vec.Vec.len v < i12›
-      simp only [UScalar.lt_equiv, alloc.vec.Vec.len_val, alloc.vec.Vec.length] at h; exact h
-    have h_v_eq : v = (self.pts.val)[poly.val]! := by
-      rw [v_post, sv_post, ss_post]
-      rw [getElem!_pos (h := by simp; omega)]
-    have h_cond : ((self.pts.val)[(chunk.index.val * 16 + iter.start.val) % 16]!).val.length <
-        self.pts_needed.val / 16 +
-          if (chunk.index.val * 16 + iter.start.val) % 16 < self.pts_needed.val % 16 then
-            1 else 0 := by
-      have hmod : (chunk.index.val * 16 + iter.start.val) % 16 = poly.val := by omega
-      rw [i12_post] at h_v_len; rw [hmod, ← h_v_eq]
-      convert h_v_len using 2; grind
-    have h_px : p.x.value.val = poly_idx.val := by simp [p, x_post, i3_post]; grind
-    have h_poly_nat : (chunk.index.val * 16 + iter.start.val) % 16 = poly.val := by
-      rw [h_poly_val]; omega
-    have h_plt : poly.val < self.pts.val.length := by rw [Std.Array.length_eq]; grind
-    split
-    · -- getLast? = none (empty set)
-      simp only [bind_tc_ok]; step*
-      refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-      have h_empty : ss.val = [] := by
-        cases h_ss : ss.val with | nil => rfl | cons hd tl => simp [h_ss, List.getLast?_cons] at *
-      split <;> split
-      all_goals first
-        | (exact ⟨fun k hk => by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-            by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]
-               rw [h_poly_nat, list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq_set]
-               exact isSortedPushResult_append ss.val p⟩)
-        | step*
-    · -- getLast? = some last
-      rename_i last hLast
-      have h_cmp_spec := Pt.Insts.CoreCmpOrd.cmp_spec p last
-      have hne : ss.val ≠ [] := by intro h'; simp [h'] at hLast
-      rcases h_cmp : Pt.Insts.CoreCmpOrd.cmp p last with ord | err | _
-      · simp only [bind_tc_ok]
-        rcases ord with _ | _ | _
-        · -- Lt: sortedInsert
-          obtain ⟨idx, opt, newList, h_si, hbnd, h_push_result⟩ :=
-            sortedInsert_push_result ss.val p h_cap
-          simp only [h_si, dif_pos hbnd, bind_tc_ok]; step*
-          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-          rw [h_ss_eq_set] at h_push_result
-          split <;> split
-          all_goals first
-            | (exact ⟨fun k' hk' => by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-                by simp only [ss_post2, Aeneas.Std.Array.set_val_eq];
-                   convert h_push_result using 2 <;> grind⟩)
-            | step*
-        · -- Eq: dropLast append
-          simp only [bind_tc_ok]; step*
-          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-          split <;> split
-          all_goals first
-            | (exact ⟨fun k' hk' => by
-                  simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-                by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]
-                   rw [h_poly_nat, list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq_set]
-                   exact isSortedPushResult_dropLast_append ss.val p hne⟩)
-            | step*
-        · -- Gt: append
-          simp only [bind_tc_ok]; step*
-          refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-          split <;> split
-          all_goals first
-            | (exact ⟨fun k' hk' => by
-                  simp only [ss_post2, Aeneas.Std.Array.set_val_eq]; grind,
-                by simp only [ss_post2, Aeneas.Std.Array.set_val_eq]
-                   rw [h_poly_nat, list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq_set]
-                   exact isSortedPushResult_append ss.val p⟩)
-            | step*
-      · simp [h_cmp] at h_cmp_spec
-      · simp [h_cmp] at h_cmp_spec
-  · -- goal 3: ¬(poly_idx < np) and ¬(pts[poly].len < np) — state unchanged
-    have h_iter_lt : iter.start.val < iter.end.val := by
-      by_contra h_neg; push Not at h_neg
-      rw [(o_post1 (by omega)).1] at ‹o = some i›; simp at *
-    have h_i_eq : i = iter.start := by
-      rw [(o_post2 h_iter_lt).1] at ‹o = some i›; exact (Option.some.inj ‹_›).symm
-    have h_i1_val : i1.val = chunk.index.val := by
-      rw [i1_post]; exact U16.cast_Usize_val_eq chunk.index
-    have h_total : total_idx.val = chunk.index.val * 16 + i.val := by
-      rw [total_idx_post, i2_post, h_i1_val]
-    have h_poly_val : poly.val = i.val % 16 := by rw [poly_post, h_total]; omega
-    have h_i_lt_16 : i.val < 16 := by rw [h_i_eq]; scalar_tac
-    have h_poly_eq_i : poly.val = i.val := by omega
-    have h_poly_idx_val : poly_idx.val = chunk.index.val := by
-      rw [poly_idx_post, h_total]; omega
-    obtain ⟨_, h_start1, h_end1⟩ := o_post2 h_iter_lt
-    have h_y_val : y.value.val =
-        (chunk.data.val[iter.start.val * 2]!).val * 256 +
-        (chunk.data.val[iter.start.val * 2 + 1]!).val := by
-      simp [y_post, i9_post, i8_post1, y1_post, y2_post, i5_post, i7_post,
-            i4_post, i6_post, UScalar.cast_val_eq, h_i_eq]
-      grind [u8_shl8_mod_u16_size]
-    set p : Pt := { x := x, y := y }
-    have h_px : p.x.value.val = poly_idx.val := by simp [p, x_post, i3_post]; grind
-    have h_not1 : ¬ ((chunk.index.val * 16 + iter.start.val) / 16 <
-        self.pts_needed.val / 16 +
-          if (chunk.index.val * 16 + iter.start.val) % 16 < self.pts_needed.val % 16 then
-            1 else 0) := by
-      have h_ge := ‹¬ poly_idx < i10›
-      simp only [UScalar.lt_equiv, h_poly_idx_val, i10_post, h_i_eq] at h_ge
-      intro h; apply h_ge; convert h using 1 <;> grind
-    have h_v_eq : v = (self.pts.val)[poly.val]! := by
-      rw [v_post, sv_post, ss_post]
-      rw [getElem!_pos (h := by simp; omega)]
-    have h_not2 :
-        ¬ (((self.pts.val)[(chunk.index.val * 16 + iter.start.val) % 16]!).val.length <
-        self.pts_needed.val / 16 +
-          if (chunk.index.val * 16 + iter.start.val) % 16 < self.pts_needed.val % 16 then
-            1 else 0) := by
-      have h_ge := ‹¬ alloc.vec.Vec.len v < i12›
-      simp only [UScalar.lt_equiv, alloc.vec.Vec.len_val, alloc.vec.Vec.length, i12_post] at h_ge
-      have hmod : (chunk.index.val * 16 + iter.start.val) % 16 = poly.val := by
-        rw [h_poly_eq_i, h_i_eq]; omega
-      rw [hmod, ← h_v_eq]; intro h; apply h_ge; convert h using 2; grind
-    refine ⟨by omega, by omega, by omega, by omega, by omega, p, by omega, by omega, ?_⟩
-    exact ite_or_of_neg_neg h_not1 h_not2 trivial
+    · rename_i h_c
+      have h_c' : chunk.index.val < self.pts_needed.val / 16 +
+          (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
+        rw [← h_pidx', ← h_i10]; exact h_c
+      step as ⟨ss, back, h_ss, h_back⟩
+      step with push_sorted_result as ⟨_, ss1, h_r⟩
+      subst h_back
+      refine ⟨by scalar_tac, h_start1, h_end1, by omega, { x := x, y := y }, h_px, h_py, ?_⟩
+      rw [if_pos (Or.inl h_c')]
+      refine ⟨fun k hk => ?_, ?_⟩
+      · simp only [Array.set_val_eq]; grind
+      · simp only [Array.set_val_eq]
+        rw [← h_poly', list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq, ← h_ss]; exact h_r
+    · rename_i h_c
+      have h_c' : ¬ chunk.index.val < self.pts_needed.val / 16 +
+          (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
+        rw [← h_pidx', ← h_i10]; exact h_c
+      step as ⟨ss0, h_ss0⟩
+      step as ⟨sv, h_sv⟩
+      step as ⟨v, h_v⟩
+      step as ⟨i12, h_i12⟩
+      have h_vlen : v.len.val = ((self.pts.val)[iter.start.val]!).val.length := by
+        rw [h_v, h_sv, h_ss0, h_ss_eq, h_poly']; simp
+      split
+      · rename_i h_c2
+        have h_c2' : ((self.pts.val)[iter.start.val]!).val.length < self.pts_needed.val / 16 +
+            (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
+          rw [← h_vlen, ← h_i12]; exact h_c2
+        step as ⟨ss, back, h_ss, h_back⟩
+        step with push_sorted_result as ⟨_, ss1, h_r⟩
+        subst h_back
+        refine ⟨by scalar_tac, h_start1, h_end1, by omega, { x := x, y := y }, h_px, h_py, ?_⟩
+        rw [if_pos (Or.inr h_c2')]
+        refine ⟨fun k hk => ?_, ?_⟩
+        · simp only [Array.set_val_eq]; grind
+        · simp only [Array.set_val_eq]
+          rw [← h_poly', list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq, ← h_ss]; exact h_r
+      · rename_i h_c2
+        have h_c2' : ¬ ((self.pts.val)[iter.start.val]!).val.length < self.pts_needed.val / 16 +
+            (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
+          rw [← h_vlen, ← h_i12]; exact h_c2
+        simp only [WP.spec_ok]
+        refine ⟨by scalar_tac, h_start1, h_end1, trivial, trivial, by omega, { x := x, y := y },
+          h_px, h_py, ?_⟩
+        exact ite_or_of_neg_neg h_c' h_c2' trivial
+  · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
+    rw [h_opt_eq]
+    exact ⟨rfl, h_lt⟩
 
 private theorem body_pts_length_le
     (self1 self' : PolyDecoder) (p : Pt) (poly : Nat)
@@ -562,7 +433,11 @@ theorem loop_spec
       simp only [] at h_cf ⊢
       obtain ⟨h_eq, h_not_lt⟩ := h_cf
       subst h_eq
-      refine ⟨h_pn', h_ic', selfs', h_s0, by grind, by grind, by grind⟩
+      have h_eq_n : iter.end.val - iter.start.val = n := by
+        have : ¬ iter'.start.val < iter'.end.val := h_not_lt
+        omega
+      refine ⟨h_pn', h_ic', selfs', h_s0, by rw [h_eq_n]; exact h_sn, trivial, fun j hj => ?_⟩
+      simpa only [Array.getElem!_Nat_eq] using h_chain j (by omega)
     | ControlFlow.cont (iter1, self1) =>
       simp only [] at h_cf ⊢
       obtain ⟨h_lt, h_start1, h_end1, h_pn1, h_ic1, h_poly_lt, h_poly_idx_eq,
@@ -605,7 +480,9 @@ theorem loop_spec
   · refine ⟨rfl, le_refl _, h_start_le, rfl, rfl, ?_,
             0, fun _ => self, rfl, rfl, by dsimp; omega, fun j hj => by omega⟩
     intro k hk
-    grind
+    have := h_push_cap k hk
+    simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.length] at this
+    omega
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
 

@@ -56,7 +56,7 @@ theorem body_spec
   unfold body
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]; simp only [bind_tc_ok]
+  rw [hnext]; simp only [bind_ok]
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt, h_start1, h_end1⟩ := h_some h_lt
     subst h_opt
@@ -126,10 +126,14 @@ theorem loop_spec
       refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
       by_cases hj_lt : j < iter'.start.val
       · grind
-      · have mk : ∀ {k} {bk : U8}, k ≤ 3 →
-            [b0, b1, b2, b3][k]? = some bk →
-            out''[4 * iter'.start.val + k]! = bk := by grind
-        grind [mk (k := 1) (by omega) rfl, mk (k := 2) (by omega) rfl, mk (k := 3) (by omega) rfl]
+      · have hj_eq : j = iter'.start.val := by omega
+        subst hj_eq
+        simp only [alloc.vec.Vec.getElem!_Nat_eq, h_val]
+        rw [List.getElem!_append_right _ _ _ (by grind),
+          List.getElem!_append_right _ _ _ (by grind),
+          List.getElem!_append_right _ _ _ (by grind),
+          List.getElem!_append_right _ _ _ (by grind)]
+        simp [h_len, h_x_eq, h_y_eq]
   · grind
 
 end spqr.encoding.polynomial.PolyDecoder.into_pb_loop0_loop0
@@ -176,7 +180,7 @@ theorem body_spec
   obtain ⟨opt, iter1', hnext, h_none, h_some⟩ :=
     core.slice.iter.IteratorSliceIter.next_post iter
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.i < iter.slice.length
   · obtain ⟨h_opt_eq, h_i1, h_slice1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -305,16 +309,21 @@ theorem into_pb_spec
   simp only [alloc.vec.Vec.with_capacity]
   step*
   unfold core.slice.Slice.iter
-  step
-  · intro j hj
-    simp_all [Array.to_slice]
-  · constructor
-    · simp_all only [alloc.vec.Vec.length, List.Vector.length_val, UScalar.ofNatCore_val_eq,
-      getElem!_pos, Array.to_slice, Slice.length, alloc.vec.Vec.getElem!_Nat_eq,
-      Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD, UScalar.cast_val_eq,
-      UScalarTy.U32_numBits_eq, Nat.reducePow, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one,
-      Nat.reduceAdd]
-      scalar_tac
-    · grind
+  step*
+  have h_len : s1.length = 16 := by simp [*]
+  have h_get : ∀ j : Nat, s1[j]! = self.pts.val[j]! := by
+    intro j; simp [*, Slice.getElem!_Nat_eq]
+  refine ⟨?_, by grind, fun j hj => ?_⟩
+  · simp only [UScalar.cast_val_eq, *]
+    scalar_tac
+  · have h_enc : ∀ j < s1.length,
+        (v1[j]!).length = 4 * (s1[j]!).length ∧
+        ∀ k < (s1[j]!).length,
+          256 * ((v1[j]!)[4 * k]!) + ((v1[j]!)[4 * k + 1]!) = ((s1[j]!).val[k]!).x.value.val ∧
+          256 * ((v1[j]!)[4 * k + 2]!) + ((v1[j]!)[4 * k + 3]!) =
+            ((s1[j]!).val[k]!).y.value.val := by
+      assumption
+    rw [← h_get]
+    exact h_enc j (by omega)
 
 end spqr.encoding.polynomial.PolyDecoder

@@ -30,12 +30,18 @@ theorem verify_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8) (expect
     (h_key : self.mac_key.length ≤ U32.max) (h_data : ct.length + 43 ≤ U32.max)
     (h_mac : expected_mac.length = MACSIZE.val) :
     verify_ct self ep ct expected_mac ⦃ (result : core.result.Result Unit Error) =>
-      result = Ok () ↔ mac_ct self ep ct = ok expected_mac ⦄ := by
+      result = Ok () ↔ mac_ct self ep ct = ok { slice := expected_mac } ⦄ := by
   unfold verify_ct
   have hmac := refl_of% mac_ct_spec
   step*
-  · grind
-  · simp only [true_iff, *]
-    exact congrArg ok (Subtype.ext (List.ext_getElem! (by simp [*]) (by grind)))
+  · simp only [reduceCtorEq, false_iff, ‹mac_ct self ep ct = ok _›, Result.ok.injEq]
+    rintro rfl
+    simp_all [alloc.vec.Vec.val]
+  · simp only [true_iff, ‹mac_ct self ep ct = ok _›, Result.ok.injEq]
+    have hall : ∀ j < expected_mac.length, expected_mac.val[j]! = v.val[j]! := by
+      by_contra; simp_all
+    apply alloc.vec.Vec.ext
+    refine List.ext_getElem! (by simp_all [alloc.vec.Vec.val]) fun j => ?_
+    by_cases j < expected_mac.length <;> simp_all [alloc.vec.Vec.val]
 
 end spqr.authenticator.Authenticator

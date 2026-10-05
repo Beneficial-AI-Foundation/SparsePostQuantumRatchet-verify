@@ -86,7 +86,7 @@ theorem body_spec
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -96,8 +96,8 @@ theorem body_spec
     have h_i_mod_self : iter.start.val % 16 = iter.start.val := by omega
     step*
     · grind
-    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, List.Vector.length_val,
-      UScalar.ofNatCore_val_eq, getElem!_pos, List.length_eq_zero_iff, Order.add_one_le_iff,
+    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, getElem!_pos,
+      List.length_eq_zero_iff, Order.add_one_le_iff,
       not_true_eq_false, reduceCtorEq, false_and, implies_true, and_self,
        Nat.mul_add_mod_self_right, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one,
       Nat.reduceAdd, UScalarTy.U16_numBits_eq, UScalarTy.Usize_numBits_eq,
@@ -109,7 +109,7 @@ theorem body_spec
       have h_i_mod : iter.start.val % 16 = iter.start.val := by omega
       refine ⟨g, ?_, ?_⟩
       · simp only [UScalar.cast_val_eq, UScalarTy.U8_numBits_eq, Nat.reducePow,
-                  i3_post1, Nat.shiftRight_eq_div_pow]
+                  ‹i3.val = _›, Nat.shiftRight_eq_div_pow]
         grind
       · grind
   · grind
@@ -340,7 +340,7 @@ theorem loop_spec
     · unfold body
       obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
         WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter')
-      rw [hnext]; simp only [bind_tc_ok]
+      rw [hnext]; simp only [bind_ok]
       obtain ⟨h_opt_eq, _⟩ := h_none h_iter_lt
       subst h_opt_eq
       dsimp

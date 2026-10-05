@@ -40,33 +40,14 @@ theorem call_mut_spec (c : chain.Chain.from_pb.closure_1)
   unfold call_mut
   match tupled_args.send, tupled_args.recv with
   | some s, some r =>
-    simp only [core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
-    step*
-    rcases r1 with ⟨ced1⟩ | ⟨e1⟩
-    · obtain ⟨hc1, hn1, hp1⟩ := r1_post
-      simp only [bind_tc_ok]
-      step*
-      rcases r3 with ⟨ced2⟩ | ⟨e2⟩
-      · obtain ⟨hc2, hn2, hp2⟩ := r3_post
-        simp only [bind_tc_ok, WP.spec_ok]
-        simp only [← hc1, ← hn1, ← hp1, ← hc2, ← hn2, ← hp2]
-      · exact absurd r3_post (by simp)
-    · exact absurd r1_post (by simp)
+    simp only [core.option.Option.ok_or]
+    step* <;> grind [cases ChainEpochDirection]
   | some _, none =>
-    simp only [core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+    simp only [core.option.Option.ok_or]
     step*
-    rcases r1 with ⟨ced1⟩ | ⟨e1⟩
-    · simp only [bind_tc_ok,
-        core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-        core.convert.FromSame.from, WP.spec_ok]
-    · exact absurd r1_post (by simp)
+    grind
   | none, _ =>
-    simp only [core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-    trivial
+    simp only [core.option.Option.ok_or]
+    step*
 end CoreOpsFunctionFnMutTupleEpochResultChainEpochError
 end spqr.chain.Chain.from_pb.closure_1.Insts

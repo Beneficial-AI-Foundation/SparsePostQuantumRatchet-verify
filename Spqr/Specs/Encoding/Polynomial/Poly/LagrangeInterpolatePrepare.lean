@@ -70,7 +70,7 @@ theorem body_spec
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -264,10 +264,12 @@ theorem lagrange_interpolate_prepare_spec
   · simp_all [GF16.Insts.CoreCloneClone.clone]
   · simp_all [degree]
   · simp_all [degree]
-  · have p1_len : p1.coefficients.val.length = (index_mut_back ONE).length := p1_post1
+  · have p1_len : p1.coefficients.val.length = (index_mut_back ONE).length := by
+      simpa [degree] using ‹p1.degree = _›
     simp_all
   · have p1_len : p1.coefficients.length =
-        (index_mut_back ONE).val.length := p1_post1
+        (index_mut_back ONE).val.length := by
+      simpa [degree] using ‹p1.degree = _›
     simp_all only [Slice.length, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
       alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.set_val_eq, List.length_set, List.resize_length,
       lt_add_iff_pos_right, Order.lt_one_iff, getElem!_pos, List.getElem_set_self,
@@ -290,18 +292,22 @@ theorem lagrange_interpolate_prepare_spec
         · simp_all
       · exact le_refl _
       · exact le_refl _
+    have h_tr := ‹∀ m ≤ (↑pts : List Pt).length,
+      ∀ (_ : m < ({ coefficients := v.set pts.len ONE } : Poly).degree), _›
     constructor
     · intro m hm
-      have hm_bound : m < (v.set pts.len ONE).length := by grind
-      have h5 := p1_post5 m (by omega) hm_bound
+      have hm_bound : m < ({ coefficients := v.set pts.len ONE } : Poly).degree := by
+        simp only [degree]; grind
+      have h5 := h_tr m hm hm_bound
       rw [h_bridge] at h5
       exact h5
     · change listToGF216Poly p1.coefficients = prodLinearFactors pts 0 pts.length
       apply listToGF216Poly_eq_of_coeffs
       · intro m hm
         have hm_le : m ≤ pts.length := by grind
-        have hm_bound : m < (v.set pts.len ONE).length := by grind
-        have h5 := p1_post5 m hm_le hm_bound
+        have hm_bound : m < ({ coefficients := v.set pts.len ONE } : Poly).degree := by
+          simp only [degree]; grind
+        have h5 := h_tr m hm_le hm_bound
         grind
       · intro m hm
         exact prodLinearFactors_coeff_eq_zero_high _ _ _ _ (by grind)

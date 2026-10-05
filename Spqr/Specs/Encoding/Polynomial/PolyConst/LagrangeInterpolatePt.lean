@@ -210,19 +210,20 @@ theorem lagrange_interpolate_pt_spec
   unfold lagrange_interpolate_pt
   step*
   · unfold PolyConst.degree
-    simp only [a1_post, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
+    simp only [‹a1 = _›, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
     rw [listToGF216Poly_replicate_zero_set_one N h_N_pos, Polynomial.natDegree_one, Nat.zero_add]
     have h_count : countNonSkip pi.x (List.take (↑N) (↑pts)) 0 ≤ ↑N - 1 := by
       apply countNonSkip_le_of_skip_exists pi.x _ (↑N)
         (by simp only [List.length_take, inf_le_left]) (↑i) h_i_lt_N
       grind
     omega
-  · subst pi1_post1
-    have h_init : listToGF216Poly a1 = 1 := by
-      simp only [a1_post, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
+  · have h_init : listToGF216Poly a1 = 1 := by
+      simp only [‹a1 = _›, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
       exact listToGF216Poly_replicate_zero_set_one N.val h_N_pos
-    simp only [result_post1, pi1_post2, g_post, pi1_post3, GF16.ONE_toGF216, one_mul, h_init,
-      mul_one, pi_post]
-    grind
+    rw [‹listToGF216Poly result.coefficients = _›, ‹listToGF216Poly p.coefficients = _›,
+      ‹g.toGF216 = _›, ‹denominator.toGF216 = _›, h_init]
+    subst_vars
+    simp only [GF16.ONE_toGF216, one_mul, mul_one]
+    rfl
 
 end spqr.encoding.polynomial.PolyConst

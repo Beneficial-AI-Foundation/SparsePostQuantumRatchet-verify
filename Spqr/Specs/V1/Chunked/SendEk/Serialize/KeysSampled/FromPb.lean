@@ -73,14 +73,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
       core.result.Result.map_err
         from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError r () ⦃ res =>
         res = match r with | .Ok v => .Ok v | .Err _ => .Err Error.StateDecode ⦄ := by
-    rcases r with v | e <;> rfl
-  step*
-  · simp only [PolyEncoder.FromPbPostCond] at r3_post
-    grind
-  · simp only [PolyEncoder.FromPbPostCond] at r3_post
-    grind
-  · grind
-  · grind
-  · grind
+    cases r <;> simp [from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError,
+      from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once]
+  step* <;> grind [PolyEncoder.FromPbPostCond]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled

@@ -38,12 +38,13 @@ theorem next_key_spec (self : chain.ChainEpochDirection)
       result.2.prev = self.prev ∧
       result.1.2 = okm.drop 32 ⦄ := by
   unfold chain.ChainEpochDirection.next_key
-  simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.length, lift, bind_tc_ok] at *
+  simp only [lift, alloc.vec.Vec.deref_mut, bind_ok]
   step*
-  simp only [Array.to_slice]
-  rename_i p _ _ _ _ _ _
-  obtain ⟨idx, key⟩ := p
-  simp only [Subtype.coe_eta, uncurry_apply_pair, UScalarTy.U32_numBits_eq, Nat.reducePow]
+  · simpa [alloc.vec.Vec.length, alloc.vec.Vec.val] using h_next_len
+  cases ‹U32 × Std.Array U8 32#usize›
   step*
+  obtain h_v : Array.to_slice (‹Std.Array U8 32#usize›) = (‹alloc.vec.Vec U8›).slice := ‹_›
+  have : (‹alloc.vec.Vec U8›).slice.val = (‹Std.Array U8 32#usize›).val := by rw [← h_v]; simp
+  simp_all [alloc.vec.Vec.length, alloc.vec.Vec.val]
 
 end spqr.chain.ChainEpochDirection

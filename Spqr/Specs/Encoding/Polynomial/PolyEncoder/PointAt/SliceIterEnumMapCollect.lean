@@ -37,7 +37,7 @@ theorem enumerate_map_spec
     (f : PolyEncoder.point_at.closure_1) :
     Enumerate.Insts.CoreIterTraitsIteratorIteratorPairUsizeClause0_Item.map
       (core.iter.traits.iterator.IteratorSliceIter spqr.encoding.gf.GF16)
-      PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
+      PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt
       e f ⦃ (result : core.iter.adapters.map.Map
         (Enumerate
           (core.slice.iter.Iter spqr.encoding.gf.GF16)) PolyEncoder.point_at.closure_1) =>

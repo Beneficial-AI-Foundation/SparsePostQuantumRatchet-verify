@@ -160,14 +160,14 @@ private theorem partialEqAux_U8_spec :
     | nil => exact ⟨false, by unfold Slice.partialEqAux; rfl, by simp⟩
     | cons c ys =>
       unfold Slice.partialEqAux
-      simp only [core.cmp.PartialEqU8, liftFun2, core.cmp.impls.PartialEqU8.eq, bind_tc_ok]
+      simp only [core.cmp.PartialEqU8, liftFun2, core.cmp.impls.PartialEqU8.eq]
       by_cases hab : a = c
       · subst hab
-        simp only [decide_true, ↓reduceIte]
+        simp only [decide_true]
         obtain ⟨r, hr, hiff⟩ := ih ys
-        exact ⟨r, hr, by constructor <;> intro h <;> simp_all⟩
+        exact ⟨r, by simpa using hr, by constructor <;> intro h <;> simp_all⟩
       · simp only [show decide (a = c) = false from by simp [hab]]
-        exact ⟨false, rfl, by simp [hab]⟩
+        exact ⟨false, by simp, by simp [hab]⟩
 
 /-- `Slice.Insts.CoreCmpPartialEqArray.eq` with `PartialEqU8` always succeeds and
     `b = true ↔ s.val = arr.val`. -/
@@ -241,31 +241,29 @@ theorem core.array.from_fn_loop_length
     simp only [from_fn_loop, ok.injEq, List.nil_eq] at h_ok
     subst h_ok; rfl
   | succ k ih =>
-    simp only [core.array.from_fn_loop] at h_ok
-    match h_call : fnMutInst.call_mut f i with
-    | .ok (val, f') =>
+    rw [core.array.from_fn_loop_succ] at h_ok
+    cases h_call : fnMutInst.call_mut f i with
+    | ret vf =>
+      obtain ⟨val, f'⟩ := vf
       simp only [h_call] at h_ok
-      match h_add : i + 1#usize with
-      | .ok i' =>
+      cases h_add : i + 1#usize with
+      | ret i' =>
         simp only [h_add] at h_ok
-        match h_rest : core.array.from_fn_loop fnMutInst f' i' k with
-        | .ok rest =>
-          simp only [bind_tc_ok, uncurry_apply_pair, h_rest, ok.injEq] at h_ok
+        cases h_rest : core.array.from_fn_loop fnMutInst f' i' k with
+        | ret rest =>
+          simp only [bind_ok, uncurry_apply_pair, h_rest, ok.injEq] at h_ok
           subst h_ok
-          simp only [List.length_cons,
-            ih f' i' rest h_rest
-                (by
-                  have := UScalar.add_equiv i (1#usize : Usize)
-                  rw [h_add] at this; exact by scalar_tac)]
-        | .fail e => simp only [bind_tc_ok, uncurry_apply_pair, h_rest, bind_tc_fail,
-          reduceCtorEq] at h_ok
-        | .div => simp only [bind_tc_ok, uncurry_apply_pair, h_rest, bind_tc_div,
-          reduceCtorEq] at h_ok
-      | .fail e => simp only [h_add, bind_tc_fail, bind_tc_ok, uncurry_apply_pair,
-        reduceCtorEq] at h_ok
-      | .div => simp only [h_add, bind_tc_div, bind_tc_ok, uncurry_apply_pair, reduceCtorEq] at h_ok
-    | .fail e => simp only [h_call, bind_tc_fail, reduceCtorEq] at h_ok
-    | .div => simp only [h_call, bind_tc_div, reduceCtorEq] at h_ok
+          have hi' : (↑i' : Nat) = ↑i + 1 := by
+            obtain ⟨z, hz, hzv⟩ :=
+              WP.spec_imp_exists (Usize.add_spec (x := i) (y := 1#usize) (by scalar_tac))
+            rw [h_add] at hz; rw [Result.ok_injective hz]; scalar_tac
+          simp only [List.length_cons, ih f' i' rest h_rest (by scalar_tac)]
+        | vis e kk => simp [h_rest] at h_ok
+        | div => simp [h_rest] at h_ok
+      | vis e kk => simp [h_add] at h_ok
+      | div => simp [h_add] at h_ok
+    | vis e kk => simp [h_call] at h_ok
+    | div => simp [h_call] at h_ok
 
 /-- [core::array::from_fn]:
     Source: '/rustc/library/core/src/array/mod.rs', lines 109:0-111:52
@@ -285,7 +283,7 @@ def core.array.from_fn
   fun f => do
     let l ← core.array.from_fn_loop opsfunctionFnMutFTupleUsizeTInst f 0#usize N.val
     match h : decide (l.length = N.val) with
-    | true => ok ⟨l, of_decide_eq_true h⟩
+    | true => ok (Array.from l (of_decide_eq_true h))
     | false => fail .panic
 
 /-- Helper lemma: `from_fn_loop` with a stateless closure (state = `Unit`) that always
@@ -303,12 +301,9 @@ theorem core.array.from_fn_loop_replicate_default
   | succ k ih =>
     simp only [core.array.from_fn_loop]
     have h_add : ∃ i', i + (1#usize : Usize) = ok i' ∧ (↑i' : Nat) = ↑i + 1 := by
-      have h := UScalar.add_equiv i (1#usize : Usize)
-      generalize h_eq : i + (1#usize : Usize) = r at h
-      cases r with
-      | ok z => exact ⟨z, rfl, h.2.1⟩
-      | fail e => exact absurd (by scalar_tac) h
-      | div => exact h.elim
+      obtain ⟨i', hi', hval⟩ :=
+        WP.spec_imp_exists (Usize.add_spec (x := i) (y := 1#usize) (by scalar_tac))
+      exact ⟨i', hi', by scalar_tac⟩
     obtain ⟨i', h_eq, h_val⟩ := h_add
     have ih_eq := ih i' (by scalar_tac)
     simp [h_const, h_eq, List.replicate, ih_eq]
@@ -331,18 +326,11 @@ theorem core.array.from_fn_loop_const
   | succ k ih =>
     simp only [core.array.from_fn_loop, h_const]
     have h_add : ∃ i', i + (1#usize : Usize) = ok i' ∧ (↑i' : Nat) = ↑i + 1 := by
-      have h := UScalar.add_equiv i (1#usize : Usize)
-      generalize h_eq : i + (1#usize : Usize) = r at h
-      cases r with
-      | ok z => exact ⟨z, rfl, h.2.1⟩
-      | fail e => exact absurd (by scalar_tac) h
-      | div => exact h.elim
+      obtain ⟨i', hi', hval⟩ :=
+        WP.spec_imp_exists (Usize.add_spec (x := i) (y := 1#usize) (by scalar_tac))
+      exact ⟨i', hi', by scalar_tac⟩
     obtain ⟨i', h_eq, h_val⟩ := h_add
-    rw [h_eq]
-    change (do let rest ← core.array.from_fn_loop fnMutInst f i' k; ok (v :: rest))
-      = ok (List.replicate (k + 1) v)
-    rw [ih f i' (by scalar_tac), bind_tc_ok]
-    rfl
+    simp [h_eq, ih f i' (by scalar_tac), List.replicate]
 
 /-- **Spec theorem for `core::array::from_fn`**: when the loop helper
 `core.array.from_fn_loop` succeeds and produces a list `l` of length `N`,
@@ -878,58 +866,6 @@ theorem core.result.Result.unwrap_or_spec {T E : Type}
       x = match r with | .Ok v => v | .Err _ => default ⦄ := by
   rcases r with v | e <;> simp [core.result.Result.unwrap_or]
 
-/-- [core::result::{core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, E>}::branch]:
-    Source: '/rustc/library/core/src/result.rs', lines 2172:4-2172:64
-    Name pattern: [core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch] -/
-@[rust_fun
-  "core::result::{core::ops::try_trait::Try<core::result::Result<@T, @E>, @T, core::result::Result<core::convert::Infallible, @E>>}::branch"]
-def core.result.Result.Insts.CoreOpsTry_traitTry.branch
-  {T : Type} {E : Type} :
-  core.result.Result T E → Result (core.ops.control_flow.ControlFlow
-    (core.result.Result core.convert.Infallible E) T) :=
-  fun r =>
-    match r with
-    | .Ok v => ok (.Continue v)
-    | .Err e => ok (.Break (.Err e))
-
-/-- **Spec theorem for `Try::branch` on `Result`** (the desugaring of `?`):
-`Ok v` continues with `v`; `Err e` breaks with the residual `Err e`. -/
-@[step]
-theorem core.result.Result.Insts.CoreOpsTry_traitTry.branch_spec
-    {T E : Type} (r : core.result.Result T E) :
-    core.result.Result.Insts.CoreOpsTry_traitTry.branch r ⦃ cf =>
-      cf = match r with
-        | .Ok v => .Continue v
-        | .Err e => .Break (.Err e) ⦄ := by
-  rcases r with v | e <;> simp [core.result.Result.Insts.CoreOpsTry_traitTry.branch]
-
-/-- [core::result::{core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>> for core::result::Result<T, F>}::from_residual]:
-    Source: '/rustc/library/core/src/result.rs', lines 2187:4-2187:70
-    Name pattern: [core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual] -/
-@[rust_fun
-  "core::result::{core::ops::try_trait::FromResidual<core::result::Result<@T, @F>, core::result::Result<core::convert::Infallible, @E>>}::from_residual"]
-def
-  core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-  (T : Type) {E : Type} {F : Type} (convertFromInst : core.convert.From F E) :
-  core.result.Result core.convert.Infallible E → Result (core.result.Result T
-    F) :=
-  fun r =>
-    match r with
-    | .Err e => do
-      let f ← convertFromInst.from e
-      ok (.Err f)
-    | .Ok x => nomatch x
-
-/-- **Spec theorem for `FromResidual::from_residual` on `Result`** (part of the `?`
-desugaring): the residual is always `Err e` (the `Ok` payload is `Infallible`), and
-the error is converted via the `From` instance. Stated as an unfolding lemma since
-the conversion is definitional in the instance. -/
-@[simp]
-theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual_Err
-    (T : Type) {E F : Type} (convertFromInst : core.convert.From F E) (e : E) :
-    core.result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
-      T convertFromInst (.Err e) =
-      (do let f ← convertFromInst.from e; ok (.Err f)) := rfl
 
 /-- Implementation helper for `Slice.Insts.CoreCmpOrd.cmp`
 (`[core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]`,
@@ -1303,7 +1239,7 @@ def alloc.collections.vec_deque.VecDeque.push_back
       do
         let len' ← self.length + 1#usize
         ok { self with
-          buf := ⟨self.buf ++ [value], by simp [List.length_append]; omega⟩
+          buf := alloc.vec.Vec.from (self.buf.val ++ [value]) (by simp [List.length_append]; omega)
           length := len' }
     else
       fail .panic
@@ -1345,9 +1281,9 @@ def
       if hphys : self.head + idx.val < self.buf.length then
         let elem := self.buf[self.head.val + idx]'hphys
         ok (elem, fun new_elem =>
-          { self with buf := ⟨self.buf.val.set (self.head.val + idx) new_elem, by
+          { self with buf := alloc.vec.Vec.from (self.buf.val.set (self.head.val + idx) new_elem) (by
               have := self.buf.property
-              simp only [List.length_set]; omega⟩ })
+              simp only [List.length_set]; omega) })
       else
         fail .panic
     else
@@ -1402,7 +1338,7 @@ def
       if alloc.collections.vec_deque.IS_ZST T then
         deq
       else
-        { deq with buf := ⟨arr.val, by have := arr.property; scalar_tac⟩ }
+        { deq with buf := alloc.vec.Vec.from arr.val (by have := arr.property; scalar_tac) }
     -- `deq.head = 0; deq.len = N;`
     ok { deq with head := 0#usize, length := N }
 
@@ -1442,7 +1378,7 @@ Source: '/rustc/library/alloc/src/slice.rs', lines 730:4-730:37).
 
 Package an element list as a `Vec`, failing if it would exceed `Usize.max`. -/
 def Slice.listToVec {T : Type} (l : List T) : Result (alloc.vec.Vec T) :=
-  if h : l.length ≤ Std.Usize.max then ok ⟨l, h⟩ else fail .panic
+  if h : l.length ≤ Std.Usize.max then ok (alloc.vec.Vec.from l h) else fail .panic
 
 /-- Implementation helper for `Slice.Insts.AllocSliceConcatTVec.concat`
 (`[alloc::slice::{alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>}::concat]`,
@@ -1505,8 +1441,10 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
       obtain ⟨_, heq, rfl⟩ :=
         WP.spec_imp_exists (Slice.clone_spec (s := hd) fun _ _ => hclone _)
       simp [Slice.concatListAux, Shared0T.Insts.CoreBorrowBorrow.borrow, b, heq, ih]
-  simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq, h, bind_tc_ok,
-    Slice.listToVec, dif_pos hlen, WP.spec_ok]
+  simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq, h, bind_ok]
+  unfold Slice.listToVec
+  rw [dif_pos hlen]
+  simp only [WP.spec_ok, alloc.vec.Vec.from_val]
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
     Source: '/rustc/library/alloc/src/str.rs', lines 210:4-210:32
@@ -1553,8 +1491,8 @@ theorem Str.Insts.AllocBorrowToOwnedString.to_owned_spec (s : String)
       result = s ⦄ := by
   have hbytes :
       (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
-    simp only [toStr, List.map_map, Function.comp_def, UScalar.val, BitVec.toNat_ofFin,
-      UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
+    simp only [toStr, Slice.from_val, List.map_map, Function.comp_def, UScalar.val,
+      BitVec.toNat_ofFin, UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
   simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
   step*
 
@@ -1565,8 +1503,8 @@ theorem Str.Insts.AllocBorrowToOwnedString.to_owned_spec (s : String)
 def alloc.vec.Vec.truncate
   {T : Type} (A : Type) :
   alloc.vec.Vec T → Std.Usize → Result (alloc.vec.Vec T) :=
-  fun v n => ok ⟨v.val.take n.val, by
-    have := v.property; simp only [List.length_take]; omega⟩
+  fun v n => ok (alloc.vec.Vec.from (v.val.take n.val) (by
+    have := v.property; simp only [List.length_take]; omega))
 
 /-- **Spec theorem for `Vec::truncate`**: keeps the first `n` elements. -/
 @[step]
@@ -1581,7 +1519,7 @@ theorem alloc.vec.Vec.truncate_spec
 @[rust_fun "alloc::vec::{alloc::vec::Vec<@T>}::as_slice"]
 def alloc.vec.Vec.as_slice
   {T : Type} (A : Type) : alloc.vec.Vec T → Result (Slice T) :=
-  fun v => ok ⟨v.val, v.property⟩
+  fun v => ok (Slice.from v.val v.property)
 
 /-- **Spec theorem for `Vec::as_slice`**: the slice view shares the vector's
 elements. -/
@@ -1600,8 +1538,8 @@ def alloc.vec.Vec.remove
   alloc.vec.Vec T → Std.Usize → Result (T × (alloc.vec.Vec T)) :=
   fun v i =>
     if h : i.val < v.val.length then
-      ok (v.val[i.val]'h, ⟨v.val.eraseIdx i.val, by
-        have := v.property; have := List.length_eraseIdx_le v.val i.val; omega⟩)
+      ok (v.val[i.val]'h, alloc.vec.Vec.from (v.val.eraseIdx i.val) (by
+        have := v.property; have := List.length_eraseIdx_le v.val i.val; omega))
     else
       fail .arrayOutOfBounds
 
@@ -1625,7 +1563,7 @@ def alloc.vec.Vec.append
     (alloc.vec.Vec T)) :=
   fun v1 v2 =>
     if h : v1.val.length + v2.val.length ≤ Std.Usize.max then
-      ok (⟨v1.val ++ v2.val, by simp only [List.length_append]; omega⟩,
+      ok (alloc.vec.Vec.from (v1.val ++ v2.val) (by simp only [List.length_append]; omega),
           alloc.vec.Vec.new T)
     else
       fail .panic
@@ -1683,10 +1621,10 @@ def alloc.vec.Vec.split_off
     if h : at_.val ≤ v.val.length then
       -- Aeneas `&mut self` convention: `(return_value, updated_self)`.
       -- `split_off` returns the suffix `[at_, len)` and leaves `self = [0, at_)`.
-      ok (⟨v.val.drop at_.val, by
-            have := v.property; simp only [List.length_drop]; omega⟩,
-          ⟨v.val.take at_.val, by
-            have := v.property; simp only [List.length_take]; omega⟩)
+      ok (alloc.vec.Vec.from (v.val.drop at_.val) (by
+            have := v.property; simp only [List.length_drop]; omega),
+          alloc.vec.Vec.from (v.val.take at_.val) (by
+            have := v.property; simp only [List.length_take]; omega))
     else
       fail .panic
 
@@ -1889,10 +1827,10 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1
       (2 * mlkem768Params.encapsulationKeyBytes + headerBytes))
     (by
       have h : k.value.val.length = mlkem768Params.decapsulationKeyBytes := Array.length_eq _
-      simp only [List.slice_length, h, headerBytes, seedBytes, mlkem768Params,
+      simp only [List.slice_length, headerBytes, seedBytes, mlkem768Params,
         MlkemParams.encapsulationKeyBytes, MlkemParams.serializedPolyBytes,
-        MlkemParams.decapsulationKeyBytes]
-      decide))
+        MlkemParams.decapsulationKeyBytes] at h ⊢
+      scalar_tac))
 
 
 /-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::pk1`**
@@ -1912,7 +1850,7 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1_spec
         (2 * mlkem768Params.encapsulationKeyBytes)
         (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk1, WP.spec_ok]
-  exact ⟨Array.length_eq _, rfl⟩
+  exact ⟨Array.length_eq _, by simp [Array.make_val]⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 275:12-275:49
@@ -1928,10 +1866,10 @@ def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2
       (2 * mlkem768Params.encapsulationKeyBytes))
     (by
       have h : k.value.val.length = mlkem768Params.decapsulationKeyBytes := Array.length_eq _
-      simp only [List.slice_length, h, seedBytes, mlkem768Params,
+      simp only [List.slice_length, seedBytes, mlkem768Params,
         MlkemParams.encapsulationKeyBytes, MlkemParams.serializedPolyBytes,
-        MlkemParams.decapsulationKeyBytes]
-      decide))
+        MlkemParams.decapsulationKeyBytes] at h ⊢
+      scalar_tac))
 
 /-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::pk2`**
 
@@ -1950,7 +1888,7 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2_spec
         mlkem768Params.encapsulationKeyBytes
         (2 * mlkem768Params.encapsulationKeyBytes) ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.pk2, WP.spec_ok]
-  exact ⟨Array.length_eq _, rfl⟩
+  exact ⟨Array.length_eq _, by simp [Array.make_val]⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::sk]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 283:12-283:54
@@ -1976,7 +1914,7 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
       ⦃ (r : Array Std.U8 2400#usize) =>
       r.length = mlkem768Params.decapsulationKeyBytes ∧ r.val = k.value.val ⦄ := by
   simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk, WP.spec_ok]
-  exact ⟨Array.length_eq _, trivial⟩
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
@@ -2165,43 +2103,40 @@ theorem sorted_vec.SortedSet.sortedInsert_spec {T : Type}
         newList = list.take k ++ [x] ++ list.drop (k + 1))) := by
   induction list generalizing i idx opt newList with
   | nil =>
-    simp only [sortedInsert, ok.injEq, Prod.mk.injEq] at h
+    simp only [sortedInsert, Result.ok.injEq, Prod.mk.injEq] at h
     obtain ⟨rfl, rfl, rfl⟩ := h
     exact ⟨0, by omega, by omega, Or.inl (by simp)⟩
   | cons a rest ih =>
     simp only [sortedInsert] at h
-    rcases h_cmp : cmpOrdInst.cmp a x with ord | e | _
-    · -- cmp = ok ord
-      simp only [h_cmp, bind_tc_ok] at h
+    cases h_cmp : cmpOrdInst.cmp a x with
+    | ret ord =>
+      simp only [h_cmp, bind_ok] at h
       rcases ord with _ | _ | _
-      · -- Ordering.lt: recursive case
-        simp only [] at h
-        rcases h_rec : sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)
-          with ⟨idx', opt', rest'⟩ | e' | _
-        · -- recursive call succeeded
-          simp only [h_rec, bind_tc_ok] at h
+      · -- Ordering.lt: recursive case. Case on `Result.match` of the recursive call (an
+        -- inductive view) rather than on the coinductive `Result` itself.
+        cases hr : (sorted_vec.SortedSet.sortedInsert cmpOrdInst rest x (i + 1)).match with
+        | ok r =>
+          obtain ⟨idx', opt', rest'⟩ := r
+          rw [Result.match.isOk] at hr
+          simp only [hr, bind_ok, uncurry_apply_pair, ok.injEq, Prod.mk.injEq] at h
           obtain ⟨rfl, rfl, rfl⟩ := h
-          obtain ⟨k, hk_idx, hk_le, hk_prop⟩ := ih (i + 1) h_rec
+          obtain ⟨k, hk_idx, hk_le, hk_prop⟩ := ih (i + 1) hr
           refine ⟨k + 1, by omega, by grind, ?_⟩
           rcases hk_prop with h_ins | ⟨h_lt, h_rep⟩
           · exact Or.inl (by simp [h_ins])
           · exact Or.inr ⟨by grind, by simp [h_rep]⟩
-        · -- recursive call failed
-          simp only [h_rec, bind_tc_fail, reduceCtorEq] at h
-        · -- recursive call diverged
-          simp only [h_rec, bind_tc_div, reduceCtorEq] at h
+        | div => rw [Result.match.isDiv] at hr; simp [hr] at h
+        | vis e kk => rw [Result.match.isVis] at hr; simp [hr] at h
       · -- Ordering.eq: replace in place
-        simp only [ok.injEq, Prod.mk.injEq] at h
+        simp only [Result.ok.injEq, Prod.mk.injEq] at h
         obtain ⟨rfl, rfl, rfl⟩ := h
         exact ⟨0, by omega, by omega, Or.inr ⟨by simp, by simp⟩⟩
       · -- Ordering.gt: insert before
-        simp only [ok.injEq, Prod.mk.injEq] at h
+        simp only [Result.ok.injEq, Prod.mk.injEq] at h
         obtain ⟨rfl, rfl, rfl⟩ := h
         exact ⟨0, by omega, by omega, Or.inl (by simp)⟩
-    · -- cmp = fail
-      simp only [h_cmp, bind_tc_fail, reduceCtorEq] at h
-    · -- cmp = div
-      simp only [h_cmp, bind_tc_div, reduceCtorEq] at h
+    | vis e k => simp [h_cmp] at h
+    | div => simp [h_cmp] at h
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::push]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 392:2-392:58
@@ -2256,9 +2191,9 @@ def sorted_vec.SortedSet.push
       | none =>
         -- Container is empty: push the element and return (0, None)
         ok ((0#usize, none),
-            ⟨s.val ++ [x], by
+            alloc.vec.Vec.from (s.val ++ [x]) (by
               simp only [List.length_append, List.length_cons, List.length_nil, zero_add]
-              scalar_tac⟩)
+              scalar_tac))
       | some last => do
         -- Non-empty: compare element with last
         let ord ← corecmpOrdInst.cmp x last
@@ -2266,28 +2201,26 @@ def sorted_vec.SortedSet.push
         | .gt =>
           -- element > last: push to back, O(1) fast path
           ok ((⟨s.val.length, by scalar_tac⟩, none),
-              ⟨s.val ++ [x], by
+              alloc.vec.Vec.from (s.val ++ [x]) (by
                 simp only [List.length_append, List.length_cons, List.length_nil, zero_add]
-                scalar_tac⟩)
+                scalar_tac))
         | .eq =>
           -- element == last: pop last, push element (replace last with element)
           ok ((⟨s.val.length - 1, by
                 have := s.property
                 have : s.val ≠ [] := by intro h; simp [h] at hm
                 scalar_tac⟩, some last),
-              ⟨s.val.dropLast ++ [x], by
+              alloc.vec.Vec.from (s.val.dropLast ++ [x]) (by
                 have := s.property
                 simp only [List.length_append, List.length_cons, List.length_nil,
-                  List.length_dropLast, zero_add]; omega⟩)
-        | .lt =>
+                  List.length_dropLast, zero_add]; omega))
+        | .lt => do
           -- element < last: fall back to replace (sorted insert via binary search)
-          match sorted_vec.SortedSet.sortedInsert corecmpOrdInst s.val x 0 with
-          | .ok (idx, opt, newList) =>
-            dite (newList.length ≤ Usize.max ∧ idx ≤ Usize.max)
-              (fun hbnd => ok ((⟨idx, by have := hbnd.2; grind⟩, opt), ⟨newList, hbnd.1⟩))
-              (fun _ => fail .panic)
-          | .fail e => fail e
-          | .div => div
+          let (idx, opt, newList) ← sorted_vec.SortedSet.sortedInsert corecmpOrdInst s.val x 0
+          dite (newList.length ≤ Usize.max ∧ idx ≤ Usize.max)
+            (fun hbnd => ok ((⟨idx, by have := hbnd.2; grind⟩, opt),
+              alloc.vec.Vec.from newList hbnd.1))
+            (fun _ => fail .panic)
     else
       fail .panic
 
@@ -2341,8 +2274,9 @@ theorem sorted_vec.SortedSet.push_spec_gt
     have : last' = last := by
       have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
     subst this
-    simp only [hcmp, bind_tc_ok, WP.spec_ok]
-    exact ⟨rfl, rfl, rfl⟩
+    simp only [hcmp, bind_ok, WP.spec_ok]
+    refine ⟨rfl, rfl, ?_⟩
+    simp
 
 /-- **Spec theorem for `SortedSet::push` (equal case)**:
     when the set is non-empty and the new element compares as `Equal`
@@ -2370,8 +2304,9 @@ theorem sorted_vec.SortedSet.push_spec_eq
     have : last' = last := by
       have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
     subst this
-    simp only [hcmp, bind_tc_ok, WP.spec_ok]
-    exact ⟨rfl, rfl, rfl⟩
+    simp only [hcmp, bind_ok, WP.spec_ok]
+    refine ⟨rfl, rfl, ?_⟩
+    simp
 
 /-- **Spec theorem for `SortedSet::push` (less case)**:
     when the set is non-empty and the new element compares as `Less`
@@ -2404,8 +2339,9 @@ theorem sorted_vec.SortedSet.push_spec_lt
     have : last' = last := by
       have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
     subst this
-    simp only [hcmp, bind_tc_ok, hsorted, dif_pos hbnd, WP.spec_ok]
-    exact ⟨rfl, rfl, rfl⟩
+    simp only [hcmp, bind_ok, hsorted]
+    simp [hbnd, WP.spec_ok]
+    rfl
 
 /-- **Spec theorem for `SortedSet::push` (Greater / empty combined)**:
     when the set is either empty or the new element compares as `Greater`
@@ -2442,8 +2378,9 @@ theorem sorted_vec.SortedSet.push_spec
       | cons _ _ => simp [hs, List.getLast?] at hlast
     simp [he, WP.spec_ok]
   · next last hlast =>
-    simp only [hcmp last hlast, bind_tc_ok, WP.spec_ok]
-    exact ⟨rfl, rfl, rfl⟩
+    simp only [hcmp last hlast, bind_ok, WP.spec_ok]
+    refine ⟨rfl, rfl, ?_⟩
+    simp
 
 /-- [sorted_vec::{core::ops::deref::Deref<sorted_vec::SortedVec<T>> for sorted_vec::SortedSet<T>}::deref]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 543:2-543:36

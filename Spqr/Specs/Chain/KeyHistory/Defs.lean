@@ -96,7 +96,7 @@ abbrev horizonBytes (horizon : U32) : List U8 :=
 
 /-- The `Slice U8` wrapper around `horizonBytes`. -/
 noncomputable abbrev horizonSlice (horizon : U32) : Slice U8 :=
-  ⟨horizonBytes horizon, by scalar_tac⟩
+  Slice.from (horizonBytes horizon) (by scalar_tac)
 
 /-- Postcondition predicate for `spqr.chain.KeyHistory.gc`.
 

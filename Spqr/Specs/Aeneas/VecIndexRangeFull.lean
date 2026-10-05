@@ -16,9 +16,6 @@ always succeeds, returning the vector's elements. -/
 @[step]
 theorem alloc.vec.Vec.index_RangeFull_spec {T : Type} (v : alloc.vec.Vec T) :
     alloc.vec.Vec.index
-      (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice T) v ()
+      (core.slice.index.SliceIndexRangeFullSlice T) v ()
     ⦃ (s : Slice T) => s.val = v.val ⦄ := by
-  unfold alloc.vec.Vec.index
-    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice
-    core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index
-  simp [WP.spec_ok]
+  simp [alloc.vec.Vec.index, alloc.vec.Vec.val]

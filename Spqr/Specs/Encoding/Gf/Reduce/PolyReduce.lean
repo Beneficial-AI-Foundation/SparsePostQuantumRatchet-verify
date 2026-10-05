@@ -273,7 +273,7 @@ theorem poly_reduce_spec (v : U32) :
   step*
   · scalar_tac
   · simp only [Array.length_eq]
-    rw [i21_post1, UScalar.val_and]
+    rw [‹i21.val = (shifted_v &&& 255#usize).val›, UScalar.val_and]
     exact nat_and_255_lt_256 _
   · have hi1_val : i1.val = v.val >>> 24 := by
       grind [U32.cast_Usize_val_eq]
@@ -282,23 +282,23 @@ theorem poly_reduce_spec (v : U32) :
       grind
     have hi2_eq : i2.val = reduceByteTable i1.val := by
       apply natToBinaryPoly_inj
-      have h := a_post i1 (by scalar_tac)
+      have h := ‹∀ j : Usize, j.val < 256 → _› i1 (by scalar_tac)
       simp only [Array.getElem!_Usize_eq] at h
-      rw [i2_post, List.Inhabited_getElem_eq_getElem! _ _ (by scalar_tac)]
+      rw [‹i2 = _›, List.Inhabited_getElem_eq_getElem! _ _ (by scalar_tac)]
       exact h.trans (reduceByteTable_eq_poly_full i1.val hi1_lt).symm
     have hi3_val : i3.val = i2.val := by
-      rw [i3_post, U16.cast_U32_val_eq]
+      rw [‹i3 = _›, U16.cast_U32_val_eq]
     have hi2_lt : i2.val < 2 ^ 16 := i2.hBounds
     have hi4_val : i4.val = i2.val <<< 8 := by
-      rw [i4_post1, hi3_val]
+      rw [‹i4.val = i3.val <<< 8 % U32.size›, hi3_val]
       have hbnd : i2.val <<< 8 < U32.size := by
         rw [Nat.shiftLeft_eq]
         scalar_tac
       exact Nat.mod_eq_of_lt hbnd
     have hv1_val : v1.val = v.val ^^^ (i2.val <<< 8) := by
-      rw [v1_post1, UScalar.val_xor, hi4_val]
+      rw [‹v1.val = (v ^^^ i4).val›, UScalar.val_xor, hi4_val]
     have hsh_val : shifted_v.val = i5.val := by
-      rw [shifted_v_post, U32.cast_Usize_val_eq]
+      rw [‹shifted_v = _›, U32.cast_Usize_val_eq]
     have hi21_val : i21.val = (v1.val >>> 16) &&& 255 := by
       grind
     have hi21_lt : i21.val < 256 := by
@@ -306,15 +306,15 @@ theorem poly_reduce_spec (v : U32) :
       apply nat_and_255_lt_256 _
     have hi6_eq : i6.val = reduceByteTable i21.val := by
       apply natToBinaryPoly_inj
-      have h := a_post i21 hi21_lt
+      have h := ‹∀ j : Usize, j.val < 256 → _› i21 hi21_lt
       simp only [Array.getElem!_Usize_eq] at h
-      rw [i6_post, List.Inhabited_getElem_eq_getElem! a.val ↑i21
+      rw [‹i6 = _›, List.Inhabited_getElem_eq_getElem! a.val ↑i21
         (by rw [Array.length_eq]; exact_mod_cast hi21_lt)]
       exact h.trans (reduceByteTable_eq_poly_full i21.val hi21_lt).symm
     have hi7_val : i7.val = i6.val := by
-      rw [i7_post, U16.cast_U32_val_eq]
+      rw [‹i7 = _›, U16.cast_U32_val_eq]
     have hv2_val : v2.val = v1.val ^^^ i6.val := by
-      rw [v2_post1, UScalar.val_xor, hi7_val]
+      rw [‹v2.val = (v1 ^^^ i7).val›, UScalar.val_xor, hi7_val]
     have hbridge : (UScalar.cast UScalarTy.U16 v2).val = polyReduce v.val := by
       rw [UScalar.cast_val_eq]
       change v2.val % 2 ^ 16 = polyReduce v.val

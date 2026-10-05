@@ -24,6 +24,12 @@ open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
 
+/-- `Pt.Insts.CoreCmpOrd.cmp` always succeeds, comparing x-coordinates. -/
+theorem cmp_eq (a b : Pt) :
+    Pt.Insts.CoreCmpOrd.cmp a b = ok (compare a.x.value.val b.x.value.val) := by
+  obtain ⟨r, h, hr⟩ := WP.spec_imp_exists (Pt.Insts.CoreCmpOrd.cmp_spec a b)
+  rw [h, hr]
+
 /-- `sortedInsert` with `Pt.Insts.CoreCmpOrd` always returns `ok`, because
     `Pt.Insts.CoreCmpOrd.cmp` always succeeds. -/
 theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
@@ -33,20 +39,16 @@ theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
   induction list generalizing i with
   | nil => exact ⟨i, none, [x], rfl⟩
   | cons a rest ih =>
-    simp only [sorted_vec.SortedSet.sortedInsert]
-    have h_cmp := Pt.Insts.CoreCmpOrd.cmp_spec a x
-    rcases h_eq : Pt.Insts.CoreCmpOrd.cmp a x with ord | e | _
-    · simp only [bind_tc_ok]
-      rcases ord with _ | _ | _
-      · -- lt: recursive
-        simp only []
-        obtain ⟨idx', opt', newList', h_rec⟩ := ih (i + 1)
-        simp only [h_rec, bind_tc_ok]
-        exact ⟨idx', opt', a :: newList', rfl⟩
-      · exact ⟨i, some a, x :: rest, rfl⟩  -- eq
-      · exact ⟨i, none, x :: a :: rest, rfl⟩  -- gt
-    · simp [h_eq] at h_cmp
-    · simp [h_eq] at h_cmp
+    simp only [sorted_vec.SortedSet.sortedInsert, cmp_eq, bind_ok]
+    split
+    · -- gt
+      exact ⟨i, none, x :: a :: rest, rfl⟩
+    · -- eq
+      exact ⟨i, some a, x :: rest, rfl⟩
+    · -- lt: recursive
+      obtain ⟨idx', opt', newList', h_rec⟩ := ih (i + 1)
+      simp only [h_rec, bind_ok]
+      exact ⟨idx', opt', a :: newList', rfl⟩
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0_loop0.body`**:
 
@@ -88,87 +90,59 @@ theorem body_spec
             match v.val.getLast? with
             | none => v1.val = v.val ++ [p]
             | some last =>
-              match Pt.Insts.CoreCmpOrd.cmp p last with
-              | ok Ordering.gt => v1.val = v.val ++ [p]
-              | ok Ordering.eq => v1.val = v.val.dropLast ++ [p]
-              | ok Ordering.lt =>
+              match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+              | .ok Ordering.gt => v1.val = v.val ++ [p]
+              | .ok Ordering.eq => v1.val = v.val.dropLast ++ [p]
+              | .ok Ordering.lt =>
                   ∃ (i : Nat),
                     i ≤ v.val.length ∧
                     (v1.val = v.val.take i ++ [p] ++ v.val.drop i ∨
                      (i < v.val.length ∧
                       v1.val = v.val.take i ++ [p] ++ v.val.drop (i + 1)))
               | _ => False ⦄ := by
-  unfold body sorted_vec.SortedSet.push
-  step*
-  simp only [dif_pos h_push_cap]
+  unfold body
+  step
   split
-  · -- getLast? = none
-    simp only [bind_tc_ok]
+  · step; step; step; step; step; step; step; step
+    have h_bound : j.val + 4 ≤ pts.val.length := by scalar_tac
     have h0 : j.val < pts.val.length := by scalar_tac
     have h1 : j.val + 1 < pts.val.length := by scalar_tac
     have h2 : j.val + 2 < pts.val.length := by scalar_tac
     have h3 : j.val + 3 < pts.val.length := by scalar_tac
-    simp_all [Array.make]
-    omega
-  · rename_i last hLast
-    have h_cmp_spec := Pt.Insts.CoreCmpOrd.cmp_spec p last
-    rcases h_cmp : Pt.Insts.CoreCmpOrd.cmp p last with ord_val | err | _
-    · simp only [bind_tc_ok]
-      have h_bound : j.val + 4 ≤ pts.val.length := by scalar_tac
-      have h0 : j.val < pts.val.length := by omega
-      have h1 : j.val + 1 < pts.val.length := by omega
-      have h2 : j.val + 2 < pts.val.length := by omega
-      have h3 : j.val + 3 < pts.val.length := by omega
-      rcases ord_val with _ | _ | _
-      · simp_all only [alloc.vec.Vec.length, Array.make,
-          Array.getElem!_Nat_eq, List.length_cons, List.length_nil, zero_add, Nat.reduceAdd,
-          Nat.ofNat_pos, getElem!_pos, List.getElem_cons_zero, Nat.one_lt_ofNat,
-          List.getElem_cons_succ, Nat.reduceLT, Nat.lt_add_one, WP.spec_ok,
-          UScalarTy.Usize_numBits_eq, not_true_eq_false, and_false, alloc.vec.Vec.getElem!_Nat_eq,
-          List.append_assoc, List.cons_append, List.nil_append, true_and]
-        obtain ⟨idx, opt, newList, h_si⟩ := sortedInsert_always_ok v.val p 0
+    have hx : p.x.value.val = (pts[j]!).val * 256 + (pts[j.val + 1]!).val := by
+      simp_all [alloc.vec.Vec.getElem!_Nat_eq]
+    have hy : p.y.value.val = (pts[j.val + 2]!).val * 256 + (pts[j.val + 3]!).val := by
+      simp_all [alloc.vec.Vec.getElem!_Nat_eq]
+    rcases hL : v.val.getLast? with _ | last
+    · step with sorted_vec.SortedSet.push_spec_empty Pt.Insts.CoreCmpOrd v p h_push_cap hL
+      refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
+      simp_all
+    · rcases hc : compare p.x.value.val last.x.value.val
+      · obtain ⟨idx, opt, newList, h_si⟩ := sortedInsert_always_ok v.val p 0
         obtain ⟨k, hk_idx, hk_le, hk_prop⟩ :=
-          sorted_vec.SortedSet.sortedInsert_spec
-            Pt.Insts.CoreCmpOrd v.val p 0 h_si
+          sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd v.val p 0 h_si
         have hbnd : newList.length ≤ Usize.max ∧ idx ≤ Usize.max := by
           constructor
           · rcases hk_prop with h_ins | ⟨_, h_rep⟩
-            · rw [h_ins]; simp [List.length_append, List.length_take, List.length_drop]
+            · rw [h_ins]; simp only [List.length_append, List.length_take, List.length_drop]
               grind
-            · rw [h_rep]; simp [List.length_append, List.length_take, List.length_drop]
+            · rw [h_rep]; simp only [List.length_append, List.length_take, List.length_drop]
               grind
           · grind
-        rw [← h_cmp_spec] at h_cmp
-        simp only [h_si, dif_pos hbnd]
-        simp_all only [alloc.vec.Vec.length, Order.add_one_le_iff, zero_add, List.append_assoc,
-          List.cons_append, List.nil_append, bind_tc_ok, uncurry_apply_pair, WP.spec_ok, true_and]
-        exact ⟨p, by grind, ‹_›, by grind⟩
-      · simp only [bind_tc_ok]
-        simp_all only [Array.make, Array.getElem!_Nat_eq, List.length_cons, List.length_nil,
-          zero_add, Nat.reduceAdd, Nat.ofNat_pos, getElem!_pos, List.getElem_cons_zero,
-          Nat.one_lt_ofNat, List.getElem_cons_succ, Nat.reduceLT, Nat.lt_add_one, WP.spec_ok,
-          UScalarTy.Usize_numBits_eq, uncurry_apply_pair, alloc.vec.Vec.length, not_true_eq_false,
-          and_false, alloc.vec.Vec.getElem!_Nat_eq, List.append_assoc, List.cons_append,
-          List.nil_append, true_and, List.append_singleton_inj,
-          List.append_cancel_left_eq, List.cons.injEq, and_true]
-        refine ⟨p, ?_, ?_, ?_⟩
-        · simp_all  [alloc.vec.Vec.length, Order.add_one_le_iff]
-        · simp_all only [alloc.vec.Vec.length, Order.add_one_le_iff]
-        · grind
-      · simp only [bind_tc_ok]
-        simp_all only [Array.make, Array.getElem!_Nat_eq, List.length_cons, List.length_nil,
-          zero_add, Nat.reduceAdd, Nat.ofNat_pos, getElem!_pos, List.getElem_cons_zero,
-          Nat.one_lt_ofNat, List.getElem_cons_succ, Nat.reduceLT, Nat.lt_add_one, WP.spec_ok,
-          UScalarTy.Usize_numBits_eq, uncurry_apply_pair, alloc.vec.Vec.length, not_true_eq_false,
-          and_false, alloc.vec.Vec.getElem!_Nat_eq, List.append_assoc, List.cons_append,
-          List.nil_append, true_and,  List.append_cancel_left_eq,
-          List.cons.injEq, and_true, List.append_singleton_inj]
-        refine ⟨p, ?_, ?_, ?_⟩
-        · simp_all  [alloc.vec.Vec.length, Order.add_one_le_iff]
-        · simp_all only [alloc.vec.Vec.length, Order.add_one_le_iff]
-        · grind
-    · simp [h_cmp] at h_cmp_spec
-    · simp [h_cmp] at h_cmp_spec
+        step with sorted_vec.SortedSet.push_spec_lt Pt.Insts.CoreCmpOrd v p h_push_cap last hL
+          (by rw [← hc]; exact cmp_eq p last) idx opt newList h_si hbnd
+        refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
+        simp only [cmp_eq, hc, Result.match.ok]
+        grind
+      · step with sorted_vec.SortedSet.push_spec_eq Pt.Insts.CoreCmpOrd v p h_push_cap last hL
+          (by rw [← hc]; exact cmp_eq p last)
+        refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
+        simp_all [cmp_eq]
+      · step with sorted_vec.SortedSet.push_spec_gt Pt.Insts.CoreCmpOrd v p h_push_cap last hL
+          (by rw [← hc]; exact cmp_eq p last)
+        refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
+        simp_all [cmp_eq]
+  · simp_all
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0_loop0`**:
 
@@ -219,10 +193,10 @@ theorem loop_spec
             match (vs k).val.getLast? with
             | none => (vs (k + 1)).val = (vs k).val ++ [p]
             | some last =>
-              match Pt.Insts.CoreCmpOrd.cmp p last with
-              | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-              | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-              | ok Ordering.lt =>
+              match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+              | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+              | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+              | .ok Ordering.lt =>
                   ∃ (i : Nat),
                     i ≤ (vs k).val.length ∧
                     ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -254,10 +228,10 @@ theorem loop_spec
               match (vs k).val.getLast? with
               | none => (vs (k + 1)).val = (vs k).val ++ [p]
               | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                | ok Ordering.lt =>
+                match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                | .ok Ordering.lt =>
                     ∃ (i : Nat),
                       i ≤ (vs k).val.length ∧
                       ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -370,10 +344,10 @@ theorem body_spec
                 match (vs k).val.getLast? with
                 | none => (vs (k + 1)).val = (vs k).val ++ [p]
                 | some last =>
-                  match Pt.Insts.CoreCmpOrd.cmp p last with
-                  | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                  | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                  | ok Ordering.lt =>
+                  match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                  | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                  | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                  | .ok Ordering.lt =>
                       ∃ (i : Nat),
                         i ≤ (vs k).val.length ∧
                         ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -385,12 +359,12 @@ theorem body_spec
   obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
     WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
     simp only [alloc.vec.Vec.index_slice_index, alloc.vec.Vec.len, UScalar.lt_equiv,
-      UScalar.ofNatCore_val_eq, uncurry_apply_pair, not_lt, ↓existsAndEq,
+      UScalar.ofNatCore_val_eq, not_lt, ↓existsAndEq,
       List.getElem!_eq_getElem?_getD, ne_eq, exists_and_left, true_and]
     have h_i_lt_v : iter.start.val < v.val.length := by grind
     have h_i_lt_16 : iter.start.val < 16 := by omega
@@ -405,11 +379,10 @@ theorem body_spec
       false_and, implies_true, and_self, Usize.ofNatCore_val_eq,
       zero_add, Array.set_val_eq,
       List.set_getElem_self, Nat.not_eq, ne_eq, not_false_eq_true, lt_or_lt_iff_ne, true_or,
-      or_true, List.set_getElem?_neq, List.length_set, List.Vector.length_val,
-      UScalar.ofNatCore_val_eq, getElem?_pos, List.getElem_set_self, Option.getD_some, true_and]
-      rename_i ha hb hc hd he hf hg
-      use v2
-      exact ⟨hc, v2_post2, by grind, by grind, by grind, by grind⟩
+      or_true, List.set_getElem?_neq, true_and]
+      refine ⟨n, vs, ?_, ?_, by grind, by grind, by grind⟩
+      · simp_all
+      · simp_all [alloc.vec.Vec.new]
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
     rw [h_opt_eq]
     exact ⟨rfl, h_lt⟩
@@ -445,10 +418,10 @@ theorem loop_spec
               match (vs k).val.getLast? with
               | none => (vs (k + 1)).val = (vs k).val ++ [p]
               | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                | ok Ordering.lt =>
+                match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                | .ok Ordering.lt =>
                     ∃ (i : Nat),
                       i ≤ (vs k).val.length ∧
                       ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -472,10 +445,10 @@ theorem loop_spec
               match (vs k).val.getLast? with
               | none => (vs (k + 1)).val = (vs k).val ++ [p]
               | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                | ok Ordering.lt =>
+                match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                | .ok Ordering.lt =>
                     ∃ (i : Nat),
                       i ≤ (vs k).val.length ∧
                       ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -507,10 +480,10 @@ theorem loop_spec
                               match (vs k).val.getLast? with
               | none => (vs (k + 1)).val = (vs k).val ++ [p]
               | some last =>
-                match Pt.Insts.CoreCmpOrd.cmp p last with
-                | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                | ok Ordering.lt =>
+                match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                | .ok Ordering.lt =>
                     ∃ (i : Nat),
                       i ≤ (vs k).val.length ∧
                       ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -616,10 +589,10 @@ theorem from_pb_spec
                   match (vs k).val.getLast? with
                   | none => (vs (k + 1)).val = (vs k).val ++ [p]
                   | some last =>
-                    match Pt.Insts.CoreCmpOrd.cmp p last with
-                    | ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                    | ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                    | ok Ordering.lt =>
+                    match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                    | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                    | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                    | .ok Ordering.lt =>
                         ∃ (i : Nat),
                           i ≤ (vs k).val.length ∧
                           ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
@@ -630,17 +603,16 @@ theorem from_pb_spec
         | core.result.Result.Err _ => False) ⦄ := by
   unfold from_pb
   simp only [alloc.vec.Vec.len, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, Usize.ofNatCore_val_eq,
-    UScalar.ofNatCore_val_eq, alloc.vec.Vec.index_slice_index, sorted_vec.SortedSet.new, bind_tc_ok,
-    ite_not, List.getElem!_eq_getElem?_getD, forall_exists_index, and_imp, List.Vector.length_val,
-    ↓existsAndEq, alloc.vec.Vec.length, alloc.vec.Vec.getElem!_Nat_eq, true_and]
+    UScalar.ofNatCore_val_eq, alloc.vec.Vec.index_slice_index, sorted_vec.SortedSet.new,
+    ite_not, List.getElem!_eq_getElem?_getD, forall_exists_index, and_imp, ↓existsAndEq,
+    alloc.vec.Vec.length, alloc.vec.Vec.getElem!_Nat_eq, true_and]
   step*
   · simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos,
-    Usize.ofNatCore_val_eq, ReduceNat.reduceNatEq, ↓existsAndEq, List.Vector.length_val,
-    UScalar.ofNatCore_val_eq, List.getElem!_eq_getElem?_getD, true_and, not_true_eq_false,
-    reduceCtorEq, imp_self, getElem?_pos, Option.getD_some, imp_false, Decidable.not_not,
-    UScalarTy.U32_numBits_eq, UScalarTy.Usize_numBits_eq, System.Platform.le_numBits,
-    UScalar.cast_val_mod_pow_greater_numBits_eq, implies_true, and_self, and_true]
-    intro x hx
+    Usize.ofNatCore_val_eq, ReduceNat.reduceNatEq, ↓existsAndEq, List.getElem!_eq_getElem?_getD,
+    true_and, not_true_eq_false, reduceCtorEq, imp_self, getElem?_pos, Option.getD_some, imp_false,
+    Decidable.not_not, UScalarTy.U32_numBits_eq, UScalarTy.Usize_numBits_eq,
+    System.Platform.le_numBits, UScalar.cast_val_mod_pow_greater_numBits_eq, implies_true, and_true]
+    refine ⟨fun x hx => ?_, fun _ => by simp⟩
     interval_cases x <;> assumption
   · simp_all
     grind

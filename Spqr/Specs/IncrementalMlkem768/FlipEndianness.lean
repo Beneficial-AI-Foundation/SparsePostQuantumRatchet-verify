@@ -91,7 +91,7 @@ theorem body_spec
     simp only [WP.uncurry'_pair] at h_post
     obtain ⟨h_opt, h_start1, h_end1, h_sb1⟩ := h_post
     rw [h_eq]
-    simp only [bind_tc_ok, h_opt]
+    simp only [bind_ok, h_opt]
     have h_i_lt : iter.iter.start.val < fixed_es.length := by omega
     have h_i1_lt : iter.iter.start.val + 1 < fixed_es.length := by omega
     step as ⟨i1, h_i1⟩
@@ -109,7 +109,7 @@ theorem body_spec
     simp only [WP.uncurry'_pair] at h_post
     obtain ⟨h_opt, h_it⟩ := h_post
     rw [h_eq]
-    simp only [bind_tc_ok, h_opt]
+    simp only [bind_ok, h_opt]
     grind
 
 
@@ -219,7 +219,10 @@ theorem flip_endianness_of_encapsulation_state_spec
   case h_suffix => grind
   case h_prefix => grind
   case h_end_le => scalar_tac
-  refine ⟨result_post1, fun k hk => result_post2 k (by scalar_tac),
-    fun k hk hk' => result_post3 k (by scalar_tac) hk'⟩
+  obtain ⟨h_pre, h_suf⟩ :
+      (∀ k < iter.iter.end.val, result[k]! = if k % 2 = 0 then es[k + 1]! else es[k - 1]!) ∧
+      (∀ k, iter.iter.end.val ≤ k → k < es.length → result[k]! = es[k]!) :=
+    ⟨‹_›, ‹_›⟩
+  refine ⟨‹_›, fun k hk => h_pre k (by scalar_tac), fun k hk hk' => h_suf k (by scalar_tac) hk'⟩
 
 end spqr.incremental_mlkem768

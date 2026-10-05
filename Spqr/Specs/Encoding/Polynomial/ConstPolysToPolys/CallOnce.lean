@@ -19,11 +19,11 @@ Postcondition (inherited from `call_mut_spec`):
 open Aeneas Aeneas.Std Result
 
 namespace spqr.encoding.polynomial.const_polys_to_polys.closure.Insts
-namespace CoreOpsFunctionFnOnceTupleSharedPolyConstPoly
+namespace CoreOpsFunctionFnOnceTupleShared0PolyConstPoly
 
 /--
 **Spec theorem for `encoding.polynomial.const_polys_to_polys.closure.Insts.
-CoreOpsFunctionFnOnceTupleSharedPolyConstPoly.call_once`**:
+CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once`**:
 
 `call_once c pc` delegates to `call_mut` and drops the closure state. Always succeeds since
 `PolyConst.to_poly` is total. Guarantees:
@@ -40,5 +40,5 @@ theorem call_once_spec
   unfold call_once
   step*
 
-end CoreOpsFunctionFnOnceTupleSharedPolyConstPoly
+end CoreOpsFunctionFnOnceTupleShared0PolyConstPoly
 end spqr.encoding.polynomial.const_polys_to_polys.closure.Insts

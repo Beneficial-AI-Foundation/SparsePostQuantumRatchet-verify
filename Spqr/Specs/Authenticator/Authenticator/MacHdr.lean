@@ -5,10 +5,7 @@ Authors: Markus Dablander
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
-import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.Vec
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.ArraySlice
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Specs.Aeneas.SliceConcat
 
@@ -59,8 +56,8 @@ theorem mac_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8)
     (h_data : hdr.length + 41 ≤ U32.max) :
     mac_hdr self ep hdr ⦃ (result : alloc.vec.Vec U8) =>
       result.length = MACSIZE.val ∧
-      let data : Slice U8 := Slice.make (MAC_HDR_LABEL ++ to_be_bytes ep ++ hdr);
-      libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
+      let data : Slice U8 := Slice.from (MAC_HDR_LABEL ++ to_be_bytes ep ++ hdr) (by grind);
+      libcrux_hmac.hmac .Sha256 self.mac_key.deref data (some MACSIZE) = ok result ⦄ := by
   unfold mac_hdr MACSIZE
   have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
@@ -68,7 +65,6 @@ theorem mac_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8)
   · simp [*]; grind
   · refine ⟨by simp [*], ?_⟩
     convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result›
-    · rfl
-    · apply Subtype.ext; simp [core.num.U64.to_be_bytes, *, MAC_HDR_LABEL]
+    apply Slice.ext; simp [core.num.U64.to_be_bytes, *, MAC_HDR_LABEL]
 
 end spqr.authenticator.Authenticator

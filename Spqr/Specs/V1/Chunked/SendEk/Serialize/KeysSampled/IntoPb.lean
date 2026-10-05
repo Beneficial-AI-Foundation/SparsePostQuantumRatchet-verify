@@ -59,6 +59,6 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
   rw [h_hdr_pb]
   step*
   refine ⟨?_, h_hdr_pb_post⟩
-  simp only [← hs_post1, ← hs_post2, ← hs_post3, ← hs_post4]
+  grind [cases proto.pq_ratchet.v1_state.unchunked.HeaderSent]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled
