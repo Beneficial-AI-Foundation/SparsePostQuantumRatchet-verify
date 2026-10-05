@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.Chain.Epoch.CallMut
-import Spqr.Specs.Chain.FunctionalModels
+import Spqr.Specs.Chain.Chain.FunctionalModels
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb::closure#1::call_once`
 

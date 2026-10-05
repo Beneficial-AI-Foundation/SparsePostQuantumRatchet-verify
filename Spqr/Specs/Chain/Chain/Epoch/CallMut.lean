@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
 import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
-import Spqr.Specs.Chain.FunctionalModels
+import Spqr.Specs.Chain.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb::closure#1::call_mut`
 
@@ -33,7 +33,7 @@ theorem call_mut_spec (c : chain.Chain.from_pb.closure_1)
       result.1 = Chain.FunctionalModels.epochFromPb tupled_args ∧ result.2 = c ⦄ := by
   unfold call_mut
   simp only [Chain.FunctionalModels.epochFromPb,
-    ChainEpochDirection.FunctionalModels.fromPb]
+    ChainEpochDirection.FunctionalModels.fromPb, Option.map]
   match tupled_args.send, tupled_args.recv with
   | some s, some r =>
     simp only [core.option.Option.ok_or,

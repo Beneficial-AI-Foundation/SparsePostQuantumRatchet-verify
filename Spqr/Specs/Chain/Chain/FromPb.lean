@@ -5,12 +5,12 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
-import Spqr.Specs.Chain.FunctionalModels
+import Spqr.Specs.Chain.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb`
 
 Converts a `Chain` from the protobuf form (`proto.pq_ratchet.Chain`) back into the
-in-memory Rust form (`chain.Chain`). The `direction` is converted via `try_from`,
+in-memory Rust form (`chain.Chain`). The `direction` is decoded via `directionFromI32`,
 `links` are mapped through `ChainEpochDirection.from_pb` on each epoch's `send`/`recv`
 fields, and `params` is unwrapped from `Option`. The reverse direction is `into_pb`.
 
@@ -22,19 +22,14 @@ open Aeneas Aeneas.Std Result spqr
 namespace spqr.chain.Chain
 
 /-- **Spec theorem for `spqr.chain.Chain.from_pb`**:
-• The call always succeeds (no panic).
-• The result is exactly the functional model `FunctionalModels.fromPb pb dirResult` where
-  `dirResult` is the result of converting `pb.direction` via `try_from` and `map_err`.
-
-The proof is blocked on the Aeneas iterator bridge (aeneas#1043) for the
-`into_iter`/`map`/`collect` pipeline over `Vec` and uses `sorry`.
-
+• The call always succeeds (no panic): the direction decode, every epoch conversion and the
+  `params` unwrap can only produce `Err StateDecode`, never a panic.
+• The result is exactly the functional model `FunctionalModels.fromPb pb`.
 **Source**: spqr/src/chain.rs (lines 434:4-452:5) -/
 @[step]
 theorem from_pb_spec (pb : proto.pq_ratchet.Chain) :
     from_pb pb ⦃ (result : core.result.Result chain.Chain Error) =>
-      ∃ dirResult,
-        result = FunctionalModels.fromPb pb dirResult ⦄ := by
+      result = FunctionalModels.fromPb pb ⦄ := by
   unfold from_pb FunctionalModels.fromPb
   sorry -- Blocked on https://github.com/AeneasVerif/aeneas/issues/1043
 
