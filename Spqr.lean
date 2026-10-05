@@ -8,6 +8,7 @@ import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Crypto.Hkdf
 import Spqr.Crypto.RFC5869
+import Spqr.Lib.MsgVersion
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
 import Spqr.Math.Gf16.Basic
