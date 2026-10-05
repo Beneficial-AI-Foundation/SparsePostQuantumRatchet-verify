@@ -107,7 +107,7 @@ theorem fun_name_spec (a : argType) (b : argType) (h1 : pre_condition1)
 
 ## Braid Spec File Guidelines
 
-Braid specs state properties from the ML-KEM Braid specification that range over more than one function call, such as every run of one party's state machine or both parties together.
+Braid specs state properties from the [ML-KEM Braid specification][mlkem-braid] (Rev. 1) that range over more than one function call, such as every run of one party's state machine or both parties together.
 
 - Place the file in a folder named after the section of the ML-KEM Braid spec the property comes from, not after a Rust source file: e.g. `Spqr/Specs/Braid/Scka/` for §1.1 (the SCKA interface) and `Spqr/Specs/Braid/StateMachine/` for §2.5.
 - Name the file after the property in UpperCamelCase, e.g. `EpochUniqueness.lean`. Lemmas needed only by that property go in a folder of the same name next to it.
@@ -116,7 +116,9 @@ Braid specs state properties from the ML-KEM Braid specification that range over
 - Theorem names say what the result is and follow the [Mathlib naming guidelines][mathlib-naming], e.g. `epochs_nodup`, rather than `<function>_spec`. They are not tagged `@[step]`.
 - Tag the theorem that states the property, not its support lemmas, with `@[correctness_spec, braid_spec "§x.y"]` (from `Spqr.Auxiliary.SpecTags`), giving the Braid spec section. Write the tags in the theorem's own `@[…]` header rather than in a separate `attribute` command, and keep `,` and `]` out of the section argument.
 - A property over runs may take successful calls as hypotheses (`f args = ok r`) instead of using `⦃ ... ⦄`.
+- The module docstring of the property file states whether the property covers one party or both, and arbitrary or only initialized states. If the property takes successful calls as hypotheses, the docstring says that it covers only successful calls and does not show that any call succeeds.
 
 
 [mathlib-style]: https://leanprover-community.github.io/contribute/style.html
 [mathlib-naming]: https://leanprover-community.github.io/contribute/naming.html
+[mlkem-braid]: https://signal.org/docs/specifications/mlkembraid/mlkembraid.pdf
