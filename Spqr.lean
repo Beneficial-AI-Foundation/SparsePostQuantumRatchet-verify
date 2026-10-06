@@ -83,6 +83,9 @@ import Spqr.Specs.Chain.Chain.Defs
 import Spqr.Specs.Chain.Chain.Epoch.CallMut
 import Spqr.Specs.Chain.Chain.Epoch.CallOnce
 import Spqr.Specs.Chain.Chain.EpochIdx
+import Spqr.Specs.Chain.Chain.FromPb
+import Spqr.Specs.Chain.Chain.FunctionalModels
+import Spqr.Specs.Chain.Chain.IntoPb
 import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Chain.Chain.RecvKey
 import Spqr.Specs.Chain.Chain.RecvKey32
@@ -90,6 +93,7 @@ import Spqr.Specs.Chain.Chain.SendKey
 import Spqr.Specs.Chain.Chain.SendKey64
 import Spqr.Specs.Chain.ChainEpochDirection.ClearNext
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
+import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
 import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
 import Spqr.Specs.Chain.ChainEpochDirection.Key
 import Spqr.Specs.Chain.ChainEpochDirection.Key32
