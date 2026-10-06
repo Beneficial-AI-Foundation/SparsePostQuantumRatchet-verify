@@ -18,10 +18,12 @@ translated data types only, together with the round-trip laws relating them.
 open Aeneas.Std spqr.chain
 namespace spqr.chain.Chain.FunctionalModels
 
+/-- Functional model of `spqr::chain::ChainEpoch::into_pb`. -/
 def epochIntoPb (ce : ChainEpoch) : proto.pq_ratchet.chain.Epoch :=
   { send := some (ChainEpochDirection.FunctionalModels.intoPb ce.send),
     recv := some (ChainEpochDirection.FunctionalModels.intoPb ce.recv) }
 
+/-- Functional model of `spqr::chain::ChainEpoch::from_pb`. -/
 def epochFromPb (epoch : proto.pq_ratchet.chain.Epoch) :
     core.result.Result ChainEpoch Error :=
   match epoch.send.map ChainEpochDirection.FunctionalModels.fromPb,
@@ -29,6 +31,7 @@ def epochFromPb (epoch : proto.pq_ratchet.chain.Epoch) :
   | some (.Ok sd), some (.Ok rd) => .Ok { send := sd, recv := rd }
   | _, _ => .Err Error.StateDecode
 
+/-- Traverse a list with a fallible function, collecting results or short-circuiting on error. -/
 def traverseResult {α β : Type} (f : α → core.result.Result β Error) :
     List α → core.result.Result (List β) Error
   | [] => .Ok []
@@ -58,21 +61,25 @@ theorem traverseResult_length {α₁ β₁ : Type}
         simp only [hrest, core.result.Result.Ok.injEq] at h
         subst h; simp only [List.length_cons, ih bs hrest]
 
+/-- Traverse a `Vec` with a fallible function, preserving the length invariant. -/
 def traverseVec {α β : Type} (f : α → core.result.Result β Error) (v : alloc.vec.Vec α) :
     core.result.Result (alloc.vec.Vec β) Error :=
   match h : traverseResult f v.val with
   | .Err e => .Err e
   | .Ok l  => .Ok ⟨l, traverseResult_length f v.val l h ▸ v.property⟩
 
+/-- Extract the logical contents of a `VecDeque` as a plain list. -/
 def dequeContents {T A : Type} (d : alloc.collections.vec_deque.VecDeque T A) : List T :=
   (d.buf.val.drop d.head.val).take d.length.val
 
 /-! ## Direction helpers -/
 
+/-- Convert a `Direction` enum to its protobuf `I32` representation. -/
 def directionToI32 : proto.pq_ratchet.Direction → I32
   | .A2B => 0#i32
   | .B2A => 1#i32
 
+/-- Parse an `I32` into a `Direction` enum, returning an error on invalid values. -/
 def directionFromI32 (i : I32) : core.result.Result proto.pq_ratchet.Direction Error :=
   match i with
   | 0#iscalar => .Ok .A2B
@@ -91,6 +98,7 @@ theorem directionToI32_of_directionFromI32 (i : I32) (d : proto.pq_ratchet.Direc
 
 /-! ## Functional models -/
 
+/-- **Functional model of `spqr::chain::Chain::into_pb`** -/
 def intoPb (self : chain.Chain) : proto.pq_ratchet.Chain :=
   { direction := directionToI32 self.dir,
     current_epoch := self.current_epoch,
@@ -102,6 +110,7 @@ def intoPb (self : chain.Chain) : proto.pq_ratchet.Chain :=
     next_root := self.next_root,
     params := some self.params }
 
+/-- **Functional model of `spqr::chain::Chain::from_pb`** -/
 def fromPb (pb : proto.pq_ratchet.Chain) : core.result.Result chain.Chain Error :=
   match directionFromI32 pb.direction, traverseVec epochFromPb pb.links, pb.params with
   | .Ok dir, .Ok epochs, some params =>
