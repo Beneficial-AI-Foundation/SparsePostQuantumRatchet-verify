@@ -212,6 +212,7 @@ import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 import Spqr.Specs.IncrementalMlkem768.Generate
 import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Kdf.HkdfToVec
+import Spqr.Specs.Lib.ChainFrom
 import Spqr.Specs.Lib.ChainFromVersionNegotiation
 import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 import Spqr.Specs.Lib.CurrentVersion
