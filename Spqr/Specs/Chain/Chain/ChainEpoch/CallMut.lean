@@ -5,6 +5,9 @@ Authors: Hoang Le Truong
 -/
 import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
+import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+import Spqr.Specs.Chain.Chain.FunctionalModels
+
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_mut`
 
 Closure mapping `ChainEpoch` to `pqrpb::chain::Epoch` by calling `into_pb` on
@@ -19,26 +22,14 @@ namespace spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainE
 /-- **Spec theorem for `spqr.chain.Chain.into_pb.closure.Insts.
 CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut`**:
 
-Maps `tupled_args : ChainEpoch` to a `proto.pq_ratchet.chain.Epoch` whose `send`/`recv`
-are `some (into_pb ...)` of the corresponding directions. Returns closure `c` unchanged.
-Always succeeds. Proved by unfolding and `step*` with `ChainEpochDirection.into_pb_spec`. -/
+The result is exactly the functional model `Chain.FunctionalModels.epochIntoPb tupled_args`.
+Closure `c` is unchanged. Always succeeds. -/
 @[step]
 theorem call_mut_spec (c : chain.Chain.into_pb.closure) (tupled_args : chain.ChainEpoch) :
     call_mut c tupled_args ⦃ (result : proto.pq_ratchet.chain.Epoch ×
-    chain.Chain.into_pb.closure) =>
-      result.1.send = some {
-        ctr  := tupled_args.send.ctr,
-        next := tupled_args.send.next,
-        prev := tupled_args.send.prev.data } ∧
-      result.1.recv = some {
-        ctr  := tupled_args.recv.ctr,
-        next := tupled_args.recv.next,
-        prev := tupled_args.recv.prev.data } ∧
-      result.2 = c ⦄ := by
-  unfold call_mut
+      chain.Chain.into_pb.closure) =>
+      result.1 = Chain.FunctionalModels.epochIntoPb tupled_args ∧ result.2 = c ⦄ := by
+  unfold call_mut Chain.FunctionalModels.epochIntoPb
   step*
-  constructor
-  · congr 1; obtain ⟨_, _, _⟩ := ed; simp_all
-  · congr 1; obtain ⟨_, _, _⟩ := ed1; simp_all
 
 end spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
