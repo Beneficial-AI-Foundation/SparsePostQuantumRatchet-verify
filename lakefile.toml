@@ -26,6 +26,7 @@ name = "HeaderLinter"
 
 [[lean_lib]]
 name = "SrcTranslated"
+leanOptions = { weak.linter.style.headerAlt = false }
 
 [[lean_lib]]
 name = "Spqr"
