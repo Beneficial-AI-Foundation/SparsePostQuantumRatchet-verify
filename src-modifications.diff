@@ -135,7 +135,18 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
          }
          hax_lib::assume!(coefficients.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 + 1);
          Ok(Self { coefficients })
-@@ -569,16 +573,21 @@
+@@ -350,6 +354,10 @@
+ }
+ 
+ // For Protocol V1 with MLKEM-768: N <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1
++//
++// TEMPORARY WORKAROUND — remove this `#[derive(Copy, Clone)]` once
++// https://github.com/AeneasVerif/charon/issues/1504 is resolved.
++#[derive(Copy, Clone)]
+ struct PolyConst<const N: usize> {
+     coefficients: [GF16; N],
+ }
+@@ -569,16 +577,21 @@
      pub(crate) fn from_pb(
          pb: proto::pq_ratchet::PolynomialEncoder,
      ) -> Result<Self, PolynomialError> {
@@ -161,7 +172,7 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
  
              #[allow(clippy::needless_range_loop)]
              for i in 0..NUM_POLYS {
-@@ -586,24 +595,28 @@
+@@ -586,24 +599,28 @@
                  if pts.len() % 2 != 0 {
                      return Err(PolynomialError::SerializationInvalid);
                  }
@@ -203,7 +214,7 @@ diff -Naur --no-dereference a/src/encoding/polynomial.rs b/src/encoding/polynomi
      }
  
      #[requires(poly < 16)]
-@@ -805,16 +818,31 @@
+@@ -805,16 +822,31 @@
          if pb.pts.len() != 16 {
              return Err(PolynomialError::SerializationInvalid);
          }
