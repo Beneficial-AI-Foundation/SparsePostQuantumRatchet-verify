@@ -255,9 +255,8 @@ theorem core.array.from_fn_loop_length
           simp only [bind_ok, uncurry_apply_pair, h_rest, ok.injEq] at h_ok
           subst h_ok
           have hi' : (↑i' : Nat) = ↑i + 1 := by
-            obtain ⟨z, hz, hzv⟩ :=
-              WP.spec_imp_exists (Usize.add_spec (x := i) (y := 1#usize) (by scalar_tac))
-            rw [h_add] at hz; rw [Result.ok_injective hz]; scalar_tac
+            have h_spec := Usize.add_spec (x := i) (y := 1#usize) (by scalar_tac)
+            rw [h_add, WP.spec_ok] at h_spec; scalar_tac
           simp only [List.length_cons, ih f' i' rest h_rest (by scalar_tac)]
         | vis e kk => simp [h_rest] at h_ok
         | div => simp [h_rest] at h_ok
@@ -1437,15 +1436,21 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
       v.val = (sv.val.map (·.val)).flatten ⦄ := by
   set b : core.borrow.Borrow (Slice T) (Slice T) :=
     { borrow := Shared0T.Insts.CoreBorrowBorrow.borrow }
-  have h : ∀ l, Slice.concatListAux corecloneCloneInst b l = ok ((l.map (·.val)).flatten) :=
-    fun l => l.rec rfl fun hd _ ih => by
-      obtain ⟨_, heq, rfl⟩ :=
-        WP.spec_imp_exists (Slice.clone_spec (s := hd) fun _ _ => hclone _)
-      simp [Slice.concatListAux, Shared0T.Insts.CoreBorrowBorrow.borrow, b, heq, ih]
-  simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq, h, bind_ok]
+  have h : ∀ l, Slice.concatListAux corecloneCloneInst b l ⦃ r =>
+      r = (l.map (·.val)).flatten ⦄ := by
+    intro l
+    induction l with
+    | nil => simp [Slice.concatListAux]
+    | cons hd tl ih =>
+      simp only [Slice.concatListAux, Shared0T.Insts.CoreBorrowBorrow.borrow, b, bind_ok]
+      step with Slice.clone_spec (s := hd) fun _ _ => hclone _ as ⟨cs, h_cs⟩
+      step with ih as ⟨rest, h_rest⟩
+      simp [h_cs, h_rest]
+  simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq]
+  step with h sv.val as ⟨l, h_l⟩
   unfold Slice.listToVec
-  rw [dif_pos hlen]
-  simp only [WP.spec_ok, alloc.vec.Vec.from_val]
+  rw [dif_pos (h_l ▸ hlen)]
+  simp only [WP.spec_ok, alloc.vec.Vec.from_val, h_l]
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
     Source: '/rustc/library/alloc/src/str.rs', lines 210:4-210:32
