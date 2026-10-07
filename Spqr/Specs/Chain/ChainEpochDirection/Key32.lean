@@ -786,12 +786,11 @@ theorem key_spec_greater_jump_32 (self : chain.ChainEpochDirection) (ats : U32)
   have h_no_clear := key_spec_greater_jump_32_no_clear self ats params h_next_len h_at_bound
     h_maxooo_bound h_ctr_bound h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr
     h_ooo_no_overflow
-  obtain ⟨v, hv, -⟩ := WP.spec_imp_exists h_clear
-  simp only [hv, WP.spec_ok] at h_clear h_no_clear ⊢
-  intro h_gt h_jump_le
+  apply WP.spec_mono (WP.spec_and h_clear h_no_clear)
+  rintro v ⟨h_c, h_nc⟩ h_gt h_jump_le
   by_cases h_ooo : self.ctr.val + (chain.maxOoo params).val < ats.val
-  · exact h_clear h_gt h_jump_le h_ooo
-  · exact h_no_clear h_gt h_jump_le h_ooo
+  · exact h_c h_gt h_jump_le h_ooo
+  · exact h_nc h_gt h_jump_le h_ooo
 
 
 
@@ -829,10 +828,10 @@ theorem key_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
     h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
   have h_gj := key_spec_greater_jump_32 self ats params h_next_len h_at_bound h_maxooo_bound
     h_ctr_bound h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
-  obtain ⟨v, hv, -⟩ := WP.spec_imp_exists h_eq
-  simp only [hv, WP.spec_ok] at h_eq h_lt h_gt h_gj ⊢
+  apply WP.spec_mono (WP.spec_and h_eq (WP.spec_and h_lt (WP.spec_and h_gt h_gj)))
+  rintro v ⟨h_e, h_l, h_g, h_j⟩
   unfold chain.cedKeyPost
-  exact ⟨h_eq, h_lt, h_gt, fun h1 h2 => h_gj h1 h2⟩
+  exact ⟨h_e, h_l, h_g, fun h1 h2 => h_j h1 h2⟩
 
 
 end spqr.chain.ChainEpochDirection

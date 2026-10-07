@@ -83,10 +83,8 @@ theorem body_spec
                 g.toGF216 =(polys[iter.start.val]!).toGF216Poly.eval (idx.val.toGF216) ∧
                 self1 = self ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -338,9 +336,8 @@ theorem loop_spec
               exact h_lagrange' pts_init h_pts_init polys_new h_polys_new j hj
         · grind
     · unfold body
-      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter')
-      rw [hnext]; simp only [bind_ok]
+      step with core.iter.range.IteratorRange.next_Usize_spec' iter' as
+        ⟨opt, iter1', h_none, h_some⟩
       obtain ⟨h_opt_eq, _⟩ := h_none h_iter_lt
       subst h_opt_eq
       dsimp

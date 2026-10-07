@@ -84,14 +84,9 @@ theorem body_spec
             out[k]! = fixed_es[k]!) ⦄ := by
   unfold body
   by_cases h_lt : iter.iter.start.val < iter.iter.end.val
-  · obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
-      WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_some_spec iter h_lt
-          (by omega) (by omega))
-    simp only [WP.uncurry'_pair] at h_post
-    obtain ⟨h_opt, h_start1, h_end1, h_sb1⟩ := h_post
-    rw [h_eq]
-    simp only [bind_ok, h_opt]
+  · step with core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_some_spec iter h_lt
+      (by omega) (by omega) as ⟨opt, iter1, h_opt, h_start1, h_end1, h_sb1⟩
+    simp only [h_opt]
     have h_i_lt : iter.iter.start.val < fixed_es.length := by omega
     have h_i1_lt : iter.iter.start.val + 1 < fixed_es.length := by omega
     step as ⟨i1, h_i1⟩
@@ -102,14 +97,9 @@ theorem body_spec
     step as ⟨x1, index_mut_back1, h_x1, h_back1⟩
     simp only [h_back1]
     grind
-  · obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
-      WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
-          (by omega))
-    simp only [WP.uncurry'_pair] at h_post
-    obtain ⟨h_opt, h_it⟩ := h_post
-    rw [h_eq]
-    simp only [bind_ok, h_opt]
+  · step with core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
+      (by omega) as ⟨opt, iter1, h_opt, h_it⟩
+    simp only [h_opt]
     grind
 
 

@@ -51,10 +51,8 @@ theorem body_spec
           out1.toGF216Poly = out.toGF216Poly +
             C ((pts[iter.start]!).y.toGF216) * (polys[iter.start]!).toGF216Poly ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end.val
   · simp only [Slice.getElem!_Usize_eq] at *
     have : iter.start.val < polys.val.length := by scalar_tac

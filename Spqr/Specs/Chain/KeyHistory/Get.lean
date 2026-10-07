@@ -80,13 +80,10 @@ theorem body_spec
     exact this
   by_cases h_lt : iter.iter.start.val < iter.iter.end.val
   · have h_step_pos : iter.step_by.val > 0 := by omega
-    obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
-      WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_spec iter h_step_pos)
-    simp only [WP.uncurry'_pair] at h_post
+    step with core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_spec iter h_step_pos
+      as ⟨opt, iter1, h_post, h_end1, h_sb1⟩
     simp only [h_lt, ↓reduceIte] at h_post
-    obtain ⟨⟨h_opt, h_start1⟩, h_end1, h_sb1⟩ := h_post
-    rw [h_eq]
+    obtain ⟨h_opt, h_start1⟩ := h_post
     simp only [h_opt]
     have h_i1_lt : iter.iter.start.val < v.length := by omega
     have h_36 : iter.iter.start.val + 36 ≤ v.length := by
@@ -96,10 +93,7 @@ theorem body_spec
     have h_4 : iter.iter.start.val + 4 ≤ v.length := by omega
     step as ⟨i2, h_i2⟩
     step as ⟨s, h_s_val, h_s_len⟩
-    have heq_spec := Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec s want
-    obtain ⟨b, hb_eq, hb_iff⟩ := WP.spec_imp_exists heq_spec
-    rw [hb_eq]
-    simp only [bind_ok]
+    step with Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec s want as ⟨b, hb_iff⟩
     by_cases hb : b = true
     · simp only [hb, ↓reduceIte]
       have h_s_want : s.val = want.val := hb_iff.1 hb
@@ -145,13 +139,8 @@ theorem body_spec
         split
         · omega
         · rw [h_end_eq]; exact h_data_aligned
-  · obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
-      WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
-          (by omega))
-    simp only [WP.uncurry'_pair] at h_post
-    obtain ⟨h_opt, h_it⟩ := h_post
-    rw [h_eq]
+  · step with core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
+      (by omega) as ⟨opt, iter1, h_opt, h_it⟩
     simp [h_opt]
     grind
 

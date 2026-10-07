@@ -57,10 +57,8 @@ theorem body_spec
                 ((out'[iter.start]!).coefficients[k]!).value.val =
                   256 * (v[iter.start]!)[2 * k]!  + (v[iter.start]!)[2 * k + 1]!) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     simp only [h_opt_eq]
@@ -188,10 +186,8 @@ theorem body_spec
             v1 = v ++ [g] ∧
             g.value.val = pts[2 * iter.start.val]! * 256 + pts[2 * iter.start.val + 1]! ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     simp only [h_opt_eq]
@@ -322,10 +318,8 @@ theorem body_spec
                   ((v.val[iter.start.val]!).val[2 * k]!).val * 256 +
                   ((v.val[iter.start.val]!).val[2 * k + 1]!).val) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     simp only [h_opt_eq]
@@ -522,10 +516,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       clear * - pb h_des
       intro i v iter out h_end_le_v h_end_le_16 h_lt
       unfold from_pb_loop0.body
-      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-      rw [hnext]
-      simp only [bind_ok]
+      step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+        ⟨opt, iter1', h_none, h_some⟩
       obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
       simp only [h_opt_eq]
       have h_idx : iter.start.val < v.length := by scalar_tac
@@ -547,10 +539,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       clear * - pb
       intro i v iter out h_end_le_v h_end_le_16 h_lt
       unfold from_pb_loop1.body
-      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-      rw [hnext]
-      simp only [bind_ok]
+      step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+        ⟨opt, iter1', h_none, h_some⟩
       obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
       simp only [h_opt_eq]
       have h_idx : iter.start.val < v.length := by scalar_tac
@@ -605,11 +595,11 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         | ControlFlow.cont (iter'', out'') => grind
       · exact ⟨rfl, h_bad⟩
     unfold from_pb
-    obtain ⟨n, hn, hn_post⟩ := WP.spec_imp_exists NUM_POLYS_spec
-    simp only [alloc.vec.Vec.is_empty, alloc.vec.Vec.len, hn, bind_ok]
+    simp only [alloc.vec.Vec.is_empty, alloc.vec.Vec.len, bind_ok]
     split
     next h_pts =>
       have h_pts' : pb.pts.val = [] := by simpa [List.isEmpty_iff] using h_pts
+      step with NUM_POLYS_spec as ⟨n, hn_post⟩
       split
       next h_len =>
         step as ⟨p, hp⟩
@@ -623,6 +613,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       split
       next h_polys =>
         have h_polys' : pb.polys.val = [] := by simpa [List.isEmpty_iff] using h_polys
+        step with NUM_POLYS_spec as ⟨n, hn_post⟩
         split
         next h_ne => simp
         next h_ne =>
