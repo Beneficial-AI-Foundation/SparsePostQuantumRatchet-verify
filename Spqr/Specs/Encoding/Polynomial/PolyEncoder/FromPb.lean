@@ -201,8 +201,7 @@ theorem body_spec
     step*
     exact ⟨h_lt, h_start1, h_end1, g, v1_post, by simp_all [Array.make, Nat.mul_comm]⟩
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨h_lt, rfl⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 2

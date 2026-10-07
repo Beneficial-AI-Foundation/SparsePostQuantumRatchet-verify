@@ -137,6 +137,7 @@ theorem body_spec
       have h_start1_val : iter1.iter.start.val =
         min (iter.iter.start.val + 36) iter.iter.end.val := by
         have := h_start1; simp only [h_step_val] at this; exact this
+      simp only [Bool.false_eq_true, ↓reduceIte, WP.spec_ok]
       refine ⟨h_lt, h_start1_val, h_end1, ?_, h_sb1, h_ne, ?_⟩
       · rw [h_end1]; exact h_end_eq
       · rw [h_start1_val]

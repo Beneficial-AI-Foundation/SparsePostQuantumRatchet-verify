@@ -392,9 +392,7 @@ theorem body_spec
       obtain ⟨j, hj, h_neq⟩ := h_res
       exact h_neq (h_valid j hj)
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    simp only [bind_ok]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop`**:
 

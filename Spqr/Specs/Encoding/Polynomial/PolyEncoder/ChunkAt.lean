@@ -344,7 +344,7 @@ theorem loop_spec
       obtain ⟨h_opt_eq, _⟩ := h_none h_iter_lt
       subst h_opt_eq
       dsimp
-      refine ⟨h_idx', ?_, fun j hj1 hj2 => h_pre' j hj1 (by grind), ?_⟩
+      refine (WP.spec_ok _).mpr ⟨h_idx', ?_, fun j hj1 hj2 => h_pre' j hj1 (by grind), ?_⟩
       · simp [h_out_len']; grind
       · cases h_s : self.s with
         | Polys polys =>

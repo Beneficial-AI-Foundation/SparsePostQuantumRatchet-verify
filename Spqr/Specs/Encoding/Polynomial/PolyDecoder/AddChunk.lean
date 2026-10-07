@@ -305,8 +305,7 @@ theorem body_spec
           h_px, h_py, ?_⟩
         exact ite_or_of_neg_neg h_c' h_c2' trivial
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 private theorem body_pts_length_le
     (self1 self' : PolyDecoder) (p : Pt) (poly : Nat)

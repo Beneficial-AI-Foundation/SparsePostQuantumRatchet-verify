@@ -384,8 +384,7 @@ theorem body_spec
       · simp_all
       · simp_all [alloc.vec.Vec.new]
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0`**:
 

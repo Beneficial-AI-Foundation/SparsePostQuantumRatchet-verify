@@ -209,9 +209,8 @@ theorem reduce_from_byte_loop_body_spec
           exact (and_shiftLeft_one_eq_zero_iff_testBit_false a.val
           (i.val - 1) h_bound).mp h_mask_zero
         simp [h_tb, ↓reduceIte]
-  · simp only [show ¬(i > 0#u32) from hgt, ↓reduceIte]
-    constructor
-    scalar_tac
+  · simp only [show ¬(i > 0#u32) from hgt, ↓reduceIte, WP.spec_ok]
+    exact ⟨by scalar_tac, trivial⟩
 
 
 /-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_from_byte`

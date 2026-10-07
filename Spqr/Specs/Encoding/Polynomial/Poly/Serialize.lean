@@ -35,12 +35,9 @@ private lemma extend_from_slice_U8_spec
   have h_clone_x :
       ∀ x ∈ s.val, core.clone.CloneU8.clone x = ok x := by
     intros _ _; rfl
-  have h_slclone :
-      Slice.clone core.clone.CloneU8.clone s = ok s := by
-    obtain ⟨s', h_eq, hs⟩ := WP.spec_imp_exists (Slice.clone_spec h_clone_x)
-    rw [h_eq, ← hs]
   unfold alloc.vec.Vec.extend_from_slice
-  grind
+  rw [dif_pos h]
+  step*
 
 /-! ## Helper: big-endian byte pair arithmetic -/
 

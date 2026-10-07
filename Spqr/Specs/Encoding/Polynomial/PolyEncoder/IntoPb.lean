@@ -167,8 +167,7 @@ theorem body_spec
     · simp_all
       grind
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
 
@@ -300,8 +299,7 @@ theorem body_spec
       rw [← List.Inhabited_getElem_eq_getElem! (hi := h_lt)]
     step*
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 

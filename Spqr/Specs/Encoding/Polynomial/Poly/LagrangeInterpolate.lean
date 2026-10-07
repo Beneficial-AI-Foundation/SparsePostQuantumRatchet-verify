@@ -268,13 +268,10 @@ private lemma extend_from_slice_GF16_spec
   have h_clone_x : ∀ x ∈ s.val, GF16.Insts.CoreCloneClone.clone x = ok x := by
     intros _ _
     simp [GF16.Insts.CoreCloneClone.clone]
-  have h_slclone : Slice.clone GF16.Insts.CoreCloneClone.clone s = ok s := by
-    obtain ⟨s', h_eq, hs⟩ := WP.spec_imp_exists (Slice.clone_spec h_clone_x)
-    rw [h_eq, ← hs]
   unfold alloc.vec.Vec.extend_from_slice
   have hlen : v.length + s.length ≤ Usize.max := h
   rw [dif_pos hlen]
-  grind
+  step*
 
 theorem lagrange_interpolate_formula
     (pts : Slice Pt)

@@ -71,7 +71,7 @@ theorem body_spec
       grind
   · obtain ⟨h_opt, _⟩ := h_none (by omega)
     subst h_opt
-    exact ⟨rfl, by omega⟩
+    exact (WP.spec_ok _).mpr ⟨rfl, by omega⟩
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.into_pb_loop0_loop0`**:
 
@@ -192,8 +192,7 @@ theorem body_spec
     · simp_all [alloc.vec.Vec.with_capacity]
     · simp_all
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.into_pb_loop0`**:
 

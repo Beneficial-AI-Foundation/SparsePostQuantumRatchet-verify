@@ -311,7 +311,7 @@ theorem decode_varint_spec
        | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
   unfold decode_varint
   by_cases hge : at1 ≥ alloc.vec.Vec.len from1
-  · simp only [hge, ↓reduceIte]
+  · simp only [hge, ↓reduceIte, WP.spec_ok]
     exact ⟨by scalar_tac, by simp⟩
   · simp only [hge, ↓reduceIte, core.cmp.min, MAX_VARINT_BYTES_LEN]
     step*

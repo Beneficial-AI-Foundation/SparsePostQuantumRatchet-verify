@@ -1,5 +1,6 @@
 import Aeneas
 import SrcTranslated.Types
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
