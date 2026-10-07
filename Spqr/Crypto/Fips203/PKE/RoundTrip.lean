@@ -36,6 +36,8 @@ succeeds when the total noise is small relative to `⌊q/2⌋ = 1664`.
 -/
 noncomputable section
 
+set_option maxHeartbeats 1600000
+
 namespace Fips203
 
 /-! ## Centred representative and absolute value in `ℤ_q` -/
@@ -86,9 +88,161 @@ structure ConsistentKeyPair (p : ParamSet) where
 
 This is the pointwise condition ensuring that each bit of the message survives
 the noise introduced during encryption and compression. -/
-axiom compress1_decompress1_stable (b : ℕ) (noise : Zq)
+lemma compress1_decompress1_stable (b : ℕ) (noise : Zq)
     (hb : b < 2) (hnoise : absZq noise < q / 4) :
-    compress 1 (decompress 1 b + noise) = b
+    compress 1 (decompress 1 b + noise) = b := by
+  have hval : noise.val < q := ZMod.val_lt noise
+  -- Extract noise range from absZq hypothesis
+  have hnoise_range : noise.val ≤ 831 ∨ (noise.val ≥ 2498 ∧ noise.val ≤ 3328) := by
+    unfold absZq centredRep at hnoise
+    simp only [q] at hnoise
+    by_cases h : noise.val ≤ 3329 / 2
+    · -- noise.val ≤ 1664: centred rep = noise.val ≥ 0
+      simp only [h, ite_true] at hnoise
+      have := Int.natAbs_of_nonneg (show (0 : ℤ) ≤ ↑noise.val by omega)
+      left; omega
+    · -- noise.val > 1664: centred rep = noise.val - 3329 < 0
+      simp only [show ¬(noise.val ≤ 3329 / 2) from by omega, ite_false] at hnoise
+      have hval2 : noise.val < 3329 := by unfold q at hval; exact hval
+      have h1 : (↑(noise.val) - ↑(3329 : ℕ) : ℤ).natAbs = 3329 - noise.val := by
+        have : (↑noise.val : ℤ) ≤ ↑(3329 : ℕ) := by omega
+        omega
+      rw [h1] at hnoise
+      right; constructor <;> omega
+  -- Now prove the main goal
+  interval_cases b
+  · -- b = 0
+    simp only [decompress, compress, Nat.shiftLeft_eq, Nat.shiftRight_eq_div_pow, q]
+    norm_num
+    rcases hnoise_range with h | ⟨h1, h2⟩ <;> omega
+  · -- b = 1
+    simp only [decompress, compress, Nat.shiftLeft_eq, Nat.shiftRight_eq_div_pow, q]
+    norm_num
+    -- Goal: (2 * ZMod.val (1665 + noise) + 1664) / 3329 % 2 = 1
+    -- Need to rewrite ZMod.val (1665 + noise)
+    have hval1665 : (1665 : ZMod 3329).val = 1665 := by
+      change (ZMod.val ((1665 : ℕ) : ZMod 3329)) = 1665
+      rw [ZMod.val_natCast_of_lt (by norm_num : (1665 : ℕ) < 3329)]
+    rw [show (1665 : Zq) = (1665 : ZMod 3329) from rfl]
+    rw [ZMod.val_add, hval1665]
+    have hval2 : noise.val < 3329 := by unfold q at hval; exact hval
+    rcases hnoise_range with h | ⟨h1, h2⟩ <;> omega
+
+/-! ## Linearity helpers -/
+
+/-- `invNtt` distributes over subtraction. -/
+private lemma invNtt_sub (f g : Fin n → Zq) :
+    invNtt (fun i => f i - g i) =
+      fun i => invNtt f i - invNtt g i := by
+  have hsub : (fun i => f i - g i) = fun i => f i + ((-1) * g i) := by
+    funext i; ring
+  rw [hsub, invNtt_add]
+  have := invNtt_smul (-1) g
+  funext i; rw [congrFun this i]; ring
+
+/-! ## polyMulCoeffs associativity -/
+
+/-- `polyMulCoeffs` is associative (inherited from `Rq` ring multiplication). -/
+private lemma polyMulCoeffs_assoc (f g h : Fin n → Zq) :
+    polyMulCoeffs (polyMulCoeffs f g) h =
+      polyMulCoeffs f (polyMulCoeffs g h) := by
+  simp only [polyMulCoeffs, ofCoeffs_toCoeffs, mul_assoc]
+
+/-! ## multiplyNTTs associativity -/
+
+/-- `multiplyNTTs` is associative. -/
+private lemma multiplyNTTs_assoc (a b c : Fin n → Zq) :
+    multiplyNTTs (multiplyNTTs a b) c =
+      multiplyNTTs a (multiplyNTTs b c) := by
+  obtain ⟨a', rfl⟩ := ntt_surjective a
+  obtain ⟨b', rfl⟩ := ntt_surjective b
+  obtain ⟨c', rfl⟩ := ntt_surjective c
+  have hab : multiplyNTTs (ntt a') (ntt b') = ntt (polyMulCoeffs a' b') :=
+    (ntt_polyMul a' b').symm
+  have hbc : multiplyNTTs (ntt b') (ntt c') = ntt (polyMulCoeffs b' c') :=
+    (ntt_polyMul b' c').symm
+  have lhs : multiplyNTTs (multiplyNTTs (ntt a') (ntt b')) (ntt c') =
+      ntt (polyMulCoeffs (polyMulCoeffs a' b') c') := by
+    rw [hab]; exact (ntt_polyMul (polyMulCoeffs a' b') c').symm
+  have rhs : multiplyNTTs (ntt a') (multiplyNTTs (ntt b') (ntt c')) =
+      ntt (polyMulCoeffs a' (polyMulCoeffs b' c')) := by
+    rw [hbc]; exact (ntt_polyMul a' (polyMulCoeffs b' c')).symm
+  rw [lhs, rhs, polyMulCoeffs_assoc]
+
+/-! ## Signal cancellation helper -/
+
+/-- `multiplyNTTs(multiplyNTTs a b) c = multiplyNTTs b (multiplyNTTs a c)` -/
+private lemma multiplyNTTs_comm_assoc (a b c : Fin n → Zq) :
+    multiplyNTTs (multiplyNTTs a b) c =
+      multiplyNTTs b (multiplyNTTs a c) := by
+  rw [multiplyNTTs_comm a b, multiplyNTTs_assoc]
+
+/-! ## Generalized sum lemmas -/
+
+/-- `invNtt` commutes with finite sums over any index type. -/
+private lemma invNtt_finset_sum {ι : Type*} (s : Finset ι)
+    (g : ι → Fin n → Zq) :
+    invNtt (fun i => ∑ j ∈ s, g j i) =
+      fun i => ∑ j ∈ s, invNtt (g j) i := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using invNtt_zero
+  | insert a s ha ih =>
+    have h1 : (fun i => ∑ j ∈ insert a s, g j i)
+        = fun i => g a i + ∑ j ∈ s, g j i := by
+      funext i; rw [Finset.sum_insert ha]
+    rw [h1, invNtt_add, ih]
+    funext i; simp [Finset.sum_insert ha]
+
+/-! ## Generalized multiplyNTTs sum lemmas -/
+
+/-- `multiplyNTTs` commutes with finite sums (right argument), over any index type. -/
+private lemma multiplyNTTs_finset_sum_right {ι : Type*} (s : Finset ι)
+    (fh : Fin n → Zq) (G : ι → Fin n → Zq) :
+    multiplyNTTs fh (fun i => ∑ k ∈ s, G k i) =
+      fun i => ∑ k ∈ s, multiplyNTTs fh (G k) i := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using multiplyNTTs_zero_right fh
+  | insert a s ha ih =>
+    have h1 : (fun i => ∑ k ∈ insert a s, G k i)
+        = fun i => G a i + ∑ k ∈ s, G k i := by
+      funext i; rw [Finset.sum_insert ha]
+    rw [h1, multiplyNTTs_add_right, ih]
+    funext i; simp [Finset.sum_insert ha]
+
+/-- `multiplyNTTs` commutes with finite sums (left argument), over any index type. -/
+private lemma multiplyNTTs_finset_sum_left {ι : Type*} (s : Finset ι)
+    (F : ι → Fin n → Zq) (gh : Fin n → Zq) :
+    multiplyNTTs (fun i => ∑ j ∈ s, F j i) gh =
+      fun i => ∑ j ∈ s, multiplyNTTs (F j) gh i := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using multiplyNTTs_zero_left gh
+  | insert a s ha ih =>
+    have h1 : (fun i => ∑ j ∈ insert a s, F j i)
+        = fun i => F a i + ∑ j ∈ s, F j i := by
+      funext i; rw [Finset.sum_insert ha]
+    rw [h1, multiplyNTTs_add_left, ih]
+    funext i; simp [Finset.sum_insert ha]
+
+/-! ## Signal term equality -/
+
+/-- The signal terms from encryption and decryption are equal:
+`∑ᵢ ∑ⱼ multiplyNTTs(multiplyNTTs(Â_ij)(ŝ_j))(ŷ_i)
+= ∑ᵢ ∑ₗ multiplyNTTs(ŝ_i)(multiplyNTTs(Â_li)(ŷ_l))`. -/
+private lemma signal_terms_eq {p : ParamSet}
+    (aHat : Fin p.k → Fin p.k → (Fin n → Zq))
+    (s_hat y_hat : Fin p.k → (Fin n → Zq)) :
+    (fun j => ∑ i : Fin p.k, (∑ l : Fin p.k,
+        multiplyNTTs (multiplyNTTs (aHat i l) (s_hat l)) (y_hat i) j)) =
+    (fun j => ∑ i : Fin p.k, (∑ l : Fin p.k,
+        multiplyNTTs (s_hat i) (multiplyNTTs (aHat l i) (y_hat l)) j)) := by
+  funext j
+  rw [Finset.sum_comm]
+  congr 1; ext i
+  congr 1; ext l
+  exact congrFun (multiplyNTTs_comm_assoc (aHat l i) (s_hat i) (y_hat l)) j
 
 /-! ## Core algebraic identity -/
 
@@ -120,11 +274,188 @@ theorem decrypt_encrypt_noise_identity {p : ParamSet}
         mu idx +
         (e2 idx +
          (∑ i : Fin p.k, invNtt (fun j =>
-           multiplyNTTs (ntt (s_hat i)) (ntt (e1 i)) j) idx) -
+           multiplyNTTs (e_hat i) (y_hat i) j) idx) -
          (∑ i : Fin p.k, invNtt (fun j =>
-           multiplyNTTs (ntt (e_hat i)) (ntt (y_hat i)) j) idx)) := by
-  sorry
+           multiplyNTTs (s_hat i) (ntt (e1 i)) j) idx)) := by
+  intro idx
+  -- Step 1: Unfold computeW and substitute v
+  rw [computeW_eq, h_v idx]
+  -- Step 2: Expand ntt(u i) using h_u
+  have h_ntt_u : ∀ i : Fin p.k, ntt (u i) = fun j =>
+      (∑ l : Fin p.k, multiplyNTTs (aHat l i) (y_hat l) j) +
+        ntt (e1 i) j := by
+    intro i
+    have : u i = fun idx => invNtt (fun j => ∑ l : Fin p.k,
+        multiplyNTTs (aHat l i) (y_hat l) j) idx + e1 i idx := by
+      funext idx; exact h_u i idx
+    rw [this, ntt_add, ntt_invNtt]
+  -- Step 3: Expand nttInnerProdDecrypt
+  have h_decrypt : (fun j => ∑ i : Fin p.k,
+      multiplyNTTs (s_hat i) (ntt (u i)) j) =
+    fun j => (∑ i : Fin p.k, ∑ l : Fin p.k,
+        multiplyNTTs (s_hat i)
+          (multiplyNTTs (aHat l i) (y_hat l)) j) +
+      (∑ i : Fin p.k,
+        multiplyNTTs (s_hat i) (ntt (e1 i)) j) := by
+    funext j
+    rw [← Finset.sum_add_distrib]
+    congr 1; ext i; rw [h_ntt_u i]
+    rw [congrFun (multiplyNTTs_add_right (s_hat i)
+      (fun j => ∑ l, multiplyNTTs (aHat l i) (y_hat l) j)
+      (ntt (e1 i))) j]
+    congr 1
+    exact congrFun (multiplyNTTs_finset_sum_right Finset.univ
+      (s_hat i) (fun l j => multiplyNTTs (aHat l i) (y_hat l) j)) j
+  -- Step 4: Expand nttInnerProd t_hat y_hat
+  have h_encrypt : nttInnerProd t_hat y_hat =
+    fun j => (∑ i : Fin p.k, ∑ l : Fin p.k,
+        multiplyNTTs (multiplyNTTs (aHat i l) (s_hat l))
+          (y_hat i) j) +
+      (∑ i : Fin p.k,
+        multiplyNTTs (e_hat i) (y_hat i) j) := by
+    funext j; simp only [nttInnerProd]
+    rw [← Finset.sum_add_distrib]
+    congr 1; ext i
+    have : t_hat i = fun idx =>
+        (∑ j : Fin p.k, multiplyNTTs (aHat i j) (s_hat j) idx) +
+          e_hat i idx := by funext idx; exact h_that i idx
+    rw [this]
+    rw [congrFun (multiplyNTTs_add_left
+      (fun idx => ∑ l, multiplyNTTs (aHat i l) (s_hat l) idx)
+      (e_hat i) (y_hat i)) j]
+    congr 1
+    exact congrFun (multiplyNTTs_finset_sum_left Finset.univ
+      (fun l idx => multiplyNTTs (aHat i l) (s_hat l) idx)
+      (y_hat i)) j
+  -- Step 5: Rewrite inner products and apply invNtt linearity
+  rw [h_encrypt, h_decrypt]
+  rw [congrFun (invNtt_add _ _) idx, congrFun (invNtt_add _ _) idx]
+  -- Signal cancellation
+  have h_signal := signal_terms_eq aHat s_hat y_hat
+  rw [h_signal]
+  -- Distribute invNtt over sums
+  have h_inv_ey : invNtt (fun j => ∑ i : Fin p.k,
+      multiplyNTTs (e_hat i) (y_hat i) j) idx =
+    ∑ i : Fin p.k, invNtt (fun j => multiplyNTTs (e_hat i) (y_hat i) j) idx := by
+    exact congrFun (invNtt_finset_sum Finset.univ
+      (fun i j => multiplyNTTs (e_hat i) (y_hat i) j)) idx
+  have h_inv_se : invNtt (fun j => ∑ i : Fin p.k,
+      multiplyNTTs (s_hat i) (ntt (e1 i)) j) idx =
+    ∑ i : Fin p.k, invNtt (fun j => multiplyNTTs (s_hat i) (ntt (e1 i)) j) idx :=
+    congrFun (invNtt_finset_sum Finset.univ
+      (fun i j => multiplyNTTs (s_hat i) (ntt (e1 i)) j)) idx
+  rw [h_inv_ey, h_inv_se]
+  ring
 
+
+/-! ## Ciphertext encoding round-trip lemmas -/
+
+/-- **Ciphertext U decode–encode round-trip**: decoding `u` from an encoded
+ciphertext recovers `Decompress_{d_u}(Compress_{d_u}(u_i))`.
+
+This follows from `byteDecode ∘ byteEncode = id` on values bounded by `2^{d_u}`,
+composed with the index arithmetic of `encodeCiphertext` / `decodeCiphertextU`. -/
+lemma decodeCiphertextU_encodeCiphertext {p : ParamSet}
+    (u : Fin p.k → (Fin n → Zq)) (v : Fin n → Zq)
+    (i : Fin p.k) (idx : Fin n) :
+    decodeCiphertextU (encodeCiphertext u v) i idx =
+      decompressPoly p.d_u (compressPoly p.d_u (u i)) idx := by
+  simp only [decodeCiphertextU, decompressPoly]
+  congr 1
+  have hd_u := p.hd_u.1
+  have hi := i.isLt
+  -- The byte array extracted from the ciphertext for polynomial i
+  -- equals byteEncode d_u (compressPoly d_u (u i))
+  have h_eq_bytes : ∀ (j : Fin (32 * p.d_u)),
+      encodeCiphertext u v ⟨32 * p.d_u * i.val + j.val, by
+        have hj := j.isLt; simp only [ParamSet.ctSizeEnc]; nlinarith⟩ =
+      encodeCompressPoly p.d_u (u i) j := by
+    intro j; have hj := j.isLt
+    simp only [encodeCiphertext]
+    have h_lt : 32 * p.d_u * i.val + j.val < 32 * p.d_u * p.k := by nlinarith
+    simp only [h_lt, dite_true, encodeC1, encodeCompressPoly]
+    -- Goal: byteEncode p.d_u (compressPoly p.d_u (u ⟨div, _⟩)) ⟨mod, _⟩ =
+    --       byteEncode p.d_u (compressPoly p.d_u (u i)) j
+    have h0 : 0 < 32 * p.d_u := by omega
+    have h_div : (32 * p.d_u * i.val + j.val) / (32 * p.d_u) = i.val := by
+      rw [show 32 * p.d_u * i.val = (32 * p.d_u) * i.val from by ring]
+      rw [Nat.mul_add_div h0]
+      have : j.val / (32 * p.d_u) = 0 := Nat.div_eq_of_lt hj
+      omega
+    have h_mod : (32 * p.d_u * i.val + j.val) % (32 * p.d_u) = j.val := by
+      rw [show 32 * p.d_u * i.val = (32 * p.d_u) * i.val from by ring]
+      rw [Nat.mul_add_mod]; exact Nat.mod_eq_of_lt hj
+    -- Use Fin.val equality to substitute
+    have h1 : (⟨(32 * p.d_u * i.val + j.val) / (32 * p.d_u),
+      Nat.div_lt_of_lt_mul (by omega)⟩ : Fin p.k) = i := Fin.ext h_div
+    have h2 : (⟨(32 * p.d_u * i.val + j.val) % (32 * p.d_u),
+      Nat.mod_lt _ h0⟩ : Fin (32 * p.d_u)) = j := Fin.ext h_mod
+    rw [h1, h2]
+  conv_lhs => rw [show (fun j => encodeCiphertext u v ⟨32 * p.d_u * i.val + j.val, _⟩) =
+    encodeCompressPoly p.d_u (u i) from funext h_eq_bytes]
+  simp only [encodeCompressPoly]
+  exact byteDecode_byteEncode p.d_u hd_u _
+    (fun idx => compress_lt_two_pow p.d_u (u i idx)) idx
+
+/-- **Ciphertext V decode–encode round-trip**: decoding `v` from an encoded
+ciphertext recovers `Decompress_{d_v}(Compress_{d_v}(v))`. -/
+lemma decodeCiphertextV_encodeCiphertext {p : ParamSet}
+    (u : Fin p.k → (Fin n → Zq)) (v : Fin n → Zq)
+    (idx : Fin n) :
+    decodeCiphertextV (encodeCiphertext u v) idx =
+      decompressPoly p.d_v (compressPoly p.d_v v) idx := by
+  simp only [decodeCiphertextV, decompressPoly]
+  congr 1
+  have hd_v := p.hd_v.1
+  have h_eq_bytes : ∀ (j : Fin (32 * p.d_v)),
+      encodeCiphertext u v ⟨32 * p.d_u * p.k + j.val, by
+        have hj := j.isLt; simp only [ParamSet.ctSizeEnc]; omega⟩ =
+      encodeCompressPoly p.d_v v j := by
+    intro j
+    simp only [encodeCiphertext]
+    have h_not_lt : ¬ ((32 * p.d_u * p.k + j.val) < 32 * p.d_u * p.k) := by omega
+    simp only [h_not_lt, dite_false, encodeC2, encodeCompressPoly]
+    congr 1; exact Fin.ext (by grind)
+  conv_lhs => rw [show (fun j => encodeCiphertext u v ⟨32 * p.d_u * p.k + j.val, _⟩) =
+    encodeCompressPoly p.d_v v from funext h_eq_bytes]
+  simp only [encodeCompressPoly]
+  exact byteDecode_byteEncode p.d_v hd_v _
+    (fun idx => compress_lt_two_pow p.d_v (v idx)) idx
+
+/-! ## Message byte-encoding round-trip -/
+
+/-- **Message encoding round-trip**: `byteEncode 1 (msgBit m) = m`. -/
+lemma byteEncode1_msgBit (m : Fin 32 → UInt8) :
+    byteEncode 1 (msgBit m) = m := by
+  -- Show coeffsToBits 1 (msgBit m) = bytesToBits m
+  suffices h_bits : coeffsToBits 1 (msgBit m) = bytesToBits m by
+    simp only [byteEncode]; rw [h_bits, bitsToBytes_bytesToBits]
+  funext idx
+  simp only [coeffsToBits, bytesToBits, msgBit, intBit, extractBit,
+    Nat.div_one, Nat.mod_one, pow_zero, Nat.shiftRight_eq_div_pow]
+  ext
+  -- Goal: ⟨((m[idx/8].toNat / 2^(idx%8)) &&& 1) % 2, _⟩ =
+  --       ⟨(m[idx/8].toNat / 2^(idx%8)) % 2, _⟩
+  simp only [Nat.and_one_is_mod]; omega
+
+/-- **Message recovery**: if `compress 1 (w idx) = msgBit m idx` for every
+coefficient, then `recoverMsg w = m`. -/
+lemma recoverMsg_of_compress_eq (w : Fin n → Zq) (m : Fin 32 → UInt8)
+    (h : ∀ idx : Fin n, compress 1 (w idx) = msgBit m idx) :
+    recoverMsg w = m := by
+  simp only [recoverMsg]
+  have h_eq : compressPoly 1 w = msgBit m := funext h
+  rw [h_eq]; exact byteEncode1_msgBit m
+
+/-! ## Encryption key ρ round-trip -/
+
+/-- The public seed `ρ` is recoverable from the encryption key. -/
+lemma decodeEkRho_kpkeKeyGen (d : Fin 32 → UInt8) (p : ParamSet) :
+    decodeEkRho (kpkeKeyGen d p).ek = rho d p := by
+  funext i; simp only [decodeEkRho, kpkeKeyGen, encodeEk]
+  have hi := i.isLt
+  have : ¬ (384 * p.k + i.val < 384 * p.k) := by omega
+  simp only [this, dite_false]
 
 /-! ## Main round-trip theorem -/
 
@@ -179,7 +510,44 @@ theorem kpke_roundTrip (p : ParamSet)
           idx -
          decompressMsg m idx)) < q / 4) :
     kpkeDecrypt p kp.dk (kpkeEncrypt p kp.ek m r).ct = m := by
-  sorry
+  -- Step 1: Rewrite key/seed round-trips before unfolding
+  have h_s_hat : decodeDkSHat kp.dk = nttVec (genSecret (sigma d p) p) :=
+    funext fun i => funext fun idx => h_dk_rt i idx
+  have h_t_hat : decodeEkTHat kp.ek = computeTHat (genMatrixA (rho d p) p)
+      (nttVec (genSecret (sigma d p) p))
+      (nttVec (genError (sigma d p) p)) :=
+    funext fun i => funext fun idx => h_ek_rt i idx
+  have h_rho : decodeEkRho kp.ek = rho d p := by
+    subst h_kp; exact decodeEkRho_kpkeKeyGen d p
+  -- Step 2: Unfold decrypt to expose recoverMsg ∘ computeW
+  unfold kpkeDecrypt
+  -- Goal: recoverMsg (computeW (decodeCiphertextV ct) (decodeDkSHat dk) (decodeCiphertextU ct)) = m
+  -- where ct = (kpkeEncrypt p kp.ek m r).ct
+  apply recoverMsg_of_compress_eq
+  intro idx
+  -- Step 3: Unfold encrypt to expose encodeCiphertext, then apply round-trips
+  simp only [kpkeEncrypt, h_t_hat, h_rho,
+    decodeCiphertextU_encodeCiphertext, h_s_hat]
+  -- Step 4: Rewrite v round-trip (function-level)
+  have h_v_fn : decodeCiphertextV
+      (encodeCiphertext
+        (computeU (genMatrixAT (rho d p) p) (nttVec (genEncSecret r p)) (genEncError1 r p))
+        (computeV (computeTHat (genMatrixA (rho d p) p)
+          (nttVec (genSecret (sigma d p) p)) (nttVec (genError (sigma d p) p)))
+          (nttVec (genEncSecret r p)) (genEncError2 r p) (decompressMsg m))) =
+      decompressPoly p.d_v (compressPoly p.d_v
+        (computeV (computeTHat (genMatrixA (rho d p) p)
+          (nttVec (genSecret (sigma d p) p)) (nttVec (genError (sigma d p) p)))
+          (nttVec (genEncSecret r p)) (genEncError2 r p) (decompressMsg m))) :=
+    funext (decodeCiphertextV_encodeCiphertext _ _)
+  rw [h_v_fn]
+  -- Goal: compress 1 (computeW v' s_hat u' idx) = msgBit m idx
+  -- Rewrite w as decompress 1 (msgBit m idx) + noise
+  set w := computeW _ _ _ idx
+  have hw : w = decompress 1 (msgBit m idx) + (w - decompressMsg m idx) := by
+    simp [decompressMsg]
+  rw [hw]
+  exact compress1_decompress1_stable (msgBit m idx) _ (h_msg idx) (h_noise idx)
 
 /-! ## Corollary: ML-KEM-768 instantiation -/
 
