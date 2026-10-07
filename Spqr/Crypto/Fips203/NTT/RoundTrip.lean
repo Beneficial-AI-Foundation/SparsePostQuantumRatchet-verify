@@ -259,7 +259,554 @@ lemma multiplyNTTs_sum_right (s : Finset (Fin n)) (fh : Fin n → Zq)
     funext i
     simp [Finset.sum_insert ha]
 
-/-- **Butterfly correctness** (axiomatised).  The imperative Cooley–Tukey
+/-! ### Linearity of `nttSpec` -/
+
+/-- `crtHom` sends the constant `c` of `R_q` to the constant `c` of the
+quadratic quotient. -/
+lemma crtHom_of (i : Fin 128) (c : Zq) :
+    crtHom i (AdjoinRoot.of cycloPoly c) = AdjoinRoot.of (gammaPoly i) c := by
+  unfold crtHom
+  exact AdjoinRoot.lift_of _
+
+/-- `crtHom` is `ℤ_q`-linear (it is a ring homomorphism commuting with the
+structure maps). -/
+lemma crtHom_smul (i : Fin 128) (c : Zq) (r : Rq) :
+    crtHom i (c • r) = c • crtHom i r := by
+  rw [Algebra.smul_def, AdjoinRoot.algebraMap_eq, map_mul, crtHom_of,
+    ← AdjoinRoot.algebraMap_eq, ← Algebra.smul_def]
+
+/-- `quadCoeff0` is additive. -/
+lemma quadCoeff0_add (i : Fin 128) (x y : QuadRq i) :
+    quadCoeff0 i (x + y) = quadCoeff0 i x + quadCoeff0 i y := by
+  simp [quadCoeff0, map_add]
+
+/-- `quadCoeff1` is additive. -/
+lemma quadCoeff1_add (i : Fin 128) (x y : QuadRq i) :
+    quadCoeff1 i (x + y) = quadCoeff1 i x + quadCoeff1 i y := by
+  simp [quadCoeff1, map_add]
+
+/-- `quadCoeff0` commutes with scaling. -/
+lemma quadCoeff0_smul (i : Fin 128) (c : Zq) (x : QuadRq i) :
+    quadCoeff0 i (c • x) = c * quadCoeff0 i x := by
+  simp [quadCoeff0, map_smul]
+
+/-- `quadCoeff1` commutes with scaling. -/
+lemma quadCoeff1_smul (i : Fin 128) (c : Zq) (x : QuadRq i) :
+    quadCoeff1 i (c • x) = c * quadCoeff1 i x := by
+  simp [quadCoeff1, map_smul]
+
+/-- `nttSpec` is additive. -/
+lemma nttSpec_add (f g : Fin n → Zq) :
+    nttSpec (fun i => f i + g i) = fun i => nttSpec f i + nttSpec g i := by
+  funext idx
+  simp only [nttSpec, ofCoeffs_add, map_add]
+  split
+  · exact quadCoeff0_add _ _ _
+  · exact quadCoeff1_add _ _ _
+
+/-- `nttSpec` of the zero vector is zero. -/
+lemma nttSpec_zero : nttSpec (fun _ => (0 : Zq)) = fun _ => (0 : Zq) := by
+  funext idx
+  simp only [nttSpec, ofCoeffs_zero, map_zero]
+  split
+  · simp [quadCoeff0]
+  · simp [quadCoeff1]
+
+/-- `nttSpec` commutes with scaling. -/
+lemma nttSpec_smul (c : Zq) (f : Fin n → Zq) :
+    nttSpec (fun i => c * f i) = fun i => c * nttSpec f i := by
+  have hof : Rq.ofCoeffs (fun i => c * f i) = c • Rq.ofCoeffs f := by
+    rw [ofCoeffs_smul, Algebra.smul_def, AdjoinRoot.algebraMap_eq]
+    rfl
+  funext idx
+  simp only [nttSpec, hof, crtHom_smul]
+  split
+  · exact quadCoeff0_smul _ _ _
+  · exact quadCoeff1_smul _ _ _
+
+/-- `nttSpec` commutes with finite sums. -/
+lemma nttSpec_sum (s : Finset (Fin n)) (g : Fin n → Fin n → Zq) :
+    nttSpec (fun i => ∑ j ∈ s, g j i) = fun i => ∑ j ∈ s, nttSpec (g j) i := by
+  induction s using Finset.induction_on with
+  | empty => simpa using nttSpec_zero
+  | insert a s ha ih =>
+    have h1 : (fun i => ∑ j ∈ insert a s, g j i)
+        = fun i => g a i + ∑ j ∈ s, g j i := by
+      funext i; rw [Finset.sum_insert ha]
+    rw [h1, nttSpec_add, ih]
+    funext i
+    simp [Finset.sum_insert ha]
+
+/-! ## Butterfly correctness on basis vectors
+
+The bridge `ntt (delta j) = nttSpec (delta j)` is proved by a *verified
+computation*:
+
+1. a **packed-natural clone** of Algorithm 7 (`nttP`) operating on a single
+   `ℕ` whose base-4096 digits are the canonical coefficient representatives,
+   which the Lean kernel evaluates fast via GMP arithmetic;
+2. a **simulation proof** (`simR_outerP`) showing step by step that the clone
+   computes exactly the butterflies of `ntt`;
+3. a **closed form** for `nttSpec (delta j)` (`nttSpec_delta`):
+   `γ_{idx/2}^{j/2}` on matching parity, `0` otherwise;
+4. a single kernel `decide` (`nttP_deltaP_eq_formulaP`) checking all 256
+   basis vectors against the packed closed form. -/
+
+/-! ### Packed-natural encoding: base-4096 digit vectors as a single `ℕ` -/
+
+/-- Digit `j` of a base-4096 packed natural. -/
+def getP (l j : ℕ) : ℕ := l / 4096 ^ j % 4096
+
+/-- Replace digit `j` of a base-4096 packed natural by `v`. -/
+def setP (l j v : ℕ) : ℕ := l - getP l j * 4096 ^ j + v * 4096 ^ j
+
+lemma getP_zero (l : ℕ) : getP l 0 = l % 4096 := by simp [getP]
+
+lemma getP_succ (l j : ℕ) : getP l (j + 1) = getP (l / 4096) j := by
+  simp [getP, pow_succ, Nat.div_div_eq_div_mul, mul_comm]
+
+lemma setP_zero (l v : ℕ) : setP l 0 v = l / 4096 * 4096 + v := by
+  have h := Nat.div_add_mod l 4096
+  have h2 : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
+  simp only [setP, getP_zero, pow_zero, mul_one]
+  omega
+
+lemma setP_succ (l j v : ℕ) :
+    setP l (j + 1) v = setP (l / 4096) j v * 4096 + l % 4096 := by
+  have hA := Nat.div_add_mod l 4096
+  have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
+  have hg : getP (l / 4096) j * 4096 ^ j ≤ l / 4096 := by
+    calc getP (l / 4096) j * 4096 ^ j
+        ≤ (l / 4096) / 4096 ^ j * 4096 ^ j :=
+          Nat.mul_le_mul_right _ (Nat.mod_le _ _)
+      _ ≤ l / 4096 := Nat.div_mul_le_self _ _
+  simp only [setP, getP_succ, pow_succ]
+  set A := l / 4096
+  set g := getP A j
+  set X := (4096 : ℕ) ^ j
+  set gX := g * X with hgX
+  set vX := v * X with hvX
+  have e1 : g * (X * 4096) = gX * 4096 := by rw [hgX]; ring
+  have e2 : v * (X * 4096) = vX * 4096 := by rw [hvX]; ring
+  rw [e1, e2]
+  omega
+
+lemma getP_setP_self (l j v : ℕ) (hv : v < 4096) :
+    getP (setP l j v) j = v := by
+  induction j generalizing l with
+  | zero =>
+    rw [setP_zero, getP_zero]
+    omega
+  | succ j ih =>
+    rw [setP_succ, getP_succ]
+    have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
+    have hdiv : (setP (l / 4096) j v * 4096 + l % 4096) / 4096
+        = setP (l / 4096) j v := by omega
+    rw [hdiv]
+    exact ih _
+
+lemma getP_setP_ne (l j v i : ℕ) (hv : v < 4096) (h : i ≠ j) :
+    getP (setP l j v) i = getP l i := by
+  induction j generalizing l i with
+  | zero =>
+    cases i with
+    | zero => exact absurd rfl h
+    | succ s =>
+      rw [setP_zero, getP_succ, getP_succ]
+      have : (l / 4096 * 4096 + v) / 4096 = l / 4096 := by omega
+      rw [this]
+  | succ j ih =>
+    cases i with
+    | zero =>
+      rw [setP_succ, getP_zero, getP_zero]
+      have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
+      omega
+    | succ s =>
+      rw [setP_succ, getP_succ, getP_succ]
+      have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
+      have hdiv : (setP (l / 4096) j v * 4096 + l % 4096) / 4096
+          = setP (l / 4096) j v := by omega
+      rw [hdiv]
+      exact ih _ _ (fun hc => h (by omega))
+
+/-- Pack a little-endian list of base-4096 digits into one natural number. -/
+def packList : List ℕ → ℕ
+  | [] => 0
+  | x :: xs => packList xs * 4096 + x
+
+lemma getP_packList (L : List ℕ) (hb : ∀ x ∈ L, x < 4096) (i : ℕ)
+    (hi : i < L.length) : getP (packList L) i = L.getD i 0 := by
+  induction L generalizing i with
+  | nil => simp at hi
+  | cons x xs ih =>
+    have hx : x < 4096 := hb x List.mem_cons_self
+    cases i with
+    | zero =>
+      simp only [packList, getP_zero, List.getD_cons_zero]
+      omega
+    | succ s =>
+      simp only [packList, List.getD_cons_succ]
+      rw [getP_succ]
+      have hdiv : (packList xs * 4096 + x) / 4096 = packList xs := by omega
+      rw [hdiv]
+      exact ih (fun y hy => hb y (List.mem_cons_of_mem _ hy)) s
+        (by simpa using hi)
+
+lemma getD_map_range (g : ℕ → ℕ) (m i : ℕ) (h : i < m) :
+    ((List.range m).map g).getD i 0 = g i := by
+  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range h]
+  rfl
+
+/-! ### The 7-bit reversal as a plain `ℕ → ℕ` table -/
+
+/-- `bitRev7Table` as a plain `ℕ → ℕ` function (0 outside `[0,128)`),
+suitable for fast kernel evaluation. -/
+def brN (i : ℕ) : ℕ :=
+  [ 0,  64,  32,  96,  16,  80,  48, 112,
+    8,  72,  40, 104,  24,  88,  56, 120,
+    4,  68,  36, 100,  20,  84,  52, 116,
+   12,  76,  44, 108,  28,  92,  60, 124,
+    2,  66,  34,  98,  18,  82,  50, 114,
+   10,  74,  42, 106,  26,  90,  58, 122,
+    6,  70,  38, 102,  22,  86,  54, 118,
+   14,  78,  46, 110,  30,  94,  62, 126,
+    1,  65,  33,  97,  17,  81,  49, 113,
+    9,  73,  41, 105,  25,  89,  57, 121,
+    5,  69,  37, 101,  21,  85,  53, 117,
+   13,  77,  45, 109,  29,  93,  61, 125,
+    3,  67,  35,  99,  19,  83,  51, 115,
+   11,  75,  43, 107,  27,  91,  59, 123,
+    7,  71,  39, 103,  23,  87,  55, 119,
+   15,  79,  47, 111,  31,  95,  63, 127 ].getD i 0
+
+set_option maxRecDepth 4000 in
+lemma brN_eq_bitRev7 (i : Fin 128) : brN i.val = (bitRev7Table i).val := by
+  fin_cases i <;> rfl
+
+/-! ### Packed-natural clone of Algorithm 7 -/
+
+/-- Packed-natural butterfly at positions `j` and `j + len`, twiddle `z`. -/
+def bfP (z l j len : ℕ) : ℕ :=
+  let a := getP l j
+  let b := getP l (j + len)
+  let t := z * b % 3329
+  setP (setP l (j + len) ((a + 3329 - t) % 3329)) j ((a + t) % 3329)
+
+/-- Packed-natural inner loop (`count` butterflies from `start`). -/
+def innerP (z l start len : ℕ) : ℕ → ℕ
+  | 0 => l
+  | c + 1 => innerP z (bfP z l start len) (start + 1) len c
+
+/-- Packed-natural middle loop (`numBlocks` blocks, zeta index `k`). -/
+def middleP (l len startOff k : ℕ) : ℕ → ℕ × ℕ
+  | 0 => (l, k)
+  | nb + 1 =>
+    let z := 17 ^ brN k % 3329
+    middleP (innerP z l startOff len len) len (startOff + 2 * len) (k + 1) nb
+
+/-- Packed-natural outer loop over the layer list. -/
+def outerP (l k : ℕ) : List ℕ → ℕ × ℕ
+  | [] => (l, k)
+  | len :: rest =>
+    let r := middleP l len 0 k (256 / (2 * len))
+    outerP r.1 r.2 rest
+
+/-- Packed-natural clone of `ntt` (Algorithm 7). -/
+def nttP (l : ℕ) : ℕ := (outerP l 1 nttLens).1
+
+/-- Packed standard basis vector `δⱼ`: digit `j` is `1`, all others `0`. -/
+def deltaP (j : ℕ) : ℕ := 4096 ^ j
+
+/-- Closed-form value of `NTT(δⱼ)` at index `idx` (a `ℕ` in `[0, 3329)`). -/
+def formulaCell (j idx : ℕ) : ℕ :=
+  if idx % 2 = j % 2 then 17 ^ ((2 * brN (idx / 2) + 1) * (j / 2)) % 3329 else 0
+
+/-- The packed closed form of `NTT(δⱼ)`. -/
+def formulaP (j : ℕ) : ℕ := packList ((List.range 256).map (formulaCell j))
+
+/-! ### Closed form of `nttSpec` on basis vectors -/
+
+set_option maxRecDepth 4000 in
+/-- `Rq.ofCoeffs δⱼ` is the monomial `Xʲ`. -/
+lemma ofCoeffs_delta (j : Fin n) :
+    Rq.ofCoeffs (delta j) = AdjoinRoot.mk cycloPoly (Polynomial.X ^ (j : ℕ)) := by
+  unfold Rq.ofCoeffs delta
+  congr 1
+  rw [Finset.sum_eq_single j]
+  · simp
+  · intro i _ hij
+    simp [hij]
+  · simp
+
+/-- `crtHom` sends the class of `Xᵉ` to the `e`-th power of the quadratic root. -/
+lemma crtHom_mk_X_pow (i : Fin 128) (e : ℕ) :
+    crtHom i (AdjoinRoot.mk cycloPoly (Polynomial.X ^ e)) =
+      AdjoinRoot.root (gammaPoly i) ^ e := by
+  rw [map_pow, AdjoinRoot.mk_X, map_pow]
+  unfold crtHom
+  rw [AdjoinRoot.lift_root]
+
+/-- Powers of the quadratic root reduce via `root² = γᵢ`. -/
+lemma quadRoot_pow (i : Fin 128) (e : ℕ) :
+    AdjoinRoot.root (gammaPoly i) ^ e =
+      AdjoinRoot.of (gammaPoly i) (gammaForPair i ^ (e / 2)) *
+        AdjoinRoot.root (gammaPoly i) ^ (e % 2) := by
+  conv_lhs => rw [show e = 2 * (e / 2) + e % 2 by omega]
+  rw [pow_add, pow_mul, quadRoot_sq, ← map_pow]
+
+/-- **Closed form of `nttSpec` on basis vectors**: at index `idx`, the value is
+`γ_{idx/2}^{j/2}` when `idx` and `j` have the same parity and `0` otherwise. -/
+lemma nttSpec_delta (j idx : Fin n) :
+    nttSpec (delta j) idx =
+      if idx.val % 2 = j.val % 2 then
+        gammaForPair ⟨idx.val / 2, by have h : idx.val < 256 := idx.isLt; omega⟩ ^ (j.val / 2)
+      else 0 := by
+  have hlt : idx.val < 256 := idx.isLt
+  set i : Fin 128 := ⟨idx.val / 2, by omega⟩ with hi
+  have himg : crtHom i (Rq.ofCoeffs (delta j)) =
+      AdjoinRoot.of (gammaPoly i) (gammaForPair i ^ (j.val / 2)) *
+        AdjoinRoot.root (gammaPoly i) ^ (j.val % 2) := by
+    rw [ofCoeffs_delta, crtHom_mk_X_pow, quadRoot_pow]
+  have h0 : AdjoinRoot.of (gammaPoly i) (0 : Zq) = 0 := map_zero _
+  by_cases hj : j.val % 2 = 0
+  · -- `j` even: the image is `γ^{j/2} + 0·X`.
+    have himg' : crtHom i (Rq.ofCoeffs (delta j)) =
+        AdjoinRoot.of (gammaPoly i) (gammaForPair i ^ (j.val / 2)) +
+          AdjoinRoot.of (gammaPoly i) (0 : Zq) * AdjoinRoot.root (gammaPoly i) := by
+      rw [himg, hj, pow_zero, mul_one, h0, zero_mul, add_zero]
+    by_cases hidx : idx.val % 2 = 0
+    · rw [if_pos (by omega)]
+      simp only [nttSpec, hidx, reduceIte]
+      rw [← hi, himg', quadCoeff0_repr]
+    · rw [if_neg (by omega)]
+      simp only [nttSpec]
+      rw [if_neg hidx, ← hi, himg', quadCoeff1_repr]
+  · -- `j` odd: the image is `0 + γ^{j/2}·X`.
+    have himg' : crtHom i (Rq.ofCoeffs (delta j)) =
+        AdjoinRoot.of (gammaPoly i) (0 : Zq) +
+          AdjoinRoot.of (gammaPoly i) (gammaForPair i ^ (j.val / 2)) *
+            AdjoinRoot.root (gammaPoly i) := by
+      rw [himg, show j.val % 2 = 1 by omega, pow_one, h0, zero_add]
+    by_cases hidx : idx.val % 2 = 0
+    · rw [if_neg (by omega)]
+      simp only [nttSpec, hidx, reduceIte]
+      rw [← hi, himg', quadCoeff0_repr]
+    · rw [if_pos (by omega)]
+      simp only [nttSpec]
+      rw [if_neg hidx, ← hi, himg', quadCoeff1_repr]
+
+/-! ### Simulation relation between packed naturals and coefficient vectors -/
+
+/-- `l` simulates `f` when each base-4096 digit of `l` is a canonical
+(`< 3329`) representative of the corresponding coefficient of `f`. -/
+def simR (l : ℕ) (f : Fin n → Zq) : Prop :=
+  ∀ i : Fin n, getP l i.val < 3329 ∧ ((getP l i.val : ℕ) : Zq) = f i
+
+lemma cast_3329_eq_zero : ((3329 : ℕ) : Zq) = 0 := by
+  exact_mod_cast ZMod.natCast_self q
+
+lemma cast_mod_3329 (x : ℕ) : ((x % 3329 : ℕ) : Zq) = (x : Zq) := by
+  exact_mod_cast ZMod.natCast_mod x q
+
+/-- Single butterfly simulation. -/
+lemma simR_bfP {l : ℕ} {f : Fin n → Zq} (hs : simR l f)
+    (z : ℕ) {start len : ℕ} (hlen : 0 < len)
+    (h1 : start < n) (h2 : start + len < n) :
+    simR (bfP z l start len)
+      (nttButterfly f (z : Zq) ⟨start, h1⟩ ⟨start + len, h2⟩) := by
+  intro i
+  obtain ⟨hbj, hcj⟩ := hs ⟨start, h1⟩
+  obtain ⟨hbl, hcl⟩ := hs ⟨start + len, h2⟩
+  set a := getP l start with ha
+  set b := getP l (start + len) with hb
+  set t := z * b % 3329 with htdef
+  have ht : t < 3329 := Nat.mod_lt _ (by norm_num)
+  have hv1 : (a + t) % 3329 < 3329 := Nat.mod_lt _ (by norm_num)
+  have hv2 : (a + 3329 - t) % 3329 < 3329 := Nat.mod_lt _ (by norm_num)
+  have hne : start ≠ start + len := by omega
+  have hcast1 : (((a + t) % 3329 : ℕ) : Zq)
+      = f ⟨start, h1⟩ + (z : Zq) * f ⟨start + len, h2⟩ := by
+    rw [cast_mod_3329]
+    push_cast
+    rw [hcj, htdef, cast_mod_3329]
+    push_cast
+    rw [hcl]
+  have hcast2 : (((a + 3329 - t) % 3329 : ℕ) : Zq) =
+      f ⟨start, h1⟩ - (z : Zq) * f ⟨start + len, h2⟩ := by
+    rw [cast_mod_3329, Nat.cast_sub (by omega), Nat.cast_add,
+      cast_3329_eq_zero, add_zero, hcj, htdef, cast_mod_3329]
+    push_cast
+    rw [hcl]
+  simp only [bfP, nttButterfly]
+  by_cases hij : i.val = start
+  · have hieq : i = ⟨start, h1⟩ := Fin.ext hij
+    rw [hij, getP_setP_self _ _ _ (by omega), hieq, Function.update_self]
+    exact ⟨hv1, hcast1⟩
+  · have hine : i ≠ (⟨start, h1⟩ : Fin n) := fun hc => hij (by rw [hc])
+    rw [getP_setP_ne _ _ _ _ (by omega) hij, Function.update_of_ne hine]
+    by_cases hil : i.val = start + len
+    · have hieq : i = ⟨start + len, h2⟩ := Fin.ext hil
+      rw [hil, getP_setP_self _ _ _ (by omega), hieq, Function.update_self]
+      exact ⟨hv2, hcast2⟩
+    · have hine' : i ≠ (⟨start + len, h2⟩ : Fin n) := fun hc => hil (by rw [hc])
+      rw [getP_setP_ne _ _ _ _ (by omega) hil, Function.update_of_ne hine']
+      exact hs i
+
+/-- Inner-loop simulation. -/
+lemma simR_innerP (z : ℕ) :
+    ∀ (count l : ℕ) (f : Fin n → Zq) (start len : ℕ) (_hlen : 0 < len)
+      (h1 : ∀ r, r < count → start + r < n)
+      (h2 : ∀ r, r < count → start + r + len < n),
+      simR l f →
+      simR (innerP z l start len count)
+        (nttInnerLoop f (z : Zq) start len count h1 h2)
+  | 0, _, _, _, _, _, _, _, hs => hs
+  | c + 1, l, f, start, len, hlen, h1, h2, hs => by
+    simp only [innerP, nttInnerLoop]
+    exact simR_innerP z c _ _ (start + 1) len hlen _ _
+      (simR_bfP hs z hlen (h1 0 (by omega))
+        (by have := h2 0 (by omega); omega))
+
+/-- Zeta-index bookkeeping of the packed middle loop. -/
+lemma middleP_snd : ∀ (nb l len startOff k : ℕ),
+    (middleP l len startOff k nb).2 = k + nb
+  | 0, _, _, _, _ => rfl
+  | nb + 1, l, len, startOff, k => by
+    simp only [middleP]
+    rw [middleP_snd nb]
+    omega
+
+/-- The packed twiddle factor is the imperative `zetaTable` entry. -/
+lemma cast_zeta (k : ℕ) (hk : k < 128) :
+    ((17 ^ brN k % 3329 : ℕ) : Zq) = zetaTable ⟨k, hk⟩ := by
+  rw [cast_mod_3329]
+  push_cast
+  rw [zetaTable, ← brN_eq_bitRev7 ⟨k, hk⟩]
+  rfl
+
+/-- Middle-loop simulation. -/
+lemma simR_middleP :
+    ∀ (nb l : ℕ) (f : Fin n → Zq) (len startOff k : ℕ)
+      (h_pos : 0 < len)
+      (h_fit : ∀ b, b < nb → startOff + b * (2 * len) + 2 * len ≤ n)
+      (h_k : ∀ b, b < nb → k + b < 128),
+      simR l f →
+      simR (middleP l len startOff k nb).1
+        (nttMiddleLoop f len startOff k nb h_pos h_fit h_k).1
+  | 0, _, _, _, _, _, _, _, _, hs => hs
+  | nb + 1, l, f, len, startOff, k, h_pos, h_fit, h_k, hs => by
+    simp only [middleP, nttMiddleLoop]
+    have hk0 : k < 128 := by have := h_k 0 (by omega); omega
+    have hz : zetaTable ⟨k, by omega⟩ = ((17 ^ brN k % 3329 : ℕ) : Zq) :=
+      (cast_zeta k hk0).symm
+    rw [hz]
+    exact simR_middleP nb _ _ len (startOff + 2 * len) (k + 1) h_pos _ _
+      (simR_innerP _ len _ _ startOff len h_pos _ _ hs)
+
+/-- Outer-loop simulation. -/
+lemma simR_outerP :
+    ∀ (layers : List ℕ) (l : ℕ) (f : Fin n → Zq) (k : ℕ)
+      (h_layers : ∀ x ∈ layers, 0 < x ∧ 2 * x ∣ n)
+      (h_k : k + (layers.map (fun x => n / (2 * x))).sum ≤ 128),
+      simR l f →
+      simR (outerP l k layers).1
+        (nttOuterLoop f k layers h_layers h_k).1
+  | [], _, _, _, _, _, hs => hs
+  | len :: rest, l, f, k, h_layers, h_k, hs => by
+    simp only [outerP, nttOuterLoop]
+    simp only [nttMiddleLoop_snd, middleP_snd]
+    exact simR_outerP rest _ _ _ _ _
+      (simR_middleP _ _ _ _ _ _ _ _ _ hs)
+
+/-! ### Endpoint simulations -/
+
+/-- The packed basis vector simulates `delta j`. -/
+lemma simR_deltaP (j : Fin n) : simR (deltaP j.val) (delta j) := by
+  intro i
+  unfold deltaP delta getP
+  rcases lt_trichotomy i.val j.val with h | h | h
+  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+    have hdvd : (4096 : ℕ) ^ j.val / 4096 ^ i.val = 4096 ^ (j.val - i.val) :=
+      Nat.pow_div (by omega) (by norm_num)
+    rw [hdvd]
+    have h1 : j.val - i.val = (j.val - i.val - 1) + 1 := by omega
+    rw [h1, pow_succ, Nat.mul_mod_left]
+    exact ⟨by norm_num, by simp⟩
+  · have hij : i = j := Fin.ext h
+    have hdiv : (4096 : ℕ) ^ j.val / 4096 ^ i.val = 1 := by
+      rw [h, Nat.div_self (Nat.pow_pos (show 0 < 4096 by norm_num))]
+    rw [if_pos hij, hdiv]
+    exact ⟨by norm_num, by norm_num⟩
+  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+    have hlt : (4096 : ℕ) ^ j.val < 4096 ^ i.val :=
+      Nat.pow_lt_pow_right (by norm_num) h
+    rw [Nat.div_eq_of_lt hlt]
+    exact ⟨by norm_num, by simp⟩
+
+/-- The packed formula simulates the closed form of `nttSpec (delta j)`. -/
+lemma simR_formulaP (j : Fin n) : simR (formulaP j.val) (nttSpec (delta j)) := by
+  intro i
+  have hcell : ∀ idx, formulaCell j.val idx < 3329 := by
+    intro idx
+    unfold formulaCell
+    split
+    · exact Nat.mod_lt _ (by norm_num)
+    · norm_num
+  have hget : getP (formulaP j.val) i.val = formulaCell j.val i.val := by
+    unfold formulaP
+    rw [getP_packList _ ?_ _ (by simp), getD_map_range _ _ _ (by simp)]
+    intro x hx
+    obtain ⟨idx, _, rfl⟩ := List.mem_map.mp hx
+    have := hcell idx
+    omega
+  rw [hget]
+  refine ⟨hcell i.val, ?_⟩
+  rw [nttSpec_delta]
+  unfold formulaCell
+  by_cases hpar : i.val % 2 = j.val % 2
+  · rw [if_pos hpar, if_pos hpar, cast_mod_3329]
+    have hbr : brN (i.val / 2)
+        = (bitRev7Table ⟨i.val / 2, by have h : i.val < 256 := i.isLt; omega⟩).val :=
+      brN_eq_bitRev7 ⟨i.val / 2, by have h : i.val < 256 := i.isLt; omega⟩
+    rw [hbr]
+    unfold gammaForPair
+    rw [← pow_mul]
+    push_cast
+    rfl
+  · rw [if_neg hpar, if_neg hpar]
+    simp
+
+/-! ### The kernel verification and the basis-vector bridge -/
+
+set_option maxHeartbeats 1600000 in
+-- `decide +kernel` evaluates the full 7-layer butterfly network on all 256
+-- packed basis vectors inside the kernel; this exceeds the default budget.
+/-- **Kernel verification**: the packed-natural clone of Algorithm 7 maps each
+packed basis vector to the packed closed form — 256 concrete GMP computations
+checked by the Lean kernel (`decide +kernel`). -/
+lemma nttP_deltaP_eq_formulaP :
+    ∀ j ∈ List.range 256, nttP (deltaP j) = formulaP j := by
+  decide +kernel
+
+/-- **Butterfly correctness on basis vectors**.  For each of the 256 standard
+basis vectors `δⱼ`, the imperative Cooley–Tukey butterfly network of
+Algorithm 7 (`ntt`) agrees with the algebraically defined CRT projection
+`nttSpec` of `Spec.lean`.  Proved (no axioms, no `sorry`) by transporting the
+kernel verification `nttP_deltaP_eq_formulaP` across the simulation
+`simR_outerP` and matching the result with the closed form `nttSpec_delta`. -/
+lemma ntt_delta_eq_nttSpec_delta (j : Fin n) : ntt (delta j) = nttSpec (delta j) := by
+  have hsim : simR (nttP (deltaP j.val)) (ntt (delta j)) := by
+    unfold nttP ntt
+    exact simR_outerP nttLens _ _ 1 _ _ (simR_deltaP j)
+  have hkey : nttP (deltaP j.val) = formulaP j.val :=
+    nttP_deltaP_eq_formulaP j.val (List.mem_range.mpr (by have h : j.val < 256 := j.isLt; omega))
+  have hsim' : simR (formulaP j.val) (ntt (delta j)) := hkey ▸ hsim
+  funext i
+  obtain ⟨_, h1⟩ := hsim' i
+  obtain ⟨_, h2⟩ := simR_formulaP j i
+  rw [← h1, h2]
+
+/-- **Butterfly correctness**.  The imperative Cooley–Tukey
 butterfly network of Algorithm 7 (`ntt`) computes the algebraically defined
 CRT projection `nttSpec` of `Spec.lean` — i.e. coefficient pair `(2i, 2i+1)`
 of the output is the image of the input polynomial in `ℤ_q[X]/(X² − γᵢ)`.
@@ -277,8 +824,29 @@ self-contained formalization roadmap:
    `f mod (X^{2len} − γ²)` into `f mod (X^{len} ± γ)`;
 3. induction over `nttLens = [128, 64, 32, 16, 8, 4, 2]` connecting the
    threaded zeta index `k` with `bitRev7Table`;
-4. base case: blocks of size 2 are exactly the `crtHom i` coordinates. -/
-axiom ntt_eq_nttSpec : (ntt : (Fin n → Zq) → Fin n → Zq) = nttSpec
+4. base case: blocks of size 2 are exactly the `crtHom i` coordinates.
+
+Here it is proved from the basis-vector bridge `ntt_delta_eq_nttSpec_delta`
+by decomposing `f = ∑ⱼ f(j)·δⱼ` and using linearity of both `ntt`
+(`ntt_sum`, `ntt_smul`) and `nttSpec` (`nttSpec_sum`, `nttSpec_smul`). -/
+lemma ntt_eq_nttSpec : (ntt : (Fin n → Zq) → Fin n → Zq) = nttSpec := by
+  funext f
+  have hL : ntt f = fun i => ∑ j : Fin n, f j * ntt (delta j) i := by
+    conv_lhs => rw [eq_sum_delta f]
+    rw [ntt_sum]
+    funext i
+    exact Finset.sum_congr rfl fun j _ =>
+      congrFun (ntt_smul (f j) (delta j)) i
+  have hR : nttSpec f = fun i => ∑ j : Fin n, f j * nttSpec (delta j) i := by
+    conv_lhs => rw [eq_sum_delta f]
+    rw [nttSpec_sum]
+    funext i
+    exact Finset.sum_congr rfl fun j _ =>
+      congrFun (nttSpec_smul (f j) (delta j)) i
+  rw [hL, hR]
+  funext i
+  exact Finset.sum_congr rfl fun j _ => by
+    rw [ntt_delta_eq_nttSpec_delta]
 
 /-- **CRT isomorphism on basis vectors**.  For each pair of
 standard basis vectors `δⱼ, δₖ`, the NTT of their product in `R_q` equals the
