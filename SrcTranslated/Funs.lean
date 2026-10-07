@@ -13258,8 +13258,7 @@ def v1.chunked.send_ek.EkSentCt1Received.recv_ct2_chunk
       { self with receiving_ct2 }))
   | some ct2 =>
     let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
-    let (mac, ct21) ←
-      alloc.vec.Vec.split_off core.core.clone.CloneGlobal ct2 i
+    let (mac, ct21) ← alloc.vec.Vec.split_off core.clone.CloneGlobal ct2 i
     let r ← v1.unchunked.send_ek.EkSentCt1Received.recv_ct2 self.uc ct21 mac
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -13591,8 +13590,7 @@ def v1.chunked.send_ct.NoHeaderReceived.recv_hdr_chunk
       { self with receiving_hdr }))
   | some hdr =>
     let i ← incremental_mlkem768.HEADER_SIZE
-    let (mac, hdr1) ←
-      alloc.vec.Vec.split_off core.core.clone.CloneGlobal hdr i
+    let (mac, hdr1) ← alloc.vec.Vec.split_off core.clone.CloneGlobal hdr i
     let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
     let receiving_ek ←
       encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new i1
