@@ -14,48 +14,42 @@ translated data types only, together with the round-trip laws relating them. The
 in `IntoPb.lean` and `FromPb.lean` pin the extracted, monadic functions to these models. The
 nested `Authenticator` is handled by calling its own functional model.
 
-**Source:** "spqr/src/v1/unchunked/send_ek/serialize.rs"
+**Source**: spqr/src/v1/unchunked/send_ek/serialize.rs
 -/
 
-open Aeneas.Std spqr.authenticator.serialize
+open Aeneas.Std spqr.proto.pq_ratchet
+open spqr.authenticator.serialize
 namespace spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels
 
 /-- **Functional model of `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled::into_pb`**
 • A pure, total, human-readable function on the translated data types.
+• Serializes the nested authenticator with `Authenticator.intoPb` and wraps it in `some`.
 -/
-def intoPb (x : v1.unchunked.send_ek.KeysUnsampled) :
-    proto.pq_ratchet.v1_state.unchunked.KeysUnsampled :=
-  { epoch := x.epoch,
-    auth := some (Authenticator.FunctionalModels.intoPb x.auth) }
+def intoPb (x : KeysUnsampled) : v1_state.unchunked.KeysUnsampled :=
+  { epoch := x.epoch, auth := some (Authenticator.FunctionalModels.intoPb x.auth) }
 
 /-- **Functional model of `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled::from_pb`**
 • A pure, total, human-readable function on the translated data types.
+• Decodes the nested authenticator via `Authenticator.fromPb`; absent input is `Error.StateDecode`.
 -/
-def fromPb (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
-    core.result.Result v1.unchunked.send_ek.KeysUnsampled Error :=
+def fromPb (pb : v1_state.unchunked.KeysUnsampled) :
+    core.result.Result KeysUnsampled Error :=
   match pb.auth with
-  | none => .Err Error.StateDecode
-  | some a => .Ok { epoch := pb.epoch,
-                    auth := Authenticator.FunctionalModels.fromPb a }
+  | none   => .Err Error.StateDecode
+  | some a => .Ok { epoch := pb.epoch, auth := Authenticator.FunctionalModels.fromPb a }
 
 /-- **Round trip `fromPb ∘ intoPb` for
 `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled`** -/
 @[simp]
-theorem roundtrip_fromPb_intoPb (x : v1.unchunked.send_ek.KeysUnsampled) :
-    fromPb (intoPb x) = .Ok x := rfl
+theorem roundtrip_fromPb_intoPb (x : KeysUnsampled) : fromPb (intoPb x) = .Ok x := rfl
 
 /-- **Round trip `intoPb ∘ fromPb` for
 `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled`** -/
-theorem roundtrip_intoPb_fromPb (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled)
-    (x : v1.unchunked.send_ek.KeysUnsampled) (h : fromPb pb = .Ok x) :
-    intoPb x = pb := by
-  cases pb with
-  | mk epoch auth =>
-    cases auth with
-    | none => simp [fromPb] at h
-    | some a =>
-      simp only [fromPb, core.result.Result.Ok.injEq] at h
-      subst h
-      rfl
+theorem roundtrip_intoPb_fromPb (pb : v1_state.unchunked.KeysUnsampled) (x : KeysUnsampled)
+    (h : fromPb pb = .Ok x) : intoPb x = pb := by
+  rcases pb with ⟨epoch, _ | a⟩
+  · simp [fromPb] at h
+  · simp only [fromPb, core.result.Result.Ok.injEq] at h
+    rw [intoPb, ← h, Authenticator.FunctionalModels.roundtrip_intoPb_fromPb a]
 
 end spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels
