@@ -261,10 +261,12 @@ import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1SentEkReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1SentEkReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.IntoPb
