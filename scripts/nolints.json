@@ -33,4 +33,8 @@
  ["defsWithUnderscore",
   "spqr.v1.chunked.send_ek.serialize.KeysUnsampled.FunctionalModels.intoPb"],
  ["defsWithUnderscore",
-  "spqr.v1.chunked.send_ek.serialize.KeysUnsampled.FunctionalModels.fromPb"]]
+  "spqr.v1.chunked.send_ek.serialize.KeysUnsampled.FunctionalModels.fromPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.FunctionalModels.intoPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.FunctionalModels.fromPb"]]
