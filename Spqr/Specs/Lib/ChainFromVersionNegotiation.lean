@@ -22,10 +22,6 @@ open Aeneas Aeneas.Std Result spqr crypto
 
 namespace spqr
 
-/-- `Direction.try_from` abbreviation for readability. -/
-local notation "dirTryFrom" =>
-  proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-
 /-- Parse `vn.direction` as a `Direction`, returning `none` on unknown values. -/
 def parseDirection (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
     Option proto.pq_ratchet.Direction :=
