@@ -15,7 +15,7 @@ in `IntoPb.lean` and `FromPb.lean` pin the extracted, monadic functions to these
 chunked state wraps a single unchunked field `uc`, which is handled by calling the functional
 model of the unchunked `KeysUnsampled`.
 
-**Source:** "spqr/src/v1/chunked/send_ek/serialize.rs"
+**Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
 
 open Aeneas.Std spqr.proto.pq_ratchet
