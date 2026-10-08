@@ -82,6 +82,9 @@ import Spqr.Specs.Chain.Chain.Defs
 import Spqr.Specs.Chain.Chain.Epoch.CallMut
 import Spqr.Specs.Chain.Chain.Epoch.CallOnce
 import Spqr.Specs.Chain.Chain.EpochIdx
+import Spqr.Specs.Chain.Chain.FromPb
+import Spqr.Specs.Chain.Chain.FunctionalModels
+import Spqr.Specs.Chain.Chain.IntoPb
 import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Chain.Chain.RecvKey
 import Spqr.Specs.Chain.Chain.RecvKey32
@@ -89,6 +92,7 @@ import Spqr.Specs.Chain.Chain.SendKey
 import Spqr.Specs.Chain.Chain.SendKey64
 import Spqr.Specs.Chain.ChainEpochDirection.ClearNext
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
+import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
 import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
 import Spqr.Specs.Chain.ChainEpochDirection.Key
 import Spqr.Specs.Chain.ChainEpochDirection.Key32
@@ -208,6 +212,7 @@ import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 import Spqr.Specs.IncrementalMlkem768.Generate
 import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Kdf.HkdfToVec
+import Spqr.Specs.Lib.ChainFrom
 import Spqr.Specs.Lib.ChainFromVersionNegotiation
 import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 import Spqr.Specs.Lib.CurrentVersion
@@ -259,10 +264,12 @@ import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1SentEkReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1SentEkReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.IntoPb
