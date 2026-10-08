@@ -46,8 +46,7 @@ noncomputable def chainFromVersionNegotiation
     | some p => chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) dir p
 
 /-- `chain.Chain.new_spec`, strengthened with the defining `… = ok r` equation. Registered as a
-file-local `step` lemma rather than a local hypothesis: `step*` tries to match local
-hypotheses at every step, which made the proof noticeably slower. -/
+file-local `step` lemma. -/
 private theorem new_spec_refl : type_of% (refl_of% chain.Chain.new_spec) :=
   refl_of% chain.Chain.new_spec
 
