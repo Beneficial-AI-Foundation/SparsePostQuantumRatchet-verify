@@ -3671,11 +3671,6 @@ opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice 
 
 end spqr.kdf
 
-/-- [spqr::encoding::gf::mul2_u16]:
-    Source: 'src/encoding/gf.rs', lines 216:0-225:1 -/
-axiom encoding.gf.mul2_u16
-  : Std.U16 → Std.U16 → Std.U16 → Result (Std.U16 × Std.U16)
-
 /-- [spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]:
     Source: 'src/encoding/polynomial.rs', lines 911:4-963:5
     Visibility: public -/
@@ -3687,28 +3682,6 @@ axiom encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
 axiom
   incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
   : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8))
-
-/-- [spqr::initial_state]:
-    Source: 'src/lib.rs', lines 212:0-236:1
-    Visibility: public -/
-axiom initial_state
-  : Params → Result (core.result.Result (alloc.vec.Vec Std.U8) spqr.Error)
-
-/-- [spqr::send]:
-    Source: 'src/lib.rs', lines 265:0-326:1
-    Visibility: public -/
-axiom send
-  {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
-  rand_core.CryptoRng R) :
-  alloc.vec.Vec Std.U8 → R → Result ((core.result.Result Send spqr.Error) × R)
-
-/-- [spqr::recv]:
-    Source: 'src/lib.rs', lines 356:0-455:1
-    Visibility: public -/
-axiom recv
-  :
-  alloc.vec.Vec Std.U8 → alloc.vec.Vec Std.U8 → Result (core.result.Result
-    Recv spqr.Error)
 
 -- Axioms required by chain.Chain.into_pb / send (VecDeque iteration)
 /-- [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<A, E>> for core::result::Result<V, E>}::from_iter]:
