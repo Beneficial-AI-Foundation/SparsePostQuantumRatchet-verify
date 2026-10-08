@@ -33,6 +33,6 @@ theorem to_poly_spec
   step*
   · intro x _
     simp [encoding.gf.GF16.Insts.CoreCloneClone.clone]
-  · simp_all [Poly.toGF216Poly]
+  · simp_all [Poly.toGF216Poly, alloc.vec.Vec.val]
 
 end spqr.encoding.polynomial.PolyConst

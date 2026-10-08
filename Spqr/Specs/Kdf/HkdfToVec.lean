@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
 import SrcTranslated.Funs
-import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Specs.Kdf.HkdfToSlice
 
@@ -31,6 +30,6 @@ theorem hkdf_to_vec_spec (salt ikm info : Slice U8) (okm_len : Usize) (h : okm_l
       v.val = hkdf salt.val ikm.val info.val okm_len.val ∧ v.length = okm_len.val ⦄ := by
   unfold hkdf_to_vec
   step*
-  simp_all [Slice.length]
+  all_goals simp_all [alloc.vec.Vec.val]
 
 end spqr.kdf

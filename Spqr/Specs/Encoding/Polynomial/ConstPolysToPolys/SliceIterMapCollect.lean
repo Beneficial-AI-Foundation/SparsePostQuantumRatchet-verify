@@ -40,24 +40,7 @@ private abbrev transInst {N : Usize} (m : MapIterT N) :
     core.iter.traits.iterator.Iterator (core.slice.iter.Iter (PolyConst N)) Poly :=
   core.iter.adapters.map.mapIteratorTransformer m
     (core.iter.traits.iterator.IteratorSliceIter (PolyConst N))
-    (CoreOpsFunctionFnMutTupleSharedPolyConstPoly N)
-
-private lemma spec_to_ok {α : Type} {x : Result α} {p : α → Prop}
-    (h : WP.spec x p) : ∃ v, x = .ok v ∧ p v := by
-  cases x with
-  | ok v => exact ⟨v, rfl, h⟩
-  | fail e => exact absurd h id
-  | div => exact absurd h id
-
-private lemma to_poly_of_call_mut_eq {N : Usize}
-    {c : const_polys_to_polys.closure N} {arg : PolyConst N}
-    {result : Poly × const_polys_to_polys.closure N}
-    (h : CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut c arg = .ok result) :
-    arg.to_poly = .ok result.1 := by
-  unfold CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut at h
-  cases h_tp : arg.to_poly <;>
-    simp_all only [bind_tc_ok, ok.injEq, bind_tc_fail, bind_tc_div, reduceCtorEq]
-  subst h; rfl
+    (CoreOpsFunctionFnMutTupleShared0PolyConstPoly N)
 
 /-- Inductive characterisation of `iterToList` for the map-of-slice iterator used in
 `const_polys_to_polys`: it accumulates, in order, the `to_poly` image of every slice element
@@ -77,25 +60,24 @@ private theorem iterToList_trans {N : Usize} (n : Nat) (m : MapIterT N)
     have h_ge : ¬ (iter.i < iter.slice.val.length) := by omega
     refine ⟨[], ?_, by omega, by omega⟩
     conv_lhs => unfold alloc.vec.FromIteratorVec.iterToList
-    simp only [transInst, mapIteratorTransformer_next_spec, Usize.ofNatCore_val_eq,
-      slice.iter.IteratorSliceIter.next, Slice.len, h_ge, dite_false, bind_tc_ok,
-      List.append_nil]
-    rfl
+    simp [transInst, mapIteratorTransformer_next_spec, slice.iter.IteratorSliceIter.next, h_ge]
   | succ n ih =>
     have h_lt : iter.i < iter.slice.val.length := by omega
-    obtain ⟨r, h_cm, h_coeff, h_poly, -⟩ := spec_to_ok
-      (CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut_spec m.f
+    obtain ⟨r, h_cm, h_coeff, h_poly, -⟩ := WP.spec_imp_exists
+      (CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut_spec m.f
         (iter.slice.val.get ⟨iter.i, h_lt⟩))
     -- One iteration: emit `r.1` and advance the slice index by one.
     have h_step : alloc.vec.FromIteratorVec.iterToList (transInst m) iter acc =
         alloc.vec.FromIteratorVec.iterToList (transInst m)
           ⟨iter.slice, iter.i + 1⟩ (r.1 :: acc) := by
+      have h_next : slice.iter.IteratorSliceIter.next iter =
+          .ok (some (iter.slice.val.get ⟨iter.i, h_lt⟩), ⟨iter.slice, iter.i + 1⟩) := by
+        unfold slice.iter.IteratorSliceIter.next; rw [dif_pos (by simpa using h_lt)]; rfl
       conv_lhs => unfold alloc.vec.FromIteratorVec.iterToList
-      simp only [transInst, mapIteratorTransformer_next_spec, Usize.ofNatCore_val_eq,
-        slice.iter.IteratorSliceIter.next, Slice.len, h_lt, ↓reduceDIte, bind_tc_ok]
-      unfold CoreOpsFunctionFnMutTupleSharedPolyConstPoly.call_mut
-      simp only [bind_assoc, bind_tc_ok, uncurry_apply_pair]
-      exact to_poly_of_call_mut_eq h_cm ▸ rfl
+      simp only [transInst, mapIteratorTransformer_next_spec]
+      simp only [List.get_eq_getElem] at h_cm
+      obtain ⟨_, _⟩ := r
+      simp [h_next, h_cm]
     obtain ⟨L, hL, hLlen, hLelts⟩ :=
       ih ⟨iter.slice, iter.i + 1⟩ (r.1 :: acc) (by simp only; omega)
     refine ⟨r.1 :: L, ?_, ?_, ?_⟩
@@ -130,7 +112,7 @@ theorem collect_const_polys_spec
     (m : MapIterT N) :
     core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.collect
       (core.iter.traits.iterator.IteratorSliceIter (PolyConst N))
-      (const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleSharedPolyConstPoly N)
+      (const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly N)
       (core.iter.traits.collect.FromIteratorVec Poly) m ⦃ (result : alloc.vec.Vec Poly) =>
       result.val.length = m.iter.slice.val.length - m.iter.i ∧
       (∀ (j : Nat) (hj : j < result.val.length) (hs : j + m.iter.i < m.iter.slice.val.length),
@@ -147,6 +129,6 @@ theorem collect_const_polys_spec
   rw [hL]
   have hmax : L.length ≤ Usize.max := by have := m.iter.slice.property; omega
   simp only [bind_tc_ok, hmax, ↓reduceDIte, WP.spec_ok]
-  exact ⟨hLlen, hLelts⟩
+  simpa using ⟨hLlen, hLelts⟩
 
 end Aeneas.Std.core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator

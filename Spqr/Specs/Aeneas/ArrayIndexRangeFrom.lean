@@ -36,7 +36,7 @@ theorem Array.index_SliceIndexRangeFromUsizeSlice.step {T : Type} {N : Usize}
   have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
   have h1 := core.slice.index.SliceIndexRangeFromUsizeSlice.index.step_spec
     r a.to_slice (by scalar_tac)
-  simp only [Array.to_slice] at h1 ⊢
+  simp only [Array.val_to_slice, Array.length_to_slice] at h1
   exact WP.spec_mono h1 (by intro s ⟨hv, hl⟩; exact ⟨hv, by scalar_tac⟩)
 
 end Aeneas.Std

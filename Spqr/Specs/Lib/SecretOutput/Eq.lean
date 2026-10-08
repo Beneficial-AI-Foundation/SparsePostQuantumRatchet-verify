@@ -64,7 +64,7 @@ private theorem eq_vec_u8_spec
     exact ⟨b, hb_eq, by
       rw [hb_iff]
       constructor
-      · intro h; cases v1; cases v2; simp_all
+      · exact alloc.vec.Vec.ext _ _
       · intro h; subst h; rfl⟩
   · grind
 /--

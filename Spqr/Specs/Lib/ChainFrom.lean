@@ -57,49 +57,10 @@ theorem chain_from_spec
     (vn : Option proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
     chain_from pb vn ⦃ (result : core.result.Result chain.Chain Error) =>
       chainFrom pb vn = ok result ⦄ := by
-  unfold chainFrom
-  unfold chain_from
-  match pb, vn with
-  | none, none =>
-    simp only [WP.spec_ok]
-  | none, some vn1 =>
-    simp only []
-    have hspec := chain_from_version_negotiation_spec vn1
-    revert hspec
-    unfold WP.spec WP.theta
-    cases hm : chain_from_version_negotiation vn1 with
-    | ok r =>
-      simp only [WP.wp_return]
-      intro hpost
-      exact hpost
-    | fail e =>
-      intro h; exact absurd h id
-    | div =>
-      intro h; exact absurd h id
-  | some pb1, _ =>
-    simp only []
-    have hspec := chain.Chain.from_pb_spec pb1
-    unfold WP.spec WP.theta at hspec
-    cases hm : chain.Chain.from_pb pb1 with
-    | ok r =>
-      cases r with
-      | Ok v =>
-        simp only [bind_tc_ok,
-          core.result.Result.Insts.CoreOpsTry.branch,
-          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-          core.convert.FromSame.from, WP.spec_ok]
-        rw [hm] at hspec; exact hspec ▸ rfl
-      | Err e =>
-        simp only [bind_tc_ok,
-          core.result.Result.Insts.CoreOpsTry.branch,
-          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-          core.convert.FromSame.from, WP.spec_ok]
-        rw [hm] at hspec; exact hspec ▸ rfl
-    | fail e =>
-      rw [hm] at hspec
-      exact absurd hspec id
-    | div =>
-      rw [hm] at hspec
-      exact absurd hspec id
+  unfold chainFrom chain_from
+  rcases pb with _ | pb1 <;> rcases vn with _ | vn1 <;>
+    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] <;>
+    step* <;> simp_all <;> split <;> simp_all
 
 end spqr

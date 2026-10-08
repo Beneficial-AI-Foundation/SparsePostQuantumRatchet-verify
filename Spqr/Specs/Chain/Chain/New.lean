@@ -61,13 +61,11 @@ theorem new_spec (initial_key : Slice U8) (dir : proto.pq_ratchet.Direction)
   match dir with
   | .A2B =>
     step*
-    · grind
-    · simp_all [Array.make, newHkdfOutput, chainStartLabel, crypto.zeroSalt32]
-      constructor <;> simp [List.slice_length, crypto.hkdf_length]
+    simp_all [Array.make, newHkdfOutput, chainStartLabel, crypto.zeroSalt32, alloc.vec.Vec.val,
+      alloc.vec.Vec.length, List.slice_length, crypto.hkdf_length]
   | .B2A =>
     step*
-    · grind
-    · simp_all [Array.make, newHkdfOutput, chainStartLabel, crypto.zeroSalt32]
-      constructor <;> simp [List.slice_length, crypto.hkdf_length]
+    simp_all [Array.make, newHkdfOutput, chainStartLabel, crypto.zeroSalt32, alloc.vec.Vec.val,
+      alloc.vec.Vec.length, List.slice_length, crypto.hkdf_length]
 
 end spqr.chain.Chain

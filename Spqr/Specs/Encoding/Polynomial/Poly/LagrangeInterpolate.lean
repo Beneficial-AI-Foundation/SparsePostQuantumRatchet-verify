@@ -47,10 +47,8 @@ theorem body_spec
             (working.coefficients[iter.start.val + 1]!).toGF216 ∧
           (∀ (k : Nat), k ≠ iter.start → v1[k]! = v[k]!) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -147,64 +145,26 @@ theorem body_spec
           (∀ j < v₂.length,
             (v₂[j]!).toGF216 = (v[j]!).toGF216 + (working₂.coefficients[j + 1]!).toGF216) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    have h_match_len :
-        (alloc.vec.Vec.deref_mut working.coefficients).1.length =
-        (alloc.vec.Vec.deref template.coefficients).length := by
-      simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.deref, Slice.length]
-      exact h_wt.symm
-    have hv1_val :
-        ((alloc.vec.Vec.deref_mut working.coefficients).2
-          (alloc.vec.Vec.deref template.coefficients)).val = template.coefficients.val := by
-      simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.deref]
-    have h_toGF_eq :
-      ({coefficients := (alloc.vec.Vec.deref_mut working.coefficients).2
-                          (alloc.vec.Vec.deref template.coefficients)}
-        : encoding.polynomial.Poly).toGF216Poly = template.toGF216Poly := by
-      unfold Poly.toGF216Poly
-      rw [hv1_val]
-    have h_poly_eval :
-      ({coefficients := (alloc.vec.Vec.deref_mut working.coefficients).2
-                          (alloc.vec.Vec.deref template.coefficients)}: Poly).evalAt
-                          (pts[iter.start]!).x = 0 := by
-      unfold Poly.evalAt
-      rw [h_toGF_eq]
-      exact h_eval h_lt (by grind)
-    have h_v1_len :
-        0 < ({coefficients := (alloc.vec.Vec.deref_mut working.coefficients).2
-                                (alloc.vec.Vec.deref template.coefficients)}
-              : Poly).coefficients.val.length := by
-      change 0 < ((alloc.vec.Vec.deref_mut working.coefficients).2
-                  (alloc.vec.Vec.deref template.coefficients)).val.length
-      rw [hv1_val]
-      exact h_template_pos
-    simp only [lift, bind_tc_ok]
-    have h_copy :=
-      core.slice.Slice.copy_from_slice.step_spec GF16.Insts.CoreMarkerCopy
-        (alloc.vec.Vec.deref_mut working.coefficients).1
-        (alloc.vec.Vec.deref template.coefficients) h_match_len
-    have h_complete :=
-      lagrange_interpolate_complete_spec
-        { coefficients := (alloc.vec.Vec.deref_mut working.coefficients).2
-                            (alloc.vec.Vec.deref template.coefficients) }
-        pts iter.start (by grind) h_v1_len h_poly_eval
-    apply WP.spec_bind h_copy
-    intro s2 hs2
-    rw [hs2]
-    apply WP.spec_bind h_complete
-    intro working1 ⟨h_w1_len, h_w1_poly⟩
-    apply WP.spec_bind (lagrange_interpolate_loop0_loop0.loop_spec working1
-      { start := 0#usize, «end» := alloc.vec.Vec.len v } v
-      (by simp [alloc.vec.Vec.len])
-      (by simp [alloc.vec.Vec.len]; grind [degree])
-      (by grind))
-    grind [degree]
+    have hW : ({coefficients := {slice := template.coefficients.deref}} : Poly) = template := by
+      obtain ⟨⟨s⟩⟩ := template
+      simp [alloc.vec.Vec.deref, alloc.vec.Vec.val]
+    simp only [lift, bind_ok, alloc.vec.Vec.deref_mut]
+    step*
+    all_goals subst_vars
+    all_goals try rw [hW] at *
+    · simpa [degree, alloc.vec.Vec.deref, alloc.vec.Vec.val] using h_wt.symm
+    · refine ⟨h_lt, h_start1, h_end1, by assumption, by assumption, fun hi => ?_, fun j hj => ?_⟩
+      · have hpi : pts[iter.start] = pts[iter.start]! := by
+          rw [Slice.getElem!_Usize_eq]; simp [hi]
+        rw [hpi]; assumption
+      · have hj' : j < (alloc.vec.Vec.len v).val := by
+          simp only [alloc.vec.Vec.len]; scalar_tac
+        solve_by_elim [Nat.zero_le]
   · grind
 
 /-! # Spec theorem for `lagrange_interpolate`: loop 0
@@ -264,12 +224,13 @@ theorem loop_spec
       simp only [] at r_post
       obtain ⟨h_v_eq, h_nlt⟩ := r_post
       subst h_v_eq
-      refine ⟨h_len', ws, by grind, by grind, by grind⟩
+      refine ⟨h_len', ws, by grind, by grind [Slice.getElem!_Nat_eq], by grind⟩
     · rename_i r_post
       simp only at r_post
       obtain ⟨h_lt, h_start1, h_end1, h_v2len, h_w2len, h_poly_id, h_coord⟩ := r_post
       refine ⟨by grind, by grind, by grind, by grind, by exact h_w2len, ?_, by grind⟩
-      refine ⟨ws ++ [r_post.2.2], by grind, by grind, by grind⟩
+      refine ⟨ws ++ [r_post.2.2], by grind,
+        by grind [Slice.getElem!_Nat_eq], by grind⟩
   · refine ⟨rfl, le_refl _, h_le, rfl, h_wt.symm, [], by simp, by grind, by grind⟩
 
 end spqr.encoding.polynomial.Poly.lagrange_interpolate_loop0
@@ -303,13 +264,10 @@ private lemma extend_from_slice_GF16_spec
   have h_clone_x : ∀ x ∈ s.val, GF16.Insts.CoreCloneClone.clone x = ok x := by
     intros _ _
     simp [GF16.Insts.CoreCloneClone.clone]
-  have h_slclone : Slice.clone GF16.Insts.CoreCloneClone.clone s = ok s := by
-    obtain ⟨s', h_eq, hs⟩ := WP.spec_imp_exists (Slice.clone_spec h_clone_x)
-    rw [h_eq, ← hs]
   unfold alloc.vec.Vec.extend_from_slice
   have hlen : v.length + s.length ≤ Usize.max := h
   rw [dif_pos hlen]
-  grind
+  step*
 
 theorem lagrange_interpolate_formula
     (pts : Slice Pt)
@@ -339,7 +297,7 @@ theorem lagrange_interpolate_formula
     rw [h_working_eq]
     have h_root_template : template.evalAt (pts[0]!).x = 0 := by
       unfold Poly.evalAt
-      grind [prodLinearFactors_eval_root]
+      grind [prodLinearFactors_eval_root, Slice.getElem!_Nat_eq]
     step with lagrange_interpolate_complete_spec template pts 0#usize
       h_nonempty (by grind) h_root_template as ⟨working1, h_w1_len, h_w1_id⟩
     have h_one_le_w1 : (1 : Nat) ≤ working1.degree := by grind
@@ -361,7 +319,7 @@ theorem lagrange_interpolate_formula
     have h_eval_all_template :
         ∀ (i : Nat), 1 ≤ i → i < (Slice.len pts).val → template.evalAt (pts[i]!).x = 0 := by
       unfold Poly.evalAt
-      grind [prodLinearFactors_eval_root]
+      grind [prodLinearFactors_eval_root, Slice.getElem!_Nat_eq]
     step with lagrange_interpolate_loop0.loop_spec pts template
       ({ start := 1#usize, «end» := Slice.len pts } : core.ops.range.Range Usize)
       v working1 (by simp [Slice.len]) (by grind) h_v_lt_template (h_w1_len.symm)
@@ -373,7 +331,7 @@ theorem lagrange_interpolate_formula
     refine ⟨working1 :: ws', by grind, ?_, ?_⟩
     · intro i hi hpi
       cases i with
-      | zero => grind
+      | zero => grind [Slice.getElem!_Nat_eq, Slice.getElem!_Usize_eq]
       | succ k => grind
     · intro j hj
       have hj' : j < v1.length := hj
@@ -427,7 +385,7 @@ theorem lagrange_interpolate_spec
           (X - C (GF16.toGF216 (pts.val.get ⟨i, hpi⟩).x)) := by grind
       rw [h_rhs_rw] at h_id
       apply  mul_right_cancel₀ hne
-      grind
+      grind [Slice.getElem!_Nat_eq]
     have h_term_eq : ∀ (m : ℕ) (i : Fin ws.length),
         ((ws.get i).coefficients.val[m + 1]!).toGF216 =
           (C (lagrangeScaleGF216 (pts[i]!) pts.val) * lagrangeBasisPoly pts i).coeff m := by
@@ -455,7 +413,7 @@ theorem lagrange_interpolate_spec
             (fun b hb => by
               rw [Finset.mem_range] at hb
               exact ⟨⟨b, by grind⟩, Finset.mem_univ _, rfl⟩)
-            (fun a _ => by grind)
+            (fun a _ => by grind [Slice.getElem!_Nat_eq])
         · rw[degree] at hm
           rw [dif_neg hm]
           exact (lagrangeInterpolantSum_coeff_high pts n m (le_refl _)

@@ -1,7 +1,5 @@
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.ArraySlice
 import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.Auxiliary.Aeneas.Slice
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize

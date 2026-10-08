@@ -7,6 +7,7 @@ import SrcTranslated.Funs
 import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+import Spqr.Auxiliary.Aeneas.SpecRefl
 /-!
 # Spec theorem for `spqr::chain_from_version_negotiation`
 
@@ -55,53 +56,13 @@ theorem chain_from_version_negotiation_spec
     (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
     chain_from_version_negotiation vn ⦃ (result : core.result.Result chain.Chain Error) =>
       chainFromVersionNegotiation vn = ok result ⦄ := by
-  unfold chainFromVersionNegotiation parseDirection
-  unfold chain_from_version_negotiation
+  unfold chainFromVersionNegotiation parseDirection chain_from_version_negotiation
+  have hnew := refl_of% chain.Chain.new_spec
   step*
-  split at r_post
-  · subst r_post
-    simp only [core.result.Result.map_err_Ok, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTry.branch, core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      bind_tc_ok]
-    split <;> rename_i v hcp
-    · simp only [bind_tc_ok]
-      have hcn_spec := chain.Chain.new_spec (alloc.vec.Vec.deref vn.auth_key)
-        proto.pq_ratchet.Direction.A2B v
-      revert hcn_spec
-      unfold WP.spec WP.theta
-      cases hm : chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) proto.pq_ratchet.Direction.A2B v
-      · simp only [WP.wp_return]
-        intro hcn_post
-        simp_all
-      · intro h; exact h.elim
-      · intro h; exact h.elim
-    · simp_all [bind_tc_ok, WP.spec_ok]
-  · subst r_post
-    simp only [core.result.Result.map_err_Ok, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTry.branch, core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      bind_tc_ok]
-    split <;> rename_i v hcp
-    · simp only [bind_tc_ok]
-      have hcn_spec := chain.Chain.new_spec (alloc.vec.Vec.deref vn.auth_key)
-        proto.pq_ratchet.Direction.B2A v
-      revert hcn_spec
-      unfold WP.spec WP.theta
-      cases hm : chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) proto.pq_ratchet.Direction.B2A v
-      · simp only [WP.wp_return]
-        intro hcn_post
-        simp_all
-      · intro h; exact h.elim
-      · intro h; exact h.elim
-    · simp_all [bind_tc_ok, WP.spec_ok]
-  · subst r_post
-    simp only [core.result.Result.map_err_Err, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual]
-    apply WP.spec_mono (P₀ := fun result => result = core.result.Result.Err Error.StateDecode)
-    · step*
-    · intro result h
-      subst h
-      simp_all
+  split at r_post <;> subst r_post <;> cases vn.chain_params <;>
+    simp only [core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
+      core.option.Option.ok_or, bind_tc_ok,
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] <;>
+    step* <;> (try clear hnew) <;> simp_all
 
 end spqr
