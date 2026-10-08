@@ -21,6 +21,15 @@ open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 open core.result.Result (Ok)
 
+/-- `mac_ct_spec`, strengthened with the defining `… = ok r` equation. Registered as a
+file-local `step` lemma rather than a local hypothesis: `step*` tries to match local
+hypotheses at every step, which made the proof noticeably slower. -/
+private theorem mac_ct_spec_refl : type_of% (refl_of% mac_ct_spec) :=
+  refl_of% mac_ct_spec
+
+attribute [local step] mac_ct_spec_refl
+attribute [-step] mac_ct_spec
+
 /-- **Spec theorem for `spqr::authenticator::Authenticator::verify_ct`**
 • Given the boundedness hypotheses and `expected_mac.length = MACSIZE`, the call does not panic.
 • The result is `Ok ()` exactly when `expected_mac` equals the `mac_ct` output.
@@ -32,9 +41,7 @@ theorem verify_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8) (expect
     verify_ct self ep ct expected_mac ⦃ (result : core.result.Result Unit Error) =>
       result = Ok () ↔ mac_ct self ep ct = ok { slice := expected_mac } ⦄ := by
   unfold verify_ct
-  have hmac := refl_of% mac_ct_spec
   step*
-  all_goals clear hmac
   · simp only [reduceCtorEq, false_iff, ‹mac_ct self ep ct = ok _›, Result.ok.injEq]
     rintro rfl
     simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.val, Slice.length, MACSIZE_spec,

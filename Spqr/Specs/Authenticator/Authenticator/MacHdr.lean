@@ -42,6 +42,16 @@ def MAC_HDR_LABEL : List U8 :=
 @[simp, grind =]
 theorem MAC_HDR_LABEL_length : MAC_HDR_LABEL.length = 33 := by rfl
 
+/-- `libcrux_hmac.hmac_sha256_tag32_spec`, strengthened with the defining `… = ok r`
+equation. Registered as a file-local `step` lemma rather than a local hypothesis: `step*`
+tries to match local hypotheses at every step, which made the proof noticeably slower. -/
+private theorem hmac_sha256_tag32_spec_refl :
+    type_of% (refl_of% libcrux_hmac.hmac_sha256_tag32_spec) :=
+  refl_of% libcrux_hmac.hmac_sha256_tag32_spec
+
+attribute [local step] hmac_sha256_tag32_spec_refl
+attribute [-step] libcrux_hmac.hmac_sha256_tag32_spec
+
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_hdr`**
 • Given the boundedness hypotheses on `self.mac_key` and `hdr`,
@@ -59,7 +69,6 @@ theorem mac_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8)
       let data : Slice U8 := Slice.from (MAC_HDR_LABEL ++ to_be_bytes ep ++ hdr) (by grind);
       libcrux_hmac.hmac .Sha256 self.mac_key.deref data (some MACSIZE) = ok result ⦄ := by
   unfold mac_hdr MACSIZE
-  have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
   · simp [*]; grind
   · simp [*]; grind
