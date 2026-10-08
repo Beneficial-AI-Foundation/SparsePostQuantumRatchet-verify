@@ -420,8 +420,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
       have h_val_eq : pts1[j]!.value.val = suffix := by
         have := h_eq; simp  at this; grind
       have hk' : k < suffix.length := by
-        have := congr_arg List.length h_val_eq
-        simp_all
+        rw [← h_val_eq]; exact hk
       obtain ⟨h_chunk_bound, h_enc⟩ := h_content k hk'
       have h_bound : 2 * (j + 16 * k) + 1 < msg.val.length := by
         have h_even' : msg.val.length % 2 = 0 := by

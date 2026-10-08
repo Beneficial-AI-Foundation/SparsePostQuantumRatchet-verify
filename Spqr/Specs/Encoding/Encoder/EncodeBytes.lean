@@ -76,14 +76,10 @@ theorem encode_bytes_spec_poly_encoder
   cases r with
   | Ok val =>
     obtain ⟨idx, s⟩ := val
-    cases s <;> simpa only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok,
-      alloc.vec.Vec.length, Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
-      Slice.length, Slice.getElem!_Nat_eq, WP.spec_ok]
+    cases s <;> simpa only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok, WP.spec_ok]
   | Err e =>
     simpa only [core.result.Result.Insts.CoreOpsTry.branch,
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-      core.convert.FromSame.from, bind_tc_ok, bind_ok, alloc.vec.Vec.length,
-      Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD, Slice.length,
-      Slice.getElem!_Nat_eq, WP.spec_ok]
+      core.convert.FromSame.from, bind_tc_ok, bind_ok, WP.spec_ok]
 
 end spqr.core.option.Option.Insts.SpqrEncodingEncoder

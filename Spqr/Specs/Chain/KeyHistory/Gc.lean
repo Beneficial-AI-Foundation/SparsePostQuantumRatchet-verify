@@ -653,7 +653,7 @@ set_option hygiene false in
 macro_rules
   | `(tactic| gc_close_key_ge_goal) => `(tactic|
     ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-      have hi3 : i3.val = i1.val * 36 := by simp_all
+      have hi3 : i3.val = i1.val * 36 := by scalar_tac
       have hge : i3.val ≤ self.data.length := by scalar_tac
       by_cases hpos : params.max_ooo_keys > 0#u32
       · have hi4 : i4 = params.max_ooo_keys := (‹i4 = params.max_ooo_keys ↔ _›).mpr hpos
@@ -684,7 +684,7 @@ macro_rules
       obtain ⟨hv1, -, hv3, -, -, hv6, -, hv8, ⟨f_inv, hv9, hv10⟩, ⟨g_inv, hv11, hv12⟩⟩ :
         GcLoopPost self a.to_slice 0#usize v := ‹_›
       have ha : a.val = horizonBytes i5 := ‹_›
-      have hi3 : i3.val = i1.val * 36 := by simp_all
+      have hi3 : i3.val = i1.val * 36 := by scalar_tac
       have hge : i3.val ≤ self.data.length := by scalar_tac
       have hi5 : i5.val = current_key.val - i4.val := ‹_›
       have hi45 : i4.val ≤ current_key.val := ‹_›
