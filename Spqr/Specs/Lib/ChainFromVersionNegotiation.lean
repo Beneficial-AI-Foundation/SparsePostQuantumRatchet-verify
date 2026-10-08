@@ -7,6 +7,7 @@ import SrcTranslated.Funs
 import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+import Spqr.Auxiliary.Aeneas.SpecRefl
 /-!
 # Spec theorem for `spqr::chain_from_version_negotiation`
 
@@ -22,6 +23,28 @@ open Aeneas Aeneas.Std Result spqr crypto
 
 namespace spqr
 
+/-- Parse `vn.direction` as a `Direction`, returning `none` on unknown values. -/
+def parseDirection (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
+    Option proto.pq_ratchet.Direction :=
+  match vn.direction with
+  | 0#iscalar => some .A2B
+  | 1#iscalar => some .B2A
+  | _         => none
+
+/-- Functional model of `chain_from_version_negotiation`:
+- Unknown direction  → `Err StateDecode`
+- Missing chain_params → `Err ChainNotAvailable`
+- Otherwise          → `Chain.new(auth_key, dir, params)` -/
+noncomputable def chainFromVersionNegotiation
+    (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
+    : Result (core.result.Result chain.Chain Error) :=
+  match parseDirection vn with
+  | none     => ok (.Err Error.StateDecode)
+  | some dir =>
+    match vn.chain_params with
+    | none   => ok (.Err Error.ChainNotAvailable)
+    | some p => chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) dir p
+
 /-- **Spec theorem for `spqr.chain_from_version_negotiation`**:
 
 Converts direction, unwraps chain params, then calls `Chain.new`.
@@ -32,37 +55,14 @@ Converts direction, unwraps chain params, then calls `Chain.new`.
 theorem chain_from_version_negotiation_spec
     (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
     chain_from_version_negotiation vn ⦃ (result : core.result.Result chain.Chain Error) =>
-      (∀ e, proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-              vn.direction = ok (core.result.Result.Err e) →
-        result = core.result.Result.Err Error.StateDecode) ∧
-      (∀ dir, proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-                vn.direction = ok (core.result.Result.Ok dir) →
-        vn.chain_params = none →
-        result = core.result.Result.Err Error.ChainNotAvailable) ∧
-      (∀ dir params,
-        proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-          vn.direction = ok (core.result.Result.Ok dir) →
-        vn.chain_params = some params →
-        chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) dir params = ok result) ⦄ := by
-  unfold chain_from_version_negotiation
-  obtain ⟨r, hr, -⟩ := WP.spec_imp_exists
-    (proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from_spec
-      vn.direction)
-  simp only [hr, bind_ok]
-  cases r with
-  | Err e =>
-    simp only [core.result.Result.map_err_Err]
-    step*
-    simp_all
-  | Ok dir =>
-    simp only [core.result.Result.map_err_Ok]
-    cases hcp : vn.chain_params with
-    | none =>
-      step* <;> simp_all
-    | some p =>
-      obtain ⟨c, hc, -⟩ := WP.spec_imp_exists (chain.Chain.new_spec vn.auth_key.deref dir p)
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, core.option.Option.ok_or, bind_ok, hc,
-        WP.spec_ok]
-      simp_all
+      chainFromVersionNegotiation vn = ok result ⦄ := by
+  unfold chainFromVersionNegotiation parseDirection chain_from_version_negotiation
+  have hnew := refl_of% chain.Chain.new_spec
+  step*
+  split at r_post <;> subst r_post <;> cases vn.chain_params <;>
+    simp only [core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
+      core.option.Option.ok_or, bind_tc_ok,
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] <;>
+    step* <;> simp_all
 
 end spqr

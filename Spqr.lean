@@ -210,6 +210,7 @@ import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 import Spqr.Specs.IncrementalMlkem768.Generate
 import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Kdf.HkdfToVec
+import Spqr.Specs.Lib.ChainFrom
 import Spqr.Specs.Lib.ChainFromVersionNegotiation
 import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 import Spqr.Specs.Lib.CurrentVersion
@@ -219,6 +220,8 @@ import Spqr.Specs.Lib.DecodeState.CallOnce
 import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
+import Spqr.Specs.Lib.MsgVersion
+import Spqr.Specs.Lib.MsgVersion.Defs
 import Spqr.Specs.Lib.SecretOutput.Eq
 import Spqr.Specs.Lib.SecretOutput.Fmt
 import Spqr.Specs.Lib.SecretOutput.HasSecret
@@ -259,10 +262,12 @@ import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1SentEkReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1SentEkReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.IntoPb
