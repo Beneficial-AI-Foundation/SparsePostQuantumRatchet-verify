@@ -33,14 +33,25 @@ theorem verify_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8) (expe
   unfold verify_hdr
   have hmac := refl_of% mac_hdr_spec
   step*
+  all_goals clear hmac
   · simp only [reduceCtorEq, false_iff, ‹mac_hdr self ep hdr = ok _›, Result.ok.injEq]
     rintro rfl
-    simp_all [alloc.vec.Vec.val]
+    simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.val, Slice.length, MACSIZE_spec,
+      bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, getElem!_pos, alloc.vec.Vec.deref_val,
+      implies_true, ↓reduceIte, UScalar.ofNatCore_val_eq, not_true_eq_false]
   · simp only [true_iff, ‹mac_hdr self ep hdr = ok _›, Result.ok.injEq]
     have hall : ∀ j < expected_mac.length, expected_mac.val[j]! = v.val[j]! := by
-      by_contra; simp_all
+      by_contra
+      simp_all only [alloc.vec.Vec.length, Slice.length, MACSIZE_spec, getElem!_pos,
+        alloc.vec.Vec.deref_val, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val,
+        UScalar.ofNatCore_val_eq, ite_eq_left_iff, not_forall, one_ne_zero, imp_false,
+        not_exists, Decidable.not_not, not_true_eq_false, exists_false]
     apply alloc.vec.Vec.ext
-    refine List.ext_getElem! (by simp_all [alloc.vec.Vec.val]) fun j => ?_
-    by_cases j < expected_mac.length <;> simp_all [alloc.vec.Vec.val]
+    refine List.ext_getElem! (by simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.val,
+      Slice.length, MACSIZE_spec]) fun j => ?_
+    by_cases j < expected_mac.length
+    · simp_all only [alloc.vec.Vec.val]
+    · simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.val, Slice.length, MACSIZE_spec,
+        not_lt, getElem!_neg]
 
 end spqr.authenticator.Authenticator

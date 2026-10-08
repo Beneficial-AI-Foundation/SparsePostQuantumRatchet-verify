@@ -375,30 +375,27 @@ theorem get_spec (self : chain.KeyHistory) (at1 : U32)
             (off + 36 = self.data.length →
               p.2.data = self.data.val.take off) ⦄ := by
   unfold get
+  iterate 4 step
+  have hi2 : i2.val = (chain.maxOoo params).val := by
+    have := DEFAULT_CHAIN_PARAMS_spec.2
+    unfold chain.maxOoo; split <;> grind
   step*
-  all_goals
-    have hi2 : i2.val = (chain.maxOoo params).val := by
-      have := DEFAULT_CHAIN_PARAMS_spec.2
-      unfold chain.maxOoo; split <;> grind
-  · scalar_tac
-  · left; scalar_tac
-  · have h_not_trimmed : current_ctr.val ≤ at1.val + (chain.maxOoo params).val := by scalar_tac
-    have h_start_val : iter.iter.start.val = 0 := by simp [*]
-    have hw : want.val = (core.num.U32.to_be_bytes at1).val := by
-      have := core.num.U32.to_be_bytes.step_spec at1
-      simp only [lift, WP.spec_ok] at this
-      rw [this]; assumption
-    rw [← hw]
-    cases hp : p.1 with
-    | Err e =>
-      simp only [hp, h_start_val, zero_le, true_imp_iff] at *
-      right
-      have h_err : e = Error.KeyAlreadyRequested at1 := by grind
-      have h_data : p.2.data = self.data := by grind
-      refine ⟨h_err, h_not_trimmed, ?_, by grind⟩
-      cases hp2 : p.2; cases hs : self; simp_all
-    | Ok out =>
-      simp only [hp, h_start_val, zero_le, true_imp_iff, true_and] at *
-      exact ⟨h_not_trimmed, by assumption⟩
+  have h_not_trimmed : current_ctr.val ≤ at1.val + (chain.maxOoo params).val := by scalar_tac
+  have h_start_val : iter.iter.start.val = 0 := by simp [*]
+  have hw : want.val = (core.num.U32.to_be_bytes at1).val := by
+    have := core.num.U32.to_be_bytes.step_spec at1
+    simp only [lift, WP.spec_ok] at this
+    rw [this]; assumption
+  rw [← hw]
+  cases hp : p.1 with
+  | Err e =>
+    simp only [hp, h_start_val, zero_le, true_imp_iff] at *
+    right
+    obtain ⟨h_err, h_data, h_ex⟩ := ‹e = Error.KeyAlreadyRequested at1 ∧ _›
+    refine ⟨h_err, h_not_trimmed, ?_, h_ex⟩
+    cases hp2 : p.2; cases hs : self; simp_all
+  | Ok out =>
+    simp only [hp, h_start_val, zero_le, true_imp_iff, true_and] at *
+    exact ⟨h_not_trimmed, by assumption⟩
 
 end spqr.chain.KeyHistory

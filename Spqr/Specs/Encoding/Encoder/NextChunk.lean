@@ -89,6 +89,11 @@ theorem next_chunk_spec_poly_encoder
   have h_inner := PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec pe0
     h_idx_fits h_admissible h_coeff_bound
   step with h_inner
-  cases hs : pe0.s <;> simp_all [alloc.vec.Vec.getElem!_Nat_eq]
+  cases hs : pe0.s <;>
+    simp_all only [EncoderState.Points.injEq, EncoderState.Polys.injEq, reduceCtorEq,
+      alloc.vec.Vec.length, alloc.vec.Vec.len, alloc.vec.Vec.getElem!_Nat_eq, Array.getElem!_Nat_eq,
+      Array.property, Array.length, UScalar.ofNatCore_val_eq, getElem!_pos,
+      List.length_eq_zero_iff, List.getElem!_eq_getElem?_getD, forall_eq', Order.add_one_le_iff,
+      not_isEmpty_of_nonempty, IsEmpty.forall_iff, implies_true, true_and, and_self]
 
 end spqr.core.option.Option.Insts.SpqrEncodingEncoder

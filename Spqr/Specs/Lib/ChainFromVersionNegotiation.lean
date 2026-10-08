@@ -63,6 +63,6 @@ theorem chain_from_version_negotiation_spec
     simp only [core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
       core.option.Option.ok_or, bind_tc_ok,
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] <;>
-    step* <;> simp_all
+    step* <;> (try clear hnew) <;> simp_all
 
 end spqr
