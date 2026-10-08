@@ -8,30 +8,17 @@ import Spqr.Specs.Lib.CurrentVersion
 /-!
 # Spec theorem for `spqr::state_version`
 
-Extracts the protocol version implied by a `PqRatchetState`'s `inner` field:
-`None` → `Version.V0` (PQ ratchet disabled), `Some _` → `Version.V1` (enabled).
+Maps `PqRatchetState.inner` to a protocol version (`None` → `V0`, `Some _` → `V1`).
+Always succeeds; result equals `innerVersion`.
 
-The function is total — it always returns `ok` — and its result coincides with
-the pure helper `innerVersion` defined in `Spqr.Specs.Lib.CurrentVersion`.
-
-**Source**: spqr/src/lib.rs (lines 457:0-462:1)
--/
+**Source**: spqr/src/lib.rs -/
 
 open Aeneas Aeneas.Std Result
 
 namespace spqr
 
 /-- **Spec theorem for `spqr.state_version`**:
-
-• Takes a `PqRatchetState` by (erased) reference.
-• Pattern-matches on `state.inner`:
-    - `none`   → returns `ok Version.V0`
-    - `some _` → returns `ok Version.V1`
-• The function always succeeds (no panic, no error path).
-• The returned version equals `innerVersion state`.
-
-**Source**: spqr/src/lib.rs (lines 457:0-462:1)
--/
+Always returns `ok (innerVersion state)`, matching `state.inner` to `V0`/`V1`. -/
 @[step]
 theorem state_version_spec (state : proto.pq_ratchet.PqRatchetState) :
     state_version state ⦃ (result : proto.pq_ratchet.Version) =>
