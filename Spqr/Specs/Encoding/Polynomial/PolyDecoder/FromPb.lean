@@ -103,7 +103,7 @@ theorem body_spec
   unfold body
   step
   split
-  · step; step; step; step; step; step; step; step
+  · iterate 8 step
     have h_bound : j.val + 4 ≤ pts.val.length := by scalar_tac
     have h0 : j.val < pts.val.length := by scalar_tac
     have h1 : j.val + 1 < pts.val.length := by scalar_tac
