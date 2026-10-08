@@ -43,8 +43,7 @@ def MAC_CT_LABEL : List U8 :=
 theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
 
 /-- `libcrux_hmac.hmac_sha256_tag32_spec`, strengthened with the defining `… = ok r`
-equation. Registered as a file-local `step` lemma rather than a local hypothesis: `step*`
-tries to match local hypotheses at every step, which made the proof noticeably slower. -/
+equation. Registered as a file-local `step` lemma. -/
 private theorem hmac_sha256_tag32_spec_refl :
     type_of% (refl_of% libcrux_hmac.hmac_sha256_tag32_spec) :=
   refl_of% libcrux_hmac.hmac_sha256_tag32_spec

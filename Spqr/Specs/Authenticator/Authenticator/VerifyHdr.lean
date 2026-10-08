@@ -22,8 +22,7 @@ namespace spqr.authenticator.Authenticator
 open core.result.Result (Ok)
 
 /-- `mac_hdr_spec`, strengthened with the defining `… = ok r` equation. Registered as a
-file-local `step` lemma rather than a local hypothesis: `step*` tries to match local
-hypotheses at every step, which made the proof noticeably slower. -/
+file-local `step` lemma. -/
 private theorem mac_hdr_spec_refl : type_of% (refl_of% mac_hdr_spec) :=
   refl_of% mac_hdr_spec
 
