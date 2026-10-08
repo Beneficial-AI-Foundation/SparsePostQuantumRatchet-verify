@@ -19,7 +19,7 @@ field is optional. The result is pinned to the pure functional model `Functional
 which in turn calls the functional model of the unchunked conversion. The reverse direction is
 `from_pb`.
 
-**Source:** "src/v1/chunked/send_ek/serialize.rs"
+**Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
 
 open Aeneas Aeneas.Std Result

@@ -19,7 +19,7 @@ unchunked `KeysUnsampled::from_pb` and propagates its error, if any. The result 
 the pure functional model `FunctionalModels.fromPb`, which in turn calls the functional model
 of the unchunked conversion. The reverse direction is `into_pb`.
 
-**Source:** "src/v1/chunked/send_ek/serialize.rs"
+**Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
 
 open Aeneas Aeneas.Std Result
