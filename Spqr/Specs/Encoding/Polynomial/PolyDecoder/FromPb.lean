@@ -539,8 +539,6 @@ into `[SortedSet<Pt>; 16]`, and casts `pb.pts_needed : u32` to `usize`.
 
 namespace spqr.encoding.polynomial.PolyDecoder
 
-set_option maxHeartbeats 400000 in
--- heavy grind
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb`** (byte-level):
 
 Tri-branch postcondition: (1) bad length → `Err`, (2) bad chunking → `Err`, (3) valid →
