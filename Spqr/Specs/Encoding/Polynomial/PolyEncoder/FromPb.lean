@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Markus Dablander
 -/
 import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
@@ -56,21 +57,17 @@ theorem body_spec
                 ((out'[iter.start]!).coefficients[k]!).value.val =
                   256 * (v[iter.start]!)[2 * k]!  + (v[iter.start]!)[2 * k + 1]!) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
-  · step*
-    · simp_all only [ne_eq, List.length_eq_zero_iff,
-        not_true_eq_false, reduceCtorEq, false_and, implies_true,
-          true_and]
-      have hderef : ∀ (w : alloc.vec.Vec U8), w.deref = w := fun _ => rfl
-      simp [*]
-      grind
-    · -- `Err` branch of `Poly::deserialize` is ruled out by `h_nonempty` / `h_even`
-      cases r <;> simp_all [alloc.vec.Vec.deref]
-  · grind
+  · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
+    simp only [h_opt_eq]
+    have h_idx : iter.start.val < v.val.length := by scalar_tac
+    step*
+    · cases r <;> simp_all
+    · cases r <;> simp_all
+  · obtain ⟨h_opt_eq, _⟩ := h_none h_lt
+    simp [h_opt_eq, h_lt]
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 0
 
@@ -189,21 +186,18 @@ theorem body_spec
             v1 = v ++ [g] ∧
             g.value.val = pts[2 * iter.start.val]! * 256 + pts[2 * iter.start.val + 1]! ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
-    rw [h_opt_eq]
+    simp only [h_opt_eq]
     have h_2k_lt : 2 * iter.start < pts.length := by grind
     have h_2k1_lt : 2 * iter.start + 1 < pts.length := by grind
     have h_v_overflow : v.val.length + 1 ≤ Usize.max := by omega
     step*
     exact ⟨h_lt, h_start1, h_end1, g, v1_post, by simp_all [Array.make, Nat.mul_comm]⟩
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨h_lt, rfl⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 2
@@ -324,13 +318,11 @@ theorem body_spec
                   ((v.val[iter.start.val]!).val[2 * k]!).val * 256 +
                   ((v.val[iter.start.val]!).val[2 * k + 1]!).val) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
-    rw [h_opt_eq]
+    simp only [h_opt_eq]
     have h_j_lt_v : iter.start.val < v.val.length := by grind
     have h_j_lt_16 : iter.start.val < 16 := by omega
     have h_ev := h_even iter.start.val h_j_lt_v
@@ -342,8 +334,7 @@ theorem body_spec
       · grind
     · simp_all [alloc.vec.Vec.with_capacity, alloc.vec.Vec.len]
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, h_lt]
 
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 1
@@ -401,7 +392,12 @@ theorem loop_spec
     apply WP.spec_mono h_body
     intro cf h_cf
     match cf with
-    | ControlFlow.done result => grind
+    | ControlFlow.done result =>
+      obtain ⟨rfl, h_ge⟩ := h_cf
+      refine ⟨out', rfl, fun j hj => ?_⟩
+      obtain ⟨pt, h_eq, h_len, h_enc⟩ := h_pre' j (by scalar_tac)
+      rw [Array.getElem!_Nat_eq, h_eq]
+      exact ⟨h_len, h_enc⟩
     | ControlFlow.cont (iter'', out'') =>
       simp only at h_cf ⊢
       obtain ⟨h_lt, h_start1, h_end1,  h_out_preserve, h_pt_len, h_pt_encode⟩ := h_cf
@@ -414,7 +410,9 @@ theorem loop_spec
           exact ⟨pt', (h_out_preserve j (by omega)).trans h_eq', h_len', h_enc'⟩
         · grind
       · grind
-  · grind
+  · refine ⟨rfl, by scalar_tac, fun j hj => ⟨out.val[j]!, rfl, ?_⟩⟩
+    rw [← Array.getElem!_Nat_eq]
+    exact h_pre j hj
 
 end spqr.encoding.polynomial.PolyEncoder.from_pb_loop1
 
@@ -518,12 +516,10 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       clear * - pb h_des
       intro i v iter out h_end_le_v h_end_le_16 h_lt
       unfold from_pb_loop0.body
-      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-      rw [hnext]
-      simp only [bind_tc_ok]
+      step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+        ⟨opt, iter1', h_none, h_some⟩
       obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
-      rw [h_opt_eq]
+      simp only [h_opt_eq]
       have h_idx : iter.start.val < v.length := by scalar_tac
       have h_16 : iter.start.val < 16 := by omega
       step as ⟨v1, hv1⟩
@@ -543,12 +539,10 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       clear * - pb
       intro i v iter out h_end_le_v h_end_le_16 h_lt
       unfold from_pb_loop1.body
-      obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-        WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-      rw [hnext]
-      simp only [bind_tc_ok]
+      step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+        ⟨opt, iter1', h_none, h_some⟩
       obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
-      rw [h_opt_eq]
+      simp only [h_opt_eq]
       have h_idx : iter.start.val < v.length := by scalar_tac
       have h_16 : iter.start.val < 16 := by omega
       step*
@@ -601,11 +595,11 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         | ControlFlow.cont (iter'', out'') => grind
       · exact ⟨rfl, h_bad⟩
     unfold from_pb
-    obtain ⟨n, hn, hn_post⟩ := WP.spec_imp_exists NUM_POLYS_spec
-    simp only [alloc.vec.Vec.is_empty, alloc.vec.Vec.len, hn, bind_tc_ok]
+    simp only [alloc.vec.Vec.is_empty, alloc.vec.Vec.len, bind_ok]
     split
     next h_pts =>
       have h_pts' : pb.pts.val = [] := by simpa [List.isEmpty_iff] using h_pts
+      step with NUM_POLYS_spec as ⟨n, hn_post⟩
       split
       next h_len =>
         step as ⟨p, hp⟩
@@ -619,6 +613,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       split
       next h_polys =>
         have h_polys' : pb.polys.val = [] := by simpa [List.isEmpty_iff] using h_polys
+        step with NUM_POLYS_spec as ⟨n, hn_post⟩
         split
         next h_ne => simp
         next h_ne =>

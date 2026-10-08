@@ -88,7 +88,9 @@ theorem decode_chunk_spec
     -- `?` propagates the error and returns the cursor as `decode_varint` left it.
     step*
   | .Ok v =>
-    obtain ⟨_hin, n, hat2, hn1, hn10, hnlen, hval, hterm, hcont⟩ := r_post2
+    obtain ⟨_hin, n, hat2, hn1, hn10, hnlen, hval, hterm, hcont⟩ :
+        _ < from1.length ∧ ∃ n, _ = _ + n ∧ varintBlockAt from1.val _ n v.val := by
+      assumption
     -- Reduce `?` on the `Ok` eagerly: this feeds the decoded value into the continuation
     -- directly, instead of leaving it behind a `ControlFlow` equation on a fresh variable.
     simp only [core.result.Result.Insts.CoreOpsTry.branch]
@@ -98,11 +100,12 @@ theorem decode_chunk_spec
     match r1 with
     | .Err () =>
       -- The subslice spans `[at2, at2 + 32)`, so `try_into` cannot have failed.
-      exact absurd (by scalar_tac : s.length = 32) r1_post
+      exact absurd (by scalar_tac : s.length = 32) ‹_›
     | .Ok a =>
-      obtain ⟨ha, _halen⟩ := r1_post
+      obtain ⟨ha, _halen⟩ : a.val = s.val ∧ a.length = 32 := by assumption
+      simp only [core.result.Result.expect, bind_ok, WP.spec_ok]
       refine ⟨by scalar_tac, n, by scalar_tac,
-        ⟨hn1, hn10, hnlen, by rw [i1_post, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
+        ⟨hn1, hn10, hnlen, by rw [‹i1.val = v.val›, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
       simp [*]
 
 end spqr.v1.chunked.states.serialize

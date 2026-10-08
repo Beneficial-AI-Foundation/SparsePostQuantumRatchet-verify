@@ -133,13 +133,13 @@ theorem chunks_exact_spec_with_content {T : Type} [Inhabited T]
   · intro c hc
     simp only [List.mem_map, List.mem_attach, true_and, Subtype.exists] at hc
     obtain ⟨c', hc', rfl⟩ := hc
-    exact List.toChunksExact_chunk_exact_length' h s.val c' hc'
+    simpa using List.toChunksExact_chunk_exact_length' h s.val c' hc'
   · simp only [List.length_map, List.length_attach]
     exact List.toChunksExact_chunks_length_eq h s.val
-  · have := List.toChunksExact_remainder_length_le_mod' h s.val; scalar_tac
+  · simpa using List.toChunksExact_remainder_length_le_mod' h s.val
   · intro j hj
     simp only [List.length_map, List.length_attach] at hj
-    rw [attach_map_getElem!_val _ _ (by intro ⟨c, hc⟩; rfl) j hj]
+    rw [attach_map_getElem!_val _ _ (by intro ⟨c, hc⟩; simp) j hj]
     let cl := (List.toChunksExact chunk_size.val h s.val).1
     have h_pos : cl[j]! = cl[j]'hj := getElem!_pos cl j hj
     rw [h_pos]

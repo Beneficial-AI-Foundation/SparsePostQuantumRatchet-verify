@@ -95,6 +95,9 @@ async function main(): Promise<void> {
     ...config.aeneas_args.options.map((o) => `-${o}`),
     "-dest", destDir,
   ];
+  if (config.aeneas_args.use_lean_modules === false) {
+    aeneasArgs.push("-use-lean-modules", "false");
+  }
   if (config.aeneas_args.subdir) {
     aeneasArgs.push("-subdir", config.aeneas_args.subdir);
   }

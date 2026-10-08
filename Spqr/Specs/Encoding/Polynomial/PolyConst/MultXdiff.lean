@@ -53,14 +53,13 @@ theorem body_spec
   unfold body
   by_cases h_lt : i1.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.Vector.length_val, List.get_eq_getElem, getElem!_pos, forall_true_left, ne_eq, not_lt,
-      true_and]
+      List.get_eq_getElem, ne_eq, not_lt, true_and]
     by_cases h_lt_i : i1 < i.val
-    · simp only [h_lt_i, ↓reduceIte, bind_assoc, forall_const, isEmpty_Prop, not_le,
+    · simp only [h_lt_i, ↓reduceIte, forall_const, isEmpty_Prop, not_le,
         IsEmpty.forall_iff, and_true]
       step*
       all_goals simp_all
-    · simp only [h_lt_i, ↓reduceIte, bind_tc_ok, IsEmpty.forall_iff, true_and]
+    · simp only [h_lt_i, ↓reduceIte, IsEmpty.forall_iff, true_and]
       step*
       all_goals simp_all
   · step*
@@ -170,7 +169,7 @@ theorem body_spec
   unfold body
   by_cases h_lt : i.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.Vector.length_val, List.get_eq_getElem, getElem!_pos, forall_true_left, ne_eq, true_and]
+      List.get_eq_getElem, ne_eq, true_and]
     step*
     all_goals simp_all
   · step*
@@ -251,7 +250,8 @@ theorem mult_xdiff_spec
   unfold mult_xdiff
   step*
   · grind
-  apply @mult_xdiff_result_eq N (self.coefficients) diff i xp1 dp1 xp2 h_N_pos i_post1
+  apply @mult_xdiff_result_eq N (self.coefficients) diff i xp1 dp1 xp2 h_N_pos
+    (by scalar_tac)
   all_goals simp_all
 
 end spqr.encoding.polynomial.PolyConst

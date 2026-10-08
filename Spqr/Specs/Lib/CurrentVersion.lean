@@ -69,98 +69,40 @@ theorem current_version_spec (state : alloc.vec.Vec U8) :
           decodesTo state st ∧ negotiationOutcome st result)) ⦄ := by
   simp only [decodesTo, negotiationOutcome, innerVersion]
   unfold current_version
-  step*
-  · match hr : r with
-    | core.result.Result.Err e => simp_all
-    | core.result.Result.Ok st =>
-      simp only at cf_post
-      rename_i h_eq
-      have : st = val := by grind
-      subst this
-      · split
-        · step*
-          constructor
-          · grind
-          · intro hne
-            right
-            have henc := r_post2 hne
-            simp only at henc
-            exact ⟨st, henc, by simp_all⟩
-          · rename_i r1_post
-            split at r1_post
-            · simp_all only [core.result.Result.Ok.injEq, ne_eq, core.result.Result.map_err_Ok,
-              bind_tc_ok, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq]
-              step*
-              exact And.intro (by intro hemp; grind)
-                (by intro hne; right; exact ⟨st, r_post2 hne,
-                by simp_all only [IsEmpty.forall_iff,
-                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
-                  implies_true, core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq,
-                  reduceCtorEq, and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq,
-                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
-            · simp_all only [core.result.Result.Ok.injEq, ne_eq, core.result.Result.map_err_Ok,
-              bind_tc_ok, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq]
-              step*
-              exact And.intro (by intro hemp; grind)
-                (by intro hne; right; exact ⟨st, r_post2 hne,
-                by simp_all only [IsEmpty.forall_iff,
-                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
-                  core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq, reduceCtorEq,
-                  and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq, implies_true,
-                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
-            · simp_all only [core.result.Result.Ok.injEq, ne_eq, imp_false, IScalar.neq_to_neq_val,
-              core.result.Result.map_err_Err, bind_assoc, bind_tc_ok, IScalar.ofInt_val_eq]
-              constructor
-              · grind
-              · intro hne
-                left
-                simp_all
-        · step*
-          · simp_all only [core.result.Result.Ok.injEq, ne_eq,
-            CurrentVersion.NegotiationComplete.injEq, reduceCtorEq, imp_false,
-            IScalar.neq_to_neq_val, IScalar.ofInt_val_eq, Decidable.not_not, false_or]
-            constructor
-            · grind
-            · intro hne
-              exact ⟨st, r_post2 hne, by simp_all⟩
-          · simp_all only [core.result.Result.Ok.injEq, ne_eq, IScalar.neq_to_neq_val,
-            IScalar.ofInt_val_eq]
-            rename_i r1_post
-            split at r1_post
-            · simp_all only [core.result.Result.map_err_Ok, bind_tc_ok]
-              step*
-              exact And.intro (by intro hemp; grind)
-                (by intro hne; right; exact ⟨st, r_post2 hne,
-                by simp_all only [IsEmpty.forall_iff,
-                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
-                  implies_true, core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq,
-                  reduceCtorEq, and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq,
-                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
-            · simp_all only [core.result.Result.map_err_Ok, bind_tc_ok]
-              step*
-              exact And.intro (by intro hemp; grind)
-                (by intro hne; right; exact ⟨st, r_post2 hne,
-                by simp_all only [IsEmpty.forall_iff,
-                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
-                  core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq, reduceCtorEq,
-                  and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq, implies_true,
-                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
-            · simp_all only [imp_false, IScalar.neq_to_neq_val, core.result.Result.map_err_Err,
-              bind_assoc, bind_tc_ok]
-              constructor
-              · grind
-              · intro hne
-                left
-                simp_all
-  · match hr : r with
-    | core.result.Result.Ok st => simp_all
-    | core.result.Result.Err e =>
-      simp only at cf_post
-      subst cf_post
-      constructor
-      · grind
-      · intro hne
-        left
-        simp_all
+  step with decode_state_spec as ⟨r, h_emp, h_ne⟩
+  cases r with
+  | Err e =>
+    step
+    subst ‹cf = _›
+    simp only
+    step with core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual.spec
+    simp_all
+  | Ok st =>
+    step*
+    obtain rfl : val = st := by simp_all
+    cases h1 : val.inner <;> cases h2 : val.version_negotiation <;> step*
+    case none.none =>
+      exact ⟨fun _ => trivial, fun hne => Or.inr ⟨val, h_ne hne, by simp [h1, h2]⟩⟩
+    case some.none =>
+      refine ⟨fun h => by cases h_emp h; simp at h1,
+        fun hne => Or.inr ⟨val, h_ne hne, by simp [h1, h2]⟩⟩
+    all_goals
+      obtain hr1 := ‹r1 = _›
+      split at hr1 <;> subst hr1
+      case h_3 =>
+        simp only [core.result.Result.map_err_Err]
+        step
+        step
+        subst ‹_ = core.ops.control_flow.ControlFlow.Break _›
+        simp only
+        step with core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual.spec
+        refine ⟨fun h => by cases h_emp h; simp at h2, fun _ => Or.inl (by simp_all)⟩
+      all_goals
+        simp only [core.result.Result.map_err_Ok]
+        step*
+        refine ⟨fun h => by cases h_emp h; simp at h2, fun hne => ?_⟩
+        exact Or.inr ⟨val, h_ne hne, by
+          simp_all [show (0#32#iscalar : I32).val = 0 from rfl,
+            show (1#32#iscalar : I32).val = 1 from rfl]⟩
 
 end spqr

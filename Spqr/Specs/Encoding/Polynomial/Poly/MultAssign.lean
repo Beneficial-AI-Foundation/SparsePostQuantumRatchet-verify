@@ -31,16 +31,20 @@ theorem mult_assign_spec
       result.degree = self.degree ∧
       result.toGF216Poly = C (m.toGF216) * self.toGF216Poly ⦄ := by
   unfold mult_assign
-  simp only [alloc.vec.Vec.deref_mut, lift, bind_tc_ok, degree]
+  simp only [alloc.vec.Vec.deref_mut, lift, degree]
   step*
-  refine ⟨by simp_all [Slice.length], ?_⟩
-  simp only [Poly.toGF216Poly]
+  have hlen : (↑s1 : List GF16).length = (↑self.coefficients.slice : List GF16).length := by
+    simpa [Slice.length] using ‹s1.length = self.coefficients.slice.length›
+  have hval : (↑({ slice := s1 } : alloc.vec.Vec GF16) : List GF16) = ↑s1 := rfl
+  have hcoef : (↑self.coefficients : List GF16) = ↑self.coefficients.slice := rfl
+  refine ⟨by simp_all [alloc.vec.Vec.length], ?_⟩
+  simp only [Poly.toGF216Poly, hval, hcoef]
   apply listToGF216Poly_eq_of_coeffs
   · intro j hj
     rw [coeff_C_mul, ← getElem!_toGF216_eq_coeff]
     grind
   · intro j hj
-    rw [coeff_C_mul, listToGF216Poly_coeff_eq_zero _ _ (by simp_all [Slice.length])]
+    rw [coeff_C_mul, listToGF216Poly_coeff_eq_zero _ _ (by omega)]
     ring
 
 end spqr.encoding.polynomial.Poly

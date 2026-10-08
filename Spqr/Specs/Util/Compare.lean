@@ -42,14 +42,16 @@ theorem compare_loop_spec
     unfold compare_loop.body
     by_cases hLt : iter'.start.val < iter'.«end».val
     · step*
-      obtain ⟨ho_some, hstart1, hend1⟩ := o_post2 hLt
+      obtain ⟨ho_some, hstart1, hend1⟩ := ‹_ → o = some _ ∧ _› hLt
       obtain rfl : i = iter'.start := Option.some.inj (‹o = some i› ▸ ho_some)
+      obtain hr1 : r1.val = (r' ||| i3).val := ‹_›
+      obtain hi3 : i3.val = (i1 ^^^ i2).val := ‹_›
       have hor (a b : U8) : (a ||| b).val = 0 ↔ a.val = 0 ∧ b.val = 0 := by bv_tac 8
       have hxor (a b : U8) : (a ^^^ b).val = 0 ↔ a.val = b.val := by bv_tac 8
       refine ⟨by scalar_tac, hend1 ▸ h_end, ?_, by scalar_tac⟩
-      simp only [r1_post1, hor, i3_post1, hxor, hstart1, Nat.forall_lt_succ_right,
+      simp only [hr1, hor, hi3, hxor, hstart1, Nat.forall_lt_succ_right,
                  getElem!_pos, show iter'.start.val < lhs.length by scalar_tac, ← hlen,
-                 ← i1_post, ← i2_post, ← UScalar.eq_equiv, ← h_inv']
+                 ← ‹i1 = _›, ← ‹i2 = _›, ← UScalar.eq_equiv, ← h_inv']
     · simp [core.iter.range.IteratorRange.next, core.iter.range.UScalarStep,
         core.cmp.impls.PartialOrdUsize.lt, hLt]
       simp_all [show iter'.start.val = lhs.length by scalar_tac]

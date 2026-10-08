@@ -38,10 +38,8 @@ theorem next_chunk_spec_lift
       ∃ tmp', result = some tmp' ∧ P chunk tmp' ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
-  step with Aeneas.Std.core.option.Option.unwrap.spec
-  rename_i tmp h_eq
-  have h_post := h_inner tmp h_eq
-  step with h_post
+  step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨tmp, h_eq⟩
+  step with h_inner tmp h_eq
   grind
 
 /-- **`next_chunk` spec for `Option<PolyEncoder>`**:
@@ -85,13 +83,17 @@ theorem next_chunk_spec_poly_encoder
       | none => False ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
-  step with Aeneas.Std.core.option.Option.unwrap.spec
-  rename_i tmp h_eq
+  step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨tmp, h_eq⟩
   have h_tmp_eq : tmp = pe0 := by injection h_eq with h; exact h.symm
   simp only [h_tmp_eq]
   have h_inner := PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec pe0
     h_idx_fits h_admissible h_coeff_bound
   step with h_inner
-  grind
+  cases hs : pe0.s <;>
+    simp_all only [EncoderState.Points.injEq, EncoderState.Polys.injEq, reduceCtorEq,
+      alloc.vec.Vec.length, alloc.vec.Vec.len, alloc.vec.Vec.getElem!_Nat_eq, Array.getElem!_Nat_eq,
+      Array.property, Array.length, UScalar.ofNatCore_val_eq, getElem!_pos,
+      List.length_eq_zero_iff, List.getElem!_eq_getElem?_getD, forall_eq', Order.add_one_le_iff,
+      not_isEmpty_of_nonempty, IsEmpty.forall_iff, implies_true, true_and, and_self]
 
 end spqr.core.option.Option.Insts.SpqrEncodingEncoder

@@ -42,11 +42,9 @@ theorem msg_version_spec (msg : alloc.vec.Vec U8) :
       rw [hi]
       unfold proto.pq_ratchet.Version.Insts.CoreConvertTryFromU8String.try_from
       split
-      · simp only [core.result.Result.ok, bind_tc_ok, WP.spec_ok,
-          msgVersionExpected, firstByte, versionOfByte]
+      · simp only [core.result.Result.ok, msgVersionExpected, firstByte, versionOfByte]
         simp_all [show ((0#8#uscalar : U8)).val = 0 from rfl]
-      · simp only [core.result.Result.ok, bind_tc_ok, WP.spec_ok,
-          msgVersionExpected, firstByte, versionOfByte]
+      · simp only [core.result.Result.ok, msgVersionExpected, firstByte, versionOfByte]
         simp_all [show ((1#8#uscalar : U8)).val = 1 from rfl]
       · step*
         simp only [core.result.Result.ok, WP.spec_ok, msgVersionExpected, firstByte, versionOfByte]

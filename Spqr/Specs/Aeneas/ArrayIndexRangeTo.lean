@@ -35,7 +35,7 @@ theorem Array.index_SliceIndexRangeToUsizeSlice.step {T : Type} {N : Usize}
   simp only [Array.index_SliceIndexRangeToUsizeSlice]
   have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
   have := core.slice.index.SliceIndexRangeToUsizeSlice.index.step_spec r a.to_slice (by scalar_tac)
-  simp only [Array.to_slice] at this ⊢
+  simp only [Array.val_to_slice] at this
   exact this
 
 end Aeneas.Std

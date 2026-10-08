@@ -49,10 +49,8 @@ theorem body_spec
             v1 = v ++ [hi, lo] ∧
             256 * hi  + lo = (pts[iter.start]!).value.val ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     step*
@@ -149,10 +147,8 @@ theorem body_spec
                 256 * (serialized[2 * k]!) + serialized[2 * k + 1]! =
                   ((points[iter.start]!).value.val[k]!).value.val ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -167,8 +163,7 @@ theorem body_spec
     · simp_all
       grind
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
 
@@ -236,9 +231,16 @@ theorem loop_spec
       simp only [] at h_cf ⊢
       obtain ⟨h_lt, h_start1, h_end1, serialized, h_out_eq, h_ser_len, h_ser_encode⟩ := h_cf
       have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
-      constructor
+      have h_len : out'.val.length = iter'.start.val := h_out_len'
+      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+      by_cases hj_lt : j < iter'.start.val
       · grind
-      · grind
+      · have hj_eq : j = iter'.start.val := by omega
+        subst hj_eq
+        have h_get : out''.val[iter'.start.val]! = serialized := by grind
+        rw [h_get]
+        exact ⟨by simpa [Array.getElem!_Nat_eq] using h_ser_len,
+          by simpa [Array.getElem!_Nat_eq] using h_ser_encode⟩
   · grind
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
@@ -283,7 +285,7 @@ theorem body_spec
   unfold body
   obtain ⟨opt, iter1', hnext, h_none, h_some⟩ := core.slice.iter.IteratorSliceIter.next_post iter
   rw [hnext]
-  simp only [bind_tc_ok]
+  simp only [bind_ok]
   by_cases h_lt : iter.i < iter.slice.length
   · obtain ⟨h_opt_eq, h_i1, h_slice1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -293,8 +295,7 @@ theorem body_spec
       rw [← List.Inhabited_getElem_eq_getElem! (hi := h_lt)]
     step*
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 
@@ -424,19 +425,21 @@ theorem into_pb_spec_bytes
   | Polys polys =>
     have h_overflow := h_overflow_polys polys h
     step*
-    simp only [core.slice.Slice.iter, bind_tc_ok]
-    step with into_pb_loop1.loop_spec by
-      first
-        | assumption
-        | scalar_tac
-        | omega
-        | (simp only [s_post])
-    · intros j hj
-      simp_all
-    · constructor
-      · grind
-      · simp_all
-        grind
+    simp only [core.slice.Slice.iter, bind_ok]
+    step*
+    have h_len : s.length = polys.length := by simp [*]
+    have h_get : ∀ j : Nat, s[j]! = polys.val[j]! := by
+      intro j; simp [*, Slice.getElem!_Nat_eq]
+    have h_enc : ∀ j < s.length,
+        v2[j]!.length = 2 * s[j]!.degree ∧
+        ∀ k < s[j]!.degree,
+          256 * (v2[j]!)[2 * k]!.val + (v2[j]!)[2 * k + 1]!.val =
+            (s[j]!.coefficients[k]!).value.val := by
+      assumption
+    refine ⟨by simp, by omega, fun j hj => ?_⟩
+    have := h_enc j (by omega)
+    rw [h_get] at this
+    simpa [Array.getElem!_Nat_eq] using this
 
 /-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
 • The call always succeeds (no panic) under the sole hypothesis `2 * len + 2 ≤ Usize.max` on
@@ -460,6 +463,9 @@ theorem into_pb_spec
   refine ⟨h_idx, ?_⟩
   cases h : self.s with
   | Points points => grind
-  | Polys polys => grind
+  | Polys polys =>
+    simp only [h] at h_data ⊢
+    simp only [Array.getElem!_Nat_eq] at *
+    grind
 
 end spqr.encoding.polynomial.PolyEncoder

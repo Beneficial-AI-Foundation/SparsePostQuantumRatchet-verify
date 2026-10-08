@@ -36,36 +36,14 @@ theorem call_mut_spec (c : chain.Chain.from_pb.closure_1)
     ChainEpochDirection.FunctionalModels.fromPb, Option.map]
   match tupled_args.send, tupled_args.recv with
   | some s, some r =>
-    simp only [core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
-    step*
-    rcases r1 with ⟨ced1⟩ | ⟨e1⟩
-    · simp only [chain.ChainEpochDirection.FunctionalModels.fromPb,
-        core.result.Result.Ok.injEq] at r1_post
-      subst r1_post; simp only [bind_tc_ok]
-      step*
-      rcases r3 with ⟨ced2⟩ | ⟨e2⟩
-      · simp only [chain.ChainEpochDirection.FunctionalModels.fromPb,
-          core.result.Result.Ok.injEq] at r3_post
-        subst r3_post; simp only [bind_tc_ok, WP.spec_ok]
-      · exact absurd r3_post (by simp [chain.ChainEpochDirection.FunctionalModels.fromPb])
-    · exact absurd r1_post (by simp [chain.ChainEpochDirection.FunctionalModels.fromPb])
+    simp only [core.option.Option.ok_or]
+    step* <;> simp_all [ChainEpochDirection.FunctionalModels.fromPb]
   | some _, none =>
-    simp only [core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+    simp only [core.option.Option.ok_or]
     step*
-    rcases r1 with ⟨ced1⟩ | ⟨e1⟩
-    · simp only [chain.ChainEpochDirection.FunctionalModels.fromPb,
-        core.result.Result.Ok.injEq] at r1_post
-      subst r1_post; simp only [bind_tc_ok,
-        core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-        core.convert.FromSame.from, WP.spec_ok]
-    · exact absurd r1_post (by simp [chain.ChainEpochDirection.FunctionalModels.fromPb])
+    simp_all [ChainEpochDirection.FunctionalModels.fromPb]
   | none, _ =>
-    simp only [core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
-    trivial
+    simp only [core.option.Option.ok_or]
+    step*
 end CoreOpsFunctionFnMutTupleEpochResultChainEpochError
 end spqr.chain.Chain.from_pb.closure_1.Insts

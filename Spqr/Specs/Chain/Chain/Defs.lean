@@ -248,7 +248,7 @@ def cedKeyAdvancePost (self : chain.ChainEpochDirection) (ats : U32)
   let finalOkm := nextKeyHkdfOutput loopSecret ctrAts
   let kh0 :=
     if ats.val > self.ctr.val + (chain.maxOoo params).val
-    then { data := ⟨[], by simp⟩ : chain.KeyHistory }
+    then { data := alloc.vec.Vec.from [] (by simp) : chain.KeyHistory }
     else self.prev
   let khPreGc := chain.ChainEpochDirection.iterKeyHistory
     self.next.val self.ctr.val ats.val params kh0 loopSteps
@@ -377,6 +377,8 @@ theorem keyPostGc_of_GcPost
       (chain.maxOoo params).val
       (((chain.maxOoo params).val * 11 / 10 + 1) * 36)
       ctr_new := by
+  simp only [chain.KeyHistory.IsExpired, chain.KeyHistory.horizonSlice,
+    chain.KeyHistory.horizonBytes, Slice.from_val] at gc_trim
   unfold keyPostGc
   refine ⟨?_, ?_, gc_noop, ?_, ?_⟩
   · intro htrim hmo

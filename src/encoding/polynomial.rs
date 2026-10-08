@@ -354,6 +354,10 @@ impl Poly {
 }
 
 // For Protocol V1 with MLKEM-768: N <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1
+//
+// TEMPORARY WORKAROUND — remove this `#[derive(Copy, Clone)]` once
+// https://github.com/AeneasVerif/charon/issues/1504 is resolved.
+#[derive(Copy, Clone)]
 struct PolyConst<const N: usize> {
     coefficients: [GF16; N],
 }
