@@ -8,7 +8,6 @@ import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Crypto.Hkdf
 import Spqr.Crypto.RFC5869
-import Spqr.Lib.MsgVersion
 import Spqr.Lint.Basic
 import Spqr.Lint.SpecIndent
 import Spqr.Math.Gf16.Basic
@@ -218,6 +217,8 @@ import Spqr.Specs.Lib.DecodeState.CallOnce
 import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
+import Spqr.Specs.Lib.MsgVersion
+import Spqr.Specs.Lib.MsgVersion.Defs
 import Spqr.Specs.Lib.SecretOutput.Eq
 import Spqr.Specs.Lib.SecretOutput.Fmt
 import Spqr.Specs.Lib.SecretOutput.HasSecret
