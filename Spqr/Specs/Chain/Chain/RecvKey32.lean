@@ -60,7 +60,7 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
         (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
       omega
     rw [List.getElem?_eq_getElem (by omega)] at h_tgt
-    obtain ⟨ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9⟩ := h_tgt
+    obtain ⟨ht1, ht2, ht3, ht4, ht5, ht6, ht7⟩ := h_tgt
     step*
     all_goals (
       have h_ge : self.links.buf.val[self.links.head.val + idx.val]? =
