@@ -118,7 +118,7 @@ theorem add_chunk_spec_poly_decoder
                    ((selfs (j + 1)).pts.val[poly]!).val p
                else
                  selfs (j + 1) = selfs j) ⦄ := by
-  apply add_chunk_spec_lift PolyDecoder.Insts.SpqrEncodingDecoder (some pd0) chunk (by simp)
+  apply add_chunk_spec PolyDecoder.Insts.SpqrEncodingDecoder (some pd0) chunk (by simp)
   intro tmp h_eq
   simp only [Option.some.injEq] at h_eq
   rw [h_eq] at h_push_cap

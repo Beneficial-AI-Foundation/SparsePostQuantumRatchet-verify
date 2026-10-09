@@ -65,7 +65,7 @@ theorem new_spec_poly_decoder (len_bytes : Std.Usize) :
         result = core.result.Result.Err
           (encoding.EncodingError.PolynomialError
             encoding.polynomial.PolynomialError.MessageLengthEven) ⦄ := by
-  have h := new_spec_lift PolyDecoder.Insts.SpqrEncodingDecoder len_bytes _
+  have h := new_spec PolyDecoder.Insts.SpqrEncodingDecoder len_bytes _
     (PolyDecoder.Insts.SpqrEncodingDecoder.new_spec len_bytes)
   apply WP.spec_mono h
   grind
