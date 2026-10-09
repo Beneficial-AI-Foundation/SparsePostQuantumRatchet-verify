@@ -41,4 +41,10 @@
  ["defsWithUnderscore",
   "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.FunctionalModels.intoPb"],
  ["defsWithUnderscore",
-  "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.FunctionalModels.fromPb"]]
+  "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.FunctionalModels.fromPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ct.serialize.HeaderReceived.FunctionalModels.intoPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ct.serialize.HeaderReceived.FunctionalModels.fromPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.unchunked.send_ct.serialize.HeaderReceived.FunctionalModels.WellFormed"]]
