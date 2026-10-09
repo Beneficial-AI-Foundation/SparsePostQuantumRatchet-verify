@@ -182,7 +182,7 @@ theorem reduce_from_byte_loop_body_spec
             interval_cases i.val <;> simp_all
           have h_cast : (UScalar.cast UScalarTy.U8 i5).val =
               69643 <<< (i.val - 1) >>> 16 := by
-            rw [UScalar.cast_val_eq, i5_post1, h_mod_u32]
+            rw [UScalar.cast_val_eq, ‹i5.val = _›, h_mod_u32]
             exact Nat.mod_eq_of_lt (by
               simp only [UScalarTy.numBits, Nat.reducePow];
               exact h_shr_lt)
@@ -209,10 +209,8 @@ theorem reduce_from_byte_loop_body_spec
           exact (and_shiftLeft_one_eq_zero_iff_testBit_false a.val
           (i.val - 1) h_bound).mp h_mask_zero
         simp [h_tb, ↓reduceIte]
-  · simp only [show ¬(i > 0#u32) from hgt, ↓reduceIte]
-    constructor
-    · scalar_tac
-    · rfl
+  · simp only [show ¬(i > 0#u32) from hgt, ↓reduceIte, WP.spec_ok]
+    exact ⟨by scalar_tac, trivial⟩
 
 
 /-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_from_byte`

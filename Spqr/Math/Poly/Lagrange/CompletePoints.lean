@@ -42,9 +42,9 @@ theorem gf16_ext {a b : GF16} (h : a.value = b.value) : a = b := by
 `y = GF16.ONE`. Each entry `j` has `x.value.val = j` and `y = GF16.ONE`. -/
 @[global_simps, irreducible]
 def completePoints (N : Usize) : Array Pt N :=
-  ⟨(List.finRange N.val).map (fun j =>
-    ⟨⟨⟨BitVec.ofNat 16 j.val⟩⟩, GF16.ONE⟩),
-  by simp⟩
+  Array.from ((List.finRange N.val).map (fun j =>
+    ⟨⟨⟨BitVec.ofNat 16 j.val⟩⟩, GF16.ONE⟩))
+  (by simp)
 
 /-- The `j`-th scaled Lagrange basis polynomial for the complete-points array of size `N`:
 `C(completePoints(N)[j].y · (lagrangeDenomProd …)^(2¹⁶−2)) · condProdLinearFactors …`.

@@ -19,7 +19,7 @@ built `Pt` paired with the unchanged state.
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyEncoder.point_at
-namespace closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
+namespace closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt
 
 /-- **Spec theorem for `PolyEncoder.point_at.closure_1.call_mut`**:
 
@@ -44,5 +44,5 @@ theorem call_mut_spec
   obtain ⟨x, y⟩ := tupled_args
   step*
 
-end closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
+end closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt
 end spqr.encoding.polynomial.PolyEncoder.point_at

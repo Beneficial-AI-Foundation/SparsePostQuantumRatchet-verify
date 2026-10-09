@@ -25,9 +25,9 @@ theorem clone_spec {T : Type} (cloneInst : core.clone.Clone T) (v : alloc.vec.Ve
     (h : ∀ x ∈ v.val, cloneInst.clone x = ok x) :
     alloc.vec.CloneVec.clone cloneInst v ⦃ (r : alloc.vec.Vec T) => r = v ⦄ := by
   unfold alloc.vec.CloneVec.clone
-  apply WP.spec_mono (Slice.clone_spec h)
+  apply WP.spec_bind (Slice.clone_spec h)
   intro v' h'
-  exact h'.symm
+  simp [← h']
 
 /-- **Spec theorem for `alloc.vec.CloneVec.clone` specialised to `U8`**:
 

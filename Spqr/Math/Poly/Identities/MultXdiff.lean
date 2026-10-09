@@ -70,7 +70,7 @@ lemma mult_xdiff_result_eq
       have h_xp1_0 : (xp1.val[0]!).toGF216 = 0 := by
         have h_unch := h_xp_unch 0 (by omega)
         have h_len_xp1 : 0 < xp1.val.length := by
-          simp [List.Vector.length_val]; omega
+          simp; omega
         have h_len_rep : 0 < (Array.repeat N GF16.ZERO).val.length := by
           simp [Array.repeat_val]; omega
         have h_eq := list_get_of_getElem?_eq h_unch h_len_xp1 h_len_rep

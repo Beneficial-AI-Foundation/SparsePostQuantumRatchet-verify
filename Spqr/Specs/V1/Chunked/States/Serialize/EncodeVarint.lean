@@ -130,10 +130,7 @@ theorem encode_varint_loop_body_spec
           a'.val = a.val / 128 ∧
           ∃ b : U8, into'.val = into.val ++ [b] ∧ b.val = a.val % 128 + 128 ⦄ := by
   unfold encode_varint_loop.body
-  obtain ⟨⟨opt, iter1⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as ⟨opt, iter1, h_none, h_some⟩
   by_cases hlt : iter.start.val < iter.end.val
   · obtain ⟨h_opt, h_start, h_end⟩ := h_some hlt
     rw [h_opt]
@@ -141,27 +138,27 @@ theorem encode_varint_loop_body_spec
     · simp only [ha, ↓reduceIte]
       step*
       have hb : byte.val = a.val % 128 := by
-        rw [byte_post]
-        exact cast_and_127_val_eq_mod i_post1
+        rw [‹byte = _›]
+        exact cast_and_127_val_eq_mod ‹_›
       right
-      refine ⟨hlt, by scalar_tac, byte, into1_post, ?_⟩
+      refine ⟨hlt, by scalar_tac, byte, ‹_›, ?_⟩
       have halt : a.val < 128 := by scalar_tac
       omega
     · simp only [ha, ↓reduceIte]
       step*
       have hb : byte.val = a.val % 128 := by
-        rw [byte_post]
-        exact cast_and_127_val_eq_mod i_post1
+        rw [‹byte = _›]
+        exact cast_and_127_val_eq_mod ‹_›
       have hblt : byte.val < 128 := by omega
       have hi1 : i1.val = a.val % 128 + 128 := by
         have h : i1.val = 128 ||| byte.val := by
-          rw [i1_post1, UScalar.val_or]
+          rw [‹i1.val = (128#u8 ||| byte).val›, UScalar.val_or]
           scalar_tac
         rw [h, or_128_eq_add hblt, hb]
         omega
       have ha1 : a1.val = a.val / 128 := by
-        rw [a1_post1, Nat.shiftRight_eq_div_pow]
-      exact ⟨hlt, by scalar_tac, h_start, h_end, ha1, i1, into1_post, hi1⟩
+        rw [‹a1.val = a.val >>> 7›, Nat.shiftRight_eq_div_pow]
+      exact ⟨hlt, by scalar_tac, h_start, h_end, ha1, i1, ‹_›, hi1⟩
   · obtain ⟨h_opt, h_iter⟩ := h_none hlt
     rw [h_opt]
     grind

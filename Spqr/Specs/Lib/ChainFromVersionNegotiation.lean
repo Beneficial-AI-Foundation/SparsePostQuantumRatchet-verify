@@ -7,6 +7,7 @@ import SrcTranslated.Funs
 import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+import Spqr.Auxiliary.Aeneas.SpecRefl
 /-!
 # Spec theorem for `spqr::chain_from_version_negotiation`
 
@@ -22,6 +23,36 @@ open Aeneas Aeneas.Std Result spqr crypto
 
 namespace spqr
 
+/-- Parse `vn.direction` as a `Direction`, returning `none` on unknown values. -/
+def parseDirection (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
+    Option proto.pq_ratchet.Direction :=
+  match vn.direction with
+  | 0#iscalar => some .A2B
+  | 1#iscalar => some .B2A
+  | _         => none
+
+/-- Functional model of `chain_from_version_negotiation`:
+- Unknown direction  → `Err StateDecode`
+- Missing chain_params → `Err ChainNotAvailable`
+- Otherwise          → `Chain.new(auth_key, dir, params)` -/
+noncomputable def chainFromVersionNegotiation
+    (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
+    : Result (core.result.Result chain.Chain Error) :=
+  match parseDirection vn with
+  | none     => ok (.Err Error.StateDecode)
+  | some dir =>
+    match vn.chain_params with
+    | none   => ok (.Err Error.ChainNotAvailable)
+    | some p => chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) dir p
+
+/-- `chain.Chain.new_spec`, strengthened with the defining `… = ok r` equation. Registered as a
+file-local `step` lemma. -/
+private theorem new_spec_refl : type_of% (refl_of% chain.Chain.new_spec) :=
+  refl_of% chain.Chain.new_spec
+
+attribute [local step] new_spec_refl
+attribute [-step] chain.Chain.new_spec
+
 /-- **Spec theorem for `spqr.chain_from_version_negotiation`**:
 
 Converts direction, unwraps chain params, then calls `Chain.new`.
@@ -32,87 +63,13 @@ Converts direction, unwraps chain params, then calls `Chain.new`.
 theorem chain_from_version_negotiation_spec
     (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
     chain_from_version_negotiation vn ⦃ (result : core.result.Result chain.Chain Error) =>
-      (∀ e, proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-              vn.direction = ok (core.result.Result.Err e) →
-        result = core.result.Result.Err Error.StateDecode) ∧
-      (∀ dir, proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-                vn.direction = ok (core.result.Result.Ok dir) →
-        vn.chain_params = none →
-        result = core.result.Result.Err Error.ChainNotAvailable) ∧
-      (∀ dir params,
-        proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-          vn.direction = ok (core.result.Result.Ok dir) →
-        vn.chain_params = some params →
-        chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) dir params = ok result) ⦄ := by
-  unfold chain_from_version_negotiation
+      chainFromVersionNegotiation vn = ok result ⦄ := by
+  unfold chainFromVersionNegotiation parseDirection chain_from_version_negotiation
   step*
-  split at r_post
-  · subst r_post
-    simp only [core.result.Result.map_err_Ok, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTry.branch, core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      bind_tc_ok]
-    split <;> rename_i v hcp
-    · simp only [bind_tc_ok]
-      have hcn_spec := chain.Chain.new_spec (alloc.vec.Vec.deref vn.auth_key)
-        proto.pq_ratchet.Direction.A2B v
-      revert hcn_spec
-      unfold WP.spec WP.theta
-      cases hm : chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) proto.pq_ratchet.Direction.A2B v
-      · simp only [WP.wp_return]
-        intro hcn_post
-        refine ⟨fun e h => ?_, fun dir h1 h2 => ?_, fun dir params h1 h2 => ?_⟩
-        · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-          at h
-          simp_all
-        · simp_all
-        · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-          at h1
-          simp_all
-      · intro h; exact h.elim
-      · intro h; exact h.elim
-    · simp only [bind_tc_ok, WP.spec_ok]
-      unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-      simp_all
-  · subst r_post
-    simp only [core.result.Result.map_err_Ok, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTry.branch, core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      bind_tc_ok]
-    split <;> rename_i v hcp
-    · simp only [bind_tc_ok]
-      have hcn_spec := chain.Chain.new_spec (alloc.vec.Vec.deref vn.auth_key)
-        proto.pq_ratchet.Direction.B2A v
-      revert hcn_spec
-      unfold WP.spec WP.theta
-      cases hm : chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) proto.pq_ratchet.Direction.B2A v
-      · simp only [WP.wp_return]
-        intro hcn_post
-        refine ⟨fun e h => ?_, fun dir h1 h2 => ?_, fun dir params h1 h2 => ?_⟩
-        · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-          at h
-          simp_all
-        · simp_all
-        · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-          at h1
-          simp_all
-      · intro h; exact h.elim
-      · intro h; exact h.elim
-    · simp only [bind_tc_ok, WP.spec_ok]
-      unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-      simp_all
-  · subst r_post
-    simp only [core.result.Result.map_err_Err, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual]
-    refine ⟨fun e h => ?_, fun dir h1 h2 => ?_, fun dir params h1 h2 => ?_⟩
-    · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-      at h
-      simp_all
-    · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-      at h1
-      simp_all
-    · unfold proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
-      at h1
-      simp_all
+  split at r_post <;> subst r_post <;> cases vn.chain_params <;>
+    simp only [core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
+      core.option.Option.ok_or, bind_tc_ok,
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] <;>
+    step* <;> simp only [*]
 
 end spqr

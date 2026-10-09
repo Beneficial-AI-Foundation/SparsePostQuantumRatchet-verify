@@ -31,6 +31,7 @@ export interface AeneasConfig {
     options: string[];
     dest: string;
     subdir?: string;
+    use_lean_modules?: boolean;
   };
   crate: {
     dir: string;

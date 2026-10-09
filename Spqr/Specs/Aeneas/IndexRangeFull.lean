@@ -26,7 +26,7 @@ open Aeneas Aeneas.Std Result spqr
 theorem Aeneas.Std.Array.index_RangeFull {T : Type} {N : Usize} (a : Array T N) :
     core.array.Array.index
       (core.ops.index.IndexSlice
-        (core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice T))
+        (core.slice.index.SliceIndexRangeFullSlice T))
       a () =
     ok a.to_slice :=
   rfl

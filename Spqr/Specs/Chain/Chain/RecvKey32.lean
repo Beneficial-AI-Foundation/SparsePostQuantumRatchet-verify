@@ -47,10 +47,10 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
   simp only [recvKeyPre32] at h_target
   unfold recv_key
   step
-  simp only [r_post1]
+  subst self1
   rcases r with idx | e
-  · obtain ⟨h_le, h_back, h_idx⟩ := r_post2
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+  · obtain ⟨h_le, h_back, h_idx⟩ : epoch ≤ self.current_epoch ∧ _ ∧ _ := by assumption
+    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
     have h_phys_lt : self.links.head.val + idx.val < self.links.buf.val.length := by
       rw [h_idx]; omega
     have h_tgt := h_target h_le h_back
@@ -60,7 +60,7 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
         (self.links.length.val - 1 - (self.current_epoch.val - epoch.val)) := by
       omega
     rw [List.getElem?_eq_getElem (by omega)] at h_tgt
-    obtain ⟨ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9⟩ := h_tgt
+    obtain ⟨ht1, ht2, ht3, ht4, ht5, ht6, ht7⟩ := h_tgt
     step*
     all_goals (
       have h_ge : self.links.buf.val[self.links.head.val + idx.val]? =
@@ -96,10 +96,10 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
            List.getElem?_set_self (by omega)
          rw [h_buf_wb, h_ss]
          exact ⟨rfl, r1_post⟩)
-  · obtain ⟨h_e, h_bad⟩ := r_post2
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+  · obtain ⟨h_e, h_bad⟩ : e = Error.EpochOutOfRange epoch ∧ _ := by assumption
+    simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok, bind_tc_ok,
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+      core.convert.FromSame.from, WP.spec_ok]
     exact ⟨fun _ => ⟨congrArg _ h_e, trivial⟩,
            fun h12 h_lt => by
              exfalso

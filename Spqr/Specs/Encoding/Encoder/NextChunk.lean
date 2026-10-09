@@ -38,10 +38,8 @@ theorem next_chunk_spec_lift
       ∃ tmp', result = some tmp' ∧ P chunk tmp' ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
-  step with Aeneas.Std.core.option.Option.unwrap.spec
-  rename_i tmp h_eq
-  have h_post := h_inner tmp h_eq
-  step with h_post
+  step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨tmp, h_eq⟩
+  step with h_inner tmp h_eq
   grind
 
 /-- **`next_chunk` spec for `Option<PolyEncoder>`**:
@@ -85,13 +83,14 @@ theorem next_chunk_spec_poly_encoder
       | none => False ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
-  step with Aeneas.Std.core.option.Option.unwrap.spec
-  rename_i tmp h_eq
+  step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨tmp, h_eq⟩
   have h_tmp_eq : tmp = pe0 := by injection h_eq with h; exact h.symm
   simp only [h_tmp_eq]
   have h_inner := PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec pe0
     h_idx_fits h_admissible h_coeff_bound
   step with h_inner
-  grind
+  obtain ⟨h1, h2, h3, h4⟩ := ‹(chunk.index : Nat) = _ ∧ _›
+  refine ⟨h1, h2, h3, ?_⟩
+  cases hs : pe0.s <;> simp only [hs, Array.getElem!_Nat_eq] at h4 ⊢ <;> exact h4
 
 end spqr.core.option.Option.Insts.SpqrEncodingEncoder

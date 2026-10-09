@@ -74,34 +74,29 @@ theorem from_be_bytes_spec (a : Array Std.U8 2#usize) :
       result.val = (a[0]!).val * 256 + (a[1]!).val ⦄ := by
   simp  only [lift, core.num.U16.from_be_bytes, Std.UScalar.val]
   -- Decompose the 2-element array to expose list structure
-  rcases a with ⟨_ | ⟨a0, _ | ⟨a1, l⟩⟩, hlen⟩
-  · simp at hlen
-  · simp at hlen
-  · simp only [List.length_cons] at hlen
-    have hl : l = [] := by
-      rcases l with _ | ⟨_, _⟩
-      · rfl
-      · simp at hlen
-    subst hl
-    simp only [UScalarTy.Usize_numBits_eq, List.map_cons, List.map_nil,
+  obtain ⟨a0, a1, hv⟩ : ∃ a0 a1, a.val = [a0, a1] := by
+    have hlen : a.val.length = 2 := by simp
+    rcases h : a.val with _ | ⟨a0, _ | ⟨a1, _ | ⟨_, _⟩⟩⟩ <;> simp_all
+  simp only [WP.spec_ok, BitVec.toNat_cast, Array.getElem!_Nat_eq]
+  rw [hv]
+  · simp only [List.map_cons, List.map_nil,
     List.length_cons, List.length_nil, Nat.reduceAdd,
-    Nat.reduceMul, UScalarTy.U16_numBits_eq, BitVec.fromBEBytes, List.reverse, List.reverseAux_cons,
+    Nat.reduceMul, BitVec.fromBEBytes, List.reverse, List.reverseAux_cons,
     List.reverseAux_nil, BitVec.fromLEBytes, BitVec.setWidth_eq,
     Nat.mul_zero, zero_le, pow_zero, zero_lt_one,
     BitVec.setWidth_ofNat_of_le_of_lt, le_refl, BitVec.shiftLeft_eq_zero,
     BitVec.or_zero, BitVec.cast_eq,
-    Bvify.U16.UScalar_bv, UScalar.bv_toNat, UScalarTy.U8_numBits_eq,
-    Array.getElem!_Nat_eq, zero_add, Nat.ofNat_pos,
+    UScalar.bv_toNat, UScalarTy.U8_numBits_eq,
+    zero_add, Nat.ofNat_pos,
     getElem!_pos, List.getElem_cons_zero, Bvify.U8.UScalar_bv,
-    Nat.one_lt_ofNat, List.getElem_cons_succ, WP.spec_ok]
+    Nat.one_lt_ofNat, List.getElem_cons_succ]
     -- Unfold UScalar.val coercion to expose BitVec.toNat
     simp only [Std.UScalar.val]
     rw [BitVec.toNat_or, BitVec.toNat_shiftLeft]
     simp only [Nat.shiftLeft_eq]
     have h0 : a0.bv.toNat < 2 ^ 8 := a0.bv.isLt
     have h1 : a1.bv.toNat < 2 ^ 8 := a1.bv.isLt
-    simp only [UScalarTy.U16_numBits_eq,
-    BitVec.toNat_setWidth, UScalar.bv_toNat, Nat.reducePow, Nat.mod_mul_mod,
+    simp only [BitVec.toNat_setWidth, UScalar.bv_toNat, Nat.reducePow, Nat.mod_mul_mod,
     UScalarTy.U8_numBits_eq, Bvify.U8.UScalar_bv]
     have h10 : a1.val < 65536 := by grind
     have h11:=Nat.mod_eq_of_lt h10
@@ -124,14 +119,12 @@ This is the core slice-to-array conversion lemma underlying `deserialize_spec`: 
 @[step]
 theorem try_from_spec {T : Type} (N : Usize) (copyInst : core.marker.Copy T)
     (s : Slice T)
-    (h_clone : ∀ x ∈ s.val, copyInst.cloneInst.clone x = ok x)
+    (_h_clone : ∀ x ∈ s.val, copyInst.cloneInst.clone x = ok x)
     (h_len : s.length = N) :
     core.array.TryFromArrayCopySlice.try_from N copyInst s ⦃ result =>
       ∃ (a : Array T N), result = .Ok a ∧ a.val = s.val ⦄ := by
   unfold core.array.TryFromArrayCopySlice.try_from
-  have hm := List.mapM_clone_eq h_clone
-  simp only [dif_pos h_len]
-  step*
+  simp [h_len]
 
 /-- **Spec and proof concerning `encoding.polynomial.Pt.deserialize`**:
 • The function always succeeds (no panic) for any valid `[u8; 4]` input.
