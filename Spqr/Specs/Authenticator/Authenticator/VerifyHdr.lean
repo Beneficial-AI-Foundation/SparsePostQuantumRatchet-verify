@@ -21,6 +21,14 @@ open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 open core.result.Result (Ok)
 
+/-- `mac_hdr_spec`, strengthened with the defining `… = ok r` equation. Registered as a
+file-local `step` lemma. -/
+private theorem mac_hdr_spec_refl : type_of% (refl_of% mac_hdr_spec) :=
+  refl_of% mac_hdr_spec
+
+attribute [local step] mac_hdr_spec_refl
+attribute [-step] mac_hdr_spec
+
 /-- **Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`**
 • Requires the boundedness hypotheses and `expected_mac.length = MACSIZE`.
 • The result is `Ok ()` exactly when `expected_mac` equals the `mac_hdr` output. -/
@@ -31,9 +39,7 @@ theorem verify_hdr_spec (self : Authenticator) (ep : U64) (hdr : Slice U8) (expe
     verify_hdr self ep hdr expected_mac ⦃ (result : core.result.Result Unit Error) =>
       result = Ok () ↔ mac_hdr self ep hdr = ok { slice := expected_mac } ⦄ := by
   unfold verify_hdr
-  have hmac := refl_of% mac_hdr_spec
   step*
-  all_goals clear hmac
   · simp only [reduceCtorEq, false_iff, ‹mac_hdr self ep hdr = ok _›, Result.ok.injEq]
     rintro rfl
     simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.val, Slice.length, MACSIZE_spec,

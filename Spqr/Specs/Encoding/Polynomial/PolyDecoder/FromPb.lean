@@ -259,12 +259,14 @@ theorem loop_spec
               ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
       · have h_len : v''.val.length ≤ v'.val.length + 1 := by
           split at h_vpush
-          · simp_all
+          · simp [h_vpush]
           · split at h_vpush
-            · simp_all
-            · simp_all [List.length_dropLast]
+            · simp [h_vpush]
+            · simp only [h_vpush, List.length_append, List.length_dropLast, List.length_singleton]
+              omega
             · obtain ⟨i, hi, h | ⟨_, h⟩⟩ := h_vpush <;>
-                simp_all [List.length_append, List.length_take, List.length_drop] <;> omega
+                simp only [h, List.length_append, List.length_take, List.length_drop,
+                  List.length_singleton] <;> omega
             · exact absurd h_vpush id
         grind
       · have h0 : (0 : Nat) ≠ n + 1 := by omega
@@ -537,8 +539,6 @@ into `[SortedSet<Pt>; 16]`, and casts `pb.pts_needed : u32` to `usize`.
 
 namespace spqr.encoding.polynomial.PolyDecoder
 
-set_option maxHeartbeats 400000 in
--- heavy grind
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb`** (byte-level):
 
 Tri-branch postcondition: (1) bad length → `Err`, (2) bad chunking → `Err`, (3) valid →
@@ -611,37 +611,8 @@ theorem from_pb_spec
     System.Platform.le_numBits, UScalar.cast_val_mod_pow_greater_numBits_eq, implies_true, and_true]
     refine ⟨fun x hx => ?_, fun _ => by simp⟩
     interval_cases x <;> assumption
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
-  · simp_all
-    grind
+  all_goals
+    refine ⟨fun _ => trivial, fun _ _ _ => trivial, fun h => ?_⟩
+    simp_all
 
 end spqr.encoding.polynomial.PolyDecoder

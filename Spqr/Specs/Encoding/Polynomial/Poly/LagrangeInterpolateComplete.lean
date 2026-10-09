@@ -143,7 +143,8 @@ theorem body_spec
             v2.val[j]? = v'.val[j]?) ⦄ := by
   unfold body
   step*
-  all_goals (simp_all; grind)
+  · simp_all only; grind
+  · simp_all only [List.get_eq_getElem]; grind
 
 @[step]
 theorem loop1_spec
@@ -185,8 +186,7 @@ theorem loop1_spec
     simp only at hlen hend hstart_ge hscaled hcursor hunchanged
     step*
     split
-    · simp_all
-      grind
+    · simp_all only [List.get_eq_getElem]; grind
     · rename_i r_post
       obtain ⟨h_lt, h_start1, h_end1, h_v2len, h_scaled_pos, h_carry_pos, h_frame⟩ := r_post
       set cursor := v.val.length - iter'.start.val with hcursor_def
