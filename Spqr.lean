@@ -228,6 +228,7 @@ import Spqr.Specs.Lib.SecretOutput.HasSecret
 import Spqr.Specs.Lib.SecretOutput.RecvSecret
 import Spqr.Specs.Lib.SecretOutput.Secret
 import Spqr.Specs.Lib.SecretOutput.SendSecret
+import Spqr.Specs.Lib.StateVersion
 import Spqr.Specs.Lib.Version.DISABLED
 import Spqr.Specs.Lib.Version.MAX
 import Spqr.Specs.Lib.Version.TryFrom
@@ -265,6 +266,7 @@ import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FromPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FunctionalModels
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
