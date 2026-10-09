@@ -45,7 +45,7 @@ Since the `Option` layer only re-injects along `Some`, whatever `P` holds for th
 holds — retagged with `Some` — for the wrapped one. This is the reusable building block behind
 `add_chunk_spec_poly_decoder`. -/
 @[step]
-theorem add_chunk_spec_lift
+theorem add_chunk_spec
     {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T)
     (chunk : encoding.Chunk)
     (h_some : self.isSome)
@@ -85,7 +85,6 @@ spec.
 Proved by feeding `PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_spec` (the inner `PolyDecoder`
 postcondition) into `add_chunk_spec_lift`, whose `Some`-lifted conclusion matches the target shape.
 -/
-@[step]
 theorem add_chunk_spec_poly_decoder
     (pd0 : PolyDecoder) (chunk : encoding.Chunk)
     (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)

@@ -40,7 +40,7 @@ The proof composes the functional steps of the extraction:
   3. `DecoderInst.decoded_message value` — delegation to the inner decoder, discharged
      by `h_inner`. -/
 @[step]
-theorem decoded_message_spec_lift
+theorem decoded_message_spec
     {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T)
     (h_some : self.isSome)
     (P : Option (alloc.vec.Vec Std.U8) → Prop)
