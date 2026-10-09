@@ -51,13 +51,15 @@ theorem body_spec
           out1.toGF216Poly = out.toGF216Poly +
             C ((pts[iter.start]!).y.toGF216) * (polys[iter.start]!).toGF216Poly ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end.val
-  · step*
-    all_goals grind
+  · simp only [Slice.getElem!_Usize_eq] at *
+    have : iter.start.val < polys.val.length := by scalar_tac
+    have : iter.start.val < pts.val.length := by scalar_tac
+    obtain ⟨rfl, _, _⟩ := h_some h_lt
+    step*
+    all_goals simp_all
   · grind
 
 /-! # Spec theorem for `Poly::lagrange_sum`: loop 0
@@ -160,7 +162,9 @@ theorem lagrange_sum_spec
   have h_end_le_pts : (Slice.len pts).val ≤ pts.val.length := by simp
   have h_end_le_polys : (Slice.len pts).val ≤ polys.val.length := by grind
   have h_out : out.coefficients.val.length < Usize.max := by grind
-  have h_polys' : ∀ i < (Slice.len pts), (polys[i]!).degree + 2 ≤ Usize.max := by grind
+  have h_polys' : ∀ i < (Slice.len pts), (polys[i]!).degree + 2 ≤ Usize.max := by
+    intro i hi
+    simpa [Slice.getElem!_Usize_eq] using h_polys i.val (by scalar_tac)
   have h_sum_init :
       out.toGF216Poly =
         ∑ j ∈ Finset.range (0#usize), C ((pts[j]!).y.toGF216) * (polys[j]!).toGF216Poly := by

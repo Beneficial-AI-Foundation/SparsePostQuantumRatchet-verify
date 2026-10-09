@@ -66,7 +66,7 @@ def traverseVec {α β : Type} (f : α → core.result.Result β Error) (v : all
     core.result.Result (alloc.vec.Vec β) Error :=
   match h : traverseResult f v.val with
   | .Err e => .Err e
-  | .Ok l  => .Ok ⟨l, traverseResult_length f v.val l h ▸ v.property⟩
+  | .Ok l  => .Ok (alloc.vec.Vec.from l (traverseResult_length f v.val l h ▸ v.property))
 
 /-- Extract the logical contents of a `VecDeque` as a plain list. -/
 def dequeContents {T A : Type} (d : alloc.collections.vec_deque.VecDeque T A) : List T :=
@@ -103,10 +103,10 @@ def intoPb (self : chain.Chain) : proto.pq_ratchet.Chain :=
   { direction := directionToI32 self.dir,
     current_epoch := self.current_epoch,
     send_epoch := self.send_epoch,
-    links := ⟨(dequeContents self.links).map epochIntoPb, by
+    links := alloc.vec.Vec.from ((dequeContents self.links).map epochIntoPb) (by
       simp only [List.length_map, dequeContents, List.length_take, List.length_drop]
       have := self.links.buf.property
-      omega⟩,
+      omega),
     next_root := self.next_root,
     params := some self.params }
 
@@ -177,15 +177,16 @@ private theorem dequeContents_full {T A : Type}
 
 private theorem traverseVec_map_epochRoundtrip (l : List chain.ChainEpoch)
     (hl : l.length ≤ Aeneas.Std.Usize.max) :
-    traverseVec epochFromPb ⟨l.map epochIntoPb, by simp only [List.length_map]; exact hl⟩ =
-    .Ok ⟨l, hl⟩ := by
+    traverseVec epochFromPb
+      (alloc.vec.Vec.from (l.map epochIntoPb) (by simp only [List.length_map]; exact hl)) =
+    .Ok (alloc.vec.Vec.from l hl) := by
   simp only [traverseVec]
   have h := traverseResult_map_roundtrip epochIntoPb epochFromPb
     roundtrip_epochFromPb_epochIntoPb l
   split
   · rename_i e he; simp [h] at he
   · rename_i l' hl'
-    simp only [h, core.result.Result.Ok.injEq] at hl'
+    simp only [alloc.vec.Vec.from_val, h, core.result.Result.Ok.injEq] at hl'
     subst hl'
     rfl
 
@@ -207,6 +208,7 @@ theorem roundtrip_fromPb_intoPb (self : chain.Chain)
         apply UScalar.eq_of_val_eq
         simp [hlen]
       congr 2
+      all_goals simp [this]
 
 private theorem traverseResult_reverse {α₁ β₁ : Type}
     (f : α₁ → β₁) (g : β₁ → core.result.Result α₁ Error)
@@ -238,6 +240,7 @@ private theorem traverseVec_reverse
   · exact absurd h nofun
   · rename_i l'' hl''
     cases h
+    simp only [alloc.vec.Vec.from_val]
     exact traverseResult_reverse epochIntoPb epochFromPb
       (fun b a ha => roundtrip_epochIntoPb_epochFromPb b a ha) l.val l'' hl''
 
@@ -255,12 +258,13 @@ theorem roundtrip_intoPb_fromPb (pb : proto.pq_ratchet.Chain) (c : chain.Chain)
       rw [hmap]; exact pb.links.property
     simp only [intoPb, directionToI32_of_directionFromI32 _ _ hdir]
     congr 1
-    · show ⟨_, _⟩ = pb.links
+    · show alloc.vec.Vec.from _ _ = pb.links
       have : (Usize.ofNatCore epochs.val.length
         (by have := epochs.property; scalar_tac)).val = epochs.val.length :=
         UScalar.ofNatCore_val_eq ..
       simp only [dequeContents, UScalar.ofNatCore_val_eq, List.drop_zero, this, List.take_length]
-      exact Subtype.ext hmap
+      apply alloc.vec.Vec.ext
+      simpa using hmap
     · exact hpar.symm
   | .Err _, _, _ => simp only [hdir] at h; exact absurd h nofun
   | _, .Err _, _ => simp only [hdir, hvec] at h; exact absurd h nofun

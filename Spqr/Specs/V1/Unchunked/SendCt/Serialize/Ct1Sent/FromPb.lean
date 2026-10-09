@@ -55,15 +55,15 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.Ct1Sent) :
         simp only [hhdr, hes, hct, and_self, reduceIte]
         match pb.auth with
         | none =>
-          simp only [core.option.Option.as_ref, core.option.Option.ok_or,
+          simp [core.option.Option.as_ref, core.option.Option.ok_or,
             core.result.Result.Insts.CoreOpsTry.branch,
-            core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-            core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+            core.convert.FromSame.from, WP.spec_ok]
         | some a' =>
           simp only [core.option.Option.as_ref, core.option.Option.ok_or,
-            core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+            core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
           step*
-          simp only [a_post, authenticator.serialize.Authenticator.FunctionalModels.fromPb]
+          simp_all [authenticator.serialize.Authenticator.FunctionalModels.fromPb]
       · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.ct1 = 960#usize)]
         simp [hct, WP.spec_ok]
     · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.es = 2080#usize)]

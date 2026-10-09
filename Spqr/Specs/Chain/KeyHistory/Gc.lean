@@ -53,7 +53,7 @@ private theorem lexCmpAux_OrdU8_ok (xs ys : List U8) :
       simp only [core.cmp.OrdU8, liftFun2, core.cmp.impls.OrdU8.cmp]
       cases h : compare a.val b.val
       · exact ⟨.lt, by simp ⟩
-      · simp only [bind_tc_ok]
+      · simp only [bind_ok]
         exact ih ys
       · exact ⟨.gt, by simp⟩
 
@@ -121,50 +121,17 @@ theorem body_spec
     · have h4 : i1.val + 4 ≤ self.data.length := by omega
       step*
       simp only [Slice.Insts.CoreCmpOrd.cmp_eq, alloc.vec.Vec.length, not_lt]
-      rw [i3_post] at s_post1
-      rw [s_post1]
+      have hs : s.val = self.data.val.slice i1.val (i1.val + 4) := by simp_all
+      rw [hs]
       obtain ⟨o, ho⟩ :=
         lexCmpAux_OrdU8_ok trim_horizon.val (self.data.val.slice i1.val (i1.val + 4))
       rw [ho]
-      cases o
-      · simp only [bind_tc_ok, Bool.false_eq_true, if_false]
-        rw [h_i]
-        step*
-        refine ⟨h_lt, fun h => absurd h (by simp), fun _ => ⟨i4_post, ?_, ?_⟩⟩
-        · rw [i4_post]; omega
-        · rw [i4_post]
-          refine ⟨?_, h_bound, h_data_aligned⟩
-          have h1 : 36 * (i1.val / 36) = i1.val := by
-            have := Nat.div_add_mod i1.val 36; omega
-          have h2 : 36 * (self.data.length / 36) = self.data.length := by
-            have := Nat.div_add_mod self.data.length 36; omega
-          have h3 : self.data.val.length = self.data.length := by
-            simp [alloc.vec.Vec.length]
-          omega
-      · simp only [bind_tc_ok, Bool.false_eq_true, if_false]
-        rw [h_i]
-        step*
-        refine ⟨h_lt, fun h => absurd h (by simp), fun _ => ⟨i4_post, ?_, ?_⟩⟩
-        · rw [i4_post]; omega
-        · rw [i4_post]
-          refine ⟨?_, h_bound, h_data_aligned⟩
-          have h1 : 36 * (i1.val / 36) = i1.val := by
-            have := Nat.div_add_mod i1.val 36; omega
-          have h2 : 36 * (self.data.length / 36) = self.data.length := by
-            have := Nat.div_add_mod self.data.length 36; omega
-          have h3 : self.data.val.length = self.data.length := by
-            simp [alloc.vec.Vec.length]
-          omega
-      · simp only [bind_tc_ok, if_true]
-        have h36 : i1 + 36#usize ≤ self.data.length := by scalar_tac
-        have hspec := remove_spec self i1 params h36
-        step*
-        refine ⟨h_lt, self1_post1, h_aligned, by scalar_tac,
-          by scalar_tac, ?_, self1_post3, self1_post4,
-          fun h => absurd rfl h⟩
-        intro j hj
-        have := self1_post2 j hj
-        simp_all
+      cases o <;> step* <;>
+        (have := Nat.div_add_mod i1.val 36; have := Nat.div_add_mod self.data.length 36
+         simp_all only [alloc.vec.Vec.length, reduceCtorEq, alloc.vec.Vec.property, implies_true,
+           List.take_self_eq_iff, true_and, IsEmpty.forall_iff, ne_eq, ok.injEq, not_false_eq_true,
+           forall_const, alloc.vec.Vec.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
+           not_true_eq_false, Nat.left_eq_add, OfNat.ofNat_ne_zero, and_true]) <;> scalar_tac
     · have h4 : i1.val + 4 ≤ self.data.length := by omega
       step*
   · step*
@@ -676,10 +643,8 @@ theorem gc_loop_spec
 
 /-! ### Shared tactic macros for `gc_spec` and `gc_spec_64` post-`step*` goals
 
-Both the 32-bit and 64-bit GC spec theorems produce identical proof obligations after
-`step*`. The macros below capture the shared tactic blocks that close the two subgoals
-(the key-ge precondition goal and the postcondition restructuring goal),
-eliminating ~160 lines of duplication across the two theorems. -/
+The macros below capture the tactic blocks that close the two subgoals produced by `step*`
+in `gc_spec_core` (the key-ge precondition goal and the postcondition restructuring goal). -/
 
 /-- Close the key-ge precondition goal produced by `step*` in `gc_spec` variants.
 Case-splits on `params.max_ooo_keys > 0#u32` and applies `h_key_ge` or `scalar_tac`. -/
@@ -688,27 +653,23 @@ set_option hygiene false in
 macro_rules
   | `(tactic| gc_close_key_ge_goal) => `(tactic|
     ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-      rw [i2_post] at i3_post
-      simp only [UScalar.ofNatCore_val_eq] at i3_post
+      have hi3 : i3.val = i1.val * 36 := by scalar_tac
+      have hge : i3.val ≤ self.data.length := by scalar_tac
       by_cases hpos : params.max_ooo_keys > 0#u32
-      · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-        have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-        rw [hi1] at i3_post
-        rw [hi4]
+      · have hi4 : i4 = params.max_ooo_keys := (‹i4 = params.max_ooo_keys ↔ _›).mpr hpos
+        have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 :=
+          (‹i1.val = params.max_ooo_keys.val * 11 / 10 + 1 ↔ _›).mpr hpos
         have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
         rw [if_pos hlt] at h_key_ge
-        apply h_key_ge
-        simp_all
-      · have hzero : ¬(params.max_ooo_keys > 0#u32) := hpos
-        have hi4 : i4.val = 2000 := by
-          have := i4_post2.mpr (Or.inl (by scalar_tac))
-          scalar_tac
-        have hi1_val : i1.val = 2201 := by
-          have := i1_post2.mpr (Or.inl (by scalar_tac))
-          scalar_tac
-        rw [hi1_val] at i3_post
+        have := h_key_ge (by rw [← hi1]; omega)
+        rw [hi4]
+        scalar_tac
+      · have hi4 : i4 = 2000#u32 := (‹i4 = 2000#u32 ↔ _›).mpr (Or.inl (by scalar_tac))
+        have hi1 : i1.val = 2201 := (‹i1.val = 2201 ↔ _›).mpr (Or.inl (by scalar_tac))
         have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
         rw [if_neg hlt] at h_key_ge
+        have := h_key_ge (by omega)
+        rw [hi4]
         scalar_tac ))
 
 /-- Close the postcondition-restructuring goal produced by `step*` in `gc_spec` variants.
@@ -720,63 +681,77 @@ set_option hygiene false in
 macro_rules
   | `(tactic| gc_close_postcondition_goal) => `(tactic|
     ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-      obtain ⟨v_post1, v_post2, v_post3, v_post4, v_post5, v_post6,
-              v_post7, v_post8, ⟨f_inv, v_post9, v_post10⟩,
-              ⟨g_inv, v_post11, v_post12⟩⟩ := v_post
-      rw [i2_post] at i3_post
-      simp only [UScalar.ofNatCore_val_eq] at i3_post
-      refine ⟨v_post1, v_post3, fun h_lt => ?_, fun h_ge => ?_⟩
-      · by_cases hpos : params.max_ooo_keys > 0#u32
-        · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 := i1_post1.mpr hpos
-          rw [hi1] at i3_post
+      obtain ⟨hv1, -, hv3, -, -, hv6, -, hv8, ⟨f_inv, hv9, hv10⟩, ⟨g_inv, hv11, hv12⟩⟩ :
+        GcLoopPost self a.to_slice 0#usize v := ‹_›
+      have ha : a.val = horizonBytes i5 := ‹_›
+      have hi3 : i3.val = i1.val * 36 := by scalar_tac
+      have hge : i3.val ≤ self.data.length := by scalar_tac
+      have hi5 : i5.val = current_key.val - i4.val := ‹_›
+      have hi45 : i4.val ≤ current_key.val := ‹_›
+      refine ⟨hv1, hv3, fun h_lt => ?_, fun h_ge => ?_⟩
+      · exfalso
+        by_cases hpos : params.max_ooo_keys > 0#u32
+        · have hi1 : i1.val = params.max_ooo_keys.val * 11 / 10 + 1 :=
+            (‹i1.val = params.max_ooo_keys.val * 11 / 10 + 1 ↔ _›).mpr hpos
           have hlt' : 0#u32 < params.max_ooo_keys := by scalar_tac
           rw [if_pos hlt'] at h_lt
-          grind
-        · have hi1_val : i1.val = 2201 := by
-            have := i1_post2.mpr (Or.inl (by scalar_tac))
-            scalar_tac
-          rw [hi1_val] at i3_post
+          omega
+        · have hi1 : i1.val = 2201 := (‹i1.val = 2201 ↔ _›).mpr (Or.inl (by scalar_tac))
           have hlt' : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
           rw [if_neg hlt'] at h_lt
-          scalar_tac
+          omega
       · refine ⟨i5, ?_, ?_, ?_, ?_, ?_⟩
         · by_cases hpos : params.max_ooo_keys > 0#u32
-          · have hi4 : i4 = params.max_ooo_keys := i4_post1.mpr hpos
-            rw [hi4] at i5_post1
+          · have hi4 : i4 = params.max_ooo_keys := (‹i4 = params.max_ooo_keys ↔ _›).mpr hpos
             have hlt : 0#u32 < params.max_ooo_keys := by scalar_tac
-            rw [if_pos hlt]
-            omega
-          · have hi4 : i4.val = 2000 := by
-              have := i4_post2.mpr (Or.inl (by scalar_tac))
-              scalar_tac
+            rw [if_pos hlt, hi5, hi4]
+          · have hi4 : i4 = 2000#u32 := (‹i4 = 2000#u32 ↔ _›).mpr (Or.inl (by scalar_tac))
             have hlt : ¬(0#u32 < params.max_ooo_keys) := by scalar_tac
-            rw [if_neg hlt]
-            omega
+            rw [if_neg hlt, hi5, hi4]
+            rfl
         · intro m hml hml1
-          have := v_post6 m ⟨by scalar_tac, hml, hml1⟩
-          simp only [Array.val_to_slice, a_post, UScalarTy.U8_numBits_eq, ne_eq] at this
-          exact this
+          have := hv6 m ⟨by scalar_tac, hml, hml1⟩
+          simpa [Array.val_to_slice, ha] using this
         · intro n hn_live h1 h2
-          simp only [Array.to_slice, a_post, alloc.vec.Vec.length,
-            ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired,  RecordAligned] at v_post8
-          obtain ⟨m, hm⟩ := v_post8 n ⟨hn_live, h1⟩ h2
-          refine ⟨m, by scalar_tac⟩
-        · simp only [alloc.vec.Vec.length,
-            ValidRecord, RecordsEq, recordAt] at v_post9 v_post10
-          refine ⟨f_inv, ?_, ?_⟩
+          obtain ⟨m, hm⟩ := hv8 n ⟨hn_live, h1⟩ (by simpa [Array.val_to_slice, ha] using h2)
+          exact ⟨m, hm.1.1, hm.1.2, hm.2⟩
+        · refine ⟨f_inv, ?_, ?_⟩
           · intro m hm1 hm2
-            obtain ⟨⟨ha, hb⟩, hc⟩ := v_post9 m ⟨hm1, hm2⟩
+            obtain ⟨⟨ha, hb⟩, hc⟩ := hv9 m ⟨hm1, hm2⟩
             exact ⟨ha, hb, hc⟩
           · intro m₁ m₂ hm1l hm1a hm2l hm2a
-            exact v_post10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
-        · simp only [Array.to_slice, a_post,
-            ValidRecord, RecordsEq, recordAt, timestampAt, IsExpired] at v_post11 v_post12
-          refine ⟨g_inv, ?_, ?_⟩
+            exact hv10 m₁ m₂ ⟨hm1l, hm1a⟩ ⟨hm2l, hm2a⟩
+        · refine ⟨g_inv, ?_, ?_⟩
           · intro n hn1 hn2 hn3
-            obtain ⟨⟨ha, hb⟩, hc⟩ := v_post11 n ⟨hn1, hn2⟩ hn3
+            obtain ⟨⟨ha, hb⟩, hc⟩ := hv11 n ⟨hn1, hn2⟩ (by simpa [Array.val_to_slice, ha] using hn3)
             exact ⟨ha, hb, hc⟩
           · intro n₁ n₂ hn1l hn1a hn2l hn2a hn1_live hn2_live
-            exact v_post12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩ hn1_live hn2_live ))
+            exact hv12 n₁ n₂ ⟨hn1l, hn1a⟩ ⟨hn2l, hn2a⟩
+              (by simpa [Array.val_to_slice, ha] using hn1_live)
+              (by simpa [Array.val_to_slice, ha] using hn2_live) ))
+
+/-- Platform-independent core of `gc_spec` and `gc_spec_64`: the only facts the arithmetic
+needs are that `max_ooo * 11` fits in `u32` and that `trim_size * 36` fits in `usize`. Proving
+it once avoids running `step*` over `gc` separately for each platform variant. -/
+private theorem gc_spec_core (self : chain.KeyHistory) (current_key : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (h_bound : self.data.length ≤ Usize.max)
+    (h_data_aligned : self.data.length % 36 = 0)
+    (h_ooo : params.max_ooo_keys.val < 390451572)
+    (h_fit : (params.max_ooo_keys.val * 11 / 10 + 1) * 36 ≤ Usize.max)
+    (h_key_ge : let max_ooo := if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
+                let trim_threshold := (max_ooo * 11 / 10 + 1) * 36
+                trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val) :
+    gc self current_key params ⦃ (result : chain.KeyHistory) =>
+      GcPost self current_key params result ⦄ := by
+  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
+    RecordsEq recordAt
+  unfold gc
+  simp only [alloc.vec.Vec.len]
+  step*
+  all_goals clear h_fit
+  · gc_close_key_ge_goal
+  · gc_close_postcondition_goal
 
 /-!**Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc` (32-bit platform)**
 
@@ -800,13 +775,8 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
                 trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
       GcPost self current_key params result ⦄ := by
-  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
-    RecordsEq recordAt
-  unfold gc
-  simp only [alloc.vec.Vec.len]
-  step*
-  · gc_close_key_ge_goal
-  · gc_close_postcondition_goal
+  exact gc_spec_core self current_key params h_bound h_data_aligned (by omega)
+    (by scalar_tac) h_key_ge
 
 
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc`** (64-bit platform):
@@ -837,14 +807,8 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
     (h_platform : System.Platform.numBits = 64) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
       GcPost self current_key params result ⦄ := by
-  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
-    RecordsEq recordAt
   have h_usize : Usize.max = 2 ^ 64 - 1 := by
     simp [Usize.max, Usize.numBits, h_platform]
-  unfold gc
-  simp only [alloc.vec.Vec.len]
-  step*
-  · gc_close_key_ge_goal
-  · gc_close_postcondition_goal
+  exact gc_spec_core self current_key params h_bound h_data_aligned h_ooo (by omega) h_key_ge
 
 end spqr.chain.KeyHistory

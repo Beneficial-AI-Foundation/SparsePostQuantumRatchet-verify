@@ -33,6 +33,6 @@ theorem try_from_spec {T : Type} (N : Usize) (copyInst : core.marker.Copy T)
       ∃ (a : Array T N), result = .Ok a ∧ a.val = s.val ⦄ := by
   unfold core.array.TryFromArrayCopySlice.try_from
   simp only [dif_pos h_len, WP.spec_ok]
-  exact ⟨⟨s.val, by scalar_tac⟩, rfl, rfl⟩
+  exact ⟨Array.from s.val (by scalar_tac), rfl, by simp⟩
 
 end Aeneas.Std.core.array.TryFromArrayCopySlice

@@ -45,8 +45,8 @@ local macro "close_err" : tactic =>
     closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once,
     closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError,
     closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once,
-    CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-    core.convert.FromSame.from, bind_tc_ok, WP.spec_ok])
+    CoreOpsTry_traitFromResidualResult.from_residual,
+    core.convert.FromSame.from, bind_ok, bind_tc_ok, WP.spec_ok])
 
 /-- **Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
@@ -80,7 +80,7 @@ theorem Message.deserialize_spec
       | .Err e => e = Error.MsgDecode ⦄ := by
   unfold Message.deserialize
   simp only [core.convert.IntoFrom.into, U8.Insts.CoreConvertFromVersion.from,
-    core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+    core.result.Result.Insts.CoreOpsTry.branch]
   step*
   -- The `Vec::is_empty` guard: turn `¬isEmpty` into `0 < length`.  `simp_all` is terminal
   -- and bridges the Bool/Prop gap together with `b_post`.
@@ -103,7 +103,7 @@ theorem Message.deserialize_spec
       | .Err _ => close_err
       | .Ok idx =>
         obtain ⟨-, hidx⟩ : _ ∧ idx.val = idx64.val := by assumption
-        simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+        simp only [core.result.Result.map_err_Ok]
         step*
         rw [hat₁, ← hidx] at hblk₂
         have h0 : (from1.val[0]!).val = 1 := by
@@ -115,7 +115,7 @@ theorem Message.deserialize_spec
         case h_2 | h_3 | h_4 | h_6 | h_7 =>
           -- tags 1, 2, 3, 5, 6: a chunk block follows
           subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+          simp only [core.result.Result.map_err_Ok]
           step*
           match r6 with
           | .Err _ => close_err
@@ -124,12 +124,13 @@ theorem Message.deserialize_spec
                 ∃ n, _ = _ + n + 32 ∧ chunkBlockAt (↑from1) _ n c := by assumption
             have hat2v : at2.val = 2 + n₁ + n₂ := by omega
             rw [hat2v] at hcblk hclen hcdata
+            simp only [bind_ok, WP.spec_ok]
             refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, h0, n₁, n₂, hblk₁, hblk₂,
               by scalar_tac, ?_, n₃, ⟨hcblk, hclen, hcdata⟩, by scalar_tac⟩
             simp only [payloadTag]; rw [hbyte]; omega
         case h_1 | h_5 =>
           subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
+          simp only [core.result.Result.map_err_Ok]
           step*
           refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, h0, n₁, n₂, hblk₁, hblk₂,
             by scalar_tac, ?_, ?_⟩

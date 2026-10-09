@@ -20,7 +20,7 @@ returned closure state and keeping only the `Pt`. Postcondition inherited from
 open Aeneas Aeneas.Std Result spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyEncoder.point_at.closure_1
-namespace Insts.CoreOpsFunctionFnOnceTuplePairUsizeSharedGF16Pt
+namespace Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt
 /-- **Spec theorem for `PolyEncoder.point_at.closure_1.call_once`**:
 
 Succeeds when `p.1.val < 2 ^ 16`. Returns a `Pt` with:
@@ -37,5 +37,5 @@ theorem call_once_spec
   unfold call_once
   step*
 
-end Insts.CoreOpsFunctionFnOnceTuplePairUsizeSharedGF16Pt
+end Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt
 end spqr.encoding.polynomial.PolyEncoder.point_at.closure_1

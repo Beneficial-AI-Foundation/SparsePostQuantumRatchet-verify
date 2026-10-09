@@ -69,72 +69,33 @@ theorem body_spec_32
               kh2.data = kh.data ++ (core.num.U32.to_be_bytes ctr1).val ++ okm.drop 32
            else
             kh2 = kh) ⦄ := by
-  unfold body chain.ChainParams.max_ooo_keys_or_default
-  simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.length, lift, bind_tc_ok] at *
+  have hmo : chain.ChainParams.max_ooo_keys_or_default params = ok (chain.maxOoo params) := by
+    unfold chain.ChainParams.max_ooo_keys_or_default chain.maxOoo; split <;> rfl
+  have hvs : v.slice.length = 32 := by simpa [alloc.vec.Vec.val, Slice.length] using h_v_len
+  have hb : i.val + 1 < 2 ^ UScalarTy.U32.numBits := by scalar_tac
+  unfold body
+  simp only [alloc.vec.Vec.deref_mut, lift, hmo, bind_ok]
   step*
-  split
-  · step*
-    · have h := h_maxooo_bound
-      simp only [maxOoo] at h
-      split_ifs at h
-      · scalar_tac
-      · have := DEFAULT_CHAIN_PARAMS_spec.2; scalar_tac
-    · simp only [Slice.length] at *
-      refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, k_post5, ?_⟩
-      simp only [maxOoo]
-      split
-      · split
-        · constructor
-          · simp_all [UScalar.eq_equiv]
-          · have hi2 : i2 = (⟨i.val + 1, by scalar_tac⟩ : U32) :=
-                UScalar.val_eq_imp _ _ k_post1
-            simp_all [List.append_assoc]
-        · simp_all [UScalar.eq_equiv]
-      · split
-        · constructor
-          · simp_all [UScalar.eq_equiv]
-          · have hi2 : i2 = (⟨i.val + 1, by scalar_tac⟩ : U32) :=
-                UScalar.val_eq_imp _ _ k_post1
-            simp_all [List.append_assoc]
-        · simp_all [UScalar.eq_equiv]
-    · simp only [Slice.length] at *
-      refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, k_post5, ?_⟩
-      simp only [maxOoo]
-      split
-      · split
-        · constructor
-          · simp_all [UScalar.eq_equiv]
-          · have hi2 : i2 = (⟨i.val + 1, by scalar_tac⟩ : U32) :=
-                UScalar.val_eq_imp _ _ k_post1
-            simp_all only [gt_iff_lt, UScalar.lt_equiv, UScalarTy.U32_numBits_eq, Nat.reducePow,
-              List.length_take, inf_eq_left, UScalar.ofNatCore_val_eq, List.append_assoc,
-              List.self_eq_append_right, List.append_eq_nil_iff, List.drop_eq_nil_iff]
-            scalar_tac
-        · simp_all [UScalar.eq_equiv]
-      · split
-        · constructor
-          · simp_all [UScalar.eq_equiv]
-          · have hi2 : i2 = (⟨i.val + 1, by scalar_tac⟩ : U32) :=
-                UScalar.val_eq_imp _ _ k_post1
-            simp_all
-        · simp_all [UScalar.eq_equiv]
-  · step*
-    · have := DEFAULT_CHAIN_PARAMS_spec.2; scalar_tac
-    · simp_all only [gt_iff_lt, UScalar.lt_equiv, Nat.add_left_cancel_iff, UScalar.eq_equiv,
-      Slice.length, UScalarTy.U32_numBits_eq, Nat.reducePow, List.length_take, inf_eq_left,
-      UScalar.ofNatCore_val_eq, not_lt, nonpos_iff_eq_zero, ge_iff_le, UScalar.le_equiv,
-      alloc.vec.Vec.length, List.append_assoc, List.length_append, List.Vector.length_val,
-      List.length_drop, alloc.vec.Vec.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD, getElem!_pos,
-      inf_of_le_left, List.append_cancel_left_eq, List.append_cancel_right_eq, true_and]
-      split
-      · simp_all only [maxOoo, gt_iff_lt, UScalar.lt_equiv, UScalar.ofNatCore_val_eq,
-        lt_self_iff_false, ↓reduceIte, DEFAULT_CHAIN_PARAMS, Nat.reduceLT]
-        have hk1 : k.1 = (⟨i.val + 1, by scalar_tac⟩ : U32) :=
-          UScalar.eq_imp _ _ k_post3
-        rw [hk1]
-      · simp_all [chain.maxOoo,  chain.DEFAULT_CHAIN_PARAMS]
-    · simp only [maxOoo]
-      simp_all [UScalar.eq_equiv]
+  all_goals
+    have hat : at1.val > i.val + 1 := by scalar_tac
+    have hi2 : i2.val = i.val + 1 := by scalar_tac
+    have hi4 : i4.val = i.val + 1 + (chain.maxOoo params).val := by scalar_tac
+    have hs1v : s1.val = List.take 32 (nextKeyHkdfOutput v.val (⟨i.val + 1, hb⟩ : U32)) :=
+      ‹s1.val = _›
+    have hk2 : k.2.val = List.drop 32 (nextKeyHkdfOutput v.val (⟨i.val + 1, hb⟩ : U32)) :=
+      ‹k.2.val = _›
+    have hk1 : k.1 = (⟨i.val + 1, hb⟩ : U32) :=
+      UScalar.val_eq_imp _ _ (by rw [‹k.1.val = i.val + 1›]; rfl)
+    have hs1 : (({ slice := s1 } : alloc.vec.Vec U8)).length = 32 := by
+      have : s1.length = 32 := by rw [‹s1.length = _›, hvs]
+      exact this
+    refine ⟨hat, hi2, hs1, hs1v, ?_⟩
+    have hge : (i4 ≥ at1) ↔ (i.val + 1 + (chain.maxOoo params).val ≥ at1.val) := by
+      rw [ge_iff_le, UScalar.le_equiv, hi4]
+    split_ifs with hc <;> first
+      | exact ⟨‹_›, by rw [‹kh1.data.val = _›, hk1, hk2]⟩
+      | exact absurd (hge.mpr hc) ‹_›
+      | exact absurd (hge.mp ‹_›) hc
 
 end spqr.chain.ChainEpochDirection.key_loop
 
@@ -261,7 +222,7 @@ theorem key_loop_spec_32
               · rename_i h_len
                 cases kh'' with | mk d' =>
                   simp only [chain.KeyHistory.mk.injEq]
-                  exact Subtype.ext hdata
+                  apply alloc.vec.Vec.ext; simpa using hdata
               · rename_i h_neg; exfalso; apply h_neg
                 rename_i h_prev_len
                 simp only [List.length_append] at h_neg ⊢
@@ -317,7 +278,7 @@ theorem key_loop_spec_32
         · have := h_inv_ctr (by omega)
           omega
       unfold key_loop.body chain.ChainParams.max_ooo_keys_or_default
-      simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.length, lift, bind_tc_ok] at *
+      simp only [alloc.vec.Vec.deref_mut, alloc.vec.Vec.length, lift] at *
       have h_i1_ok : i'.val + 1 ≤ U32.max := by omega
       simp only [gt_iff_lt, UScalar.lt_equiv]
       step*
@@ -336,6 +297,149 @@ private theorem maxOoo_imp_raw_ooo (params : proto.pq_ratchet.ChainParams) (boun
   · simp only [gt_iff_lt, UScalar.lt_equiv, UScalar.ofNatCore_val_eq, not_lt,
       Nat.le_zero] at hpos
     omega
+
+/-- **Spec for `keyAdvanceTail`** (32-bit variant of `keyAdvanceTail_spec`): same
+postcondition, with the tighter 32-bit bounds and `gc` discharged by `KeyHistory.gc_spec`. -/
+private theorem keyAdvanceTail_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
+    (params : proto.pq_ratchet.ChainParams) (kh : chain.KeyHistory)
+    (h_gt : ats > self.ctr)
+    (h_next_len : self.next.length = 32)
+    (h_at_bound : ats.val ≤ U32.max - 108458770)
+    (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
+    (h_kh_cap : kh.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
+    (h_kh_aligned : kh.data.length % 36 = 0)
+    (h_kh_ctr : kh.data.length ≤ 36 * self.ctr.val) :
+    keyAdvanceTail self ats params kh ⦃ (r : chain.KeyHistory × U32 × alloc.vec.Vec U8 ×
+        alloc.vec.Vec U8) =>
+      keyAdvanceTailPost self ats params kh r.1 r.2.1 r.2.2.1 r.2.2.2 h_gt ⦄ := by
+  unfold keyAdvanceTail
+  simp only [alloc.vec.Vec.deref_mut, lift]
+  step as ⟨i4, v, kh1⟩
+  step with chain.KeyHistory.gc_spec
+  · rw [‹kh1 = _›]
+    exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_kh_aligned
+  · exact maxOoo_imp_raw_ooo params _ h_maxooo_bound
+  · exact key_gc_precond_no_clear { self with prev := kh } ats params i4 kh1 h_gt h_kh_ctr ‹_› ‹_›
+  step*
+  · exact ‹v.length = 32›
+  · scalar_tac
+  · unfold keyAdvanceTailPost
+    simp only
+    have hb4 : i4.val + 1 < 2 ^ UScalarTy.U32.numBits := by scalar_tac
+    have hba : ats.val < 2 ^ UScalarTy.U32.numBits := by scalar_tac
+    have hle : self.ctr.val + 1 ≤ ats.val := by scalar_tac
+    have hkv : i4.val + 1 = ats.val := by
+      have h : i4.val + 1 = Nat.max ats.val (self.ctr.val + 1) := ‹_›
+      simp only [Nat.max_eq_left hle] at h; exact h
+    have h_i4_val : i4.val = ats.val - 1 := by omega
+    have h_i5_eq : i5.val = ats.val := by
+      have : i5.val = i4.val + 1 := ‹_›
+      omega
+    have hgc : kh1.GcPost i4 params kh2 := ‹_›
+    unfold chain.KeyHistory.GcPost at hgc
+    obtain ⟨g1, g2, g3, g4⟩ := hgc
+    rw [maxOoo_if_eq] at g3 g4
+    have hkh1 : kh1 = iterKeyHistory (↑self.next) (↑self.ctr) (↑ats) params kh
+        (↑ats - (↑self.ctr + 1)) := ‹_›
+    have hkh1_ub : kh1.data.length ≤ kh.data.length + 36 * (↑ats - ↑self.ctr) := ‹_›
+    have hkh1_lb : kh.data.length ≤ kh1.data.length := ‹_›
+    have hctr : ({ toFin := ⟨↑i4 + 1, hb4⟩ }#uscalar : U32) =
+        ({ toFin := ⟨↑ats, hba⟩ }#uscalar : U32) := by
+      apply UScalar.val_eq_imp; simp only [UScalar.val]; simp; omega
+    have hka : a.val = List.drop 32 (nextKeyHkdfOutput (↑v.slice)
+        ({ toFin := ⟨↑i4 + 1, hb4⟩ }#uscalar)) := ‹_›
+    have hs1 : s1.val = List.take 32 (nextKeyHkdfOutput (↑v.slice)
+        ({ toFin := ⟨↑i4 + 1, hb4⟩ }#uscalar)) := ‹_›
+    have hv : v.slice.val = iterChainSecret (↑self.next) (↑self.ctr) (↑ats - (↑self.ctr + 1)) :=
+      ‹v.val = _›
+    have hv1 : v1.val = a.val := by
+      have : a.to_slice = v1.slice := ‹_›
+      simp [alloc.vec.Vec.val, ← this]
+    rw [← hkh1]
+    refine ⟨?_, ?_, h_i5_eq, ?_, ?_, g1, le_trans g2 hkh1_ub, ?_, g2, ?_, hkh1_lb, ?_⟩
+    · simp [alloc.vec.Vec.length, hv1]
+    · rw [hv1, hka, hv, hctr]
+    · have : s1.length = v.slice.length := ‹_›
+      have : v.length = 32 := ‹_›
+      simp only [alloc.vec.Vec.length, alloc.vec.Vec.val, Slice.length] at *
+      omega
+    · change s1.val = _
+      rw [hs1, hv, hctr]
+    · exact le_trans (le_trans g2 hkh1_ub) (by vecOmega)
+    · rw [hkh1]
+      exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_kh_aligned
+    · exact chain.keyPostGc_of_GcPost _ _ _ _ _ h_i4_val g2 g3 g4
+
+
+attribute [local step] keyAdvanceTail_spec_32
+
+/-- **Combined spec for all branches of `key`** (32-bit platform): the full postcondition
+`chain.cedKeyPost`, proved with a single symbolic execution of `key`.  The per-branch
+theorems below are projections of this one.
+Uses `gc_spec` (platform-independent) instead of `gc_spec_64`. -/
+private theorem key_spec_all_32 (self : chain.ChainEpochDirection) (ats : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (h_next_len : self.next.length = 32)
+    (h_at_bound : ats.val ≤ U32.max - 108458770)
+    (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
+    (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
+    (h_prev_aligned : self.prev.data.length % 36 = 0)
+    (h_prev_bound : self.prev.data.length ≤ Usize.max)
+    (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
+    (h_ooo_no_overflow : ats + (chain.maxOoo params).val ≤ U32.max) :
+    key self ats params ⦃ (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
+        chain.ChainEpochDirection) =>
+      chain.cedKeyPost self ats params result.1 result.2 ⦄ := by
+  rw [key_eq]
+  simp only [lift]
+  step*
+  · -- Less: delegate to `KeyHistory.get`
+    have hlt := ordU32_cmp_lt_val ‹_›
+    refine ⟨fun h => ?_, fun _ => ⟨rfl, rfl, ?_⟩, fun h => ?_, fun h => ?_⟩
+    · subst h; omega
+    · cases r with
+      | Err _ => exact ‹_›
+      | Ok out =>
+        obtain ⟨hle, off, hmod, hbound, hslice, hfirst, hlen, hout, hkhlen, _,
+          hkhalign, hpres, hswap, htail⟩ := ‹_ ∧ ∃ off, _›
+        exact ⟨hle, hlen, hkhlen, hkhalign, off, hmod, hbound, hslice, hfirst, hout,
+          hpres, hswap, htail⟩
+    · exfalso; scalar_tac
+    · exfalso; scalar_tac
+  · -- Equal
+    have heq := ordU32_cmp_eq_val ‹_›
+    refine ⟨fun _ => ⟨rfl, rfl⟩, fun h => ?_, fun h => ?_, fun h => ?_⟩ <;> exfalso <;> scalar_tac
+  · have := ordU32_cmp_gt_val ‹_›
+    omega
+  · -- Greater, jump too large
+    have hgt := ordU32_cmp_gt_val ‹_›
+    have := maxJump_val_eq_of_posts params i1 ‹_› ‹_›
+    refine ⟨fun h => ?_, fun h => ?_, fun _ _ => ⟨rfl, rfl⟩, fun _ h => ?_⟩
+    · subst h; omega
+    all_goals exfalso; scalar_tac
+  · have h_i2_eq := maxOoo_val_eq_of_posts params i2 ‹_› ‹_›
+    omega
+  · -- Greater, within jump budget: pick the starting key history, then the shared tail
+    have hgt := ordU32_cmp_gt_val ‹_›
+    have h_i1_eq := maxJump_val_eq_of_posts params i1 ‹_› ‹_›
+    have h_i2_eq := maxOoo_val_eq_of_posts params i2 ‹_› ‹_›
+    have h_gt : ats > self.ctr := by scalar_tac
+    split
+    · step*
+      refine ⟨fun h => ?_, fun h => ?_, fun _ h => ?_, fun h_gt' _ => ?_⟩
+      · subst h; omega
+      · exfalso; scalar_tac
+      · exfalso; scalar_tac
+      exact cedKeyAdvancePost_of_tail self ats params _ kh2 i5 v1 v2 h_gt' (fun _ => ‹_›)
+        (fun h => absurd (by scalar_tac) h) ‹_›
+    · step*
+      refine ⟨fun h => ?_, fun h => ?_, fun _ h => ?_, fun h_gt' _ => ?_⟩
+      · subst h; omega
+      · exfalso; scalar_tac
+      · exfalso; scalar_tac
+      exact cedKeyAdvancePost_of_tail self ats params self.prev kh2 i5 v1 v2 h_gt'
+        (fun h => absurd h (by scalar_tac)) (fun _ => rfl) ‹_›
+
 
 /-- **Spec theorem for `spqr.chain.ChainEpochDirection.key`** (32-bit platform, equal case):
 
@@ -360,7 +464,6 @@ theorem key_spec_equal_32 (self : chain.ChainEpochDirection) (ats : U32)
     (h_at_bound : ats.val ≤ U32.max - 108458770)
     (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
     (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
     (h_prev_aligned : self.prev.data.length % 36 = 0)
     (h_prev_bound : self.prev.data.length ≤ Usize.max)
     (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
@@ -371,63 +474,9 @@ theorem key_spec_equal_32 (self : chain.ChainEpochDirection) (ats : U32)
       (ats = self.ctr →
           result.1 = core.result.Result.Err (Error.KeyAlreadyRequested ats) ∧
           result.2 = self) ⦄ := by
-  unfold key
-  simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
-  split
-  · step*
-  · step*
-  · step
-    · simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-    · step
-      split
-      · intro h_gt
-        have h_i1_eq : i1.val = (chain.maxJump params).val :=
-          maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-        simp only [gt_iff_lt] at *
-        constructor <;> scalar_tac
-      · step
-        step
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-          maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          omega
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-            maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          split
-          · step
-            step
-            step with chain.KeyHistory.gc_spec
-            · rw [i4_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _
-               (by simp [alloc.vec.Vec.length, kh_post])
-            · scalar_tac
-            · step
-              · scalar_tac
-              · rename_i y
-                obtain ⟨idx, key_arr⟩ := y
-                step
-                intros h_gt
-                have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                  maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-                simp only [gt_iff_lt] at *
-                constructor <;> scalar_tac
-          · step
-            step with chain.KeyHistory.gc_spec
-            · rw [kh_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
-            · have h_ats_gt : self.ctr.val < ats.val := by
-                simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-              exact key_gc_precond_no_clear self ats params kh _  h_ats_gt
-                h_prev_ctr kh_post1  kh_post6
-            step
-            · simp only [Nat.max_def] at kh_post1; split at kh_post1 <;> omega
-            · rename_i y
-              obtain ⟨idx, key_arr⟩ := y
-              step
-              intros h_gt
-              have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-              simp only [gt_iff_lt] at *
-              step*
+  apply WP.spec_mono (key_spec_all_32 self ats params h_next_len h_at_bound h_maxooo_bound
+    h_kh_cap h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow)
+  exact fun _ h => h.1
 
 /-- **Spec theorem for `spqr.chain.ChainEpochDirection.key`** (32-bit platform, greater case):
 
@@ -445,9 +494,7 @@ theorem key_spec_greater_32 (self : chain.ChainEpochDirection) (ats : U32)
     (h_next_len : self.next.length = 32)
     (h_at_bound : ats.val ≤ U32.max - 108458770)
     (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
-    (h_ctr_bound : self.ctr.val ≤ U32.max - 108458770)
     (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
     (h_prev_aligned : self.prev.data.length % 36 = 0)
     (h_prev_bound : self.prev.data.length ≤ Usize.max)
     (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
@@ -459,68 +506,9 @@ theorem key_spec_greater_32 (self : chain.ChainEpochDirection) (ats : U32)
           ats.val - self.ctr.val > (chain.maxJump params).val →
           result.1 = core.result.Result.Err (Error.KeyJump self.ctr ats) ∧
           result.2 = self) ⦄ := by
-  unfold key
-  simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
-  split
-  · step
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at *
-    intro h_gt
-    omega
-  · intro h_gt
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at *
-    omega
-  · step
-    · simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-    · step
-      split
-      · intro h_gt h_jump_gt
-        have h_i1_eq : i1.val = (chain.maxJump params).val :=
-          maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-        simp only [gt_iff_lt] at *
-        constructor <;> scalar_tac
-      · step
-        step
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-          maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          omega
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-            maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          split
-          · step
-            step
-            step with chain.KeyHistory.gc_spec
-            · rw [i4_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _
-               (by simp [alloc.vec.Vec.length, kh_post])
-            · scalar_tac
-            · step
-              · scalar_tac
-              · rename_i y
-                obtain ⟨idx, key_arr⟩ := y
-                step
-                intros h_gt h_jump_gt
-                have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                  maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-                simp only [gt_iff_lt] at *
-                constructor <;> scalar_tac
-          · step
-            step with chain.KeyHistory.gc_spec
-            · rw [kh_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
-            · have h_ats_gt : self.ctr.val < ats.val := by
-                simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-              exact key_gc_precond_no_clear self ats params kh _  h_ats_gt
-                h_prev_ctr kh_post1  kh_post6
-            step
-            · simp only [Nat.max_def] at kh_post1; split at kh_post1 <;> omega
-            · rename_i y
-              obtain ⟨idx, key_arr⟩ := y
-              step
-              intros h_gt h_jump_gt
-              have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-              simp only [gt_iff_lt] at *
-              constructor <;> scalar_tac
+  apply WP.spec_mono (key_spec_all_32 self ats params h_next_len h_at_bound h_maxooo_bound
+    h_kh_cap h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow)
+  exact fun _ h => h.2.2.1
 
 /-- **Spec theorem for `spqr.chain.ChainEpochDirection.key`** (32-bit platform, less case):
 
@@ -547,9 +535,7 @@ theorem key_spec_less_32 (self : chain.ChainEpochDirection) (ats : U32)
     (h_next_len : self.next.length = 32)
     (h_at_bound : ats.val ≤ U32.max - 108458770)
     (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
-    (h_ctr_bound : self.ctr.val ≤ U32.max - 108458770)
     (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
     (h_prev_aligned : self.prev.data.length % 36 = 0)
     (h_prev_bound : self.prev.data.length ≤ Usize.max)
     (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
@@ -559,340 +545,15 @@ theorem key_spec_less_32 (self : chain.ChainEpochDirection) (ats : U32)
         chain.ChainEpochDirection) =>
       (ats < self.ctr →
           chain.cedKeyLessPost self ats params result.1 result.2) ⦄ := by
-  unfold chain.cedKeyLessPost
-  unfold key
-  simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
-  step*
-  · simp only [core.cmp.impls.OrdU32.cmp] at *
-    intro _
-    match r, r_post with
-    | .Err _, h => exact h
-    | .Ok out, ⟨hle, off, hmod, hbound, hslice, hfirst, hlen, hout, hkhlen, _,
-    hkhalign, hpres, hswap, htail⟩ =>
-      exact ⟨hle, hlen, hkhlen, hkhalign, off, hmod, hbound, hslice, hfirst, hout,
-      hpres, hswap, htail⟩
-  · simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-  · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-      maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-    omega
-  · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-      maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-    split
-    · step
-      step
-      step with chain.KeyHistory.gc_spec
-      · rw [i4_post4]
-        exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _
-          (by simp [alloc.vec.Vec.length, kh_post])
-      · scalar_tac
-      · step*
-        · scalar_tac
-        · rename_i y _ _ _ _ _ _
-          obtain ⟨idx, key_arr⟩ := y
-          step*
-    · step
-      step with chain.KeyHistory.gc_spec
-      · rw [kh_post4]
-        exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
-      · have h_ats_gt : self.ctr.val < ats.val := by
-          simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-        exact key_gc_precond_no_clear self ats params kh _  h_ats_gt
-          h_prev_ctr kh_post1  kh_post6
-      step
-      · simp only [Nat.max_def] at kh_post1; split at kh_post1 <;> omega
-      · rename_i y
-        obtain ⟨idx, key_arr⟩ := y
-        step*
-
-
-/-- **Sub-lemma for the clear branch** of `key_spec_greater_jump_32`:
-when `ats > self.ctr + maxOoo params`, the key history is cleared before advancing. -/
-private theorem key_spec_greater_jump_32_clear (self : chain.ChainEpochDirection) (ats : U32)
-    (params : proto.pq_ratchet.ChainParams)
-    (h_next_len : self.next.length = 32)
-    (h_at_bound : ats.val ≤ U32.max - 108458770)
-    (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
-    (h_ctr_bound : self.ctr.val ≤ U32.max - 108458770)
-    (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
-    (h_prev_aligned : self.prev.data.length % 36 = 0)
-    (h_prev_bound : self.prev.data.length ≤ Usize.max)
-    (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
-    (h_ooo_no_overflow : ats + (chain.maxOoo params).val ≤ U32.max) :
-    key self ats params ⦃
-      (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
-        chain.ChainEpochDirection) =>
-        (∀ (h_gt : ats > self.ctr),
-          ats.val - self.ctr.val ≤ (chain.maxJump params).val →
-          self.ctr.val + (chain.maxOoo params).val < ats.val →
-          chain.cedKeyAdvancePost self ats params result.1 result.2 h_gt) ⦄ := by
-  unfold chain.cedKeyAdvancePost
-  unfold key
-  simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
-  split
-  · step
-    rename_i h
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at h
-    scalar_tac
-  · simp only [gt_iff_lt, UScalar.lt_equiv, tsub_le_iff_right, alloc.vec.Vec.length,
-    UScalarTy.U32_numBits_eq, Nat.reducePow, WP.spec_ok,
-    reduceCtorEq, false_and, exists_const, le_add_iff_nonneg_right, zero_le, true_and, imp_false]
-    rename_i h
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at h
-    omega
-  · step
-    · rename_i h
-      simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at h
-      omega
-    · step
-      split
-      · have h_i1_eq := maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-        intro h_gt h_jump_le
-        simp only [gt_iff_lt] at h_gt
-        scalar_tac
-      · step
-        step
-        · have := maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          omega
-        · have h_i2_eq:= maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          split
-          · step
-            step
-            step with chain.KeyHistory.gc_spec
-            · rw [i4_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _
-               (by simp [alloc.vec.Vec.length, kh_post])
-            · scalar_tac
-            · step
-              · scalar_tac
-              · rename_i y
-                obtain ⟨idx, key_arr⟩ := y
-                step
-                intros h_gt h_jump_gt h_ats_gt_ooo
-                have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                  maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-                simp only [gt_iff_lt] at *
-                have h_ats_gt : ats.val > self.ctr.val := by omega
-                have h_i4_eq : i4.val + 1 = ats.val :=
-                  i4_succ_eq_ats self ats i4 h_ats_gt i4_post1
-                have h_i5_eq : i5.val = ats.val := by omega
-                simp only [if_pos h_ats_gt_ooo]
-                unfold chain.KeyHistory.GcPost at kh2_post
-                obtain ⟨kh2_post1, kh2_post2, kh2_post3, kh2_post4⟩ := kh2_post
-                rw [maxOoo_if_eq] at kh2_post3 kh2_post4
-                have hkh_eq : kh = { data := ⟨[], by simp⟩ } := by
-                  obtain ⟨⟨dl, dp⟩⟩ := kh
-                  simp only [alloc.vec.Vec.length] at kh_post
-                  simp only [List.length_eq_zero_iff] at kh_post
-                  subst kh_post
-                  rfl
-                have h_pregc_eq :
-                    iterKeyHistory (↑self.next) (↑self.ctr) (↑ats) params
-                      { data := ⟨[], by simp⟩ } (↑ats - (↑self.ctr + 1)) = kh1 := by
-                  rw [← hkh_eq]
-                  exact i4_post4.symm
-                simp only [h_pregc_eq]
-                have h_kh1_mod : kh1.data.length % 36 = 0 := by
-                  rw [i4_post4]; apply iterKeyHistory_data_length_mod_36
-                  simp [alloc.vec.Vec.length, kh_post]
-                have h_i4_val : (↑i4 : Nat) = ↑ats - 1 := by omega
-                have h_36bound :
-                    kh1.data.length ≤ 36 * (↑ats - ↑self.ctr) := by
-                  have h := i4_post6
-                  simp only [alloc.vec.Vec.length, kh_post] at h; omega
-                have h_empty_len :
-                    (({ data := ⟨[], by simp⟩ } : chain.KeyHistory).data).length = 0 := rfl
-                refine ⟨⟨result, rfl, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-                  ?_, ?_⟩
-                · rw [← result_post]; simp
-                · rw [← result_post]
-                  simp only [Array.val_to_slice, UScalarTy.U32_numBits_eq,
-                    Nat.reducePow, s1_post6, i4_post3]
-                  congr 2
-                  apply UScalar.val_eq_imp
-                  simp only [UScalar.val]; simp; omega
-                · exact h_i5_eq
-                · simp only [Slice.length] at s1_post4 ⊢
-                  vecOmega
-                · simp only [s1_post5, i4_post3, UScalarTy.U32_numBits_eq, Nat.reducePow]
-                  congr 2
-                  apply UScalar.val_eq_imp
-                  simp only [UScalar.val]; simp; omega
-                · exact kh2_post1
-                · simp only [h_empty_len, Nat.zero_add]
-                  exact le_trans kh2_post2 h_36bound
-                · have h := le_trans kh2_post2 h_36bound
-                  vecOmega
-                · intro _; exact le_trans kh2_post2 h_36bound
-                · exact le_trans (le_trans kh2_post2 h_36bound) (by vecOmega)
-                · exact kh2_post2
-                · exact h_kh1_mod
-                · simp only [h_empty_len]; exact Nat.zero_le _
-                · exact chain.keyPostGc_of_GcPost _ kh1 _ _ _
-                    h_i4_val kh2_post2 kh2_post3 kh2_post4
-          · step
-            step with chain.KeyHistory.gc_spec
-            · rw [kh_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
-            · have h_ats_gt : self.ctr.val < ats.val := by
-                simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *
-                omega
-              exact key_gc_precond_no_clear self ats params kh _  h_ats_gt
-                h_prev_ctr kh_post1  kh_post6
-            step
-            · simp only [Nat.max_def] at kh_post1; split at kh_post1 <;> omega
-            · rename_i y
-              obtain ⟨idx, key_arr⟩ := y
-              step
-              intros h_gt h_jump_gt h_ats_gt_ooo
-              have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-              simp only [gt_iff_lt] at *
-              -- In the no-clear branch, ats ≤ self.ctr + maxOoo, contradiction
-              exfalso
-              have h_not_split : ¬(i3 < ats) := by assumption
-              exact h_not_split ((UScalar.lt_equiv i3 ats).mpr (by scalar_tac))
-
-/-- **Sub-lemma for the no-clear branch** of `key_spec_greater_jump_32`:
-when `ats ≤ self.ctr + maxOoo params`, the existing key history is preserved. -/
-private theorem key_spec_greater_jump_32_no_clear (self : chain.ChainEpochDirection) (ats : U32)
-    (params : proto.pq_ratchet.ChainParams)
-    (h_next_len : self.next.length = 32)
-    (h_at_bound : ats.val ≤ U32.max - 108458770)
-    (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
-    (h_ctr_bound : self.ctr.val ≤ U32.max - 108458770)
-    (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
-    (h_prev_aligned : self.prev.data.length % 36 = 0)
-    (h_prev_bound : self.prev.data.length ≤ Usize.max)
-    (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
-    (h_ooo_no_overflow : ats + (chain.maxOoo params).val ≤ U32.max) :
-    key self ats params ⦃
-      (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
-        chain.ChainEpochDirection) =>
-        (∀ (h_gt : ats > self.ctr),
-          ats.val - self.ctr.val ≤ (chain.maxJump params).val →
-          ¬(self.ctr.val + (chain.maxOoo params).val < ats.val) →
-          chain.cedKeyAdvancePost self ats params result.1 result.2 h_gt) ⦄ := by
-  unfold chain.cedKeyAdvancePost
-  unfold key
-  simp only [alloc.vec.Vec.deref_mut,  lift, bind_tc_ok]
-  split
-  · step
-    rename_i h
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_lt] at h
-    scalar_tac
-  · simp only [gt_iff_lt, UScalar.lt_equiv, tsub_le_iff_right, alloc.vec.Vec.length,
-    UScalarTy.U32_numBits_eq, Nat.reducePow, WP.spec_ok,
-    reduceCtorEq, false_and, exists_const, le_add_iff_nonneg_right, zero_le, true_and, imp_false]
-    intro h_gt
-    simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_eq] at *
-    omega
-  · step
-    · simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *; omega
-    · step
-      split
-      · have h_i1_eq : i1.val = (chain.maxJump params).val :=
-          maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-        intro h_gt h_jump_le
-        simp only [gt_iff_lt] at h_gt
-        scalar_tac
-      · step
-        step
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-          maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          omega
-        · have h_i2_eq : i2.val = (chain.maxOoo params).val :=
-            maxOoo_val_eq_of_posts params i2 i2_post1 i2_post2
-          split
-          · step
-            step
-            step with chain.KeyHistory.gc_spec
-            · rw [i4_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _
-               (by simp [alloc.vec.Vec.length, kh_post])
-            · scalar_tac
-            · step
-              · scalar_tac
-              · rename_i y
-                obtain ⟨idx, key_arr⟩ := y
-                step
-                intros h_gt h_jump_gt h_ats_le_ooo
-                have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                  maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-                simp only [gt_iff_lt] at *
-                -- In the clear branch, ats > self.ctr + maxOoo, contradiction
-                exfalso
-                apply h_ats_le_ooo
-                have h_split : i3 < ats := by assumption
-                have h_split_val : i3.val < ats.val :=
-                  (UScalar.lt_equiv i3 ats).mp h_split
-                omega
-          · step
-            step with chain.KeyHistory.gc_spec
-            · rw [kh_post4]
-              exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
-            · have h_ats_gt : self.ctr.val < ats.val := by
-                simp only [core.cmp.impls.OrdU32.cmp, Nat.compare_eq_gt] at *
-                omega
-              exact key_gc_precond_no_clear self ats params kh _  h_ats_gt
-                h_prev_ctr kh_post1  kh_post6
-            step
-            · simp only [Nat.max_def] at kh_post1; split at kh_post1 <;> omega
-            · rename_i y
-              obtain ⟨idx, key_arr⟩ := y
-              step
-              intros h_gt h_jump_gt h_ats_le_ooo
-              have h_i1_eq : i1.val = (chain.maxJump params).val :=
-                maxJump_val_eq_of_posts params i1 i1_post1 i1_post2
-              simp only [gt_iff_lt] at *
-              simp only [if_neg h_ats_le_ooo]
-              unfold chain.KeyHistory.GcPost at kh2_post
-              obtain ⟨kh2_post1, kh2_post2, kh2_post3, kh2_post4⟩ := kh2_post
-              rw [maxOoo_if_eq] at kh2_post3 kh2_post4
-              -- Hoist hkv once for reuse across all sub-goals
-              have hkv : kh.val + 1 = ats.val := by
-                have h := kh_post1
-                have hle : self.ctr.val + 1 ≤ ats.val := by scalar_tac
-                simp only [Nat.max_eq_left hle] at h; exact h
-              have hkv2 : kh.val = ats.val - 1 := by omega
-              refine ⟨⟨result, rfl, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-                ?_, ?_⟩
-              · rw [← result_post]; simp
-              · rw [← result_post]
-                simp only [Array.val_to_slice, UScalarTy.U32_numBits_eq,
-                  Nat.reducePow, s1_post6]
-                congr 2
-                apply UScalar.val_eq_imp
-                simp only [UScalar.val]
-                simp only [UScalarTy.U32_numBits_eq, Bvify.U32.UScalar_bv, UScalar.bv_toNat,
-                  BitVec.toNat_ofFin]
-                omega
-              · omega
-              · simp only [Slice.length, alloc.vec.Vec.length] at *
-                omega
-              · simp only [s1_post5, UScalarTy.U32_numBits_eq, Nat.reducePow]
-                congr 2
-                apply UScalar.val_eq_imp
-                simp only [UScalar.val]; simp
-                omega
-              · exact kh2_post1
-              · exact le_trans kh2_post2 kh_post6
-              · exact le_trans kh2_post2 kh_post6
-              · intro h_ooo_gt; omega
-              · exact le_trans (le_trans kh2_post2 kh_post6) (by vecOmega)
-              · rw [kh_post4] at kh2_post2; exact kh2_post2
-              · exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_prev_aligned
-              · rw [← kh_post4]; exact kh_post5
-              · rw [kh_post4] at kh2_post2 kh2_post3 kh2_post4
-                exact chain.keyPostGc_of_GcPost _ _ _ _ _
-                  hkv2 kh2_post2 kh2_post3 kh2_post4
+  apply WP.spec_mono (key_spec_all_32 self ats params h_next_len h_at_bound h_maxooo_bound
+    h_kh_cap h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow)
+  exact fun _ h => h.2.1
 
 /-- **Spec theorem for `spqr.chain.ChainEpochDirection.key`** (32-bit platform, greater-jump case):
 
 Proves the **greater case with jump within budget** (`ats > self.ctr` and
-`ats.val - self.ctr.val ≤ max_jump_or_default(params)`). Combines
-`key_spec_greater_jump_32_clear` and `key_spec_greater_jump_32_no_clear`.
+`ats.val - self.ctr.val ≤ max_jump_or_default(params)`). Projection of
+`key_spec_all_32`.
 
 Identical to `key_spec_greater_jump` but with the tighter maxOoo bound `108458770` and no
 `h_platform` hypothesis. Uses `gc_spec` (platform-independent) instead of `gc_spec_64`.
@@ -905,9 +566,7 @@ theorem key_spec_greater_jump_32 (self : chain.ChainEpochDirection) (ats : U32)
     (h_next_len : self.next.length = 32)
     (h_at_bound : ats.val ≤ U32.max - 108458770)
     (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
-    (h_ctr_bound : self.ctr.val ≤ U32.max - 108458770)
     (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
     (h_prev_aligned : self.prev.data.length % 36 = 0)
     (h_prev_bound : self.prev.data.length ≤ Usize.max)
     (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
@@ -918,26 +577,9 @@ theorem key_spec_greater_jump_32 (self : chain.ChainEpochDirection) (ats : U32)
       (∀ (h_gt : ats > self.ctr),
           ats.val - self.ctr.val ≤ (chain.maxJump params).val →
           chain.cedKeyAdvancePost self ats params result.1 result.2 h_gt) ⦄ := by
-  have h_clear := key_spec_greater_jump_32_clear self ats params h_next_len h_at_bound
-    h_maxooo_bound h_ctr_bound h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr
-    h_ooo_no_overflow
-  have h_no_clear := key_spec_greater_jump_32_no_clear self ats params h_next_len h_at_bound
-    h_maxooo_bound h_ctr_bound h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr
-    h_ooo_no_overflow
-  have h_ok : ∃ v, key self ats params = ok v := by
-    unfold WP.spec WP.theta WP.wp_return at h_clear
-    match hk : key self ats params with
-    | ok v => exact ⟨v, rfl⟩
-    | fail _ => simp [hk] at h_clear
-    | div => simp [hk] at h_clear
-  obtain ⟨v, hv⟩ := h_ok
-  simp only [WP.spec, WP.theta, WP.wp_return, hv] at h_clear h_no_clear ⊢
-  intro h_gt h_jump_le
-  by_cases h_ooo : self.ctr.val + (chain.maxOoo params).val < ats.val
-  · exact h_clear h_gt h_jump_le h_ooo
-  · exact h_no_clear h_gt h_jump_le h_ooo
-
-
+  apply WP.spec_mono (key_spec_all_32 self ats params h_next_len h_at_bound h_maxooo_bound
+    h_kh_cap h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow)
+  exact fun _ h => h.2.2.2
 
 /-- **Combined spec theorem for `spqr.chain.ChainEpochDirection.key`** (32-bit platform):
 
@@ -955,9 +597,7 @@ theorem key_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
     (h_next_len : self.next.length = 32)
     (h_at_bound : ats.val ≤ U32.max - 108458770)
     (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
-    (h_ctr_bound : self.ctr.val ≤ U32.max - 108458770)
     (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
-    (h_ctr_lt : self.ctr < U32.max)
     (h_prev_aligned : self.prev.data.length % 36 = 0)
     (h_prev_bound : self.prev.data.length ≤ Usize.max)
     (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
@@ -965,24 +605,7 @@ theorem key_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
     key self ats params ⦃ (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
         chain.ChainEpochDirection) =>
       chain.cedKeyPost self ats params result.1 result.2 ⦄ := by
-  have h_eq := key_spec_equal_32 self ats params h_next_len h_at_bound h_maxooo_bound
-    h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
-  have h_lt := key_spec_less_32 self ats params h_next_len h_at_bound h_maxooo_bound h_ctr_bound
-    h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
-  have h_gt := key_spec_greater_32 self ats params h_next_len h_at_bound h_maxooo_bound h_ctr_bound
-    h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
-  have h_gj := key_spec_greater_jump_32 self ats params h_next_len h_at_bound h_maxooo_bound
-    h_ctr_bound h_kh_cap h_ctr_lt h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
-  have h_ok : ∃ v, key self ats params = ok v := by
-    unfold WP.spec WP.theta WP.wp_return at h_eq
-    match hk : key self ats params with
-    | ok v => exact ⟨v, rfl⟩
-    | fail _ => simp [hk] at h_eq
-    | div => simp [hk] at h_eq
-  obtain ⟨v, hv⟩ := h_ok
-  simp only [WP.spec, WP.theta, WP.wp_return, hv] at h_eq h_lt h_gt h_gj ⊢
-  unfold chain.cedKeyPost
-  exact ⟨h_eq, h_lt, h_gt, fun h1 h2 => h_gj h1 h2⟩
-
+  exact key_spec_all_32 self ats params h_next_len h_at_bound h_maxooo_bound
+    h_kh_cap h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
 
 end spqr.chain.ChainEpochDirection

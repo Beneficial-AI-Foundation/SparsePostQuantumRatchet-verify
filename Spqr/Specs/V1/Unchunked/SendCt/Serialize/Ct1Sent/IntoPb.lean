@@ -42,6 +42,7 @@ theorem into_pb_spec (self : v1.unchunked.send_ct.Ct1Sent) :
                            mac_key := self.auth.mac_key } ⦄ := by
   unfold into_pb
   step*
-  simp_all [alloc.vec.Vec.deref, authenticator.serialize.Authenticator.FunctionalModels.intoPb]
+  simp_all [alloc.vec.Vec.deref, authenticator.serialize.Authenticator.FunctionalModels.intoPb,
+    alloc.vec.Vec.eq_iff, alloc.vec.Vec.val, Slice.eq_iff]
 
 end spqr.v1.unchunked.send_ct.serialize.Ct1Sent

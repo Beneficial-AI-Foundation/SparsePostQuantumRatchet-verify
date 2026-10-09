@@ -63,13 +63,14 @@ theorem encode_chunk_spec
   step*
   -- `i` is the `u16` index widened to `u64`, so it has the same value.
   have hi : i.val = c.index.val := by scalar_tac
-  have h_tail3 : into1.length ≤ 3 := by
+  obtain ⟨tl, htl, hmap, h1⟩ : ∃ tl, into1.val = into.val ++ tl ∧
+      tl.map UScalar.val = varintBytes i.val ∧ 1 ≤ tl.length := ⟨_, ‹_›, ‹_›, ‹_›⟩
+  have h_tail3 : tl.length ≤ 3 := by
     have h3 := varintBytes_length_le_three (a := i.val) (by scalar_tac)
-    have hlen_eq := congrArg List.length into1_post2
+    have hlen_eq := congrArg List.length hmap
     simp only [List.length_map] at hlen_eq
     omega
-  refine ⟨into1, ?_, by rw [into1_post2, hi], into1_post3, h_tail3⟩
-  rw [out_post, into1_post1]
-  simp only [Array.val_to_slice, List.append_assoc]
+  refine ⟨tl, ?_, by rw [hmap, hi], h1, h_tail3⟩
+  simp only [‹out.val = _›, htl, Array.val_to_slice, List.append_assoc]
 
 end spqr.v1.chunked.states.serialize

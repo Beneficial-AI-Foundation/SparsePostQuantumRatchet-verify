@@ -80,14 +80,11 @@ theorem body_spec
     exact this
   by_cases h_lt : iter.iter.start.val < iter.iter.end.val
   · have h_step_pos : iter.step_by.val > 0 := by omega
-    obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
-      WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_spec iter h_step_pos)
-    simp only [WP.uncurry'_pair] at h_post
+    step with core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_spec iter h_step_pos
+      as ⟨opt, iter1, h_post, h_end1, h_sb1⟩
     simp only [h_lt, ↓reduceIte] at h_post
-    obtain ⟨⟨h_opt, h_start1⟩, h_end1, h_sb1⟩ := h_post
-    rw [h_eq]
-    simp only [bind_tc_ok, h_opt]
+    obtain ⟨h_opt, h_start1⟩ := h_post
+    simp only [h_opt]
     have h_i1_lt : iter.iter.start.val < v.length := by omega
     have h_36 : iter.iter.start.val + 36 ≤ v.length := by
       have ⟨k, hk⟩ := Nat.dvd_of_mod_eq_zero h_start_aligned
@@ -96,10 +93,7 @@ theorem body_spec
     have h_4 : iter.iter.start.val + 4 ≤ v.length := by omega
     step as ⟨i2, h_i2⟩
     step as ⟨s, h_s_val, h_s_len⟩
-    have heq_spec := Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec s want
-    obtain ⟨b, hb_eq, hb_iff⟩ := WP.spec_imp_exists heq_spec
-    rw [hb_eq]
-    simp only [bind_tc_ok]
+    step with Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec s want as ⟨b, hb_iff⟩
     by_cases hb : b = true
     · simp only [hb, ↓reduceIte]
       have h_s_want : s.val = want.val := hb_iff.1 hb
@@ -116,8 +110,10 @@ theorem body_spec
       refine ⟨h_start_aligned, h_36, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
       · rw [← h_s_want, h_s_val]; congr 1
         scalar_tac
-      · rw [← h_out]; simp only [h_s1_len]; scalar_tac
-      · rw [← h_out, h_s1_val]; congr 1
+      · have : (↑out : List U8) = ↑s1 := by simp [h_out, alloc.vec.Vec.val]
+        rw [this]; simp only [Slice.length] at h_s1_len; scalar_tac
+      · have : (↑out : List U8) = ↑s1 := by simp [h_out, alloc.vec.Vec.val]
+        rw [this, h_s1_val]; congr 1
       · exact h_self1_len
       · omega
       · omega
@@ -135,6 +131,7 @@ theorem body_spec
       have h_start1_val : iter1.iter.start.val =
         min (iter.iter.start.val + 36) iter.iter.end.val := by
         have := h_start1; simp only [h_step_val] at this; exact this
+      simp only [Bool.false_eq_true, ↓reduceIte, WP.spec_ok]
       refine ⟨h_lt, h_start1_val, h_end1, ?_, h_sb1, h_ne, ?_⟩
       · rw [h_end1]; exact h_end_eq
       · rw [h_start1_val]
@@ -142,15 +139,10 @@ theorem body_spec
         split
         · omega
         · rw [h_end_eq]; exact h_data_aligned
-  · obtain ⟨⟨opt, iter1⟩, h_eq, h_post⟩ :=
-      WP.spec_imp_exists
-        (core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
-          (by omega))
-    simp only [WP.uncurry'_pair] at h_post
-    obtain ⟨h_opt, h_it⟩ := h_post
-    rw [h_eq]
-    simp only [bind_tc_ok, h_opt]
-    exact ⟨rfl, rfl, by grind⟩
+  · step with core.iter.adapters.step_by.IteratorStepBy.next_Range_Usize_none_spec iter
+      (by omega) as ⟨opt, iter1, h_opt, h_it⟩
+    simp [h_opt]
+    grind
 
 end spqr.chain.KeyHistory.get_loop
 
@@ -383,69 +375,27 @@ theorem get_spec (self : chain.KeyHistory) (at1 : U32)
             (off + 36 = self.data.length →
               p.2.data = self.data.val.take off) ⦄ := by
   unfold get
+  iterate 4 step
+  have hi2 : i2.val = (chain.maxOoo params).val := by
+    have := DEFAULT_CHAIN_PARAMS_spec.2
+    unfold chain.maxOoo; split <;> grind
   step*
-  · unfold chain.maxOoo at h_ooo_no_overflow
-    rcases Classical.em (params.max_ooo_keys > 0#u32) with hpos | hnpos
-    · have := i2_post1.2 hpos; subst this
-      simp only [hpos, ite_true] at h_ooo_no_overflow; omega
-    · simp only [gt_iff_lt, not_lt] at hnpos
-      have hz : params.max_ooo_keys = 0#u32 := by scalar_tac
-      have := i2_post2.2 (Or.inl hz); subst this
-      simp only [hz] at h_ooo_no_overflow
-      have := DEFAULT_CHAIN_PARAMS_spec.2; grind
-  · unfold chain.maxOoo
-    split
-    · rename_i h_trimmed
-      simp only [UScalar.lt_equiv] at h_trimmed
-      step*
-    · rename_i h_not_trimmed
-      simp only [UScalar.lt_equiv, not_lt] at h_not_trimmed
-      have hz : params.max_ooo_keys.val ≤ 0 := h_not_trimmed
-      have hpz : params.max_ooo_keys = 0#u32 := by scalar_tac
-      have hi2_eq : i2 = chain.DEFAULT_CHAIN_PARAMS.max_ooo_keys := i2_post2.2 (Or.inl hpz)
-      have hdef := DEFAULT_CHAIN_PARAMS_spec.2
-      have hi2_val : i2.val = 2000 := by rw [hi2_eq]; simp
-      unfold chain.maxOoo at h_ooo_no_overflow
-      simp only [hpz, gt_iff_lt] at h_ooo_no_overflow
-      rename_i h_trimmed2
-      simp only [UScalar.lt_equiv] at h_trimmed2
-      left; grind
-  · -- non-trimmed branch: current_ctr ≤ at1 + maxOoo params
-    have h_not_trimmed : current_ctr ≤ at1 + (chain.maxOoo params).val := by
-      unfold chain.maxOoo
-      rcases Classical.em (params.max_ooo_keys > 0#u32) with hpos | hnpos
-      · have hi2_eq := i2_post1.2 hpos; subst hi2_eq
-        simp only [hpos, ite_true]; scalar_tac
-      · simp only [gt_iff_lt, not_lt] at hnpos
-        have hpz : params.max_ooo_keys = 0#u32 := by scalar_tac
-        have hi2_eq := i2_post2.2 (Or.inl hpz)
-        have hdef := DEFAULT_CHAIN_PARAMS_spec.2
-        simp only [hpz, gt_iff_lt]
-        subst hi2_eq; scalar_tac
-    have h_start_zero : iter.iter.start = 0#usize := by
-      have := congrArg (·.start) iter_post1
-      simp only at this
-      exact this
-    have h_start_val : iter.iter.start.val = 0 := by
-      rw [h_start_zero]
-      simp
-    rw [want_post] at p_post
-    revert p_post; cases p.1 with
-    | Err e =>
-      intro p_post
-      obtain ⟨h_err, h_data, h_exhausted⟩ := p_post
-      right; exact ⟨h_err, h_not_trimmed, by
-        have : p.2.data = self.data := h_data
-        cases hp : p.2; cases hs : self; simp only [chain.KeyHistory.mk.injEq]
-        rw [hp, hs] at this; exact this, fun k hk hk_align =>
-        h_exhausted k (by omega) hk hk_align⟩
-    | Ok out =>
-      intro p_post
-      obtain ⟨off, h_aligned, h_start_le, h_36, h_slice, h_no_match, h_out_len, h_out_val,
-        h_self_len, h_self_bound, h_self_aligned, h_pres, h_swap, h_trunc⟩ := p_post
-      exact ⟨h_not_trimmed, off, h_aligned, h_36, h_slice,
-        fun k hk hk_align => h_no_match k (by omega) hk hk_align,
-        h_out_len, h_out_val,
-        h_self_len, h_self_bound, h_self_aligned, h_pres, h_swap, h_trunc⟩
+  have h_not_trimmed : current_ctr.val ≤ at1.val + (chain.maxOoo params).val := by scalar_tac
+  have h_start_val : iter.iter.start.val = 0 := by simp [*]
+  have hw : want.val = (core.num.U32.to_be_bytes at1).val := by
+    have := core.num.U32.to_be_bytes.step_spec at1
+    simp only [lift, WP.spec_ok] at this
+    rw [this]; assumption
+  rw [← hw]
+  cases hp : p.1 with
+  | Err e =>
+    simp only [hp, h_start_val, zero_le, true_imp_iff] at *
+    right
+    obtain ⟨h_err, h_data, h_ex⟩ := ‹e = Error.KeyAlreadyRequested at1 ∧ _›
+    refine ⟨h_err, h_not_trimmed, ?_, h_ex⟩
+    exact congrArg chain.KeyHistory.mk h_data
+  | Ok out =>
+    simp only [hp, h_start_val, zero_le, true_imp_iff, true_and] at *
+    exact ⟨h_not_trimmed, by assumption⟩
 
 end spqr.chain.KeyHistory

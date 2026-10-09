@@ -24,8 +24,9 @@ theorem new_spec (k : Slice U8) :
     new k ⦃ (result : chain.ChainEpochDirection) =>
       result.ctr = 0#u32 ∧
       result.prev.data.length = 0 ∧
-      result.next = k ⦄ := by
+      result.next.deref = k ⦄ := by
   unfold new
   step*
+  simp_all [alloc.vec.Vec.deref, alloc.vec.Vec.val]
 
 end spqr.chain.ChainEpochDirection

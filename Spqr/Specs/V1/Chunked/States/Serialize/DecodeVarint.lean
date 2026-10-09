@@ -169,28 +169,29 @@ theorem decode_varint_loop_body_spec
       step*
       have hidx : at1.val + i.val < from1.length := by scalar_tac
       have hbyte : byte = from1.val[at1.val + i.val]! := by
-        simp only [byte_post]
+        simp only [‹byte = _›]
         rw [getElem!_pos from1.val (at1.val + i.val) (by scalar_tac)]
         simp [*]
       have h1 : i8.val = byte.val &&& 128 := by
-        rw [i8_post1, UScalar.val_and]
+        rw [‹i8.val = (byte &&& 128#u8).val›, UScalar.val_and]
         scalar_tac
       have h2 : byte.val &&& 128 = 0 ↔ byte.val < 128 := and_128_eq_zero_iff (by scalar_tac)
       refine ⟨by scalar_tac, by scalar_tac, ?_, ?_, ?_⟩
       · -- Accumulator equation
         have hs : 7 * i.val < 64 := by scalar_tac
         have hi2 : i2.val = byte.val := by
-          rw [i2_post]
+          rw [‹i2 = _›]
           scalar_tac
         have h127 : i3.val = byte.val % 128 := by
           have h : i3.val = byte.val &&& 127 := by
-            rw [i3_post1, UScalar.val_and, hi2]
+            rw [‹i3.val = (i2 &&& 127#u64).val›, UScalar.val_and, hi2]
             scalar_tac
           rw [h, show (127 : ℕ) = 2 ^ 7 - 1 from rfl, Nat.and_two_pow_sub_one_eq_mod]
         have hshift : (i5.val).toNat = 7 * i.val := by scalar_tac
         have hi6 : i6.val = i3.val <<< (7 * i.val) % 2 ^ 64 := by
-          rw [i6_post1, hshift, u64_size_eq_two_pow]
-        have hor : out1.val = out.val ||| i6.val := by rw [out1_post1, UScalar.val_or]
+          rw [‹i6.val = (i3.val <<< (i5.val).toNat) % U64.size›, hshift, u64_size_eq_two_pow]
+        have hor : out1.val = out.val ||| i6.val := by
+          rw [‹out1.val = (out ||| i6).val›, UScalar.val_or]
         rw [hor, hi6, h127, hbyte, lor_shiftLeft_mod_eq_add hs hout]
       · -- Terminator flag, forward direction
         intro hf
@@ -222,7 +223,7 @@ theorem decode_varint_loop_spec
     (from1 : alloc.vec.Vec Std.U8) (at1 max_i : Std.Usize)
     (hmax10 : max_i.val ≤ 10)
     (hmaxlen : at1.val + max_i.val ≤ from1.length) :
-    decode_varint_loop from1 at1 0#u64 0#usize false max_i ⦃
+    decode_varint_loop from1 0#u64 0#usize false at1 max_i ⦃
       (p : Std.U64 × Std.Usize × Bool) =>
       p.2.1.val ≤ max_i.val ∧
       p.1.val = varintVal from1.val at1.val p.2.1.val % 2 ^ 64 ∧
@@ -310,13 +311,12 @@ theorem decode_varint_spec
        | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
   unfold decode_varint
   by_cases hge : at1 ≥ alloc.vec.Vec.len from1
-  · simp only [hge, ↓reduceIte]
+  · simp only [hge, ↓reduceIte, WP.spec_ok]
     exact ⟨by scalar_tac, by simp⟩
   · simp only [hge, ↓reduceIte, core.cmp.min, MAX_VARINT_BYTES_LEN]
     step*
-    have hd : done1 = true := by assumption
-    obtain ⟨h1, h2, h3⟩ := out_post3 hd
+    obtain ⟨h1, h2, h3⟩ := ‹done1 = true → _› ‹_›
     exact ⟨by scalar_tac, by scalar_tac, i3.val, ‹_›, h1, by scalar_tac, by scalar_tac,
-      out_post2, h2, h3⟩
+      ‹_›, h2, h3⟩
 
 end spqr.v1.chunked.states.serialize

@@ -27,13 +27,10 @@ theorem extend_from_slice_U8_spec
       r = v ++ s.val ⦄ := by
   have h_clone_x : ∀ x ∈ s.val, core.clone.CloneU8.clone x = ok x := by
     intros _ _; rfl
-  have h_slclone : Slice.clone core.clone.CloneU8.clone s = ok s := by
-    obtain ⟨s', h_eq, hs⟩ := WP.spec_imp_exists (Slice.clone_spec h_clone_x)
-    rw [h_eq, ← hs]
   unfold alloc.vec.Vec.extend_from_slice
   have hlen : v.length + s.length ≤ Usize.max := h
   rw [dif_pos hlen]
-  grind
+  step*
 
 /-- **Spec theorem for `alloc.vec.Vec.extend_from_slice` specialised to `GF16`**:
 
@@ -50,13 +47,9 @@ theorem extend_from_slice_GF16_spec
   have h_clone_x : ∀ x ∈ s.val, spqr.encoding.gf.GF16.Insts.CoreCloneClone.clone x = ok x := by
     intros _ _
     simp [spqr.encoding.gf.GF16.Insts.CoreCloneClone.clone]
-  have h_slclone :
-      Slice.clone spqr.encoding.gf.GF16.Insts.CoreCloneClone.clone s = ok s := by
-    obtain ⟨s', h_eq, hs⟩ := WP.spec_imp_exists (Slice.clone_spec h_clone_x)
-    rw [h_eq, ← hs]
   unfold alloc.vec.Vec.extend_from_slice
   have hlen : v.length + s.length ≤ Usize.max := h
   rw [dif_pos hlen]
-  grind
+  step*
 
 end Aeneas.Std.alloc.vec.Vec

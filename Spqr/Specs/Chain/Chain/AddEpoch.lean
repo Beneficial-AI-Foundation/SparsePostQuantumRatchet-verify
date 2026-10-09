@@ -70,26 +70,12 @@ theorem add_epoch_spec (self : chain.Chain) (epoch_secret : EpochSecret)
   match self.dir with
   | .A2B =>
     step*
-    · grind
-    · simp_all only [Array.make, Array.repeat_val,
-      UScalar.ofNatCore_val_eq, List.reduceReplicate, alloc.vec.Vec.deref, Subtype.coe_eta,
-      Array.val_to_slice, Slice.length, List.length_cons, List.length_nil, zero_add, Nat.reduceAdd,
-      hkdf_length, Array.from_slice_val, List.slice_zero_j, List.length_take, Nat.reduceLeDiff,
-      inf_of_le_left, tsub_zero, alloc.vec.Vec.length, List.length_eq_zero_iff, addEpochHkdfOutput,
-      chainAddEpochLabel, List.append_cancel_left_eq, List.cons.injEq, and_true, exists_eq_left',
-      true_and]
-      simp [List.slice_length, crypto.hkdf_length]
+    simp_all [Array.make, addEpochHkdfOutput, chainAddEpochLabel, alloc.vec.Vec.deref,
+      alloc.vec.Vec.val, alloc.vec.Vec.length, List.slice_length, crypto.hkdf_length]
   | .B2A =>
     step*
-    · grind
-    · simp_all only [Array.make, Array.repeat_val,
-      UScalar.ofNatCore_val_eq, List.reduceReplicate, alloc.vec.Vec.deref, Subtype.coe_eta,
-      Array.val_to_slice, Slice.length, List.length_cons, List.length_nil, zero_add, Nat.reduceAdd,
-      hkdf_length, Array.from_slice_val, List.slice_zero_j, List.length_take, Nat.reduceLeDiff,
-      inf_of_le_left, tsub_zero, alloc.vec.Vec.length, List.length_eq_zero_iff, addEpochHkdfOutput,
-      chainAddEpochLabel, List.append_cancel_left_eq, List.cons.injEq, and_true, exists_eq_left',
-      true_and]
-      simp [List.slice_length, crypto.hkdf_length]
+    simp_all [Array.make, addEpochHkdfOutput, chainAddEpochLabel, alloc.vec.Vec.deref,
+      alloc.vec.Vec.val, alloc.vec.Vec.length, List.slice_length, crypto.hkdf_length]
 
 
 end spqr.chain.Chain

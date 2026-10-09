@@ -48,7 +48,7 @@ theorem body_spec
   unfold body
   by_cases h_lt : i.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.Vector.length_val, List.get_eq_getElem, getElem!_pos, forall_true_left, ne_eq, true_and]
+      List.get_eq_getElem, ne_eq, true_and]
     step*
     grind
   · step*
@@ -122,7 +122,6 @@ private lemma mult_result_eq
   apply listToGF216Poly_eq_of_coeffs
   · grind [← getElem!_toGF216_eq_coeff]
   · intro j hj
-    simp only [List.Vector.length_val] at hj
     rw [coeff_C_mul, listToGF216Poly_coeff_eq_zero _ j (by grind), mul_zero]
 
 /-- **Spec theorem for `encoding.polynomial.PolyConst.mult`**:

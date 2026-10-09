@@ -71,8 +71,6 @@ theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
         result.1.dk.length = mlkem768Params.decapsulationKeyBytes ⦄ := by
   unfold generate
   step*
-  refine ⟨?_, ?_, ?_⟩ <;>
-  simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
-    a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice] ; grind
+  simp_all [alloc.vec.Vec.val]
 
 end spqr.incremental_mlkem768

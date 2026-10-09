@@ -54,11 +54,8 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
           PolyEncoder.IntoPbPostCond self.sending_hdr hdr_pb
       | _ => False ⦄ := by
   unfold into_pb
-  obtain ⟨hdr_pb, h_hdr_pb, h_hdr_pb_post⟩ := spec_imp_exists
-    (PolyEncoder.into_pb_spec self.sending_hdr h_overflow_points h_overflow_polys)
-  rw [h_hdr_pb]
   step*
-  refine ⟨?_, h_hdr_pb_post⟩
-  simp only [← hs_post1, ← hs_post2, ← hs_post3, ← hs_post4]
+  refine ⟨?_, ‹_›⟩
+  grind [cases proto.pq_ratchet.v1_state.unchunked.HeaderSent]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled

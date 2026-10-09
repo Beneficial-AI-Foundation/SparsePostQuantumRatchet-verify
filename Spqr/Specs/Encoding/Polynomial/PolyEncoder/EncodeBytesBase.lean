@@ -16,7 +16,8 @@ and leaves other slots unchanged. -/
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 
-private noncomputable instance instInhabitedSliceU8 : Inhabited (Slice U8) := ⟨⟨[], by scalar_tac⟩⟩
+private noncomputable instance instInhabitedSliceU8 : Inhabited (Slice U8) :=
+  ⟨Slice.from [] (by simp)⟩
 
 namespace spqr.encoding.polynomial.PolyEncoder.encode_bytes_base_loop
 
@@ -68,26 +69,19 @@ private theorem body_spec_chunk
     have h_hd : hd = chd := by have h := rest.symm.trans h_chunks; injection h
     have h_tl : tl = ctl := by have h := rest.symm.trans h_chunks; injection h
     subst h_hd; subst h_tl
-    simp only [bind_tc_ok]
+    simp only [bind_tc_eq, Std.bind_assoc, bind_ok]
     step*
     · simp_all
     · simp_all
-    · conv_lhs =>
-        simp[i4_post1,i6_post, i3_post, i2_post, i5_post]
-      rw[Nat.shiftLeft_eq]
-      simp only [Nat.reducePow]
-      have :((hd)[0]! * 256) < U16.size := by scalar_tac
-      have := Nat.mod_eq_of_lt this
-      grind
+    · scalar_tac
     · simp_all; grind
-    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, List.Vector.length_val,
-      UScalar.ofNatCore_val_eq, getElem!_pos, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
+    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq,
+      getElem!_pos, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
       Array.val_to_slice, UScalarTy.U8_numBits_eq, UScalarTy.U16_numBits_eq, Nat.reduceLeDiff,
       UScalar.cast_val_mod_pow_greater_numBits_eq, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
       Bvify.U8.UScalar_bv, Slice.getElem!_Nat_eq, List.mem_cons, true_or,
       Order.lt_two_iff, zero_le, Std.le_refl, Array.set_val_eq, List.getElem!_eq_getElem?_getD,
-      ne_eq, Nat.not_eq, not_false_eq_true, lt_or_lt_iff_ne, or_true, List.set_getElem?_neq,
-      implies_true, and_true, true_and]
+      ne_eq, true_and]
       use g
       simp_all only
       constructor
@@ -154,18 +148,14 @@ theorem loop_spec
     simp only [] at h_drop h_le h_clen h_cbound h_pbnd h_sinv
     cases h_ch : it.iter.chunks with
     | nil =>
-      unfold body
-      simp only [
-        core.iter.adapters.enumerate.IteratorEnumerate.next,
-        core.slice.iter.IteratorChunksExact.next,
-        h_ch, bind_tc_ok]
       have h_cnt_eq : it.count.val = chunks.length := by
         have h1 : (chunks.drop it.count.val).length = chunks.length - it.count.val :=
           List.length_drop
         grind
-      intro j hj
-      obtain ⟨sfx, h_eq, h_len, h_cont⟩ := h_sinv j hj
-      exact ⟨sfx, h_eq, by rw [h_cnt_eq] at h_len; exact h_len, h_cont⟩
+      rw [h_cnt_eq] at h_sinv
+      unfold body
+      simpa [core.iter.adapters.enumerate.IteratorEnumerate.next,
+        core.slice.iter.IteratorChunksExact.next, h_ch] using h_sinv
     | cons hd tl =>
       have h_push' : ∀ j, j < 16 → (ps[j]!).value.length + 1 ≤ Usize.max := by
         intro j hj
@@ -287,7 +277,7 @@ private theorem call_mut_ok
     obtain ⟨z, hz, _⟩ := UScalar.div_spec (Slice.len c) (y := 2#usize) (by decide)
     exact ⟨z, hz⟩
   obtain ⟨z, hz⟩ := h_div
-  simp only [hz, bind_tc_ok, alloc.vec.Vec.with_capacity]
+  simp only [hz, bind_ok, alloc.vec.Vec.with_capacity]
 
 private theorem chunks_exact_content (msg : Slice U8)
     (ce : core.slice.iter.ChunksExact U8)
@@ -344,7 +334,6 @@ theorem encode_bytes_base_spec (msg : Slice U8)
   case hy =>
     cases System.Platform.numBits_eq <;> simp_all
   case hmax =>
-    rw [i4_post, i3_post1]
     have h_pow : (1 : Nat) <<< 16 = 65536 := by
       norm_num [Nat.shiftLeft_eq]
     have h_shift : (1 <<< 16) % Usize.size = 65536 := by
@@ -352,7 +341,8 @@ theorem encode_bytes_base_spec (msg : Slice U8)
       apply Nat.mod_eq_of_lt
       simp only [Usize.size, Usize.numBits]
       cases System.Platform.numBits_eq <;> simp_all
-    rw [h_shift]
+    have h3 : i3.val = 65536 := by rw [← h_shift]; assumption
+    rw [h3]
     have h_max : (65536 : Nat) * 16 ≤ Usize.max := by
       simp only [Usize.max, Usize.numBits]
       cases System.Platform.numBits_eq <;> simp_all
@@ -364,7 +354,8 @@ theorem encode_bytes_base_spec (msg : Slice U8)
       apply Nat.mod_eq_of_lt
       simp only [Usize.size, Usize.numBits]
       cases System.Platform.numBits_eq <;> simp_all
-    have h_i5 : i5.val = 65536 * 16 := by rw [i5_post, i3_post1, i4_post, h_shift]
+    have h_i5 : i5.val = 65536 * 16 := by
+      rw [‹i5.val = _›, ‹i4.val = _›, ‹i3.val = _›, h_shift]
     have h_gt' : msg.len.val > i5.val := by scalar_tac
     have h_msglen : msg.len.val = (msg.val).length := by scalar_tac
     grind
@@ -382,7 +373,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
     intro ce h_ce
     obtain ⟨h_ce_len, h_ce_count, h_ce_rem, h_ce_content⟩ := h_ce
     simp only [core.iter.traits.iterator.Iterator.enumerate.trait_default,
-      core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
+      core.iter.traits.iterator.Iterator.enumerate.default, bind_ok]
     apply WP.spec_bind
       (encode_bytes_base_loop.loop_spec
         ({ iter := ce, count := 0#usize } :
@@ -429,8 +420,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
       have h_val_eq : pts1[j]!.value.val = suffix := by
         have := h_eq; simp  at this; grind
       have hk' : k < suffix.length := by
-        have := congr_arg List.length h_val_eq
-        simp_all
+        rw [← h_val_eq]; exact hk
       obtain ⟨h_chunk_bound, h_enc⟩ := h_content k hk'
       have h_bound : 2 * (j + 16 * k) + 1 < msg.val.length := by
         have h_even' : msg.val.length % 2 = 0 := by
