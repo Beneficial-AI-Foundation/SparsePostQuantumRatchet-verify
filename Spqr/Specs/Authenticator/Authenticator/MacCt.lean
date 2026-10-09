@@ -42,6 +42,15 @@ def MAC_CT_LABEL : List U8 :=
 @[simp, grind =]
 theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
 
+/-- `libcrux_hmac.hmac_sha256_tag32_spec`, strengthened with the defining `… = ok r`
+equation. Registered as a file-local `step` lemma. -/
+private theorem hmac_sha256_tag32_spec_refl :
+    type_of% (refl_of% libcrux_hmac.hmac_sha256_tag32_spec) :=
+  refl_of% libcrux_hmac.hmac_sha256_tag32_spec
+
+attribute [local step] hmac_sha256_tag32_spec_refl
+attribute [-step] libcrux_hmac.hmac_sha256_tag32_spec
+
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**
 • Given the boundedness hypotheses on `self.mac_key` and `ct`, `mac_ct self ep ct` does not panic.
@@ -58,7 +67,6 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
       let data : Slice U8 := Slice.from (MAC_CT_LABEL ++ to_be_bytes ep ++ ct) (by grind);
       libcrux_hmac.hmac .Sha256 self.mac_key.deref data (some MACSIZE) = ok result ⦄ := by
   unfold mac_ct MACSIZE
-  have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
   · simp [*]; grind
   · simp [*]; grind

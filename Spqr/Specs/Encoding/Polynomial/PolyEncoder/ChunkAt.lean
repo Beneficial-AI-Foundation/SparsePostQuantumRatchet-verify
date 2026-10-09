@@ -436,10 +436,11 @@ theorem chunk_at_spec
     grind
   · simp_all  [alloc.vec.Vec.with_capacity, alloc.vec.Vec.new,
       List.length_nil]
-  simp  [core.result.Result.expect]
+  simp only [core.result.Result.expect]
   split
-  · split <;> simp_all
-    grind
-  · simp_all
+  · split
+    · simp_all only [Array.getElem!_Nat_eq, bind_ok]; grind
+    · simp_all only [Array.getElem!_Nat_eq, bind_ok]; grind
+  · nomatch ‹core.result.Result.Err _ = core.result.Result.Ok _›
 
 end spqr.encoding.polynomial.PolyEncoder

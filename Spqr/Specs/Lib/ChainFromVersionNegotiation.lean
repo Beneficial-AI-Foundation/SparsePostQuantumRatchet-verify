@@ -45,6 +45,14 @@ noncomputable def chainFromVersionNegotiation
     | none   => ok (.Err Error.ChainNotAvailable)
     | some p => chain.Chain.new (alloc.vec.Vec.deref vn.auth_key) dir p
 
+/-- `chain.Chain.new_spec`, strengthened with the defining `… = ok r` equation. Registered as a
+file-local `step` lemma. -/
+private theorem new_spec_refl : type_of% (refl_of% chain.Chain.new_spec) :=
+  refl_of% chain.Chain.new_spec
+
+attribute [local step] new_spec_refl
+attribute [-step] chain.Chain.new_spec
+
 /-- **Spec theorem for `spqr.chain_from_version_negotiation`**:
 
 Converts direction, unwraps chain params, then calls `Chain.new`.
@@ -57,12 +65,11 @@ theorem chain_from_version_negotiation_spec
     chain_from_version_negotiation vn ⦃ (result : core.result.Result chain.Chain Error) =>
       chainFromVersionNegotiation vn = ok result ⦄ := by
   unfold chainFromVersionNegotiation parseDirection chain_from_version_negotiation
-  have hnew := refl_of% chain.Chain.new_spec
   step*
   split at r_post <;> subst r_post <;> cases vn.chain_params <;>
     simp only [core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
       core.option.Option.ok_or, bind_tc_ok,
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] <;>
-    step* <;> (try clear hnew) <;> simp_all
+    step* <;> simp only [*]
 
 end spqr

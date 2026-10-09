@@ -393,7 +393,7 @@ theorem get_spec (self : chain.KeyHistory) (at1 : U32)
     right
     obtain ⟨h_err, h_data, h_ex⟩ := ‹e = Error.KeyAlreadyRequested at1 ∧ _›
     refine ⟨h_err, h_not_trimmed, ?_, h_ex⟩
-    cases hp2 : p.2; cases hs : self; simp_all
+    exact congrArg chain.KeyHistory.mk h_data
   | Ok out =>
     simp only [hp, h_start_val, zero_le, true_imp_iff, true_and] at *
     exact ⟨h_not_trimmed, by assumption⟩

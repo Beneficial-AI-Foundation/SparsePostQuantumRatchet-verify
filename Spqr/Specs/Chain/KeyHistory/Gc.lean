@@ -643,10 +643,8 @@ theorem gc_loop_spec
 
 /-! ### Shared tactic macros for `gc_spec` and `gc_spec_64` post-`step*` goals
 
-Both the 32-bit and 64-bit GC spec theorems produce identical proof obligations after
-`step*`. The macros below capture the shared tactic blocks that close the two subgoals
-(the key-ge precondition goal and the postcondition restructuring goal),
-eliminating ~160 lines of duplication across the two theorems. -/
+The macros below capture the tactic blocks that close the two subgoals produced by `step*`
+in `gc_spec_core` (the key-ge precondition goal and the postcondition restructuring goal). -/
 
 /-- Close the key-ge precondition goal produced by `step*` in `gc_spec` variants.
 Case-splits on `params.max_ooo_keys > 0#u32` and applies `h_key_ge` or `scalar_tac`. -/
@@ -655,7 +653,7 @@ set_option hygiene false in
 macro_rules
   | `(tactic| gc_close_key_ge_goal) => `(tactic|
     ( simp only [DEFAULT_CHAIN_PARAMS_spec] at *
-      have hi3 : i3.val = i1.val * 36 := by simp_all
+      have hi3 : i3.val = i1.val * 36 := by scalar_tac
       have hge : i3.val ≤ self.data.length := by scalar_tac
       by_cases hpos : params.max_ooo_keys > 0#u32
       · have hi4 : i4 = params.max_ooo_keys := (‹i4 = params.max_ooo_keys ↔ _›).mpr hpos
@@ -686,7 +684,7 @@ macro_rules
       obtain ⟨hv1, -, hv3, -, -, hv6, -, hv8, ⟨f_inv, hv9, hv10⟩, ⟨g_inv, hv11, hv12⟩⟩ :
         GcLoopPost self a.to_slice 0#usize v := ‹_›
       have ha : a.val = horizonBytes i5 := ‹_›
-      have hi3 : i3.val = i1.val * 36 := by simp_all
+      have hi3 : i3.val = i1.val * 36 := by scalar_tac
       have hge : i3.val ≤ self.data.length := by scalar_tac
       have hi5 : i5.val = current_key.val - i4.val := ‹_›
       have hi45 : i4.val ≤ current_key.val := ‹_›
@@ -732,6 +730,29 @@ macro_rules
               (by simpa [Array.val_to_slice, ha] using hn1_live)
               (by simpa [Array.val_to_slice, ha] using hn2_live) ))
 
+/-- Platform-independent core of `gc_spec` and `gc_spec_64`: the only facts the arithmetic
+needs are that `max_ooo * 11` fits in `u32` and that `trim_size * 36` fits in `usize`. Proving
+it once avoids running `step*` over `gc` separately for each platform variant. -/
+private theorem gc_spec_core (self : chain.KeyHistory) (current_key : U32)
+    (params : proto.pq_ratchet.ChainParams)
+    (h_bound : self.data.length ≤ Usize.max)
+    (h_data_aligned : self.data.length % 36 = 0)
+    (h_ooo : params.max_ooo_keys.val < 390451572)
+    (h_fit : (params.max_ooo_keys.val * 11 / 10 + 1) * 36 ≤ Usize.max)
+    (h_key_ge : let max_ooo := if 0#u32 < params.max_ooo_keys then params.max_ooo_keys.val else 2000
+                let trim_threshold := (max_ooo * 11 / 10 + 1) * 36
+                trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val) :
+    gc self current_key params ⦃ (result : chain.KeyHistory) =>
+      GcPost self current_key params result ⦄ := by
+  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
+    RecordsEq recordAt
+  unfold gc
+  simp only [alloc.vec.Vec.len]
+  step*
+  all_goals clear h_fit
+  · gc_close_key_ge_goal
+  · gc_close_postcondition_goal
+
 /-!**Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc` (32-bit platform)**
 
 32-bit and 64-bit variant of `gc_spec` (proved in `Gc.lean`). Differences from 64-bit:
@@ -754,13 +775,8 @@ theorem gc_spec (self : chain.KeyHistory) (current_key : U32)
                 trim_threshold ≤ self.data.length → max_ooo ≤ current_key.val) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
       GcPost self current_key params result ⦄ := by
-  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
-    RecordsEq recordAt
-  unfold gc
-  simp only [alloc.vec.Vec.len]
-  step*
-  · gc_close_key_ge_goal
-  · gc_close_postcondition_goal
+  exact gc_spec_core self current_key params h_bound h_data_aligned (by omega)
+    (by scalar_tac) h_key_ge
 
 
 /-- **Spec theorem for `spqr.chain.KeyHistory.gc`** (64-bit platform):
@@ -791,14 +807,8 @@ theorem gc_spec_64 (self : chain.KeyHistory) (current_key : U32)
     (h_platform : System.Platform.numBits = 64) :
     gc self current_key params ⦃ (result : chain.KeyHistory) =>
       GcPost self current_key params result ⦄ := by
-  unfold GcPost ValidRecord RecordAligned IsExpired horizonSlice horizonBytes timestampAt
-    RecordsEq recordAt
   have h_usize : Usize.max = 2 ^ 64 - 1 := by
     simp [Usize.max, Usize.numBits, h_platform]
-  unfold gc
-  simp only [alloc.vec.Vec.len]
-  step*
-  · gc_close_key_ge_goal
-  · gc_close_postcondition_goal
+  exact gc_spec_core self current_key params h_bound h_data_aligned h_ooo (by omega) h_key_ge
 
 end spqr.chain.KeyHistory

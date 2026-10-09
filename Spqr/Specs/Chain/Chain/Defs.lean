@@ -97,9 +97,7 @@ def recvKeyPre (params : proto.pq_ratchet.ChainParams) (index : U32)
   ce.recv.next.length = 32 ∧
   index.val ≤ U32.max - 390451572 ∧
   (chain.maxOoo params).val < 390451572 ∧
-  ce.recv.ctr.val ≤ U32.max - 390451572 ∧
   ce.recv.prev.data.length + 36 * (index.val - ce.recv.ctr.val) ≤ Usize.max ∧
-  ce.recv.ctr < U32.max ∧
   ce.recv.prev.data.length % 36 = 0 ∧
   ce.recv.prev.data.length ≤ 36 * ce.recv.ctr.val ∧
   index.val + (chain.maxOoo params).val ≤ U32.max ∧
@@ -111,9 +109,7 @@ def recvKeyPre32 (params : proto.pq_ratchet.ChainParams) (index : U32)
   ce.recv.next.length = 32 ∧
   index.val ≤ U32.max - 108458770 ∧
   (chain.maxOoo params).val < 108458770 ∧
-  ce.recv.ctr.val ≤ U32.max - 108458770 ∧
   ce.recv.prev.data.length + 36 * (index.val - ce.recv.ctr.val) ≤ Usize.max ∧
-  ce.recv.ctr < U32.max ∧
   ce.recv.prev.data.length % 36 = 0 ∧
   ce.recv.prev.data.length ≤ 36 * ce.recv.ctr.val ∧
   index.val + (chain.maxOoo params).val ≤ U32.max
