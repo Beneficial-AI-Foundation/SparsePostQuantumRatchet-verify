@@ -1,0 +1,66 @@
+Translation patch: <PolyDecoder>::from_pb
+
+Change: the per-slot `len() % 4 != 0` checks move before the loop; `core::array::from_fn`
+becomes an array literal; the loop over `pts.chunks_exact(4)` becomes a `while` loop.
+Why: an early `return` inside a loop does not translate; `array::from_fn` and `chunks_exact` are
+not modelled by the Aeneas Lean library.
+Behaviour: identical (the same `Err` is returned for the same inputs; the loop has no other
+effects before the error).
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 03315cd..191ae2d 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -800,31 +800,46 @@ pub(crate) fn into_pb(self) -> proto::pq_ratchet::PolynomialDecoder {
+     #[hax_lib::ensures(|res| hax_lib::implies(res.is_ok(), res.unwrap().pts_needed == pb.pts_needed as usize))]
+     #[hax_lib::opaque] // return in loop
+     pub(crate) fn from_pb(
+         pb: proto::pq_ratchet::PolynomialDecoder,
+     ) -> Result<Self, PolynomialError> {
+         if pb.pts.len() != 16 {
+             return Err(PolynomialError::SerializationInvalid);
+         }
+-        let mut out_pts = core::array::from_fn(|_| SortedSet::new());
++        // Validate all lengths up front (Aeneas cannot handle early return inside loops)
++        if pb.pts[0].len() % 4 != 0 || pb.pts[1].len() % 4 != 0
++            || pb.pts[2].len() % 4 != 0 || pb.pts[3].len() % 4 != 0
++            || pb.pts[4].len() % 4 != 0 || pb.pts[5].len() % 4 != 0
++            || pb.pts[6].len() % 4 != 0 || pb.pts[7].len() % 4 != 0
++            || pb.pts[8].len() % 4 != 0 || pb.pts[9].len() % 4 != 0
++            || pb.pts[10].len() % 4 != 0 || pb.pts[11].len() % 4 != 0
++            || pb.pts[12].len() % 4 != 0 || pb.pts[13].len() % 4 != 0
++            || pb.pts[14].len() % 4 != 0 || pb.pts[15].len() % 4 != 0
++        {
++            return Err(PolynomialError::SerializationInvalid);
++        }
++        let mut out_pts = [SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new(),
++                          SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new(),
++                          SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new(),
++                          SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new()];
+         #[allow(clippy::needless_range_loop)]
+         for i in 0..16 {
+             let pts = &pb.pts[i];
+-            if pts.len() % 4 != 0 {
+-                return Err(PolynomialError::SerializationInvalid);
+-            }
+             let mut v = SortedSet::with_capacity(pts.len() / 4);
+-            for pt in pts.chunks_exact(4) {
+-                v.push(Pt::deserialize(pt.try_into().unwrap()));
++            let mut j = 0;
++            while j + 4 <= pts.len() {
++                let chunk: [u8; 4] = [pts[j], pts[j + 1], pts[j + 2], pts[j + 3]];
++                v.push(Pt::deserialize(chunk));
++                j += 4;
+             }
+             out_pts[i] = v;
+         }
+         Ok(Self {
+             pts_needed: pb.pts_needed as usize,
+             is_complete: pb.is_complete,
+             pts: out_pts,
+         })
+     }
+ 
+     /// Public wrapper for test utilities and benchmarks.
+     /// For internal use, call `into_pb` directly.
+     #[cfg(feature = "test-utils")]

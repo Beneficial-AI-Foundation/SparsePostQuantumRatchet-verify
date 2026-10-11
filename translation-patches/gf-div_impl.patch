@@ -1,0 +1,26 @@
+Translation patch: <GF16>::div_impl
+
+Change: `(square.value, out.value) = mul2_u16(square.value, square.value, out.value)` becomes
+`out *= square; square = square * square`.
+Why: destructuring assignment from a tuple-returning call is not translated by Aeneas.
+Behaviour: identical.
+Relies on: `mul2_u16(a, b1, b2) = (a * b1, a * b2)` in GF(2^16), and multiplication is
+commutative; `out` is updated with the old `square` before `square` is squared.
+
+diff --git a/src/encoding/gf.rs b/src/encoding/gf.rs
+index 3d78854..fbc8d0c 100644
+--- a/src/encoding/gf.rs
++++ b/src/encoding/gf.rs
+@@ -548,10 +548,11 @@ pub fn new(value: u16) -> Self {
+     fn div_impl(&self, other: &Self) -> Self {
+         // Within GF(p^n), inv(a) == a^(p^n-2).  We're GF(2^16) == GF(65536),
+         // so we can compute GF(65534).
+         let mut square = *other * *other;
+         let mut out = *self;
+         for _i in 1..16 {
+-            (square.value, out.value) = mul2_u16(square.value, square.value, out.value);
++            out *= square;
++            square = square * square;
+         }
+         out
+     }

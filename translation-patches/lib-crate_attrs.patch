@@ -1,0 +1,19 @@
+Translation patch: src/lib.rs crate attributes
+
+Change: `#![cfg_attr(feature = "extraction", allow(dead_code))]`.
+Why: with `extraction`, the items only used by the gated-out code become dead code.
+Behaviour: identical.
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 7c3076f..293270a 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,6 +1,8 @@
+ // Copyright 2025 Signal Messenger, LLC
+ // SPDX-License-Identifier: AGPL-3.0-only
+ 
++#![cfg_attr(feature = "extraction", allow(dead_code))]
++
+ pub(crate) mod authenticator;
+ #[cfg(feature = "test-utils")]
+ pub mod chain;

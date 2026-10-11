@@ -1,0 +1,37 @@
+# The Rust sources must be identical to the pinned upstream commit (aeneas-config.yml,
+# `upstream.commit`). Every change needed for the translation is a patch in
+# translation-patches/, applied only while extracting.
+
+name: Rust sources match upstream
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  upstream-src:
+    name: Check Rust sources against upstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Compare with the pinned upstream commit
+        run: |
+          repo=$(awk '/^upstream:/{u=1} u && /repo:/{gsub(/"/,"",$2); print $2; exit}' aeneas-config.yml)
+          commit=$(awk '/^upstream:/{u=1} u && /commit:/{gsub(/"/,"",$2); print $2; exit}' aeneas-config.yml)
+          echo "Upstream: $repo @ $commit"
+          git fetch --depth=1 "$repo" "$commit"
+          if git diff --exit-code "$commit" -- src build.rs Cargo.toml Cargo.lock; then
+            echo "Rust sources match upstream"
+          else
+            echo ""
+            echo "The Rust sources differ from upstream. Put the change in a patch in translation-patches/."
+            exit 1
+          fi

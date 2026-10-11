@@ -1,0 +1,30 @@
+Translation patch: <Poly>::deserialize
+
+Change: the loop over `serialized.chunks_exact(2)` becomes an index loop over
+`0..serialized.len() / 2`.
+Why: `chunks_exact` is not modelled by the Aeneas Lean library.
+Behaviour: identical.
+Relies on: `serialized.len()` is even (checked just above), so there is no remainder.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 03315cd..bece9bf 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -339,14 +339,15 @@ pub fn serialize(&self) -> Vec<u8> {
+     pub fn deserialize(serialized: &[u8]) -> Result<Self, PolynomialError> {
+         if serialized.is_empty() || serialized.len() % 2 == 1 {
+             return Err(PolynomialError::SerializationInvalid);
+         }
+         let mut coefficients = Vec::<GF16>::with_capacity(serialized.len() / 2);
+-        for coeff in serialized.chunks_exact(2) {
+-            coefficients.push(GF16::new(u16::from_be_bytes(coeff.try_into().unwrap())));
++        for i in 0..(serialized.len() / 2) {
++            let j = i * 2;
++            coefficients.push(GF16::new(u16::from_be_bytes([serialized[j], serialized[j + 1]])));
+         }
+         hax_lib::assume!(coefficients.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 + 1);
+         Ok(Self { coefficients })
+     }
+ }
+ 
+ // For Protocol V1 with MLKEM-768: N <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1

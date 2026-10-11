@@ -1,8 +1,6 @@
 // Copyright 2025 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
-#![cfg_attr(feature = "extraction", allow(dead_code))]
-
 pub(crate) mod authenticator;
 #[cfg(feature = "test-utils")]
 pub mod chain;
@@ -210,7 +208,7 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
 }
 
 pub fn initial_state(params: Params) -> Result<SerializedState, Error> {
-    #[cfg(not(feature = "extraction"))]
+    #[cfg(not(hax))]
     log::info!(
         "spqr initiating state with version {:?} and direction {:?}",
         params.version,
@@ -387,7 +385,7 @@ pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Er
                         if (v as i32) < vn.min_version {
                             return Err(Error::MinimumVersion);
                         }
-                        #[cfg(not(feature = "extraction"))]
+                        #[cfg(not(hax))]
                         log::info!("spqr negotiating version down to {v:?}");
                         pqrpb::PqRatchetState {
                             inner: init_inner(
