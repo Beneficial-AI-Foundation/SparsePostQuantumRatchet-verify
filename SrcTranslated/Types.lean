@@ -812,18 +812,8 @@ structure EpochSecret where
   epoch : Std.U64
   secret : alloc.vec.Vec Std.U8
 
-/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{closure}]
-    Source: 'src/chain.rs', lines 433:21-436:17 -/
-@[reducible]
-def chain.Chain.into_pb.closure := Unit
-
-/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}]
-    Source: 'src/chain.rs', lines 453:21-458:17 -/
-@[reducible]
-def chain.Chain.from_pb.closure_1 := Unit
-
 /-- [spqr::chain::{spqr::chain::Chain}::from_pb::{closure}]
-    Source: 'src/chain.rs', lines 446:49-446:71 -/
+    Source: 'src/chain.rs', lines 452:50-452:72 -/
 @[reducible]
 def chain.Chain.from_pb.closure := Unit
 
@@ -842,11 +832,6 @@ structure encoding.polynomial.Poly where
     Source: 'src/encoding/polynomial.rs', lines 373:0-375:1 -/
 structure encoding.polynomial.PolyConst (N : Std.Usize) where
   coefficients : Array encoding.gf.GF16 N
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 319:25-322:21 -/
-@[reducible]
-def encoding.polynomial.Poly.from_complete_points.closure := Unit
 
 /-- [spqr::encoding::polynomial::Point]
     Source: 'src/encoding/polynomial.rs', lines 539:0-542:1
@@ -882,18 +867,13 @@ def encoding.polynomial.PolyEncoder.from_pb.closure_1 := Unit
 @[reducible]
 def encoding.polynomial.PolyEncoder.from_pb.closure := Unit
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}]
-    Source: 'src/encoding/polynomial.rs', lines 665:25-668:21 -/
-@[reducible]
-def encoding.polynomial.PolyEncoder.point_at.closure_1 := Unit
-
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure}]
     Source: 'src/encoding/polynomial.rs', lines 659:68-659:85 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.point_at.closure := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 700:63-702:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 698:63-700:9 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.encode_bytes_base.closure := Slice Std.U8
 
@@ -913,7 +893,7 @@ structure encoding.Encoder (Self : Type) where
   next_chunk : Self → Result (encoding.Chunk × Self)
 
 /-- [spqr::encoding::polynomial::PolyDecoder]
-    Source: 'src/encoding/polynomial.rs', lines 769:0-788:1
+    Source: 'src/encoding/polynomial.rs', lines 767:0-786:1
     Visibility: public -/
 structure encoding.polynomial.PolyDecoder where
   pts_needed : Std.Usize
@@ -921,12 +901,12 @@ structure encoding.polynomial.PolyDecoder where
   is_complete : Bool
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 815:38-815:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 813:38-813:58 -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.new_with_poly_count.closure := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 851:47-851:67 -/
+    Source: 'src/encoding/polynomial.rs', lines 849:47-849:67 -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.from_pb.closure := Unit
 
@@ -1215,22 +1195,22 @@ inductive v1.chunked.states.serialize.MessageType where
 | Ct2 : v1.chunked.states.serialize.MessageType
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 110:21-110:43 -/
 @[reducible]
 def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 83:25-83:47 -/
 @[reducible]
 def v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure#1}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 66:21-66:43 -/
 @[reducible]
 def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1 := Unit
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 62:25-62:47 -/
 @[reducible]
 def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure := Unit
 
@@ -1240,32 +1220,32 @@ def v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure := Unit
 def v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 154:21-154:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:21-135:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 109:21-109:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure#1}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 90:21-90:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1 := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure := Unit
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{closure}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 59:21-59:43 -/
 @[reducible]
 def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
 

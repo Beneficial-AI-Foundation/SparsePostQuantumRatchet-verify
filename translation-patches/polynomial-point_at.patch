@@ -1,0 +1,65 @@
+Translation patch: <PolyEncoder>::point_at
+
+Change: `pts[i].value.iter().enumerate().map(..).collect::<Vec<Pt>>()` becomes a `for` loop over
+`pts[i].value.iter().enumerate()` that pushes into a vector.
+Why: `map`/`collect` are not modelled by the Aeneas Lean library (aeneas#1043).
+Behaviour: identical.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 65f33f8..cc3892c 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -643,48 +643,46 @@ pub(crate) fn from_pb(
+     #[requires(poly < 16)]
+     #[hax_lib::opaque] // iterators
+     fn point_at(&mut self, poly: usize, idx: usize) -> GF16 {
+         if let EncoderState::Points(ref pts) = self.s {
+             hax_lib::assume!(pts.len() == 16);
+             if idx < pts[poly].value.len() {
+                 return pts[poly].value[idx];
+             }
+             // If we reach here, we've come to the first point we want to
+             // find that wasn't part of the original set of points.  We
+             // assume that from here on, we're always going to have to compute
+             // points, so we replace our set of points with an associated
+             // set of polys that allow us to compute any point.
+             let mut polys: [Poly; NUM_POLYS] = core::array::from_fn(|_| Poly::zero(1));
+             for i in 0..NUM_POLYS {
+-                let pt_vec = pts[i]
+-                    .value
+-                    .iter()
+-                    .enumerate()
+-                    .map(|(x, y)| Pt {
++                let mut pt_vec = Vec::<Pt>::with_capacity(pts[i].value.len());
++                for (x, y) in pts[i].value.iter().enumerate() {
++                    pt_vec.push(Pt {
+                         x: GF16::new(x as u16),
+                         y: *y,
+-                    })
+-                    .collect::<Vec<Pt>>();
++                    });
++                }
+                 hax_lib::assume!(
+                     pt_vec.len() == 0
+                         || pt_vec.len() == 1
+                         || pt_vec.len() == 3
+                         || pt_vec.len() == 5
+                         || pt_vec.len() == 30
+                         || pt_vec.len() == 34
+                         || pt_vec.len() == 36
+                 );
+                 let res = Poly::from_complete_points(&pt_vec);
+                 hax_lib::assume!(res.is_ok());
+                 polys[i] = res.expect("pt_vec should be complete")
+             }
+             self.s = EncoderState::Polys(polys);
+         }
+         if let EncoderState::Polys(ref polys) = self.s {
+             hax_lib::assume!(polys.len() == 16);
+             polys[poly].compute_at(GF16::new(idx as u16))
+         } else {
+             panic!("if we reach here, we should have polys");
+         }
+     }
+ 
+     #[hax_lib::ensures(|res| hax_lib::implies(msg.len() % 2 == 0 && msg.len() <= (1 << 16) * NUM_POLYS, res.is_ok()))]

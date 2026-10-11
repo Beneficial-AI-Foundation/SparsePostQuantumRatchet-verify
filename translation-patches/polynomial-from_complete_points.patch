@@ -1,12 +1,13 @@
 Translation patch: <Poly>::from_complete_points
 
-Change: the `iter().enumerate().map(..).collect()` chain building the fallback `polys` becomes
-an index loop that pushes into a vector.
-Why: with this `map` closure (it captures `&ones`), Aeneas fails ("Could not match the contexts").
+Change: the two `iter().map(..).collect()` chains (building `ones` and the fallback `polys`)
+become loops that push into vectors.
+Why: `map`/`collect` are not modelled by the Aeneas Lean library (aeneas#1043); with the second
+closure (it captures `&ones`), Aeneas also fails ("Could not match the contexts").
 Behaviour: identical.
 
 diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
-index 65f33f8..bfdba12 100644
+index 65f33f8..e001ebe 100644
 --- a/src/encoding/polynomial.rs
 +++ b/src/encoding/polynomial.rs
 @@ -292,39 +292,40 @@ fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {
@@ -34,17 +35,22 @@ index 65f33f8..bfdba12 100644
              36 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_36),
              _ => {
                  debug_assert!(false, "missing precomputed poly of size {}", pts.len());
-                 let ones = pts
-                     .iter()
-                     .map(|pt| Pt {
+-                let ones = pts
+-                    .iter()
+-                    .map(|pt| Pt {
++                let mut ones = Vec::with_capacity(pts.len());
++                for pt in pts.iter() {
++                    ones.push(Pt {
                          x: pt.x,
                          y: GF16::ONE,
-                     })
-                     .collect::<Vec<_>>();
+-                    })
+-                    .collect::<Vec<_>>();
 -                pts.iter()
 -                    .enumerate()
 -                    .map(|(i, _pt)| Self::lagrange_interpolate_pt(&ones, i))
 -                    .collect::<Vec<_>>()
++                    });
++                }
 +                let mut polys = Vec::with_capacity(pts.len());
 +                for i in 0..pts.len() {
 +                    polys.push(Self::lagrange_interpolate_pt(&ones, i));

@@ -47,7 +47,6 @@ import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Aeneas.IntoIteratorSlice
-import Spqr.Specs.Aeneas.MapCollectBridge
 import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.ResultExpect
@@ -74,11 +73,7 @@ import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 import Spqr.Specs.Chain.Chain.AddEpoch
 import Spqr.Specs.Chain.Chain.CedForDirection
-import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut
-import Spqr.Specs.Chain.Chain.ChainEpoch.CallOnce
 import Spqr.Specs.Chain.Chain.Defs
-import Spqr.Specs.Chain.Chain.Epoch.CallMut
-import Spqr.Specs.Chain.Chain.Epoch.CallOnce
 import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.Chain.FromPb
 import Spqr.Specs.Chain.Chain.FunctionalModels
@@ -153,7 +148,6 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
@@ -195,9 +189,6 @@ import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallMut
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallOnce
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.SliceIterEnumMapCollect
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.Eq

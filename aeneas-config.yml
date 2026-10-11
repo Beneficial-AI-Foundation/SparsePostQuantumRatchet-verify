@@ -68,16 +68,6 @@ tweaks:
   files: ["Types.lean", "Funs.lean"]
   substitutions:
 
-    # https://github.com/AeneasVerif/aeneas/issues/1043
-    - regex: "\\n  map := fun[\\s\\S]*?(?=\\n  enumerate)"
-      replace: "\n  -- See https://github.com/AeneasVerif/aeneas/issues/1043"
-    - regex: "\\n  collect := fun[\\s\\S]*?(?=\\n\\})"
-      replace: "\n  -- See https://github.com/AeneasVerif/aeneas/issues/1043"
-
-    # https://github.com/AeneasVerif/aeneas/issues/1043
-    - regex: "next := core\\.iter\\.adapters\\.map\\.Map\\.Insts\\.CoreIterTraitsIteratorIterator\\.next[\\s\\S]*?(?=\\n  step_by)"
-      replace: "next := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1043"
-
     # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
     - regex: "impl_def(\\s+[\\w.]+\\.Insts\\.ProstMessageMessage\\s*:[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
       replace: "def$1:= sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102"
@@ -91,10 +81,3 @@ tweaks:
     # https://github.com/AeneasVerif/aeneas/issues/1046
     - regex: "(def proto\\.pq_ratchet\\.(?:pq_ratchet_state\\.Inner|v1_msg\\.InnerMsg|v1_state\\.InnerState)\\.merge\\n[\\s\\S]*?):= do[\\s\\S]*?(?=\\n/-- )"
       replace: "$1:= sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046"
-
-    # Fix pattern-variable type inference
-    # https://github.com/AeneasVerif/aeneas/issues/1018
-    - regex: "(\\| core\\.ops\\.control_flow\\.ControlFlow\\.Continue) val2 (=>\\n\\s+let \\S+ ← encoding\\.polynomial\\.PolyDecoder\\.from_pb val2)"
-      replace: "$1 (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ $2"
-    - regex: "(\\| core\\.ops\\.control_flow\\.ControlFlow\\.Continue) val4 (=>\\n\\s+let \\S+ ← encoding\\.polynomial\\.PolyDecoder\\.from_pb val4)"
-      replace: "$1 (val4 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ $2"
