@@ -1,12 +1,13 @@
 Translation patch: <States>::send (spqr::v1::chunked::states)
 
-Change: the `log::info!` calls are commented out.
-Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
-cannot translate).
-Behaviour: identical apart from logging (no log output).
+Change: the `log::info!` calls are gated on `not(any(hax, feature = "extraction"))` instead of
+`not(hax)`.
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
+Behaviour: identical (only with `extraction`: no log output).
+Relies on: Cargo-features.patch (defines the `extraction` feature).
 
 diff --git a/src/v1/chunked/states.rs b/src/v1/chunked/states.rs
-index 78a0f14..81a80cd 100644
+index 1de4bce..77f73f8 100644
 --- a/src/v1/chunked/states.rs
 +++ b/src/v1/chunked/states.rs
 @@ -115,159 +115,159 @@ pub(crate) fn last_emitted_epoch(&self) -> Epoch {
@@ -20,15 +21,11 @@ index 78a0f14..81a80cd 100644
                  let (state, chunk) = state.send_hdr_chunk(rng);
  
 -                #[cfg(not(hax))]
--                log::info!(
--                    "spqr v1.send_ek.send epoch {}: KeysUnsampled -> KeysSampled",
--                    epoch
--                );
-+                // #[cfg(not(hax))]
-+                // log::info!(
-+                //     "spqr v1.send_ek.send epoch {}: KeysUnsampled -> KeysSampled",
-+                //     epoch
-+                // );
++                #[cfg(not(any(hax, feature = "extraction")))]
+                 log::info!(
+                     "spqr v1.send_ek.send epoch {}: KeysUnsampled -> KeysSampled",
+                     epoch
+                 );
                  Ok(Send {
                      state: Self::KeysSampled(state),
                      msg: Message {
@@ -108,15 +105,11 @@ index 78a0f14..81a80cd 100644
                  let (state, chunk, epoch_secret) = state.send_ct1_chunk(rng);
  
 -                #[cfg(not(hax))]
--                log::info!(
--                    "spqr v1.send_ct.send epoch {}: HeaderReceived -> Ct1Sampled",
--                    epoch
--                );
-+                // #[cfg(not(hax))]
-+                // log::info!(
-+                //     "spqr v1.send_ct.send epoch {}: HeaderReceived -> Ct1Sampled",
-+                //     epoch
-+                // );
++                #[cfg(not(any(hax, feature = "extraction")))]
+                 log::info!(
+                     "spqr v1.send_ct.send epoch {}: HeaderReceived -> Ct1Sampled",
+                     epoch
+                 );
                  Ok(Send {
                      state: Self::Ct1Sampled(state),
                      msg: Message {

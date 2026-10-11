@@ -32,16 +32,29 @@ theorem call_mut_spec (c : chain.Chain.from_pb.closure_1)
       chain.Chain.from_pb.closure_1) =>
       result.1 = Chain.FunctionalModels.epochFromPb tupled_args ∧ result.2 = c ⦄ := by
   unfold call_mut
-  simp only [Chain.FunctionalModels.epochFromPb,
-    ChainEpochDirection.FunctionalModels.fromPb, Option.map]
+  simp only [Chain.FunctionalModels.epochFromPb, Option.map]
   match tupled_args.send, tupled_args.recv with
   | some s, some r =>
     simp only [core.option.Option.ok_or]
-    step* <;> simp_all [ChainEpochDirection.FunctionalModels.fromPb]
-  | some _, none =>
+    -- Case on the two direction conversions, keeping the model `fromPb` folded; its only
+    -- error is `StateDecode` (`fromPb_err`).
+    cases hs : ChainEpochDirection.FunctionalModels.fromPb s with
+    | Err e =>
+      have := ChainEpochDirection.FunctionalModels.fromPb_err _ _ hs
+      step*
+    | Ok sd =>
+      cases hr : ChainEpochDirection.FunctionalModels.fromPb r with
+      | Err e =>
+        have := ChainEpochDirection.FunctionalModels.fromPb_err _ _ hr
+        step*
+      | Ok rd => step*
+  | some s, none =>
     simp only [core.option.Option.ok_or]
-    step*
-    simp_all [ChainEpochDirection.FunctionalModels.fromPb]
+    cases hs : ChainEpochDirection.FunctionalModels.fromPb s with
+    | Err e =>
+      have := ChainEpochDirection.FunctionalModels.fromPb_err _ _ hs
+      step*
+    | Ok sd => step*
   | none, _ =>
     simp only [core.option.Option.ok_or]
     step*

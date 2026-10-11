@@ -1,20 +1,21 @@
 Translation patch: spqr::initial_state
 
-Change: the `log::info!` call is gated on `not(feature = "extraction")` instead of `not(hax)`.
-Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
-cannot translate).
+Change: the `log::info!` call is gated on `not(any(hax, feature = "extraction"))` instead of
+`not(hax)`.
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
 Behaviour: identical (only with `extraction`: no log output).
+Relies on: Cargo-features.patch (defines the `extraction` feature).
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 7c3076f..48b6c6c 100644
+index 6bc0197..b367353 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -208,27 +208,27 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
+@@ -209,27 +209,27 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
  }
  
  pub fn initial_state(params: Params) -> Result<SerializedState, Error> {
 -    #[cfg(not(hax))]
-+    #[cfg(not(feature = "extraction"))]
++    #[cfg(not(any(hax, feature = "extraction")))]
      log::info!(
          "spqr initiating state with version {:?} and direction {:?}",
          params.version,

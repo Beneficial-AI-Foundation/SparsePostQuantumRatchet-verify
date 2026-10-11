@@ -153,10 +153,7 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallOnce
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.SliceIterMapCollect
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
@@ -220,8 +217,7 @@ import Spqr.Specs.Lib.DecodeState.CallOnce
 import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
-import Spqr.Specs.Lib.MsgVersion
-import Spqr.Specs.Lib.MsgVersion.Defs
+import Spqr.Specs.Lib.MsgPreamble
 import Spqr.Specs.Lib.SecretOutput.Eq
 import Spqr.Specs.Lib.SecretOutput.Fmt
 import Spqr.Specs.Lib.SecretOutput.HasSecret

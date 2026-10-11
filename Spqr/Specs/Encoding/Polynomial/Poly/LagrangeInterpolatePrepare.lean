@@ -262,32 +262,30 @@ theorem lagrange_interpolate_prepare_spec
   · simp_all [GF16.Insts.CoreCloneClone.clone]
   · simp_all [degree]
   · simp_all [degree]
-  · have p1_len : p1.coefficients.val.length = (index_mut_back ONE).length := by
-      simpa [degree] using ‹p1.degree = _›
+  · have p_len : p.coefficients.val.length = (index_mut_back ONE).length := by
+      simpa [degree] using ‹p.degree = _›
     simp_all
-  · have p1_len : p1.coefficients.length =
+  · have p_len : p.coefficients.length =
         (index_mut_back ONE).val.length := by
-      simpa [degree] using ‹p1.degree = _›
+      simpa [degree] using ‹p.degree = _›
     simp_all only [Slice.length, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
-      alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.set_val_eq, List.length_set, List.resize_length,
+      alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.set_val_eq, List.length_set,
+      List.length_replicate,
       lt_add_iff_pos_right, Order.lt_one_iff, getElem!_pos, List.getElem_set_self,
       alloc.vec.Vec.getElem_Nat_eq, ONE_toGF216, implies_true, tsub_self, zero_le, true_and, not_lt,
       alloc.vec.Vec.getElem?_Nat_eq, tsub_zero, zero_add, ONE_value, alloc.vec.Vec.length,
       Order.lt_add_one_iff]
     have h_bridge : expectedTrailingPoly
-        ((p.coefficients.val.resize (pts.length + 1) ZERO).set pts.length ONE)
+        ((List.replicate (pts.length + 1) ZERO).set pts.length ONE)
         pts pts.length 0 pts.length =
       prodLinearFactors pts 0 pts.length := by
       apply expectedTrailingPoly_eq_prodLinearFactors
-      · have hlen : pts.length < (p.coefficients.val.resize (pts.length + 1) ZERO).length := by
-          grind
-        grind [list_getElem_bang_set_self _ _ _ hlen, ONE_toGF216]
+      · have hlen : pts.length < (List.replicate (pts.length + 1) ZERO).length := by
+          simp
+        rw [list_getElem_bang_set_self _ _ _ hlen, ONE_toGF216]
       · intro j hj
-        have hj_lt : j < (p.coefficients.val.resize (pts.length + 1) ZERO).length := by grind
-        unfold List.resize at hj_lt ⊢
-        by_cases hk : j < p.coefficients.length
-        · grind
-        · simp_all
+        rw [getElem!_pos _ j (by simp only [List.length_set, List.length_replicate]; omega),
+          List.getElem_set_ne (by omega), List.getElem_replicate, ZERO_toGF216]
       · exact le_refl _
       · exact le_refl _
     have h_tr := ‹∀ m ≤ (↑pts : List Pt).length,
@@ -299,7 +297,7 @@ theorem lagrange_interpolate_prepare_spec
       have h5 := h_tr m hm hm_bound
       rw [h_bridge] at h5
       exact h5
-    · change listToGF216Poly p1.coefficients = prodLinearFactors pts 0 pts.length
+    · change listToGF216Poly p.coefficients = prodLinearFactors pts 0 pts.length
       apply listToGF216Poly_eq_of_coeffs
       · intro m hm
         have hm_le : m ≤ pts.length := by grind

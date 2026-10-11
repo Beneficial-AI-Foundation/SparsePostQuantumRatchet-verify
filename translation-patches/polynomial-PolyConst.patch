@@ -1,20 +1,19 @@
 Translation patch: struct spqr::encoding::polynomial::PolyConst
 
 Change: adds `#[derive(Copy, Clone)]`.
-Why: charon#1504.
-Behaviour: identical (only adds trait impls to a private type; no existing code changes).
+Why: Charon does not translate the array repeat `[PolyConst::<N>::ZEROS; N]` of a non-`Copy`
+type in `lagrange_polys_for_complete_points` ("Unsupported operation"; charon#1504).
+Behaviour: identical (only adds trait impls to a private type; no existing code changes). With
+the patch, clippy warns `wrong_self_convention` on `PolyConst::to_poly(&self)`.
 
 diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
-index 03315cd..adb0b2e 100644
+index 65f33f8..7de0631 100644
 --- a/src/encoding/polynomial.rs
 +++ b/src/encoding/polynomial.rs
-@@ -350,6 +350,10 @@ pub fn deserialize(serialized: &[u8]) -> Result<Self, PolynomialError> {
+@@ -367,6 +367,7 @@ pub fn deserialize(serialized: &[u8]) -> Result<Self, PolynomialError> {
  }
  
  // For Protocol V1 with MLKEM-768: N <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1
-+//
-+// TEMPORARY WORKAROUND — remove this `#[derive(Copy, Clone)]` once
-+// https://github.com/AeneasVerif/charon/issues/1504 is resolved.
 +#[derive(Copy, Clone)]
  struct PolyConst<const N: usize> {
      coefficients: [GF16; N],

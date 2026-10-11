@@ -26,6 +26,8 @@ use crate::chain::Chain;
 pub use crate::chain::ChainParams;
 use crate::proto::pq_ratchet as pqrpb;
 pub use crate::proto::pq_ratchet::{Direction, Version};
+use std::cmp::min;
+use std::cmp::Ordering;
 // Re-export error types that are part of the public Error enum
 pub use crate::authenticator::Error as AuthenticatorError;
 pub use crate::encoding::polynomial::PolynomialError;
@@ -33,7 +35,6 @@ pub use crate::encoding::EncodingError;
 pub use crate::serialize::Error as SerializationError;
 use prost::Message;
 use rand::{CryptoRng, Rng};
-use std::cmp::Ordering;
 use v1::chunked::states as v1states;
 
 pub type Epoch = u64;
@@ -179,7 +180,7 @@ impl TryFrom<u8> for Version {
         match value {
             0 => Ok(Version::V0),
             1 => Ok(Version::V1),
-            _ => Err("Expected 0 or 1".to_owned()),
+            _ => Err(format!("Expected 0 or 1, got {value}")),
         }
     }
 }
@@ -352,61 +353,97 @@ fn chain_from(
 }
 
 pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Error> {
+    let msg = msg_preamble(msg)?;
+
     // Perform version negotiation.  At the beginning of our interaction
     // with a remote party, we are set to allow negotiation.  This
     // allows either side to downgrade the connection to a protocol version
     // that that side supports, while still using the highest protocol
     // version supported by both sides.
     let prenegotiated_state_pb = decode_state(state)?;
-    let state_pb = match msg_version(msg) {
-        None => {
-            // They have presented a version we don't support; it's too high for us,
-            // so ignore it and keep sending our current version's format.
+
+    let current_version = state_version(&prenegotiated_state_pb) as u8;
+    let (min_version, version_still_negotiating) = match prenegotiated_state_pb.version_negotiation
+    {
+        Some(ref vn) => (vn.min_version as u8, true),
+        None => (current_version, current_version == 0),
+    };
+    if msg.version < min_version {
+        return Err(Error::MinimumVersion);
+    } else if msg.version != current_version && !version_still_negotiating {
+        return Err(Error::VersionMismatch);
+    } else if current_version == 0 {
+        return Ok(Recv {
+            state: vec![],
+            key: None,
+        });
+    }
+
+    let state_pb = match msg.version.cmp(&current_version) {
+        Ordering::Greater => {
+            // Their version is greater than our own.  This means that we won't be able to
+            // decode the (SPQR) message they sent, but we should be able to provide the
+            // appropriate key back, and we should stay in a state which allows us to
+            // negotiate the version down to ours.
+            //
+            // We know that both our and their version is greater than zero, so we are required to
+            // provide a chain key to our caller.
+            //
+            // When two endpoints with the same version are talking to each other, they
+            // may compute the epoch to pull chain keys from based off of the msg.epoch,
+            // their internal state, etc.  We can't perform those calculations here, because
+            // we don't know the unsupported protocol yet.  However, we luckily don't need
+            // to.  You can only pull a chain key from an epoch you've already reached, and
+            // you can't reach an epoch above zero without some back-and-forth communication
+            // between two endpoints of the same version.  We know we haven't had that, because
+            // their version is higher than ours.  So, even without that per-version computation,
+            // we know that we need to pull the chain key from epoch zero.
+            const ZERO_EPOCH: Epoch = 0;
+            let mut chain = chain_from(
+                prenegotiated_state_pb.chain,
+                prenegotiated_state_pb.version_negotiation.as_ref(),
+            )?;
+            let key = Some(chain.recv_key(ZERO_EPOCH, msg.index)?);
+
             return Ok(Recv {
-                state: state.to_vec(),
-                key: None,
+                key,
+                state: pqrpb::PqRatchetState {
+                    chain: Some(chain.into_pb()),
+                    // We leave `version_negotiation` in our state to tell future calls to this
+                    // function that they're allowed to accept other messages from the greater
+                    // version number.
+                    version_negotiation: prenegotiated_state_pb.version_negotiation,
+                    inner: prenegotiated_state_pb.inner,
+                }
+                .encode_to_vec(),
             });
         }
-        Some(v) => match (v as u8).cmp(&(state_version(&prenegotiated_state_pb) as u8)) {
-            Ordering::Equal | Ordering::Greater => {
-                // Our versions are equal; proceed with existing state
-                prenegotiated_state_pb
+        Ordering::Equal => prenegotiated_state_pb,
+        Ordering::Less => {
+            // Their version is less than ours, and we are allowed to negotiate down
+            // to their version.  Do so.
+            assert!(current_version > 0 && version_still_negotiating);
+            let vn = prenegotiated_state_pb
+                .version_negotiation
+                .as_ref()
+                .expect("still negotiating");
+            let v: Version = msg
+                .version
+                .try_into()
+                .expect("should support all lower versions");
+            #[cfg(not(hax))]
+            log::info!("spqr negotiating version down to {v:?}");
+            pqrpb::PqRatchetState {
+                inner: init_inner(
+                    v,
+                    vn.direction.try_into().map_err(|_| Error::StateDecode)?,
+                    &vn.auth_key,
+                ),
+                // This is our sole negotiation; we disallow any further.
+                version_negotiation: None,
+                chain: Some(chain_from(prenegotiated_state_pb.chain, Some(vn))?.into_pb()),
             }
-            Ordering::Less => {
-                // Their version is less than ours.  If we are allowed to negotiate, we
-                // should.  Otherwise, we should error out.
-                //
-                // When negotiating down a level, we disallow future negotiation.
-                match prenegotiated_state_pb.version_negotiation {
-                    None => {
-                        return Err(Error::VersionMismatch);
-                    }
-                    Some(ref vn) => {
-                        if (v as i32) < vn.min_version {
-                            return Err(Error::MinimumVersion);
-                        }
-                        #[cfg(not(hax))]
-                        log::info!("spqr negotiating version down to {v:?}");
-                        pqrpb::PqRatchetState {
-                            inner: init_inner(
-                                v,
-                                vn.direction.try_into().map_err(|_| Error::StateDecode)?,
-                                &vn.auth_key,
-                            ),
-                            // This is our negotiation; we disallow any further.
-                            version_negotiation: None,
-                            chain: Some(
-                                chain_from(
-                                    prenegotiated_state_pb.chain,
-                                    prenegotiated_state_pb.version_negotiation.as_ref(),
-                                )?
-                                .into_pb(),
-                            ),
-                        }
-                    }
-                }
-            }
-        },
+        }
     };
 
     // At this point, we have finished version negotiation and have made sure
@@ -418,20 +455,16 @@ pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Er
             key: None,
         }),
         Some(pqrpb::pq_ratchet_state::Inner::V1(pb)) => {
-            let (scka_msg, index, _) = v1states::Message::deserialize(msg)?;
+            let scka_msg = v1states::Message::deserialize(msg.epoch, msg.remaining)?;
 
             let v1states::Recv { key, state } = v1states::States::from_pb(pb)?.recv(&scka_msg)?;
 
-            let msg_key_epoch = scka_msg.epoch - 1;
+            let msg_key_epoch = msg.epoch - 1;
             let mut chain = chain_from(state_pb.chain, state_pb.version_negotiation.as_ref())?;
             if let Some(epoch_secret) = key {
                 chain.add_epoch(epoch_secret);
             }
-            let msg_key = if msg_key_epoch == 0 && index == 0 {
-                vec![]
-            } else {
-                chain.recv_key(msg_key_epoch, index)?
-            };
+            let msg_key = chain.recv_key(msg_key_epoch, msg.index)?;
 
             Ok(Recv {
                 state: pqrpb::PqRatchetState {
@@ -459,14 +492,6 @@ fn state_version(state: &pqrpb::PqRatchetState) -> Version {
     }
 }
 
-fn msg_version(msg: &SerializedMessage) -> Option<Version> {
-    if msg.is_empty() {
-        Some(Version::V0)
-    } else {
-        msg[0].try_into().ok()
-    }
-}
-
 fn decode_state(s: &SerializedState) -> Result<pqrpb::PqRatchetState, Error> {
     if s.is_empty() {
         Ok(proto::pq_ratchet::PqRatchetState {
@@ -479,11 +504,97 @@ fn decode_state(s: &SerializedState) -> Result<pqrpb::PqRatchetState, Error> {
     }
 }
 
+const MAX_VARINT_BYTES_LEN: usize = 10;
+
+fn encode_varint(mut a: u64, into: &mut SerializedMessage) {
+    for _i in 0..MAX_VARINT_BYTES_LEN {
+        hax_lib::assume!(into.len() < usize::MAX);
+        let byte = (a & 0x7F) as u8;
+        if a < 0x80 {
+            into.push(byte);
+            break;
+        } else {
+            into.push(0x80 | byte);
+            a >>= 7;
+        }
+    }
+}
+
+#[hax_lib::ensures(|res| *at <= *future(at) && if res.is_ok() { *at < from.len() && *future(at) <= from.len() } else { true })]
+fn decode_varint(from: &[u8], at: &mut usize) -> Result<u64, Error> {
+    let mut out = 0u64;
+
+    let mut i: usize = 0;
+    // Helps prevent return in while loop for Hax
+    let mut done = false;
+    let start_at: usize = *at;
+    if start_at >= from.len() {
+        return Err(Error::MsgDecode);
+    }
+
+    let max_i = min(MAX_VARINT_BYTES_LEN, from.len() - start_at);
+
+    while i < max_i && !done {
+        hax_lib::loop_invariant!(i <= max_i && *at == start_at);
+        hax_lib::loop_decreases!(max_i - i);
+
+        let byte = from[start_at + i];
+        out |= ((byte as u64) & 0x7f) << (7 * i as i32);
+
+        i += 1;
+        done = (byte & 0x80) == 0;
+    }
+
+    if done {
+        *at += i;
+        Ok(out)
+    } else {
+        Err(Error::MsgDecode)
+    }
+}
+
+struct MsgPreamble<'a> {
+    version: u8,
+    epoch: Epoch,
+    index: u32,
+    remaining: &'a [u8],
+}
+
+fn msg_preamble<'a>(msg: &'a SerializedMessage) -> Result<MsgPreamble<'a>, Error> {
+    if msg.is_empty() {
+        return Ok(MsgPreamble {
+            version: 0,
+            epoch: 0,
+            index: 0,
+            remaining: b"",
+        });
+    }
+    let version = msg[0];
+    let mut at = 1usize;
+    let epoch = decode_varint(msg, &mut at)? as Epoch;
+    if epoch == 0 {
+        return Err(Error::MsgDecode);
+    }
+    let index: u32 = decode_varint(msg, &mut at)?
+        .try_into()
+        .map_err(|_| Error::MsgDecode)?;
+    if at > msg.len() {
+        return Err(Error::MsgDecode);
+    }
+    Ok(MsgPreamble {
+        version,
+        epoch,
+        index,
+        remaining: &msg[at..],
+    })
+}
+
 #[cfg(test)]
 mod lib_test {
     use rand::Rng;
     use rand::TryRngCore;
     use rand_core::OsRng;
+    use std::assert_matches;
 
     use super::*;
 
@@ -915,6 +1026,7 @@ mod lib_test {
             ..
         } = recv(&blake_pq_state, &msg_a1)?;
         let Send { msg: msg_b1, .. } = send(&blake_pq_state, &mut rng)?;
+        assert!(msg_b1.is_empty());
         let Recv {
             state: alex_pq_state,
             ..
@@ -1168,6 +1280,140 @@ mod lib_test {
             alex_pq_state = state;
             assert_eq!(alex_key, blake_key);
         }
+        Ok(())
+    }
+
+    #[test]
+    fn disallow_downgrade_due_to_unsupported_version() -> Result<(), Error> {
+        let mut rng = OsRng.unwrap_err();
+
+        let alex_pq_state = initial_state(Params {
+            version: Version::MAX,
+            min_version: Version::V1,
+            direction: Direction::A2B,
+            auth_key: &[41u8; 32],
+            chain_params: ChainParams::default(),
+        })?;
+        let blake_pq_state = initial_state(Params {
+            version: Version::MAX,
+            min_version: Version::V0,
+            direction: Direction::B2A,
+            auth_key: &[41u8; 32],
+            chain_params: ChainParams::default(),
+        })?;
+        let Send { msg: msg_a1, .. } = send(&alex_pq_state, &mut rng)?;
+        let Recv {
+            state: blake_pq_state,
+            ..
+        } = recv(&blake_pq_state, &msg_a1)?;
+        // Blake has now fully negotiated his version, and he should send keys
+        // even if he now receives a higher version number.
+        assert_matches!(
+            recv(&blake_pq_state, &b"\xff\x01\x01".to_vec()).map(|_| ()),
+            Err(Error::VersionMismatch)
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn high_version_to_v1_uses_chain_keys() -> Result<(), Error> {
+        let mut rng = OsRng.unwrap_err();
+
+        // If a side has min_version > V0, it will send chain keys.
+        let alex_pq_state = initial_state(Params {
+            version: Version::MAX,
+            min_version: Version::V1,
+            direction: Direction::A2B,
+            auth_key: &[41u8; 32],
+            chain_params: ChainParams::default(),
+        })?;
+        let blake_pq_state = initial_state(Params {
+            version: Version::MAX,
+            min_version: Version::V1,
+            direction: Direction::B2A,
+            auth_key: &[41u8; 32],
+            chain_params: ChainParams::default(),
+        })?;
+        let Send {
+            key: key_a1,
+            state: alex_pq_state,
+            ..
+        } = send(&alex_pq_state, &mut rng)?;
+        assert!(key_a1.is_some());
+        let Send { key: key_a2, .. } = send(&alex_pq_state, &mut rng)?;
+        assert!(key_a2.is_some());
+
+        // We receive messages from fictitious SPQR version 0x99, with (epoch=3,index=2) and
+        // (epoch=1,index=1) respectively.  Both should return chain keys from epoch=0 to
+        // the caller to use for decoding, and both should succeed.
+        let Recv { key: key_b2, .. } = recv(&blake_pq_state, &b"\x99\x03\x02".to_vec())?;
+        assert_eq!(key_a2, key_b2);
+        let Recv { key: key_b1, .. } = recv(&blake_pq_state, &b"\x99\x01\x01".to_vec())?;
+        assert_eq!(key_a1, key_b1);
+        Ok(())
+    }
+
+    #[test]
+    fn empty_recv_fails_minv1() -> Result<(), Error> {
+        let mut rng = OsRng.unwrap_err();
+
+        let alex_pq_state = initial_state(Params {
+            version: Version::MAX,
+            min_version: Version::V1,
+            direction: Direction::A2B,
+            auth_key: &[41u8; 32],
+            chain_params: ChainParams::default(),
+        })?;
+        let blake_pq_state = initial_state(Params {
+            version: Version::MAX,
+            min_version: Version::V1,
+            direction: Direction::B2A,
+            auth_key: &[41u8; 32],
+            chain_params: ChainParams::default(),
+        })?;
+        assert_matches!(
+            recv(&alex_pq_state, &b"".to_vec()).map(|_| ()),
+            Err(Error::MinimumVersion)
+        );
+        assert_matches!(
+            recv(&blake_pq_state, &b"".to_vec()).map(|_| ()),
+            Err(Error::MinimumVersion)
+        );
+        let Send {
+            state: alex_pq_state,
+            msg: msg_a1,
+            ..
+        } = send(&alex_pq_state, &mut rng)?;
+        let Recv {
+            state: blake_pq_state,
+            ..
+        } = recv(&blake_pq_state, &msg_a1)?;
+        assert_matches!(
+            recv(&alex_pq_state, &b"".to_vec()).map(|_| ()),
+            Err(Error::MinimumVersion)
+        );
+        assert_matches!(
+            recv(&blake_pq_state, &b"".to_vec()).map(|_| ()),
+            Err(Error::MinimumVersion)
+        );
+        let Send {
+            state: blake_pq_state,
+            msg: msg_b1,
+            ..
+        } = send(&blake_pq_state, &mut rng)?;
+        let Recv {
+            state: alex_pq_state,
+            ..
+        } = recv(&alex_pq_state, &msg_b1)?;
+        assert_matches!(
+            recv(&alex_pq_state, &b"".to_vec()).map(|_| ()),
+            Err(Error::MinimumVersion)
+        );
+        assert_matches!(
+            recv(&blake_pq_state, &b"".to_vec()).map(|_| ()),
+            Err(Error::MinimumVersion)
+        );
+
         Ok(())
     }
 }

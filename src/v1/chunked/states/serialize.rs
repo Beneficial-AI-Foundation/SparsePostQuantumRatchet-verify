@@ -1,11 +1,9 @@
 // Copyright 2025 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
-use std::cmp::min;
-
 use super::*;
 use crate::proto::pq_ratchet as pqrpb;
-use crate::{Error, SerializedMessage, Version};
+use crate::{decode_varint, encode_varint, Error, SerializedMessage, Version};
 use num_enum::IntoPrimitive;
 
 impl States {
@@ -115,7 +113,7 @@ impl TryFrom<u8> for MessageType {
             4 => Ok(MessageType::Ct1Ack),
             5 => Ok(MessageType::Ct1),
             6 => Ok(MessageType::Ct2),
-            _ => Err("Expected a number between 0 and 6".to_owned()),
+            _ => Err(format!("Expected a number between 0 and 6, got {value}")),
         }
     }
 }
@@ -134,61 +132,13 @@ impl MessageType {
     }
 }
 
-const MAX_VARINT_BYTES_LEN: usize = 10;
-
-fn encode_varint(mut a: u64, into: &mut SerializedMessage) {
-    for _i in 0..MAX_VARINT_BYTES_LEN {
-        let byte = (a & 0x7F) as u8;
-        if a < 0x80 {
-            into.push(byte);
-            break;
-        } else {
-            into.push(0x80 | byte);
-            a >>= 7;
-        }
-    }
-}
-
-#[hax_lib::ensures(|res| *at <= *future(at) && if res.is_ok() { *at < from.len() && *future(at) <= from.len() } else { true })]
-fn decode_varint(from: &SerializedMessage, at: &mut usize) -> Result<u64, Error> {
-    let mut out = 0u64;
-
-    let mut i: usize = 0;
-    // Helps prevent return in while loop for Hax
-    let mut done = false;
-    let start_at: usize = *at;
-    if start_at >= from.len() {
-        return Err(Error::MsgDecode);
-    }
-
-    let max_i = min(MAX_VARINT_BYTES_LEN, from.len() - start_at);
-
-    while i < max_i && !done {
-        hax_lib::loop_invariant!(i <= max_i && *at == start_at);
-        hax_lib::loop_decreases!(max_i - i);
-
-        let byte = from[start_at + i];
-        out |= ((byte as u64) & 0x7f) << (7 * i as i32);
-
-        i += 1;
-        done = (byte & 0x80) == 0;
-    }
-
-    if done {
-        *at += i;
-        Ok(out)
-    } else {
-        Err(Error::MsgDecode)
-    }
-}
-
 fn encode_chunk(c: &Chunk, into: &mut SerializedMessage) {
     encode_varint(c.index as u64, into);
     hax_lib::assume!(into.len() < usize::MAX - 32);
     into.extend_from_slice(&c.data[..]);
 }
 
-fn decode_chunk(from: &SerializedMessage, at: &mut usize) -> Result<Chunk, Error> {
+fn decode_chunk(from: &[u8], at: &mut usize) -> Result<Chunk, Error> {
     let index = decode_varint(from, at)?;
     let start = *at;
     hax_lib::assume!(*at < usize::MAX - 32);
@@ -224,6 +174,7 @@ impl Message {
         into.push(Version::V1.into());
         encode_varint(self.epoch, &mut into);
         encode_varint(index as u64, &mut into);
+        hax_lib::assume!(into.len() < usize::MAX);
         into.push(MessageType::from_payload(&self.payload).into());
         encode_chunk(
             match &self.payload {
@@ -246,23 +197,12 @@ impl Message {
     }
 
     #[hax_lib::ensures(|res| if let Ok((msg, _index, at)) = res { msg.epoch > 0 && at <= from.len() } else { true })]
-    pub fn deserialize(from: &SerializedMessage) -> Result<(Self, u32, usize), Error> {
-        if from.is_empty() || from[0] != Version::V1.into() {
+    pub fn deserialize(epoch: Epoch, from: &[u8]) -> Result<Self, Error> {
+        if from.is_empty() {
             return Err(Error::MsgDecode);
         }
+        let msg_type = MessageType::try_from(from[0]).map_err(|_| Error::MsgDecode)?;
         let mut at = 1usize;
-        let epoch = decode_varint(from, &mut at)? as Epoch;
-        if epoch == 0 {
-            return Err(Error::MsgDecode);
-        }
-        let index: u32 = decode_varint(from, &mut at)?
-            .try_into()
-            .map_err(|_| Error::MsgDecode)?;
-        if at >= from.len() {
-            return Err(Error::MsgDecode);
-        }
-        let msg_type = MessageType::try_from(from[at]).map_err(|_| Error::MsgDecode)?;
-        at += 1;
         let payload = match msg_type {
             MessageType::None => MessagePayload::None,
             MessageType::Ct1Ack => MessagePayload::Ct1Ack(true),
@@ -275,7 +215,7 @@ impl Message {
         // We allow for there to be additional trailing data in the message, so it's
         // possible that `at < from.len()`.  This allows for us to potentially
         // upgrade sessions in future versions of the protocol.
-        Ok((Self { epoch, payload }, index, at))
+        Ok(Self { epoch, payload })
     }
 }
 

@@ -1,16 +1,16 @@
 Translation patch: <Poly>::compute_at
 
 Change: the `zip` over `coefficients` and `xs` becomes an index loop over `coefficients`.
-Why: iterator adapters (`zip`) are not modelled by the Aeneas Lean library (aeneas#1043).
+Why: Aeneas does not translate this `zip` ("Unimplemented").
 Behaviour: identical.
-Relies on: `xs` has at least `coefficients.len()` entries (it is built with `max(2, len)`
-entries just above), so the indexing never panics and covers the same pairs as `zip`.
+Relies on: `xs` has `max(2, coefficients.len())` entries (built just above), so the indexing
+never panics and visits the same pairs as `zip`.
 
 diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
-index 03315cd..2eb7b65 100644
+index 65f33f8..6fd22dc 100644
 --- a/src/encoding/polynomial.rs
 +++ b/src/encoding/polynomial.rs
-@@ -254,22 +254,23 @@ fn mult_assign(&mut self, m: GF16) {
+@@ -260,22 +260,23 @@ fn mult_assign(&mut self, m: GF16) {
      #[hax_lib::opaque] // zip
      fn compute_at(&self, x: GF16) -> GF16 {
          // Compute x^0 .. x^N

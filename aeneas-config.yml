@@ -8,7 +8,7 @@ aeneas:
 # Upstream Rust crate we are verifying
 upstream:
   repo: "https://github.com/signalapp/SparsePostQuantumRatchet"
-  commit: "63d9b93634bf543845376eb57b8a33ef29337aa8"
+  commit: "06959b4708f9b7b1e94d0f8cc835f3958c077e94"
 
 crate:
   dir: "." # path to Rust crate
@@ -39,6 +39,10 @@ charon:
     - "spqr::{impl core::error::Error for spqr::Error}"
     - "spqr::{impl core::fmt::Debug for spqr::CurrentVersion}" # Debug for Version (proto) is excluded, so this cascades
     - "spqr::{impl core::convert::From<spqr::serialize::Error> for spqr::Error}" # name clash
+    # prost-generated `as_str_name`/`from_str_name` return/match `&'static str`, which Aeneas does
+    # not translate; spqr never calls them.
+    - "spqr::proto::pq_ratchet::_::as_str_name"
+    - "spqr::proto::pq_ratchet::_::from_str_name"
   opaque:
     # `hkdf_to_slice`: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/104
     - "spqr::kdf::hkdf_to_slice"
@@ -77,33 +81,6 @@ tweaks:
     # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
     - regex: "impl_def(\\s+[\\w.]+\\.Insts\\.ProstMessageMessage\\s*:[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
       replace: "def$1:= sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102"
-
-    # Fix local variable `chain` shadowing module namespace `chain.Chain` in `send`.
-    # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101
-    - find: "let chain ←\n                    match val2.key with"
-      replace: "let chain' /- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101 -/ ←\n                    match val2.key with"
-    - find: "let chain ←\n                match val2.key with"
-      replace: "let chain' /- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101 -/ ←\n                match val2.key with"
-    - find: "chain.Chain.send_key chain i3"
-      replace: "chain.Chain.send_key chain' i3 /- #101 rename -/"
-    - find: "chain.Chain.send_key chain i1"
-      replace: "chain.Chain.send_key chain' i1 /- #101 rename -/"
-
-    # Fix local variable `chain` shadowing module namespace `chain.Chain` in `recv`.
-    # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101
-    - find: "let chain ←\n                            match val5.key with"
-      replace: "let chain' /- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101 -/ ←\n                            match val5.key with"
-    - find: "let chain ←\n                    match val3.key with"
-      replace: "let chain' /- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101 -/ ←\n                    match val3.key with"
-    - find: "chain.Chain.into_pb chain\n"
-      replace: "chain.Chain.into_pb chain' /- #101 rename -/\n"
-    - find: "chain.Chain.recv_key chain msg_key_epoch index"
-      replace: "chain.Chain.recv_key chain' msg_key_epoch index /- #101 rename -/"
-
-    # Fix local variable `v1` shadowing module namespace `v1.chunked.states` in `recv`.
-    # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101
-    - find: "let v1 := read_discriminant v\n      let i ← lift (IScalar.hcast .U8 v1)"
-      replace: "let v1' := read_discriminant v /- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/101 -/\n      let i ← lift (IScalar.hcast .U8 v1')"
 
     # Sorry merge closure FnOnce call_once assignments (Aeneas types them wrong)
     # https://github.com/AeneasVerif/aeneas/issues/1046

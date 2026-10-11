@@ -98,6 +98,7 @@ theorem body_spec
     · simp only [hb, ↓reduceIte]
       have h_s_want : s.val = want.val := hb_iff.1 hb
       rw [h_i]
+      step as ⟨sv, h_sv⟩
       step as ⟨i3, h_i3⟩
       step as ⟨s1, h_s1_val, h_s1_len⟩
       have h_clone : ∀ x ∈ s1.val, core.clone.CloneU8.clone x = ok x := by
@@ -113,7 +114,7 @@ theorem body_spec
       · have : (↑out : List U8) = ↑s1 := by simp [h_out, alloc.vec.Vec.val]
         rw [this]; simp only [Slice.length] at h_s1_len; scalar_tac
       · have : (↑out : List U8) = ↑s1 := by simp [h_out, alloc.vec.Vec.val]
-        rw [this, h_s1_val]; congr 1
+        rw [this, h_s1_val, h_sv]; congr 1
       · exact h_self1_len
       · omega
       · omega

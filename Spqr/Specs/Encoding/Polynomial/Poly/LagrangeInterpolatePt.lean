@@ -20,7 +20,8 @@ The function proceeds in three steps:
    `result1` with `result1 · (X − pts[i].x) = X · lagrangeScale(pts[i], pts) · template`.
    The Horner-style division introduces an X-artifact, so `result1.coefficients[0] = 0`.
 
-3. **Remove leading zero**: `remove(0)` strips the zero constant term (divides by `X`).
+3. **Remove leading zero**: `coefficients.as_slice()[1..].to_vec()` strips the zero constant
+   term (divides by `X`).
 
 The result satisfies:
 
@@ -67,10 +68,18 @@ theorem lagrange_interpolate_pt_spec
     exact prodLinearFactors_eval_root _ _ _ _ (Nat.zero_le _) hi hi
   step with lagrange_interpolate_complete_spec template pts i hi h_template_pos h_root_template as
     ⟨result1, h_r1_len, h_r1_id⟩
-  step
-  · grind[degree]
+  step*
+  · simp only [Slice.length, ‹(↑s : List GF16) = _›]
+    grind [degree]
+  · intro x _
+    simp [GF16.Insts.CoreCloneClone.clone]
+  have hv : (↑v : List GF16) = result1.coefficients.val.drop 1 := by
+    have h_s1 : (↑s1 : List GF16) = List.drop 1 ↑s := ‹_›
+    rw [‹s1 = v.slice›, ‹(↑s : List GF16) = _›] at h_s1
+    exact h_s1
   constructor
-  · grind[degree]
+  · simp only [hv, List.length_drop]
+    grind [degree]
   · have hget : pts.val[i.val]! = pts.val[i.val] := getElem!_pos _ _ _
     rw [Slice.getElem!_Usize_eq, hget] at h_r1_id
     have h_prod_root :
@@ -83,8 +92,6 @@ theorem lagrange_interpolate_pt_spec
       X * listToGF216Poly (result1.coefficients.val.drop 1) := by
       unfold Poly.toGF216Poly
       exact listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one result1.coefficients.val h_r1_coeff0
-    have hv : (↑v : List GF16) = result1.coefficients.val.drop 1 := by
-      rw [‹(↑v : List GF16) = _›, List.eraseIdx_zero, List.drop_one]
     unfold Poly.toGF216Poly
     apply mul_left_cancel₀ Polynomial.X_ne_zero
     rw [hv, ← mul_assoc, ← h_r1_X_factor, h_r1_id, mul_assoc]
