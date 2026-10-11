@@ -1,0 +1,2 @@
+# Rust patches: `git diff -W` must treat whole functions as the hunk context.
+*.rs diff=rust

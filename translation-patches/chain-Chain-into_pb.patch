@@ -1,0 +1,44 @@
+Translation patch: <spqr::chain::Chain>::into_pb
+
+Change: `self.links.into_iter().map(..).collect::<Vec<_>>()` becomes a loop that pops the links
+from the front of the `VecDeque` and pushes the converted epochs into a `Vec`.
+Why: `map`/`collect` are not modelled by the Aeneas Lean library (aeneas#1043).
+Behaviour: identical (same elements, same order).
+Relies on: `self.dir.into()` (prost enum to `i32`) and `ChainEpochDirection::into_pb` (moves the
+fields) are pure, so converting the links before `direction` is unobservable.
+
+diff --git a/src/chain.rs b/src/chain.rs
+index 44c3681..3b55cf2 100644
+--- a/src/chain.rs
++++ b/src/chain.rs
+@@ -423,21 +423,22 @@ pub fn recv_key(&mut self, epoch: Epoch, index: u32) -> Result<Vec<u8>, Error> {
+ 
+     #[hax_lib::opaque] // into_iter and map
+     pub(crate) fn into_pb(self) -> pqrpb::Chain {
++        let mut links = Vec::with_capacity(self.links.len());
++        let mut chain_links = self.links;
++        while let Some(link) = chain_links.pop_front() {
++            links.push(pqrpb::chain::Epoch {
++                send: Some(link.send.into_pb()),
++                recv: Some(link.recv.into_pb()),
++            });
++        }
+         pqrpb::Chain {
+             direction: self.dir.into(),
+             current_epoch: self.current_epoch,
+             send_epoch: self.send_epoch,
+-            links: self
+-                .links
+-                .into_iter()
+-                .map(|link| pqrpb::chain::Epoch {
+-                    send: Some(link.send.into_pb()),
+-                    recv: Some(link.recv.into_pb()),
+-                })
+-                .collect::<Vec<_>>(),
++            links,
+             next_root: self.next_root,
+             params: Some(self.params),
+         }
+     }
+ 
+     #[hax_lib::opaque] // into_iter and map

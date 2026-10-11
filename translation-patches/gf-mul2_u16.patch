@@ -1,0 +1,27 @@
+Translation patch: spqr::encoding::gf::mul2_u16
+
+Change: the hardware-accelerated branch is also gated on `not(feature = "extraction")`.
+Why: with the branch, Aeneas fails on `check_accelerated::TOKEN.get()` ("Internal error"; the
+SIMD code `gf::accelerated`/`gf::check_accelerated` is excluded from the translation).
+Behaviour: identical (with `extraction`, the portable multiplications, which compute the same
+products, are always used).
+Relies on: Cargo-features.patch (defines the `extraction` feature).
+
+diff --git a/src/encoding/gf.rs b/src/encoding/gf.rs
+index 963e119..802d696 100644
+--- a/src/encoding/gf.rs
++++ b/src/encoding/gf.rs
+@@ -216,12 +216,13 @@ pub fn parallel_mult(a: GF16, into: &mut [GF16]) {
+ fn mul2_u16(a: u16, b1: u16, b2: u16) -> (u16, u16) {
+     #[cfg(all(
+         not(hax),
++        not(feature = "extraction"),
+         any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
+     ))]
+     if check_accelerated::TOKEN.get() {
+         return accelerated::mul2(a, b1, b2);
+     }
+     (unaccelerated::mul(a, b1), unaccelerated::mul(a, b2))
+ }
+ 
+ #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
