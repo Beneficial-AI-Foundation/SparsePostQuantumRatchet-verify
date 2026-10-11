@@ -188,6 +188,18 @@ def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type} (corecloneCloneInst :
     corecmpOrdInst
 }
 
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
+    Source: 'src/encoding/gf.rs', lines 543:4-543:44
+    Visibility: public -/
+@[global_simps, irreducible]
+def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
+    Source: 'src/encoding/gf.rs', lines 542:4-542:45
+    Visibility: public -/
+@[global_simps, irreducible]
+def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
+
 /-- [spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::PolynomialEncoder}::clone]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 2:9-2:14
     Visibility: public -/
@@ -2302,7 +2314,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.direction
     proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
       self.direction
   let d ← proto.pq_ratchet.Direction.Insts.CoreDefaultDefault.default
-  core.result.Result.unwrap_or r d
+  ok (core.result.Result.unwrap_or r d)
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::set_direction]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 38:41-38:57
@@ -2341,7 +2353,7 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.min_version
     proto.pq_ratchet.Version.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
       self.min_version
   let v ← proto.pq_ratchet.Version.Insts.CoreDefaultDefault.default
-  core.result.Result.unwrap_or r v
+  ok (core.result.Result.unwrap_or r v)
 
 /-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::set_min_version]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 38:41-38:57
@@ -4331,7 +4343,7 @@ def proto.pq_ratchet.Chain.impl.direction
     proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
       self.direction
   let d ← proto.pq_ratchet.Direction.Insts.CoreDefaultDefault.default
-  core.result.Result.unwrap_or r d
+  ok (core.result.Result.unwrap_or r d)
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Chain}::set_direction]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 324:27-324:43
@@ -5368,8 +5380,8 @@ def chain.ChainEpochDirection.next_key_internal
   let b ← core.slice.Slice.is_empty next
   massert (¬ b)
   let ctr1 ← ctr + 1#u32
-  let a := Array.repeat 32#usize 0#u8
   let genr8r := Array.repeat 64#usize 0#u8
+  let a := Array.repeat 32#usize 0#u8
   let s ← lift (Array.to_slice a)
   let a1 ← lift (core.num.U32.to_be_bytes ctr1)
   let s1 ← lift (Array.to_slice a1)
@@ -5551,8 +5563,8 @@ def chain.Chain.new
   (params : proto.pq_ratchet.ChainParams) :
   Result (core.result.Result chain.Chain Error)
   := do
-  let a := Array.repeat 32#usize 0#u8
   let genr8r := Array.repeat 96#usize 0#u8
+  let a := Array.repeat 32#usize 0#u8
   let s ← lift (Array.to_slice a)
   let s1 ←
     lift (Array.to_slice
@@ -6647,18 +6659,6 @@ def encoding.gf.unaccelerated.mul2
   let i1 ← encoding.gf.unaccelerated.mul a b2
   ok (i, i1)
 
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
-    Source: 'src/encoding/gf.rs', lines 542:4-542:45
-    Visibility: public -/
-@[global_simps, irreducible]
-def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
-    Source: 'src/encoding/gf.rs', lines 543:4-543:44
-    Visibility: public -/
-@[global_simps, irreducible]
-def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
-
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::new]:
     Source: 'src/encoding/gf.rs', lines 545:4-547:5
     Visibility: public -/
@@ -7626,6 +7626,89 @@ def encoding.polynomial.Poly.lagrange_sum
   encoding.polynomial.Poly.lagrange_sum_loop
     { start := 0#usize, «end» := i1 } pts polys out
 
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::to_poly]:
+    Source: 'src/encoding/polynomial.rs', lines 460:4-465:5 -/
+def encoding.polynomial.PolyConst.to_poly
+  {N : Std.Usize} (self : encoding.polynomial.PolyConst N) :
+  Result encoding.polynomial.Poly
+  := do
+  let s ← lift (Array.to_slice self.coefficients)
+  let v ← alloc.slice.Slice.to_vec encoding.gf.GF16.Insts.CoreCloneClone s
+  ok { coefficients := v }
+
+/-- [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_mut]:
+    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
+def
+  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut
+  {N : Std.Usize} (c : encoding.polynomial.const_polys_to_polys.closure N)
+  (tupled_args : encoding.polynomial.PolyConst N) :
+  Result (encoding.polynomial.Poly ×
+    (encoding.polynomial.const_polys_to_polys.closure N))
+  := do
+  let p ← encoding.polynomial.PolyConst.to_poly tupled_args
+  ok (p, c)
+
+/-- [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_once]:
+    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
+def
+  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once
+  {N : Std.Usize} (c : encoding.polynomial.const_polys_to_polys.closure N)
+  (pc : encoding.polynomial.PolyConst N) :
+  Result encoding.polynomial.Poly
+  := do
+  let (p, _) ←
+    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut
+      c pc
+  ok p
+
+/-- Trait implementation: [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}]
+    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
+@[reducible]
+def
+  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly
+  (N : Std.Usize) : core.ops.function.FnOnce
+  (encoding.polynomial.const_polys_to_polys.closure N)
+  (encoding.polynomial.PolyConst N) encoding.polynomial.Poly := {
+  call_once :=
+    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once
+}
+
+/-- Trait implementation: [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}]
+    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
+@[reducible]
+def
+  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
+  (N : Std.Usize) : core.ops.function.FnMut
+  (encoding.polynomial.const_polys_to_polys.closure N)
+  (encoding.polynomial.PolyConst N) encoding.polynomial.Poly := {
+  FnOnceInst :=
+    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly
+    N
+  call_mut :=
+    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut
+}
+
+/-- [spqr::encoding::polynomial::const_polys_to_polys]:
+    Source: 'src/encoding/polynomial.rs', lines 469:0-471:1 -/
+def encoding.polynomial.const_polys_to_polys
+  {N : Std.Usize} (cps : Array (encoding.polynomial.PolyConst N) N) :
+  Result (alloc.vec.Vec encoding.polynomial.Poly)
+  := do
+  let s ← lift (Array.to_slice cps)
+  let i ← core.slice.Slice.iter s
+  let m ←
+    core.iter.traits.iterator.Iterator.map.default
+      (core.iter.traits.iterator.IteratorSliceIter
+      (encoding.polynomial.PolyConst N))
+      (encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
+      N) i ()
+  core.iter.traits.iterator.Iterator.collect.default
+    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
+    (core.iter.traits.iterator.IteratorSliceIter (encoding.polynomial.PolyConst
+    N))
+    (encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
+    N)) (core.iter.traits.collect.FromIteratorVec encoding.polynomial.Poly) m
+
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::mult_xdiff]: loop body 0:
     Source: 'src/encoding/polynomial.rs', lines 434:12-444:13 -/
 @[rust_loop_body]
@@ -7952,89 +8035,6 @@ def encoding.polynomial.COMPLETE_POINTS_POLYS_3
 def encoding.polynomial.COMPLETE_POINTS_POLYS_1
   : Result (Array (encoding.polynomial.PolyConst 1#usize) 1#usize) :=
   encoding.polynomial.lagrange_polys_for_complete_points 1#usize
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::to_poly]:
-    Source: 'src/encoding/polynomial.rs', lines 460:4-465:5 -/
-def encoding.polynomial.PolyConst.to_poly
-  {N : Std.Usize} (self : encoding.polynomial.PolyConst N) :
-  Result encoding.polynomial.Poly
-  := do
-  let s ← lift (Array.to_slice self.coefficients)
-  let v ← alloc.slice.Slice.to_vec encoding.gf.GF16.Insts.CoreCloneClone s
-  ok { coefficients := v }
-
-/-- [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_mut]:
-    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
-def
-  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut
-  {N : Std.Usize} (c : encoding.polynomial.const_polys_to_polys.closure N)
-  (tupled_args : encoding.polynomial.PolyConst N) :
-  Result (encoding.polynomial.Poly ×
-    (encoding.polynomial.const_polys_to_polys.closure N))
-  := do
-  let p ← encoding.polynomial.PolyConst.to_poly tupled_args
-  ok (p, c)
-
-/-- [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_once]:
-    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
-def
-  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once
-  {N : Std.Usize} (c : encoding.polynomial.const_polys_to_polys.closure N)
-  (pc : encoding.polynomial.PolyConst N) :
-  Result encoding.polynomial.Poly
-  := do
-  let (p, _) ←
-    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut
-      c pc
-  ok p
-
-/-- Trait implementation: [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}]
-    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
-@[reducible]
-def
-  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly
-  (N : Std.Usize) : core.ops.function.FnOnce
-  (encoding.polynomial.const_polys_to_polys.closure N)
-  (encoding.polynomial.PolyConst N) encoding.polynomial.Poly := {
-  call_once :=
-    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once
-}
-
-/-- Trait implementation: [spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}]
-    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
-@[reducible]
-def
-  encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
-  (N : Std.Usize) : core.ops.function.FnMut
-  (encoding.polynomial.const_polys_to_polys.closure N)
-  (encoding.polynomial.PolyConst N) encoding.polynomial.Poly := {
-  FnOnceInst :=
-    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly
-    N
-  call_mut :=
-    encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut
-}
-
-/-- [spqr::encoding::polynomial::const_polys_to_polys]:
-    Source: 'src/encoding/polynomial.rs', lines 469:0-471:1 -/
-def encoding.polynomial.const_polys_to_polys
-  {N : Std.Usize} (cps : Array (encoding.polynomial.PolyConst N) N) :
-  Result (alloc.vec.Vec encoding.polynomial.Poly)
-  := do
-  let s ← lift (Array.to_slice cps)
-  let i ← core.slice.Slice.iter s
-  let m ←
-    core.iter.traits.iterator.Iterator.map.default
-      (core.iter.traits.iterator.IteratorSliceIter
-      (encoding.polynomial.PolyConst N))
-      (encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
-      N) i ()
-  core.iter.traits.iterator.Iterator.collect.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    (core.iter.traits.iterator.IteratorSliceIter (encoding.polynomial.PolyConst
-    N))
-    (encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly
-    N)) (core.iter.traits.collect.FromIteratorVec encoding.polynomial.Poly) m
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points]: loop body 0:
     Source: 'src/encoding/polynomial.rs', lines 293:8-327:5 -/

@@ -1,6 +1,6 @@
 {
-  "aeneas_version": "nightly-2026.10.07-aa66752",
-  "charon_version": "0.1.279",
+  "aeneas_version": "nightly-2026.10.11-d119a47",
+  "charon_version": "0.1.281",
   "crate": "spqr",
   "functions": [
     {
@@ -268,23 +268,6 @@
         "file": "/rustc/library/core/src/result.rs",
         "begin_line": 832,
         "end_line": 834
-      },
-      "is_opaque": true,
-      "can_fail": true,
-      "can_diverge": false,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 1095,
-      "lean_name": "core.result.Result.unwrap_or",
-      "lean_file": "SrcTranslated/FunsExternal_Template.lean",
-      "rust_name": "core::result::{core::result::Result<T, E>}::unwrap_or",
-      "is_local": false,
-      "source": {
-        "file": "/rustc/library/core/src/result.rs",
-        "begin_line": 1587,
-        "end_line": 1590
       },
       "is_opaque": true,
       "can_fail": true,
@@ -9080,6 +9063,74 @@
       "reducible": false
     },
     {
+      "def_id": 493,
+      "lean_name": "spqr.encoding.polynomial.PolyConst.to_poly",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::to_poly",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/polynomial.rs",
+        "begin_line": 460,
+        "end_line": 465
+      },
+      "is_opaque": false,
+      "can_fail": true,
+      "can_diverge": false,
+      "is_rec": false,
+      "reducible": false
+    },
+    {
+      "def_id": 964,
+      "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_mut",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/polynomial.rs",
+        "begin_line": 470,
+        "end_line": 470
+      },
+      "is_opaque": false,
+      "can_fail": true,
+      "can_diverge": false,
+      "is_rec": false,
+      "reducible": false
+    },
+    {
+      "def_id": 963,
+      "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_once",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/polynomial.rs",
+        "begin_line": 470,
+        "end_line": 470
+      },
+      "is_opaque": false,
+      "can_fail": true,
+      "can_diverge": false,
+      "is_rec": false,
+      "reducible": false
+    },
+    {
+      "def_id": 131,
+      "lean_name": "spqr.encoding.polynomial.const_polys_to_polys",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::polynomial::const_polys_to_polys",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/polynomial.rs",
+        "begin_line": 469,
+        "end_line": 471
+      },
+      "is_opaque": false,
+      "can_fail": true,
+      "can_diverge": false,
+      "is_rec": false,
+      "reducible": false
+    },
+    {
       "def_id": 492,
       "lean_name": "spqr.encoding.polynomial.PolyConst.mult_xdiff_loop0.body",
       "lean_file": "SrcTranslated/Funs.lean",
@@ -9389,74 +9440,6 @@
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": true,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 493,
-      "lean_name": "spqr.encoding.polynomial.PolyConst.to_poly",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::to_poly",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/polynomial.rs",
-        "begin_line": 460,
-        "end_line": 465
-      },
-      "is_opaque": false,
-      "can_fail": true,
-      "can_diverge": false,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 964,
-      "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_mut",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/polynomial.rs",
-        "begin_line": 470,
-        "end_line": 470
-      },
-      "is_opaque": false,
-      "can_fail": true,
-      "can_diverge": false,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 963,
-      "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_once",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/polynomial.rs",
-        "begin_line": 470,
-        "end_line": 470
-      },
-      "is_opaque": false,
-      "can_fail": true,
-      "can_diverge": false,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 131,
-      "lean_name": "spqr.encoding.polynomial.const_polys_to_polys",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::polynomial::const_polys_to_polys",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/polynomial.rs",
-        "begin_line": 469,
-        "end_line": 471
-      },
-      "is_opaque": false,
-      "can_fail": true,
-      "can_diverge": false,
       "is_rec": false,
       "reducible": false
     },
@@ -13466,6 +13449,18 @@
       }
     },
     {
+      "def_id": 72,
+      "lean_name": "spqr.encoding.gf.GF16",
+      "lean_file": "SrcTranslated/Types.lean",
+      "rust_name": "spqr::encoding::gf::GF16",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/gf.rs",
+        "begin_line": 16,
+        "end_line": 18
+      }
+    },
+    {
       "def_id": 89,
       "lean_name": "spqr.proto.pq_ratchet.PolynomialEncoder",
       "lean_file": "SrcTranslated/Types.lean",
@@ -14322,18 +14317,6 @@
       }
     },
     {
-      "def_id": 72,
-      "lean_name": "spqr.encoding.gf.GF16",
-      "lean_file": "SrcTranslated/Types.lean",
-      "rust_name": "spqr::encoding::gf::GF16",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/gf.rs",
-        "begin_line": 16,
-        "end_line": 18
-      }
-    },
-    {
       "def_id": 74,
       "lean_name": "spqr.encoding.polynomial.Pt",
       "lean_file": "SrcTranslated/Types.lean",
@@ -14358,18 +14341,6 @@
       }
     },
     {
-      "def_id": 76,
-      "lean_name": "spqr.encoding.polynomial.PolyConst",
-      "lean_file": "SrcTranslated/Types.lean",
-      "rust_name": "spqr::encoding::polynomial::PolyConst",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/polynomial.rs",
-        "begin_line": 361,
-        "end_line": 363
-      }
-    },
-    {
       "def_id": 165,
       "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure",
       "lean_file": "SrcTranslated/Types.lean",
@@ -14379,6 +14350,18 @@
         "file": "src/encoding/polynomial.rs",
         "begin_line": 470,
         "end_line": 470
+      }
+    },
+    {
+      "def_id": 76,
+      "lean_name": "spqr.encoding.polynomial.PolyConst",
+      "lean_file": "SrcTranslated/Types.lean",
+      "rust_name": "spqr::encoding::polynomial::PolyConst",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/polynomial.rs",
+        "begin_line": 361,
+        "end_line": 363
       }
     },
     {
@@ -15129,6 +15112,32 @@
       "can_fail": true
     },
     {
+      "def_id": 88,
+      "lean_name": "spqr.encoding.gf.GF16.ONE",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/gf.rs",
+        "begin_line": 543,
+        "end_line": 543
+      },
+      "can_fail": false
+    },
+    {
+      "def_id": 87,
+      "lean_name": "spqr.encoding.gf.GF16.ZERO",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/gf.rs",
+        "begin_line": 542,
+        "end_line": 542
+      },
+      "can_fail": false
+    },
+    {
       "def_id": 24,
       "lean_name": "spqr.authenticator.Authenticator.MACSIZE",
       "lean_file": "SrcTranslated/Funs.lean",
@@ -15201,32 +15210,6 @@
         "end_line": 538
       },
       "can_fail": true
-    },
-    {
-      "def_id": 87,
-      "lean_name": "spqr.encoding.gf.GF16.ZERO",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/gf.rs",
-        "begin_line": 542,
-        "end_line": 542
-      },
-      "can_fail": false
-    },
-    {
-      "def_id": 88,
-      "lean_name": "spqr.encoding.gf.GF16.ONE",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/gf.rs",
-        "begin_line": 543,
-        "end_line": 543
-      },
-      "can_fail": false
     },
     {
       "def_id": 27,
@@ -19650,21 +19633,6 @@
       "impl_trait_is_builtin": true
     },
     {
-      "def_id": 132,
-      "lean_name": "spqr.encoding.polynomial.PolyConst.Insts.CoreCloneClone",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::encoding::polynomial::{impl core::clone::Clone for spqr::encoding::polynomial::PolyConst<N>}",
-      "is_local": true,
-      "source": {
-        "file": "src/encoding/polynomial.rs",
-        "begin_line": 360,
-        "end_line": 360
-      },
-      "impl_trait_def_id": 0,
-      "impl_trait_rust_name": "core::clone::Clone",
-      "impl_trait_is_builtin": true
-    },
-    {
       "def_id": 318,
       "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly",
       "lean_file": "SrcTranslated/Funs.lean",
@@ -19692,6 +19660,21 @@
       },
       "impl_trait_def_id": 37,
       "impl_trait_rust_name": "core::ops::function::FnMut",
+      "impl_trait_is_builtin": true
+    },
+    {
+      "def_id": 132,
+      "lean_name": "spqr.encoding.polynomial.PolyConst.Insts.CoreCloneClone",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::encoding::polynomial::{impl core::clone::Clone for spqr::encoding::polynomial::PolyConst<N>}",
+      "is_local": true,
+      "source": {
+        "file": "src/encoding/polynomial.rs",
+        "begin_line": 360,
+        "end_line": 360
+      },
+      "impl_trait_def_id": 0,
+      "impl_trait_rust_name": "core::clone::Clone",
       "impl_trait_is_builtin": true
     },
     {

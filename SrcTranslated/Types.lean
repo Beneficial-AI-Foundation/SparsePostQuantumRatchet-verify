@@ -250,6 +250,12 @@ structure rand.rng.Rng (Self : Type) where
 structure rand_core.CryptoRng (Self : Type) where
   RngCoreInst : rand_core.RngCore Self
 
+/-- [spqr::encoding::gf::GF16]
+    Source: 'src/encoding/gf.rs', lines 16:0-18:1
+    Visibility: public -/
+structure encoding.gf.GF16 where
+  value : Std.U16
+
 /-- [spqr::proto::pq_ratchet::PolynomialEncoder]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 3:0-13:1
     Visibility: public -/
@@ -822,12 +828,6 @@ def chain.Chain.from_pb.closure_1 := Unit
 @[reducible]
 def chain.Chain.from_pb.closure := Unit
 
-/-- [spqr::encoding::gf::GF16]
-    Source: 'src/encoding/gf.rs', lines 16:0-18:1
-    Visibility: public -/
-structure encoding.gf.GF16 where
-  value : Std.U16
-
 /-- [spqr::encoding::polynomial::Pt]
     Source: 'src/encoding/polynomial.rs', lines 26:0-29:1 -/
 structure encoding.polynomial.Pt where
@@ -839,15 +839,15 @@ structure encoding.polynomial.Pt where
 structure encoding.polynomial.Poly where
   coefficients : alloc.vec.Vec encoding.gf.GF16
 
-/-- [spqr::encoding::polynomial::PolyConst]
-    Source: 'src/encoding/polynomial.rs', lines 361:0-363:1 -/
-structure encoding.polynomial.PolyConst (N : Std.Usize) where
-  coefficients : Array encoding.gf.GF16 N
-
 /-- [spqr::encoding::polynomial::const_polys_to_polys::{closure}]
     Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
 @[reducible]
 def encoding.polynomial.const_polys_to_polys.closure (N : Std.Usize) := Unit
+
+/-- [spqr::encoding::polynomial::PolyConst]
+    Source: 'src/encoding/polynomial.rs', lines 361:0-363:1 -/
+structure encoding.polynomial.PolyConst (N : Std.Usize) where
+  coefficients : Array encoding.gf.GF16 N
 
 /-- [spqr::encoding::polynomial::Point]
     Source: 'src/encoding/polynomial.rs', lines 518:0-521:1
