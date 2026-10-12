@@ -1,9 +1,14 @@
-import Lean
-import Utils.Config
+module
+
+public import Lean
+public import Utils.Config
+
 /-! Analysis: spec-existence, verification status, dependency and axiom analysis.
 
 * `isVerified`: the spec's own proof has no `sorry`;
 * `specAxioms`: the spec's full transitive axiom closure. -/
+
+public section
 
 open Lean
 

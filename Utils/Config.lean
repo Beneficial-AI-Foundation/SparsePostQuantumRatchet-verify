@@ -1,5 +1,10 @@
-import Lean
+module
+
+public import Lean
+
 /-! Config: project-specific settings for the verification status tracking utility. -/
+
+public section
 
 open Lean
 
