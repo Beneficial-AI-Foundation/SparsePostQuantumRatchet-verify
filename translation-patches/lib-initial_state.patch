@@ -1,25 +1,24 @@
 Translation patch: spqr::initial_state
 
-Change: the `log::info!` call is gated on `not(feature = "extraction")` instead of `not(hax)`.
+Change: the `log::info!` call is removed.
 Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
 cannot translate).
-Behaviour: identical (only with `extraction`: no log output).
+Behaviour: identical except that there is no log output.
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 7c3076f..48b6c6c 100644
+index 7c3076f..5618541 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -208,27 +208,27 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
+@@ -208,27 +208,21 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
  }
  
  pub fn initial_state(params: Params) -> Result<SerializedState, Error> {
 -    #[cfg(not(hax))]
-+    #[cfg(not(feature = "extraction"))]
-     log::info!(
-         "spqr initiating state with version {:?} and direction {:?}",
-         params.version,
-         params.direction
-     );
+-    log::info!(
+-        "spqr initiating state with version {:?} and direction {:?}",
+-        params.version,
+-        params.direction
+-    );
      match params.version {
          Version::V0 => Ok(empty_state()),
          _ => {

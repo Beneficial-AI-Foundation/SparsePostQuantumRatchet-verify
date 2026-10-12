@@ -1,52 +1,25 @@
 Translation patch: build.rs main
 
-Change: with `extraction`, prost writes its output into `generated/` instead of `$OUT_DIR`; in all
-builds, `as_str_name`/`from_str_name` of the generated enums are put under
-`#[cfg(not(feature = "extraction"))]`.
+Change: prost writes its output into `generated/` instead of `$OUT_DIR`.
 Why: the translation records the source path of every generated item, and `$OUT_DIR` is an
-absolute, per-build path; `as_str_name` returns `&'static str` and `from_str_name` matches on
-string literals, which Aeneas does not translate.
-Behaviour: identical (without `extraction` the inserted `cfg` is always true).
-Relies on: spqr never calls `as_str_name`/`from_str_name`; pq_ratchet-include.patch includes the
-output from `generated/`.
+absolute, per-build path, which would make the committed translation non-reproducible.
+Behaviour: identical (it can panic if `generated/` cannot be created).
+Relies on: pq_ratchet-include.patch includes the output from `generated/`.
 
 diff --git a/build.rs b/build.rs
-index b7797fe..bbbc02c 100644
+index b7797fe..46e7722 100644
 --- a/build.rs
 +++ b/build.rs
-@@ -4,10 +4,36 @@
+@@ -4,10 +4,13 @@
  fn main() {
      let protos = ["src/proto/pq_ratchet.proto"];
      let mut prost_build = prost_build::Config::new();
-+
-+    // Where prost emits the generated Rust.
-+    //
-+    // * Normal builds: the standard per-build `$OUT_DIR`
-+    // * Verification builds (`--features extraction`): `generated/`.
-+    let out_dir = if std::env::var_os("CARGO_FEATURE_EXTRACTION").is_some() {
-+        let dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
-+            .join("generated");
-+        std::fs::create_dir_all(&dir).unwrap();
-+        prost_build.out_dir(&dir);
-+        dir.to_str().unwrap().to_owned()
-+    } else {
-+        std::env::var("OUT_DIR").unwrap()
-+    };
-+
++    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("generated");
++    std::fs::create_dir_all(&dir).expect("can create generated/");
++    prost_build.out_dir(dir);
      prost_build
          .compile_protos(&protos, &["src"])
          .expect("Protobufs in src are valid");
-+
-+    // Gate as_str_name/from_str_name with #[cfg(not(feature = "extraction"))] — these
-+    // return &'static str which Aeneas cannot translate ("no bottoms in value" error),
-+    // and they are never called by spqr.
-+    let path = format!("{out_dir}/signal.proto.pq_ratchet.rs");
-+    let content = std::fs::read_to_string(&path).unwrap();
-+    let content = content
-+        .replace("pub fn as_str_name(", "#[cfg(not(feature = \"extraction\"))]\n        pub fn as_str_name(")
-+        .replace("pub fn from_str_name(", "#[cfg(not(feature = \"extraction\"))]\n        pub fn from_str_name(");
-+    std::fs::write(&path, content).unwrap();
-+
      for proto in &protos {
          println!("cargo:rerun-if-changed={proto}");
      }

@@ -17,7 +17,7 @@ crate:
 charon:
   preset: "aeneas"
   hide_marker_traits: true
-  cargo_args: ["--locked", "--features", "extraction"]
+  cargo_args: ["--locked"]
   exclude:
     - "spqr::encoding::gf::check_accelerated" # cpufeatures macro: arrow types unsupported by Aeneas
     - "spqr::encoding::gf::accelerated" # platform-specific SIMD intrinsics
@@ -39,6 +39,10 @@ charon:
     - "spqr::{impl core::error::Error for spqr::Error}"
     - "spqr::{impl core::fmt::Debug for spqr::CurrentVersion}" # Debug for Version (proto) is excluded, so this cascades
     - "spqr::{impl core::convert::From<spqr::serialize::Error> for spqr::Error}" # name clash
+    # prost-generated `as_str_name`/`from_str_name` return/match `&'static str`, which Aeneas does
+    # not translate; spqr never calls them.
+    - "spqr::proto::pq_ratchet::_::as_str_name"
+    - "spqr::proto::pq_ratchet::_::from_str_name"
   opaque:
     # `hkdf_to_slice`: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/104
     - "spqr::kdf::hkdf_to_slice"

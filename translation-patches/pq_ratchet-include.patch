@@ -1,20 +1,18 @@
 Translation patch: src/proto/pq_ratchet.rs (include of the prost output)
 
-Change: with `extraction`, includes `generated/signal.proto.pq_ratchet.rs` instead of the file in
-`$OUT_DIR`.
+Change: includes `generated/signal.proto.pq_ratchet.rs` instead of the file in `$OUT_DIR`.
 Why: matches `build-main.patch`, which writes the prost output there for the translation.
-Behaviour: identical (only with `extraction`; same generated code).
+Behaviour: identical (same generated code).
 
 diff --git a/src/proto/pq_ratchet.rs b/src/proto/pq_ratchet.rs
-index fe5b914..a44d56a 100644
+index fe5b914..ef8527d 100644
 --- a/src/proto/pq_ratchet.rs
 +++ b/src/proto/pq_ratchet.rs
-@@ -3,4 +3,8 @@
+@@ -1,6 +1,6 @@
+ // Copyright 2025 Signal Messenger, LLC
+ // SPDX-License-Identifier: AGPL-3.0-only
  
  #![allow(clippy::derive_partial_eq_without_eq)]
  
-+// Include prost's output. See build.rs
-+#[cfg(not(feature = "extraction"))]
- include!(concat!(env!("OUT_DIR"), "/signal.proto.pq_ratchet.rs"));
-+#[cfg(feature = "extraction")]
+-include!(concat!(env!("OUT_DIR"), "/signal.proto.pq_ratchet.rs"));
 +include!(concat!(env!("CARGO_MANIFEST_DIR"), "/generated/signal.proto.pq_ratchet.rs"));

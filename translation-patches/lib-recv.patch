@@ -1,15 +1,15 @@
 Translation patch: spqr::recv
 
-Change: the `log::info!` call is gated on `not(feature = "extraction")` instead of `not(hax)`.
+Change: the `log::info!` call is removed.
 Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
 cannot translate).
-Behaviour: identical (only with `extraction`: no log output).
+Behaviour: identical except that there is no log output.
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 7c3076f..6760aac 100644
+index 7c3076f..bb22bfb 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -354,100 +354,100 @@ fn chain_from(
+@@ -354,100 +354,98 @@ fn chain_from(
  pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Error> {
      // Perform version negotiation.  At the beginning of our interaction
      // with a remote party, we are set to allow negotiation.  This
@@ -45,8 +45,7 @@ index 7c3076f..6760aac 100644
                              return Err(Error::MinimumVersion);
                          }
 -                        #[cfg(not(hax))]
-+                        #[cfg(not(feature = "extraction"))]
-                         log::info!("spqr negotiating version down to {v:?}");
+-                        log::info!("spqr negotiating version down to {v:?}");
                          pqrpb::PqRatchetState {
                              inner: init_inner(
                                  v,
