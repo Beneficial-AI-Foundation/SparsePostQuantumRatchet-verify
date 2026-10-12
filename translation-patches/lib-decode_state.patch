@@ -1,0 +1,27 @@
+Translation patch: spqr::decode_state
+
+Change: `PqRatchetState::decode(..)` becomes `decode_state_pb(..)`.
+Why: `decode_state_pb` is opaque in the translation, so the prost-derived `Message` impls are not
+reached (#102, aeneas#1046).
+Behaviour: identical.
+Relies on: `decode_state_pb`, added by lib-state_pb.patch.
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 6bc0197..5315f7a 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -495,13 +495,13 @@ fn state_version(state: &pqrpb::PqRatchetState) -> Version {
+ fn decode_state(s: &SerializedState) -> Result<pqrpb::PqRatchetState, Error> {
+     if s.is_empty() {
+         Ok(proto::pq_ratchet::PqRatchetState {
+             inner: None,
+             version_negotiation: None,
+             chain: None,
+         })
+     } else {
+-        proto::pq_ratchet::PqRatchetState::decode(s.as_slice()).map_err(|_| Error::StateDecode)
++        decode_state_pb(s.as_slice()).map_err(|_| Error::StateDecode)
+     }
+ }
+ 
+ const MAX_VARINT_BYTES_LEN: usize = 10;

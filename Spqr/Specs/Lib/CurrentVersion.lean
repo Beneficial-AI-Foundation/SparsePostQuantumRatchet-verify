@@ -31,11 +31,6 @@ def innerVersion (st : proto.pq_ratchet.PqRatchetState) : proto.pq_ratchet.Versi
   | none => proto.pq_ratchet.Version.V0
   | some _ => proto.pq_ratchet.Version.V1
 
-/-- `st` is a decoding of the serialized `state`: re-encoding `st` yields the
-original bytes (canonical-form roundtrip property). -/
-def decodesTo (state : alloc.vec.Vec U8) (st : proto.pq_ratchet.PqRatchetState) : Prop :=
-  proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec st = ok state
-
 /-- Expected result of `current_version` for a successfully decoded state `st`:
 no `version_negotiation` means negotiation is complete at `innerVersion st`;
 otherwise `vn.min_version` is converted via `Version::try_from` — `0`/`1` give
@@ -59,7 +54,8 @@ def negotiationOutcome (st : proto.pq_ratchet.PqRatchetState)
 
 Splits on `state.val = []` vs `≠ []`. Empty → `Ok (NegotiationComplete V0)`.
 Non-empty → decode error gives `Err StateDecode`; decode success yields `∃ st`
-with roundtrip, then `version_negotiation = none` → `NegotiationComplete v`,
+that prost decodes from `state` (`decodesTo`, see `Spqr/Specs/Lib/StatePb.lean`), then
+`version_negotiation = none` → `NegotiationComplete v`,
 `some vn` → `try_from vn.min_version` gives `StillNegotiating` or `Err StateDecode`. -/
 @[step]
 theorem current_version_spec (state : alloc.vec.Vec U8) :

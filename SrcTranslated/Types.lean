@@ -124,27 +124,6 @@ structure alloc.slice.Concat (Self : Type) (Item : Type) (Self_Output : Type)
   where
   concat : Self → Result Self_Output
 
-/-- Trait declaration: [bytes::buf::buf_impl::Buf]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 117:0-117:13
-    Name pattern: [bytes::buf::buf_impl::Buf]
-    Visibility: public -/
-@[rust_trait "bytes::buf::buf_impl::Buf"]
-structure bytes.buf.buf_impl.Buf (Self : Type) where
-  remaining : Self → Result Std.Usize
-  chunk : Self → Result (Slice Std.U8)
-  advance : Self → Std.Usize → Result Self
-
-/-- Trait declaration: [bytes::buf::buf_mut::BufMut]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_mut.rs', lines 30:0-30:23
-    Name pattern: [bytes::buf::buf_mut::BufMut]
-    Visibility: public -/
-@[rust_trait "bytes::buf::buf_mut::BufMut"]
-structure bytes.buf.buf_mut.BufMut (Self : Type) where
-  remaining_mut : Self → Result Std.Usize
-  advance_mut : Self → Std.Usize → Result Self
-  chunk_mut : Self → Result (bytes.buf.uninit_slice.UninitSlice ×
-    (bytes.buf.uninit_slice.UninitSlice → Self))
-
 /-- [libcrux_hmac::Algorithm]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-hmac-0.0.8/src/hmac.rs', lines 55:0-55:18
     Name pattern: [libcrux_hmac::Algorithm]
@@ -184,39 +163,6 @@ structure libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 (LEN :
 structure libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 (LEN :
   Std.Usize) where
   value : Array Std.U8 LEN
-
-/-- [prost::encoding::wire_type::WireType]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding/wire_type.rs', lines 9:0-9:17
-    Name pattern: [prost::encoding::wire_type::WireType]
-    Visibility: public -/
-@[discriminant u8, rust_type "prost::encoding::wire_type::WireType"]
-inductive prost.encoding.wire_type.WireType where
-| Varint : prost.encoding.wire_type.WireType
-| SixtyFourBit : prost.encoding.wire_type.WireType
-| LengthDelimited : prost.encoding.wire_type.WireType
-| StartGroup : prost.encoding.wire_type.WireType
-| EndGroup : prost.encoding.wire_type.WireType
-| ThirtyTwoBit : prost.encoding.wire_type.WireType
-
-/-- Trait declaration: [prost::message::Message]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/message.rs', lines 15:0-15:30
-    Name pattern: [prost::message::Message]
-    Visibility: public -/
-@[rust_trait "prost::message::Message"]
-structure prost.message.Message (Self : Type) where
-  encode_raw : forall {T1 : Type} (bytesbufbuf_mutBufMutInst :
-    bytes.buf.buf_mut.BufMut T1), Self → T1 → Result T1
-  merge_field : forall {T1 : Type} (bytesbufbuf_implBufInst :
-    bytes.buf.buf_impl.Buf T1), Self → Std.U32 →
-    prost.encoding.wire_type.WireType → T1 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) × Self ×
-    T1)
-  encoded_len : Self → Result Std.Usize
-  encode_to_vec : Self → Result (alloc.vec.Vec Std.U8)
-  decode : forall {T1 : Type} (coredefaultDefaultInst : core.default.Default
-    Self) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1), T1 → Result
-    (core.result.Result Self prost.error.DecodeError)
-  clear : Self → Result Self
 
 /-- [prost::error::UnknownEnumValue]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/error.rs', lines 141:0-141:27
@@ -553,11 +499,6 @@ inductive proto.pq_ratchet.Version where
 | V0 : proto.pq_ratchet.Version
 | V1 : proto.pq_ratchet.Version
 
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{closure}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
-def proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure (T0 : Type) :=
-  Option proto.pq_ratchet.pq_ratchet_state.Inner × proto.pq_ratchet.V1State
-
 /-- [spqr::proto::pq_ratchet::Chunk]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 56:0-61:1
     Visibility: public -/
@@ -585,36 +526,6 @@ structure proto.pq_ratchet.V1Msg where
   index : Std.U32
   inner_msg : Option proto.pq_ratchet.v1_msg.InnerMsg
 
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#1}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#2}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#3}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × Bool
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#4}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#5}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_msg.InnerMsg × proto.pq_ratchet.Chunk
-
 /-- [spqr::proto::pq_ratchet::v1_state::Unchunked]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 106:4-106:27
     Visibility: public -/
@@ -635,72 +546,6 @@ structure proto.pq_ratchet.v1_state.unchunked.EkReceived where
     Visibility: public -/
 @[reducible]
 def proto.pq_ratchet.v1_state.Chunked := Unit
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#1}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_1 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.KeysSampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#2}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_2 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.HeaderSent
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#3}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_3 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#4}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_4 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#5}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_5 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#6}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_6 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#7}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_7 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#8}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_8 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#9}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_9 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#10}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def proto.pq_ratchet.v1_state.InnerState.merge.closure_10 (T0 : Type) :=
-  Option proto.pq_ratchet.v1_state.InnerState ×
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled
 
 /-- [spqr::authenticator::Authenticator]
     Source: 'src/authenticator.rs', lines 27:0-30:1
@@ -786,7 +631,7 @@ inductive encoding.EncodingError where
 | ChunkDataDecodingError : encoding.EncodingError
 
 /-- [spqr::Error]
-    Source: 'src/lib.rs', lines 97:0-130:1
+    Source: 'src/lib.rs', lines 105:0-138:1
     Visibility: public -/
 @[discriminant isize]
 inductive Error where
@@ -808,7 +653,7 @@ inductive Error where
 | ChainNotAvailable : Error
 
 /-- [spqr::EpochSecret]
-    Source: 'src/lib.rs', lines 50:0-53:1
+    Source: 'src/lib.rs', lines 58:0-61:1
     Visibility: public -/
 structure EpochSecret where
   epoch : Std.U64
@@ -920,6 +765,11 @@ structure encoding.Decoder (Self : Type) where
   add_chunk : Self → encoding.Chunk → Result Self
   decoded_message : Self → Result (Option (alloc.vec.Vec Std.U8))
 
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{closure}]
+    Source: 'src/encoding/polynomial.rs', lines 942:65-942:73 -/
+@[reducible]
+def encoding.polynomial.DecoderPolyDecoder.decoded_message.closure := Unit
+
 /-- [spqr::incremental_mlkem768::Keys]
     Source: 'src/incremental_mlkem768.rs', lines 22:0-26:1
     Visibility: public -/
@@ -929,7 +779,7 @@ structure incremental_mlkem768.Keys where
   hdr : alloc.vec.Vec Std.U8
 
 /-- [spqr::Params]
-    Source: 'src/lib.rs', lines 55:0-61:1
+    Source: 'src/lib.rs', lines 63:0-69:1
     Visibility: public -/
 structure Params where
   direction : proto.pq_ratchet.Direction
@@ -939,7 +789,7 @@ structure Params where
   chain_params : chain.ChainParams
 
 /-- [spqr::SecretOutput]
-    Source: 'src/lib.rs', lines 73:0-85:1
+    Source: 'src/lib.rs', lines 81:0-93:1
     Visibility: public -/
 @[discriminant isize]
 inductive SecretOutput where
@@ -948,7 +798,7 @@ inductive SecretOutput where
 | Recv : alloc.vec.Vec Std.U8 → SecretOutput
 
 /-- [spqr::CurrentVersion]
-    Source: 'src/lib.rs', lines 88:0-94:1
+    Source: 'src/lib.rs', lines 96:0-102:1
     Visibility: public -/
 @[discriminant isize]
 inductive CurrentVersion where
@@ -1139,7 +989,7 @@ inductive v1.chunked.states.States where
 | Ct2Sampled : v1.chunked.send_ct.Ct2Sampled → v1.chunked.states.States
 
 /-- [spqr::Send]
-    Source: 'src/lib.rs', lines 242:0-246:1
+    Source: 'src/lib.rs', lines 249:0-253:1
     Visibility: public -/
 structure Send where
   state : alloc.vec.Vec Std.U8
@@ -1147,12 +997,12 @@ structure Send where
   key : Option (alloc.vec.Vec Std.U8)
 
 /-- [spqr::decode_state::{closure}]
-    Source: 'src/lib.rs', lines 503:72-503:94 -/
+    Source: 'src/lib.rs', lines 507:46-507:68 -/
 @[reducible]
 def decode_state.closure := Unit
 
 /-- [spqr::current_version::{closure}]
-    Source: 'src/lib.rs', lines 258:59-258:81 -/
+    Source: 'src/lib.rs', lines 265:59-265:81 -/
 @[reducible]
 def current_version.closure := Unit
 
@@ -1257,12 +1107,12 @@ def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
 def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
 
 /-- [spqr::chain_from_version_negotiation::{closure}]
-    Source: 'src/lib.rs', lines 337:40-337:62 -/
+    Source: 'src/lib.rs', lines 343:40-343:62 -/
 @[reducible]
 def chain_from_version_negotiation.closure := Unit
 
 /-- [spqr::Recv]
-    Source: 'src/lib.rs', lines 327:0-330:1
+    Source: 'src/lib.rs', lines 333:0-336:1
     Visibility: public -/
 structure Recv where
   state : alloc.vec.Vec Std.U8
@@ -1347,12 +1197,12 @@ inductive v1.chunked.send_ct.NoHeaderReceivedRecvChunk where
 def v1.chunked.states.serialize.Message.deserialize.closure := Unit
 
 /-- [spqr::msg_preamble::{closure}]
-    Source: 'src/lib.rs', lines 580:17-580:37 -/
+    Source: 'src/lib.rs', lines 584:17-584:37 -/
 @[reducible]
 def msg_preamble.closure := Unit
 
 /-- [spqr::MsgPreamble]
-    Source: 'src/lib.rs', lines 556:0-561:1 -/
+    Source: 'src/lib.rs', lines 560:0-565:1 -/
 structure MsgPreamble where
   version : Std.U8
   epoch : Std.U64
@@ -1360,7 +1210,7 @@ structure MsgPreamble where
   remaining : Slice Std.U8
 
 /-- [spqr::recv::{closure}]
-    Source: 'src/lib.rs', lines 438:52-438:74 -/
+    Source: 'src/lib.rs', lines 443:52-443:74 -/
 @[reducible]
 def recv.closure := Unit
 

@@ -6,7 +6,8 @@ Change:
    `matches!(current_version, 0)`;
 3. in the `Ordering::Less` arm, `version_negotiation` is taken by value (`.expect(..)`) instead of
    borrowed (`.as_ref().expect(..)`), and `chain_from` gets `Some(&vn)`;
-4. the locals `v` and `chain` are renamed `version_to` and `ratchet_chain`.
+4. the locals `v` and `chain` are renamed `version_to` and `ratchet_chain`;
+5. both `PqRatchetState { .. }.encode_to_vec()` become `encode_state_pb(&PqRatchetState { .. })`.
 Why:
 1. `log` is excluded from the translation; its macros make Aeneas fail ("Internal error");
 2. the `==` in the tuple is emitted as a Lean `Prop`, so the later `if`/`assert!` on it has no
@@ -14,14 +15,17 @@ Why:
 3. with that borrow alive next to the move of `prenegotiated_state_pb.chain`, Aeneas fails to
    join the arms of the `match` ("Could not match the contexts");
 4. in the generated Lean, the locals `v1` (from `v`) and `chain` clash with the modules `v1` and
-   `chain` (#101).
+   `chain` (#101);
+5. `encode_state_pb` is opaque in the translation, so the prost-derived `Message` impls are not
+   reached (#102, aeneas#1046).
 Behaviour: identical apart from logging (no log output).
+Relies on: `encode_state_pb`, added by lib-state_pb.patch.
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 6bc0197..c40500e 100644
+index 6bc0197..83daeca 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -355,132 +355,132 @@ fn chain_from(
+@@ -355,132 +355,130 @@ fn chain_from(
  pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Error> {
      let msg = msg_preamble(msg)?;
  
@@ -80,16 +84,18 @@ index 6bc0197..c40500e 100644
  
              return Ok(Recv {
                  key,
-                 state: pqrpb::PqRatchetState {
+-                state: pqrpb::PqRatchetState {
 -                    chain: Some(chain.into_pb()),
++                state: encode_state_pb(&pqrpb::PqRatchetState {
 +                    chain: Some(ratchet_chain.into_pb()),
                      // We leave `version_negotiation` in our state to tell future calls to this
                      // function that they're allowed to accept other messages from the greater
                      // version number.
                      version_negotiation: prenegotiated_state_pb.version_negotiation,
                      inner: prenegotiated_state_pb.inner,
-                 }
-                 .encode_to_vec(),
+-                }
+-                .encode_to_vec(),
++                }),
              });
          }
          Ordering::Equal => prenegotiated_state_pb,
@@ -150,14 +156,16 @@ index 6bc0197..c40500e 100644
 +            let msg_key = ratchet_chain.recv_key(msg_key_epoch, msg.index)?;
  
              Ok(Recv {
-                 state: pqrpb::PqRatchetState {
+-                state: pqrpb::PqRatchetState {
++                state: encode_state_pb(&pqrpb::PqRatchetState {
                      inner: Some(pqrpb::pq_ratchet_state::Inner::V1(state.into_pb())),
                      // Receiving clears our version negotiation.
                      version_negotiation: None,
 -                    chain: Some(chain.into_pb()),
+-                }
+-                .encode_to_vec(),
 +                    chain: Some(ratchet_chain.into_pb()),
-                 }
-                 .encode_to_vec(),
++                }),
                  // hax does not like `filter`
                  key: if msg_key.is_empty() {
                      None

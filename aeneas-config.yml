@@ -43,15 +43,21 @@ charon:
     # not translate; spqr never calls them.
     - "spqr::proto::pq_ratchet::_::as_str_name"
     - "spqr::proto::pq_ratchet::_::from_str_name"
+    # prost-generated (de)serialisation: spqr reaches it only through the opaque
+    # `encode_state_pb`/`decode_state_pb` (translation patch lib-state_pb.patch).
+    - "spqr::proto::_::{impl prost::message::Message for _}"
+    - "spqr::proto::_::_::{impl prost::message::Message for _}"
+    - "spqr::proto::_::_::_::{impl prost::message::Message for _}"
+    - "spqr::proto::_::_::_::merge"
+    - "spqr::proto::_::_::_::encode"
+    - "spqr::proto::_::_::_::encoded_len"
   opaque:
     # `hkdf_to_slice`: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/104
     - "spqr::kdf::hkdf_to_slice"
     - "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275" # has log calls; kept opaque so encaps2 can call it
-    # `decoded_message`: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/103
-    - "spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message"
-    - "spqr::proto::_::{impl prost::message::Message for _}"
-    - "spqr::proto::_::_::{impl prost::message::Message for _}"
-    - "spqr::proto::_::_::_::{impl prost::message::Message for _}"
+    # prost encoding/decoding of the ratchet state (translation patch lib-state_pb.patch)
+    - "spqr::encode_state_pb"
+    - "spqr::decode_state_pb"
 
 aeneas_args:
   options:
@@ -63,18 +69,4 @@ aeneas_args:
 # Post-extraction find/replace applied to generated Lean files.
 tweaks:
   files: ["Types.lean", "Funs.lean"]
-  substitutions:
-
-    # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-    - regex: "impl_def(\\s+[\\w.]+\\.Insts\\.ProstMessageMessage\\s*:[\\s\\S]*?):= \\{[\\s\\S]*?\\n\\}"
-      replace: "def$1:= sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102"
-
-    # Sorry merge closure FnOnce call_once assignments (Aeneas types them wrong)
-    # https://github.com/AeneasVerif/aeneas/issues/1046
-    - regex: "call_once :=\\n    proto\\.pq_ratchet\\.\\S+\\.merge\\.closure\\S*\\.Insts\\.CoreOpsFunctionFnOnceTupleTupleTuple\\.call_once\\n    bytesbufbuf_implBufInst\\n}"
-      replace: "call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046\n}"
-
-    # Sorry merge function bodies (broken Result.map with mistyped closures)
-    # https://github.com/AeneasVerif/aeneas/issues/1046
-    - regex: "(def proto\\.pq_ratchet\\.(?:pq_ratchet_state\\.Inner|v1_msg\\.InnerMsg|v1_state\\.InnerState)\\.merge\\n[\\s\\S]*?):= do[\\s\\S]*?(?=\\n/-- )"
-      replace: "$1:= sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046"
+  substitutions: []

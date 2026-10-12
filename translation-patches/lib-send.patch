@@ -1,14 +1,20 @@
 Translation patch: spqr::send
 
-Change: the local `chain` is renamed `ratchet_chain`.
-Why: in the generated Lean, the local `chain` clashes with the module `chain` (#101).
+Change:
+1. the local `chain` is renamed `ratchet_chain`;
+2. `PqRatchetState { .. }.encode_to_vec()` becomes `encode_state_pb(&PqRatchetState { .. })`.
+Why:
+1. in the generated Lean, the local `chain` clashes with the module `chain` (#101);
+2. `encode_state_pb` is opaque in the translation, so the prost-derived `Message` impls are not
+   reached (#102, aeneas#1046).
 Behaviour: identical.
+Relies on: `encode_state_pb`, added by lib-state_pb.patch.
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 6bc0197..b987bfc 100644
+index 6bc0197..265c866 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -263,63 +263,63 @@ pub fn current_version(state: &SerializedState) -> Result<CurrentVersion, Error>
+@@ -263,63 +263,62 @@ pub fn current_version(state: &SerializedState) -> Result<CurrentVersion, Error>
  #[hax_lib::fstar::verification_status(lax)]
  pub fn send<R: Rng + CryptoRng>(state: &SerializedState, rng: &mut R) -> Result<Send, Error> {
      let state_pb = decode_state(state)?;
@@ -60,13 +66,15 @@ index 6bc0197..b987bfc 100644
              assert!(!msg.is_empty());
              assert_eq!(msg[0], Version::V1.into());
              Ok(Send {
-                 state: pqrpb::PqRatchetState {
+-                state: pqrpb::PqRatchetState {
++                state: encode_state_pb(&pqrpb::PqRatchetState {
                      inner: Some(pqrpb::pq_ratchet_state::Inner::V1(state.into_pb())),
                      // Sending never changes our version negotiation.
                      version_negotiation: state_pb.version_negotiation,
                      chain: chain_pb,
-                 }
-                 .encode_to_vec(),
+-                }
+-                .encode_to_vec(),
++                }),
                  msg,
                  // hax does not like `filter`
                  key: if msg_key.is_empty() {

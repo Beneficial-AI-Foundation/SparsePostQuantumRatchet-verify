@@ -34,12 +34,6 @@ structure alloc.collections.vec_deque.into_iter.IntoIter (T : Type) (A : Type)
     where
   inner : alloc.collections.vec_deque.VecDeque T A
 
-/-- [bytes::buf::uninit_slice::UninitSlice]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/uninit_slice.rs', lines 22:0-22:22
-    Name pattern: [bytes::buf::uninit_slice::UninitSlice] -/
-@[rust_type "bytes::buf::uninit_slice::UninitSlice"]
-axiom bytes.buf.uninit_slice.UninitSlice : Type
-
 /-! ## ML-KEM-768 parameter set and derived serialized buffer sizes
 
 To describe the properties of the libcrux `KeyPairCompressedBytes` interface (and, more
@@ -146,17 +140,11 @@ structure libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes where
   value : Array Std.U8 (Usize.ofNat mlkem768Params.decapsulationKeyBytes)
 deriving Inhabited
 
-/-- [prost::encoding::DecodeContext]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 36:0-36:24
-    Name pattern: [prost::encoding::DecodeContext] -/
-@[rust_type "prost::encoding::DecodeContext"]
-axiom prost.encoding.DecodeContext : Type
-
 /-- [prost::error::DecodeError]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/error.rs', lines 17:0-17:22
     Name pattern: [prost::error::DecodeError] -/
 @[rust_type "prost::error::DecodeError"]
-axiom prost.error.DecodeError : Type
+opaque prost.error.DecodeError : Type
 
 /-- [sorted_vec::SortedVec]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 27:0-27:30
