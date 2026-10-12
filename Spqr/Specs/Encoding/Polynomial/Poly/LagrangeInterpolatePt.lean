@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
-import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+module
+
+public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
+public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
 
 /-! # Spec theorem for
 `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate_pt`
@@ -31,6 +33,8 @@ this equals
 `pᵢ.y / (∏_{j≠i} (pᵢ.x − pⱼ.x)) · ∏_{j≠i} (X − pⱼ.x)`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf Polynomial
 

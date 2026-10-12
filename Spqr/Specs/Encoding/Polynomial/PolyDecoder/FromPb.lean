@@ -3,13 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.ModByMonic
-import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Math.List
-import Spqr.Math.Gf16.Field
-import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
-import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+module
+
+public import Spqr.Math.Poly.ModByMonic
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.List
+public import Spqr.Math.Gf16.Field
+public import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
+public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 
 /-! # Spec theorem for `PolyDecoder::from_pb`: loop body 1
 
@@ -19,6 +21,8 @@ chunk, deserializes it into a `Pt` over GF(2¹⁶), pushes the point onto `v`, a
 by 4.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 

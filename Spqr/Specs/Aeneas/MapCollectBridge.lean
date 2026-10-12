@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
 
 /-! # The single assumed bridge for `.map(...).collect()`
 
@@ -36,6 +38,8 @@ It can only be discharged by making the model complete: either upstream fixes ae
 or the tweak is changed to emit a faithful `next`. See
 https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/409.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
