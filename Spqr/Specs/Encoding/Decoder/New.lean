@@ -28,7 +28,7 @@ namespace spqr.core.option.Option.Insts.SpqrEncodingDecoder
 Given `h_inner : DecoderInst.new len_bytes ⦃ P ⦄`, concludes that `new DecoderInst len_bytes`
 satisfies: `Ok (some val) ↦ P (Ok val)`, `Err e ↦ P (Err e)`, `Ok none ↦ False`. -/
 @[step]
-theorem new_spec_lift
+theorem new_spec
     {T : Type} (DecoderInst : encoding.Decoder T) (len_bytes : Std.Usize)
     (P : core.result.Result T encoding.EncodingError → Prop)
     (h_inner :
@@ -49,7 +49,6 @@ Lifts `PolyDecoder.Insts.SpqrEncodingDecoder.new_spec` through `new_spec_lift`:
   • Even `len_bytes.val`: succeeds with `Ok (some pd)` where `pd.pts_needed = len_bytes/2`,
     `pd.pts` has 16 default entries, and `pd.is_complete = false`.
   • Odd `len_bytes.val`: returns `Err (PolynomialError MessageLengthEven)`. -/
-@[step]
 theorem new_spec_poly_decoder (len_bytes : Std.Usize) :
     new PolyDecoder.Insts.SpqrEncodingDecoder len_bytes ⦃
         (result : core.result.Result (Option PolyDecoder) encoding.EncodingError) =>
@@ -66,7 +65,7 @@ theorem new_spec_poly_decoder (len_bytes : Std.Usize) :
         result = core.result.Result.Err
           (encoding.EncodingError.PolynomialError
             encoding.polynomial.PolynomialError.MessageLengthEven) ⦄ := by
-  have h := new_spec_lift PolyDecoder.Insts.SpqrEncodingDecoder len_bytes _
+  have h := new_spec PolyDecoder.Insts.SpqrEncodingDecoder len_bytes _
     (PolyDecoder.Insts.SpqrEncodingDecoder.new_spec len_bytes)
   apply WP.spec_mono h
   grind
