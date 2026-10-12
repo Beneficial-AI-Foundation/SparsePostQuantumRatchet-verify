@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import HeaderLinter
-import Spqr.Lint.SpecIndent
+module
+
+public meta import HeaderLinter
+public meta import Spqr.Lint.SpecIndent
 
 /-!
 # SparsePostQuantumRatchet verification project linters
@@ -24,3 +26,5 @@ All linters are enabled by default (`defValue := true`) and can be suppressed lo
 documented `set_option linter.spqr.* false in` — consistent with the style guide's
 requirement that suppressions carry an explanatory comment.
 -/
+
+public meta section

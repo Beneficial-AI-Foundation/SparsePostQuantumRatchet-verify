@@ -3,12 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Auxiliary.Aeneas.Vec
-import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
-import Spqr.Specs.Encoding.Polynomial.Poly.Zero
-import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+public import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Specs.Aeneas.GF16New
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop body 0
 
@@ -24,6 +27,8 @@ Each coefficient satisfies the big-endian invariant:
 `value = serialized[2*k] * 256 + serialized[2*k+1]`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 

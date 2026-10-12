@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 /-!
 # Spec theorem for `spqr::empty_state`
 
@@ -16,6 +18,8 @@ interpretation of an empty byte slice.
 
 **Source**: spqr/src/lib.rs (lines 47:0-49:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

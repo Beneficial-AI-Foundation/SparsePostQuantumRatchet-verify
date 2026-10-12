@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::encoding::{impl core::convert::From<spqr::encoding::polynomial::PolynomialError>`
@@ -13,8 +15,9 @@ This is the `From` conversion that lifts a `polynomial::PolynomialError` into th
 `EncodingError` type, letting the `?` operator turn a polynomial-layer error into an
 encoding-layer error automatically.
 
-**Source**: src/encoding.rs (lines 18:0-22:1)
--/
+**Source**: src/encoding.rs-/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

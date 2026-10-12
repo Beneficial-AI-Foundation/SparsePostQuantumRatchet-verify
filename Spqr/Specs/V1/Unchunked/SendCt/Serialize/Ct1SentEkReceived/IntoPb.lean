@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 
 /-! # Spec theorem for `spqr::v1::unchunked::send_ct::serialize::Ct1SentEkReceived::into_pb`
 
@@ -19,6 +21,8 @@ exactly). The reverse direction is `from_pb`.
 
 **Source**: src/v1/unchunked/send_ct/serialize.rs (lines 74:4-82:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

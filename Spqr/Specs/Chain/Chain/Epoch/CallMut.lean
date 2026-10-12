@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.FromPb
-import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
-import Spqr.Specs.Chain.Chain.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.FromPb
+public import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+public import Spqr.Specs.Chain.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb::closure#1::call_mut`
 
@@ -14,6 +16,8 @@ Closure converting a protobuf `Epoch` into `ChainEpoch` by unwrapping and conver
 its `send`/`recv` fields. Returns `Err StateDecode` if either field is `none`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
+module
+
+public import Spqr.Math.List
 
 /-! # Polynomial identity for `mult_xdiff_assign_trailing`
 
@@ -11,6 +13,8 @@ Closed-form identity for the in-place recurrence `v[i−1] −= v[i] * d`
 used by `mult_xdiff_assign_trailing`.
 
 `listToGF216Poly rs = listToGF216Poly cs − C(d.toGF216) · X^(s−1) · listToGF216Poly (cs.drop s)`. -/
+
+@[expose] public section
 
 open Polynomial spqr.encoding.gf
 

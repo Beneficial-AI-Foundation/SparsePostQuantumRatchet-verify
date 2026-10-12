@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FromPb
-import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FromPb
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysUnsampled::from_pb`
@@ -21,6 +23,8 @@ of the unchunked conversion. The reverse direction is `into_pb`.
 
 **Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 namespace spqr.v1.chunked.send_ek.serialize.KeysUnsampled

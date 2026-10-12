@@ -3,8 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.Basic
-import Mathlib.RingTheory.DedekindDomain.Basic
+module
+
+public import Spqr.Math.Poly.Coeff.Basic
+public import Mathlib.RingTheory.DedekindDomain.Basic
+
 /-!
 # `GF16.toGF216` at distinguished values, and the `getElem!`/`coeff` bridge
 
@@ -15,6 +18,8 @@ import Mathlib.RingTheory.DedekindDomain.Basic
 * `getElem!_toGF216_eq_coeff` — bridge between `cs[j]!.toGF216` and the polynomial
   coefficient.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.math.gf spqr.encoding.gf

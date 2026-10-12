@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
-import Spqr.Specs.Encoding.Gf.Mul2U16
-import Spqr.Specs.Encoding.Gf.GF16.MulAssign
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
+public import Spqr.Specs.Encoding.Gf.Mul2U16
+public import Spqr.Specs.Encoding.Gf.GF16.MulAssign
 /-! # Spec theorem for `spqr::encoding::gf::parallel_mult`
 
 Processes the slice in two phases: a pair loop (`parallel_mult_loop`) using `mul2_u16` in
@@ -14,6 +16,8 @@ strides of two, then a `MulAssign` fix-up for the trailing element if length is 
 
 **Source**: spqr/src/encoding/gf.rs (lines 566:0-579:1)
 -/
+
+@[expose] public section
 
 
 open Aeneas Aeneas.Std

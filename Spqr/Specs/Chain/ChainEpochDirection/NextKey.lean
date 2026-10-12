@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
-import Spqr.Specs.Aeneas.VecDerefMut
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
+public import Spqr.Specs.Aeneas.VecDerefMut
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key`
 
@@ -14,6 +16,8 @@ updates the chain secret with the first 32 bytes, and returns the last 32 bytes 
 Infallible when `self.next.length = 32` and `self.ctr < u32::MAX`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std crypto
 

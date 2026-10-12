@@ -3,10 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
-import Spqr.Specs.Aeneas.SliceChunksExact
-import Spqr.Specs.Encoding.Gf.GF16.New
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+module
+
+public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+public import Spqr.Specs.Aeneas.SliceChunksExact
+public import Spqr.Specs.Encoding.Gf.GF16.New
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+public import Spqr.Auxiliary.Aeneas.Slice
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop body 0
 
@@ -14,10 +17,9 @@ One iteration pops the head chunk `chd`, increments count, appends a GF16 elemen
 with `g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216` to `pts[count % 16].value`,
 and leaves other slots unchanged. -/
 
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
+@[expose] public section
 
-private noncomputable instance instInhabitedSliceU8 : Inhabited (Slice U8) :=
-  ⟨Slice.from [] (by simp)⟩
+open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 
 namespace spqr.encoding.polynomial.PolyEncoder.encode_bytes_base_loop
 

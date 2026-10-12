@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # `simp`/`step_simps` lemma for `RangeFull` indexing of an array
@@ -16,6 +18,8 @@ The slice-level counterpart (`s[..] = s`) already has a `@[step]` spec in
 `SrcTranslated.FunsExternal`.  Both are analogues of the upstream
 `Aeneas.Std.Array.index_SliceIndexRangeUsizeSlice` and should eventually be upstreamed to Aeneas.
 -/
+
+@[expose] public section
 
 -- `spqr` is opened for the `RangeFull` `SliceIndex` instance record, which the extraction places
 -- in the crate namespace even though its `index` method is at the root.

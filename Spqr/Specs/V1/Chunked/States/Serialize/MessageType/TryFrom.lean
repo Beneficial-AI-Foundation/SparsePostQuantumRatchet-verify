@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<`
@@ -24,6 +26,8 @@ call succeeds comes from the trusted spec axiom `alloc.fmt.format_spec`
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 107:4-118:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

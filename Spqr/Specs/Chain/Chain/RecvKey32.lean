@@ -3,9 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Chain.Chain.RecvKey
-import Spqr.Specs.Chain.ChainEpochDirection.Key32
-import Spqr.Specs.Chain.Chain.Defs
+module
+
+public import Spqr.Specs.Chain.Chain.RecvKey
+public import Spqr.Specs.Chain.ChainEpochDirection.Key32
+public import Spqr.Specs.Chain.Chain.Defs
+
 /-! # 32-bit specialization of `recv_key_spec`
 
 On 32-bit platforms the GC trim threshold `(maxOoo * 11/10 + 1) * 36` must fit
@@ -17,6 +20,8 @@ This file provides `recv_key_spec_32`, which uses the same postcondition
 `recvKeyPre32` (constant `108458770`, no platform hypothesis).
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 

@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
 
 /-!
 # Spec theorem for `spqr::encoding::gf::GF16::const_sub`
@@ -26,6 +28,8 @@ GF(2) polynomial already has degree `< 16` and is the canonical representative o
 
 **Source**: spqr/src/encoding/gf.rs (lines 566:4-570:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Polynomial spqr.encoding.gf.unaccelerated spqr.math.gf
 

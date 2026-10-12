@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
-import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
-import Spqr.Specs.Chain.Defs
-import Spqr.Specs.Chain.KeyHistory.Remove
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
+public import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+public import Spqr.Specs.Chain.Defs
+public import Spqr.Specs.Chain.KeyHistory.Remove
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::get`: loop body 0
 
 One iteration of the key-lookup loop in `KeyHistory::get`. Steps through `data` in 36-byte
@@ -16,6 +18,8 @@ One iteration of the key-lookup loop in `KeyHistory::get`. Steps through `data` 
 swap-removing the record) on match, or `cont` to advance on mismatch.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 
