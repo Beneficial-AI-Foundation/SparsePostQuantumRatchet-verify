@@ -1,13 +1,11 @@
 Translation patch: <States>::recv (spqr::v1::chunked::states)
 
-Change: the `log::info!` calls are gated on `not(any(hax, feature = "extraction"))` instead of
-`not(hax)`.
+Change: the `log::info!` calls are commented out.
 Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
-Behaviour: identical (only with `extraction`: no log output).
-Relies on: Cargo-features.patch (defines the `extraction` feature).
+Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/v1/chunked/states.rs b/src/v1/chunked/states.rs
-index 1de4bce..4eef395 100644
+index 1de4bce..42a8e23 100644
 --- a/src/v1/chunked/states.rs
 +++ b/src/v1/chunked/states.rs
 @@ -275,260 +275,260 @@ pub(crate) fn send<R: Rng + CryptoRng>(self, rng: &mut R) -> Result<Send, Error>
@@ -33,11 +31,15 @@ index 1de4bce..4eef395 100644
                  Ordering::Equal => {
                      if let MessagePayload::Ct1(ref chunk) = msg.payload {
 -                        #[cfg(not(hax))]
-+                        #[cfg(not(any(hax, feature = "extraction")))]
-                         log::info!(
-                             "spqr v1.send_ek.recv epoch {}: KeysSampled -> HeaderSent",
-                             msg.epoch
-                         );
+-                        log::info!(
+-                            "spqr v1.send_ek.recv epoch {}: KeysSampled -> HeaderSent",
+-                            msg.epoch
+-                        );
++                        // #[cfg(not(hax))]
++                        // log::info!(
++                        //     "spqr v1.send_ek.recv epoch {}: KeysSampled -> HeaderSent",
++                        //     msg.epoch
++                        // );
                          Self::HeaderSent(state.recv_ct1_chunk(msg.epoch, chunk))
                      } else {
                          Self::KeysSampled(state)
@@ -57,11 +59,15 @@ index 1de4bce..4eef395 100644
                              }
                              send_ek::HeaderSentRecvChunk::Done(state) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ek.recv epoch {}: HeaderSent -> Ct1Received",
-                                     msg.epoch
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ek.recv epoch {}: HeaderSent -> Ct1Received",
+-                                    msg.epoch
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ek.recv epoch {}: HeaderSent -> Ct1Received",
++                                //     msg.epoch
++                                // );
                                  Self::Ct1Received(state)
                              }
                          }
@@ -78,11 +84,15 @@ index 1de4bce..4eef395 100644
                  Ordering::Equal => {
                      if let MessagePayload::Ct2(ref chunk) = msg.payload {
 -                        #[cfg(not(hax))]
-+                        #[cfg(not(any(hax, feature = "extraction")))]
-                         log::info!(
-                             "spqr v1.send_ek.recv epoch {}: Ct1Received -> EkSentCt1Received",
-                             msg.epoch
-                         );
+-                        log::info!(
+-                            "spqr v1.send_ek.recv epoch {}: Ct1Received -> EkSentCt1Received",
+-                            msg.epoch
+-                        );
++                        // #[cfg(not(hax))]
++                        // log::info!(
++                        //     "spqr v1.send_ek.recv epoch {}: Ct1Received -> EkSentCt1Received",
++                        //     msg.epoch
++                        // );
                          Self::EkSentCt1Received(state.recv_ct2_chunk(msg.epoch, chunk))
                      } else {
                          Self::Ct1Received(state)
@@ -102,12 +112,17 @@ index 1de4bce..4eef395 100644
                              }
                              send_ek::EkSentCt1ReceivedRecvChunk::Done((state, sec)) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
-                                     msg.epoch,
-                                     msg.epoch + 1
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
+-                                    msg.epoch,
+-                                    msg.epoch + 1
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
++                                //     msg.epoch,
++                                //     msg.epoch + 1
++                                // );
                                  key = Some(sec);
                                  Self::NoHeaderReceived(state)
                              }
@@ -134,11 +149,15 @@ index 1de4bce..4eef395 100644
                              }
                              send_ct::NoHeaderReceivedRecvChunk::Done(state) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ct.recv epoch {}: NoHeaderReceived -> HeaderReceived",
-                                     msg.epoch
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ct.recv epoch {}: NoHeaderReceived -> HeaderReceived",
+-                                    msg.epoch
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ct.recv epoch {}: NoHeaderReceived -> HeaderReceived",
++                                //     msg.epoch
++                                // );
                                  Self::HeaderReceived(state)
                              }
                          }
@@ -172,29 +191,41 @@ index 1de4bce..4eef395 100644
                              }
                              send_ct::Ct1SampledRecvChunk::StillReceiving(state) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct1Acknowledged",
-                                     msg.epoch
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct1Acknowledged",
+-                                    msg.epoch
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct1Acknowledged",
++                                //     msg.epoch
++                                // );
                                  Self::Ct1Acknowledged(state)
                              }
                              send_ct::Ct1SampledRecvChunk::StillSending(state) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> EkReceivedCt1Sampled",
-                                     msg.epoch
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> EkReceivedCt1Sampled",
+-                                    msg.epoch
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> EkReceivedCt1Sampled",
++                                //     msg.epoch
++                                // );
                                  Self::EkReceivedCt1Sampled(state)
                              }
                              send_ct::Ct1SampledRecvChunk::Done(state) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct2Sampled",
-                                     msg.epoch
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct2Sampled",
+-                                    msg.epoch
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ct.recv epoch {}: Ct1Sampled -> Ct2Sampled",
++                                //     msg.epoch
++                                // );
                                  Self::Ct2Sampled(state)
                              }
                          }
@@ -214,11 +245,15 @@ index 1de4bce..4eef395 100644
                          MessagePayload::Ct1Ack(true) | MessagePayload::EkCt1Ack(_)
                      ) {
 -                        #[cfg(not(hax))]
-+                        #[cfg(not(any(hax, feature = "extraction")))]
-                         log::info!(
-                             "spqr v1.send_ct.recv epoch {}: EkReceivedCt1Sampled -> Ct2Sampled",
-                             msg.epoch
-                         );
+-                        log::info!(
+-                            "spqr v1.send_ct.recv epoch {}: EkReceivedCt1Sampled -> Ct2Sampled",
+-                            msg.epoch
+-                        );
++                        // #[cfg(not(hax))]
++                        // log::info!(
++                        //     "spqr v1.send_ct.recv epoch {}: EkReceivedCt1Sampled -> Ct2Sampled",
++                        //     msg.epoch
++                        // );
                          Self::Ct2Sampled(state.recv_ct1_ack(msg.epoch))
                      } else {
                          Self::EkReceivedCt1Sampled(state)
@@ -247,11 +282,15 @@ index 1de4bce..4eef395 100644
                              }
                              send_ct::Ct1AcknowledgedRecvChunk::Done(state) => {
 -                                #[cfg(not(hax))]
-+                                #[cfg(not(any(hax, feature = "extraction")))]
-                                 log::info!(
-                                     "spqr v1.send_ct.recv epoch {}: Ct1Acknowledged -> Ct2Sampled",
-                                     msg.epoch
-                                 );
+-                                log::info!(
+-                                    "spqr v1.send_ct.recv epoch {}: Ct1Acknowledged -> Ct2Sampled",
+-                                    msg.epoch
+-                                );
++                                // #[cfg(not(hax))]
++                                // log::info!(
++                                //     "spqr v1.send_ct.recv epoch {}: Ct1Acknowledged -> Ct2Sampled",
++                                //     msg.epoch
++                                // );
                                  Self::Ct2Sampled(state)
                              }
                          }
@@ -264,12 +303,17 @@ index 1de4bce..4eef395 100644
                  Ordering::Greater => {
                      if msg.epoch == state.epoch() + 1 {
 -                        #[cfg(not(hax))]
-+                        #[cfg(not(any(hax, feature = "extraction")))]
-                         log::info!(
-                             "spqr v1.send_ct.recv epoch {}->{}: Ct2Sampled -> KeysSampled",
-                             msg.epoch - 1,
-                             msg.epoch
-                         );
+-                        log::info!(
+-                            "spqr v1.send_ct.recv epoch {}->{}: Ct2Sampled -> KeysSampled",
+-                            msg.epoch - 1,
+-                            msg.epoch
+-                        );
++                        // #[cfg(not(hax))]
++                        // log::info!(
++                        //     "spqr v1.send_ct.recv epoch {}->{}: Ct2Sampled -> KeysSampled",
++                        //     msg.epoch - 1,
++                        //     msg.epoch
++                        // );
                          Self::KeysUnsampled(state.recv_next_epoch(msg.epoch))
                      } else {
                          return Err(Error::EpochOutOfRange(msg.epoch));

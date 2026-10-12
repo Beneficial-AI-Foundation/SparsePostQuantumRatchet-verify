@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
-import Spqr.Math.Gf16.Field
-import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
-import Spqr.Specs.Aeneas.RangeIteratorNext
+module
+
+public import Spqr.Math.List
+public import Spqr.Math.Gf16.Field
+public import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+public import Spqr.Specs.Aeneas.RangeIteratorNext
 
 
 /-! # Spec theorem for `Poly::deserialize`: loop body 0
@@ -20,6 +22,8 @@ One step of the coefficient deserialization `while i < serialized_len` loop. Eit
 Loop invariant: `i` is even, `coefficients.len() == i / 2`, with each coefficient satisfying
   `coefficients[k].value.val = 256 * serialized[2*k].val + serialized[2*k+1].val`
 for all `k < i / 2`. -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf
 

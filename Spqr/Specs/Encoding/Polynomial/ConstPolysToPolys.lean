@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Lacramioara Astefanoaei
 -/
-import Spqr.Specs.Aeneas.SliceIter
-import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
+module
+
+public import Spqr.Specs.Aeneas.SliceIter
+public import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 
 /-!
 # Spec theorem for `spqr::encoding::polynomial::const_polys_to_polys`
@@ -17,6 +19,8 @@ used in `from_complete_points` to convert the `COMPLETE_POINTS_POLYS_N` arrays
 into the `Vec<Poly>` expected by `Poly.lagrange_sum`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

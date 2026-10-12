@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # `@[step]` spec theorem for `Slice.concatListAux`
@@ -14,6 +16,8 @@ clones the slice elements, and concatenates all results into a single flat `List
 When `Clone` is the identity (`hclone`) and `Borrow` is the shared-reference identity borrow,
 the function simply flattens a `List (Slice T)` by extracting and concatenating the `.val` fields.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP spqr
 

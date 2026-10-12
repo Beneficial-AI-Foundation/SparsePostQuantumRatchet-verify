@@ -1,26 +1,23 @@
 Translation patch: build.rs main and the include of the prost output (src/proto/pq_ratchet.rs)
 
-Change: with `extraction`, prost writes its output into `<crate>/generated/` instead of
-`$OUT_DIR`, and `src/proto/pq_ratchet.rs` includes it from there.
+Change: prost writes its output into `<crate>/generated/` instead of `$OUT_DIR`, and
+`src/proto/pq_ratchet.rs` includes it from there.
 Why: the translation records the source path of every generated item (doc comments,
 translation.json); `$OUT_DIR` is an absolute, per-build path, which would make the committed
 translation non-reproducible.
-Behaviour: identical (only with `extraction`; it can panic if `generated/` cannot be created).
-Relies on: Cargo-features.patch (defines the `extraction` feature).
+Behaviour: identical (it can panic if `generated/` cannot be created).
 
 diff --git a/build.rs b/build.rs
-index b7797fe..fb61f82 100644
+index b7797fe..46e7722 100644
 --- a/build.rs
 +++ b/build.rs
-@@ -4,10 +4,15 @@
+@@ -4,10 +4,13 @@
  fn main() {
      let protos = ["src/proto/pq_ratchet.proto"];
      let mut prost_build = prost_build::Config::new();
-+    if std::env::var_os("CARGO_FEATURE_EXTRACTION").is_some() {
-+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("generated");
-+        std::fs::create_dir_all(&dir).expect("can create generated/");
-+        prost_build.out_dir(dir);
-+    }
++    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("generated");
++    std::fs::create_dir_all(&dir).expect("can create generated/");
++    prost_build.out_dir(dir);
      prost_build
          .compile_protos(&protos, &["src"])
          .expect("Protobufs in src are valid");
@@ -29,19 +26,14 @@ index b7797fe..fb61f82 100644
      }
  }
 diff --git a/src/proto/pq_ratchet.rs b/src/proto/pq_ratchet.rs
-index fe5b914..e02991d 100644
+index fe5b914..ef8527d 100644
 --- a/src/proto/pq_ratchet.rs
 +++ b/src/proto/pq_ratchet.rs
-@@ -1,6 +1,12 @@
+@@ -1,6 +1,6 @@
  // Copyright 2025 Signal Messenger, LLC
  // SPDX-License-Identifier: AGPL-3.0-only
  
  #![allow(clippy::derive_partial_eq_without_eq)]
  
-+#[cfg(not(feature = "extraction"))]
- include!(concat!(env!("OUT_DIR"), "/signal.proto.pq_ratchet.rs"));
-+#[cfg(feature = "extraction")]
-+include!(concat!(
-+    env!("CARGO_MANIFEST_DIR"),
-+    "/generated/signal.proto.pq_ratchet.rs"
-+));
+-include!(concat!(env!("OUT_DIR"), "/signal.proto.pq_ratchet.rs"));
++include!(concat!(env!("CARGO_MANIFEST_DIR"), "/generated/signal.proto.pq_ratchet.rs"));

@@ -3,14 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.ModByMonic
-import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Specs.Aeneas.SliceChunksExact
-import Spqr.Math.List
-import Spqr.Math.Gf16.Field
-import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
-import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+module
+
+public import Spqr.Math.Poly.ModByMonic
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Specs.Aeneas.SliceChunksExact
+public import Spqr.Math.List
+public import Spqr.Math.Gf16.Field
+public import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
+public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Auxiliary.Aeneas.Slice
 
 /-! # Spec theorem for `PolyDecoder::from_pb`: loop body 1
 
@@ -21,12 +24,9 @@ the point onto `v`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
+@[expose] public section
 
-/-- An `Inhabited` instance for `Slice U8`, needed to index the chunk list of a
-    `ChunksExact<u8>` iterator with `[k]!`. -/
-private noncomputable instance instInhabitedSliceU8 : Inhabited (Slice U8) :=
-  ⟨Slice.from [] (by simp)⟩
+open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
 

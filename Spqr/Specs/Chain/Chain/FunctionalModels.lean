@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Types
-import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+module
+
+public import SrcTranslated.Types
+public import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
 
 /-!
 # Functional models of `spqr::chain::Chain::{into_pb, from_pb}`
@@ -14,6 +16,8 @@ translated data types only, together with the round-trip laws relating them.
 
 **Source:** "spqr/src/chain.rs"
 -/
+
+@[expose] public section
 
 open Aeneas.Std spqr.chain
 namespace spqr.chain.Chain.FunctionalModels

@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Lib.DecodeState
-import Spqr.Specs.Lib.CurrentVersion.CallOnce
-import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Lib.DecodeState
+public import Spqr.Specs.Lib.CurrentVersion.CallOnce
+public import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
 /-! # Spec theorem for `spqr::current_version`
 
 Deserializes a `SerializedState` via `decode_state`, then reads `inner` (`None` → V0,
@@ -15,6 +17,8 @@ Deserializes a `SerializedState` via `decode_state`, then reads `inner` (`None` 
 No panics; all errors surface as `Error::StateDecode`.
 
 **Source**: spqr/src/lib.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

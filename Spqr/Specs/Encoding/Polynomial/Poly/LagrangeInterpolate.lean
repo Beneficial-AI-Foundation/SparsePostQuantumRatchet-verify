@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.Poly.Clone
-import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
-import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+module
+
+public import Spqr.Specs.Encoding.Polynomial.Poly.Clone
+public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
+public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
 
 /-! # Spec theorem for `lagrange_interpolate`: loop body 1
 
@@ -14,6 +16,8 @@ The body retrieves the next index `j`; if exhausted returns `done (v, working)` 
 otherwise performs the GF(2¹⁶) addition and returns `cont (iter1, v1)`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result  spqr.encoding.gf Polynomial
 

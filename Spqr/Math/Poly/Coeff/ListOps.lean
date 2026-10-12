@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.Basic
+module
+
+public import Spqr.Math.Poly.Coeff.Basic
 
 /-!
 # Linking lemmas: `listToGF216Poly` and list operations
@@ -18,6 +20,8 @@ lists to polynomial operations in `GF216[X]`.
 * `listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one` — if the constant term is zero, divide by `X`.
 * `listToGF216Poly_eq_of_coeffs` — coefficient-matching characterization.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

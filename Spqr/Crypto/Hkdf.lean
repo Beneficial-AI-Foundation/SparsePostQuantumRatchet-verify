@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
-import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.Crypto.RFC5869
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Auxiliary.Aeneas.Scalar
+public import Spqr.Crypto.RFC5869
 
 /-!
 # HKDF-SHA256
@@ -17,6 +19,8 @@ it at SHA-256 and re-expresses it over Aeneas bytes, so that specs can refer to 
 - `SHA256` packages it as an RFC 5869 hash parameter.
 - `hkdf` is RFC 5869 §2 at SHA-256, over Aeneas byte lists.
 -/
+
+@[expose] public section
 
 -- TODO: this should be specific for this use case or upstreamed.
 private instance List.instInhabitedSubtypeEqNatLength (ty : Type) [Inhabited ty] (n : ℕ) :

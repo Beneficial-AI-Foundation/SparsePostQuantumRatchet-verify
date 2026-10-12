@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
-import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
-import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
-import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
+public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
+public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
+public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`
@@ -31,6 +33,8 @@ The chunk block is stated via `chunkBlockAt`, so the layout claimed here is lite
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 200-219)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
 
 /-!
 # Horner-scheme accumulator
@@ -18,6 +20,8 @@ import Spqr.Math.Poly.Basic.Defs
 * `hornerAccum_unfold` — one-step unfolding.
 * `hornerAccum_cons` — shifting lemma on a `cons` cell.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

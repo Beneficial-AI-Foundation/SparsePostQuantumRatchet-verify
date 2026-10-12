@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
+module
+
+public import Spqr.Math.List
 
 /-!
 # Polynomial identities for `mult_xdiff`
@@ -19,6 +21,8 @@ This file collects the pure-mathematical polynomial identity lemmas used by the
   `listToGF216Poly xp2.val = (X − C d.toGF216) * listToGF216Poly a.val`
   derived from the loop 0 and loop 1 postconditions.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf Polynomial
 

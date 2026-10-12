@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # Spec theorem for `incremental_mlkem768::generate`
 
@@ -28,6 +30,8 @@ public key.  In the serialized layout `dk` is the whole key pair, `ek` is the su
 what the spec theorem proves.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 34:0-43:1 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # `@[step]` spec for the the standalone `alloc.slice.Slice.concat` function
@@ -11,6 +13,8 @@ import SrcTranslated.Funs
 Eventually this will be upstreamed to Aeneas but only after the `Slice.concat` models have been
 upstreamed.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP spqr
 

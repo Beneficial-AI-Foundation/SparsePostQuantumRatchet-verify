@@ -3,11 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.CharTwo.ToGF216
+module
+
+public import Spqr.Math.Poly.CharTwo.ToGF216
 
 /-! # Power-vector invariant
 
 Lemmas for maintaining `xs[j].toGF216 = x.toGF216 ^ j` during power-vector construction. -/
+
+@[expose] public section
 
 open spqr.math.gf spqr.encoding.gf
 

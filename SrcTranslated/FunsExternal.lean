@@ -1,6 +1,9 @@
-import Aeneas
-import SrcTranslated.Types
-import Spqr.Auxiliary.Aeneas.SpecImpExists
+module
+public import Aeneas
+public import SrcTranslated.Types
+public import Spqr.Auxiliary.Aeneas.SpecImpExists
+-- Remove when https://github.com/AeneasVerif/aeneas/issues/1415 lands
+import all Aeneas.Std.String
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
@@ -10,6 +13,7 @@ set_option linter.style.longLine false
 set_option linter.style.setOption false
 set_option linter.style.whitespace false
 
+@[expose] public section
 open Aeneas Aeneas.Std Result ControlFlow Error
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
@@ -115,7 +119,7 @@ Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40).
 Element-wise equality of two lists, delegating per-element to the `PartialEq`
 instance and short-circuiting on the first inequality; lists of different lengths
 are unequal. -/
-private def Slice.partialEqAux {T U : Type} (cmpPartialEqInst : core.cmp.PartialEq T U) :
+def Slice.partialEqAux {T U : Type} (cmpPartialEqInst : core.cmp.PartialEq T U) :
     List T → List U → Result Bool
   | [], [] => ok true
   | a :: xs, b :: ys => do
@@ -146,7 +150,7 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_eq
 
 /-- `Slice.partialEqAux` with a homogeneous `PartialEq` always succeeds, and for U8
     the result `b = true ↔ xs = ys`. -/
-private theorem partialEqAux_U8_spec :
+theorem partialEqAux_U8_spec :
     ∀ (xs ys : List Std.U8),
     ∃ b : Bool, Slice.partialEqAux core.cmp.PartialEqU8 xs ys = ok b ∧
       (b = true ↔ xs = ys) := by
@@ -191,7 +195,7 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec
     Builds the element list by calling the closure at indices
     `i, i+1, …, i+remaining-1`, threading the mutable closure state
     through each call. -/
-private def core.array.from_fn_loop
+def core.array.from_fn_loop
     {T F : Type}
     (fnMutInst : core.ops.function.FnMut F Std.Usize T) :
     F → Std.Usize → Nat → Result (List T)

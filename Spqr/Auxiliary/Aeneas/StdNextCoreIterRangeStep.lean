@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # **Spec theorem for `Range<i32>` iterator `next`**:
 
@@ -16,6 +18,8 @@ level: on an `iter : Range I32`, `next` returns `(opt, iter')` where:
 * if `iter.start.val < iter.end.val` (the range still has an element), then `opt = some
   iter.start`, `iter'.start.val = iter.start.val + 1`, and `iter'.end = iter.end` (the upper bound
   is preserved). -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result core.ops.range core.iter.range
 

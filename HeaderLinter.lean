@@ -1,1 +1,3 @@
-import HeaderLinter.Basic
+module  -- shake: keep-all --deprecated_module: ignore
+
+public import HeaderLinter.Basic

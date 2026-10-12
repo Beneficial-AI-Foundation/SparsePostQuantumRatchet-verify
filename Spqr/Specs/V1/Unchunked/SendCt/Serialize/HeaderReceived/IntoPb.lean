@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
-import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::serialize::HeaderReceived::into_pb`
@@ -20,6 +22,8 @@ pure functional model `FunctionalModels.intoPb`, which in turn calls the functio
 
 **Source**: spqr/src/v1/unchunked/send_ct/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 namespace spqr.v1.unchunked.send_ct.serialize.HeaderReceived

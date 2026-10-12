@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
 
 /-!
 # Counting non-skip iterations in the Lagrange basis loop
@@ -30,6 +32,8 @@ which is the key loop invariant ensuring the polynomial fits in the `PolyConst N
 * `countNonSkip_add_one_le_of_skip` — strict bound when a skip index exists.
 * `countNonSkip_le_of_skip_exists` — bound when at least one skip exists in `[0, m)`.
 -/
+
+@[expose] public section
 open spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop

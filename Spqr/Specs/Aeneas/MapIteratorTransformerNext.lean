@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `mapIteratorTransformer.next`
 
@@ -11,6 +13,8 @@ import SrcTranslated.Funs
 calls `I.next`, then applies `FnMut.call_mut` with `map.f` on each yielded item.
 
 **Source**: core/src/iter/adapters/map.rs -/
+
+@[expose] public section
 
 open Aeneas
 

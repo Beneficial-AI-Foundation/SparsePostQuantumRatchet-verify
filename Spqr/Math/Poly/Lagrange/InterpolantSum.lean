@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Lagrange.BasisPoly
+module
+
+public import Spqr.Math.Poly.Lagrange.BasisPoly
 
 /-!
 # Partial Lagrange interpolant sum
@@ -18,6 +20,8 @@ import Spqr.Math.Poly.Lagrange.BasisPoly
 * `lagrangeInterpolantSum_eq_finset_sum` — equivalent `Finset.sum` form.
 * `lagrangeInterpolantSum_coeff_high` — coefficients beyond degree vanish.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

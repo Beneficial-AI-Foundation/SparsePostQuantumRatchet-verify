@@ -3,18 +3,20 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
-import Spqr.Math.Poly.Aeneas.PolyIdentity
-import Spqr.Specs.Encoding.Gf.GF16.Sub
-import Spqr.Specs.Encoding.Gf.GF16.Div
-import Spqr.Specs.Encoding.Gf.GF16.Eq
-import Spqr.Specs.Encoding.Gf.GF16.ZERO
-import Spqr.Specs.Encoding.Gf.GF16.ONE
-import Spqr.Specs.Encoding.Gf.GF16.AddAssign
-import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Specs.Aeneas.SliceIteratorNext
-import Spqr.Specs.Aeneas.FmtArgumentsFromStr
-import Mathlib.RingTheory.DedekindDomain.Basic
+module
+
+public import Spqr.Math.List
+public import Spqr.Math.Poly.Aeneas.PolyIdentity
+public import Spqr.Specs.Encoding.Gf.GF16.Sub
+public import Spqr.Specs.Encoding.Gf.GF16.Div
+public import Spqr.Specs.Encoding.Gf.GF16.Eq
+public import Spqr.Specs.Encoding.Gf.GF16.ZERO
+public import Spqr.Specs.Encoding.Gf.GF16.ONE
+public import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Specs.Aeneas.SliceIteratorNext
+public import Spqr.Specs.Aeneas.FmtArgumentsFromStr
+public import Mathlib.RingTheory.DedekindDomain.Basic
 /-!
 # Spec Theorem for `lagrange_interpolate_complete`: loop body 0
 
@@ -27,6 +29,8 @@ In GF(2¹⁶), subtraction = addition = XOR.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 202:8-207:9)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf  Polynomial
 

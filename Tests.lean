@@ -1,1 +1,3 @@
-import Tests.LinterTest.SpecIndent
+module  -- shake: keep-all --deprecated_module: ignore
+
+public import Tests.LinterTest.SpecIndent

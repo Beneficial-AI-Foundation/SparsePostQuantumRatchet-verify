@@ -1,5 +1,5 @@
 {
-  "aeneas_version": "nightly-2026.10.11-d119a47",
+  "aeneas_version": "nightly-2026.10.12-d119a47",
   "charon_version": "0.1.281",
   "crate": "spqr",
   "functions": [
@@ -7620,8 +7620,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 507,
-        "end_line": 515
+        "begin_line": 505,
+        "end_line": 513
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7639,8 +7639,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 507,
-        "end_line": 515
+        "begin_line": 505,
+        "end_line": 513
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7658,8 +7658,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 504,
-        "end_line": 517
+        "begin_line": 502,
+        "end_line": 515
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7675,8 +7675,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 524,
-        "end_line": 535
+        "begin_line": 522,
+        "end_line": 533
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7694,8 +7694,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 524,
-        "end_line": 535
+        "begin_line": 522,
+        "end_line": 533
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7713,8 +7713,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 521,
-        "end_line": 537
+        "begin_line": 519,
+        "end_line": 535
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7730,8 +7730,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 491,
-        "end_line": 500
+        "begin_line": 489,
+        "end_line": 498
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7747,8 +7747,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 396,
-        "end_line": 427
+        "begin_line": 394,
+        "end_line": 425
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7766,8 +7766,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 396,
-        "end_line": 427
+        "begin_line": 394,
+        "end_line": 425
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7785,8 +7785,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 383,
-        "end_line": 429
+        "begin_line": 381,
+        "end_line": 427
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7802,8 +7802,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 446,
-        "end_line": 448
+        "begin_line": 444,
+        "end_line": 446
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7820,7 +7820,7 @@
       "source": {
         "file": "src/encoding/gf.rs",
         "begin_line": 127,
-        "end_line": 138
+        "end_line": 137
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7836,8 +7836,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 143,
-        "end_line": 145
+        "begin_line": 142,
+        "end_line": 144
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7853,8 +7853,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 151,
-        "end_line": 155
+        "begin_line": 150,
+        "end_line": 154
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7870,8 +7870,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 161,
-        "end_line": 165
+        "begin_line": 160,
+        "end_line": 164
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7887,8 +7887,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 217,
-        "end_line": 227
+        "begin_line": 216,
+        "end_line": 225
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7904,8 +7904,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 555,
-        "end_line": 557
+        "begin_line": 553,
+        "end_line": 555
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7923,8 +7923,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 555,
-        "end_line": 557
+        "begin_line": 553,
+        "end_line": 555
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7942,8 +7942,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 550,
-        "end_line": 559
+        "begin_line": 548,
+        "end_line": 557
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7959,8 +7959,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 171,
-        "end_line": 173
+        "begin_line": 170,
+        "end_line": 172
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7976,8 +7976,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 178,
-        "end_line": 180
+        "begin_line": 177,
+        "end_line": 179
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7993,8 +7993,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 186,
-        "end_line": 188
+        "begin_line": 185,
+        "end_line": 187
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8010,8 +8010,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 194,
-        "end_line": 196
+        "begin_line": 193,
+        "end_line": 195
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8027,8 +8027,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 206,
-        "end_line": 211
+        "begin_line": 205,
+        "end_line": 210
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8046,8 +8046,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 206,
-        "end_line": 211
+        "begin_line": 205,
+        "end_line": 210
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8065,8 +8065,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 202,
-        "end_line": 215
+        "begin_line": 201,
+        "end_line": 214
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8082,8 +8082,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 438,
-        "end_line": 440
+        "begin_line": 436,
+        "end_line": 438
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8099,8 +8099,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 546,
-        "end_line": 548
+        "begin_line": 544,
+        "end_line": 546
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8116,8 +8116,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 561,
-        "end_line": 565
+        "begin_line": 559,
+        "end_line": 563
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8133,8 +8133,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 567,
-        "end_line": 571
+        "begin_line": 565,
+        "end_line": 569
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8150,8 +8150,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 581,
-        "end_line": 587
+        "begin_line": 579,
+        "end_line": 585
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8169,8 +8169,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 581,
-        "end_line": 587
+        "begin_line": 579,
+        "end_line": 585
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8188,8 +8188,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 573,
-        "end_line": 590
+        "begin_line": 571,
+        "end_line": 588
       },
       "is_opaque": false,
       "can_fail": true,
@@ -15087,8 +15087,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 544,
-        "end_line": 544
+        "begin_line": 542,
+        "end_line": 542
       },
       "can_fail": false
     },
@@ -15100,8 +15100,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 543,
-        "end_line": 543
+        "begin_line": 541,
+        "end_line": 541
       },
       "can_fail": false
     },
@@ -15174,8 +15174,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 539,
-        "end_line": 539
+        "begin_line": 537,
+        "end_line": 537
       },
       "can_fail": true
     },
@@ -19164,7 +19164,7 @@
       "source": {
         "file": "src/encoding/gf.rs",
         "begin_line": 126,
-        "end_line": 139
+        "end_line": 138
       },
       "impl_trait_def_id": 59,
       "impl_trait_rust_name": "core::ops::arith::MulAssign",
@@ -19178,8 +19178,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 142,
-        "end_line": 146
+        "begin_line": 141,
+        "end_line": 145
       },
       "impl_trait_def_id": 59,
       "impl_trait_rust_name": "core::ops::arith::MulAssign",
@@ -19193,8 +19193,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 149,
-        "end_line": 156
+        "begin_line": 148,
+        "end_line": 155
       },
       "impl_trait_def_id": 60,
       "impl_trait_rust_name": "core::ops::arith::Mul",
@@ -19208,8 +19208,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 159,
-        "end_line": 166
+        "begin_line": 158,
+        "end_line": 165
       },
       "impl_trait_def_id": 60,
       "impl_trait_rust_name": "core::ops::arith::Mul",
@@ -19223,8 +19223,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 169,
-        "end_line": 174
+        "begin_line": 168,
+        "end_line": 173
       },
       "impl_trait_def_id": 61,
       "impl_trait_rust_name": "core::ops::arith::DivAssign",
@@ -19238,8 +19238,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 177,
-        "end_line": 181
+        "begin_line": 176,
+        "end_line": 180
       },
       "impl_trait_def_id": 61,
       "impl_trait_rust_name": "core::ops::arith::DivAssign",
@@ -19253,8 +19253,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 184,
-        "end_line": 189
+        "begin_line": 183,
+        "end_line": 188
       },
       "impl_trait_def_id": 62,
       "impl_trait_rust_name": "core::ops::arith::Div",
@@ -19268,8 +19268,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 192,
-        "end_line": 197
+        "begin_line": 191,
+        "end_line": 196
       },
       "impl_trait_def_id": 62,
       "impl_trait_rust_name": "core::ops::arith::Div",

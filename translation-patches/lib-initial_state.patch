@@ -1,13 +1,11 @@
 Translation patch: spqr::initial_state
 
-Change: the `log::info!` call is gated on `not(any(hax, feature = "extraction"))` instead of
-`not(hax)`.
+Change: the `log::info!` call is commented out.
 Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
-Behaviour: identical (only with `extraction`: no log output).
-Relies on: Cargo-features.patch (defines the `extraction` feature).
+Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 6bc0197..b367353 100644
+index 6bc0197..d87d360 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -209,27 +209,27 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
@@ -15,12 +13,17 @@ index 6bc0197..b367353 100644
  
  pub fn initial_state(params: Params) -> Result<SerializedState, Error> {
 -    #[cfg(not(hax))]
-+    #[cfg(not(any(hax, feature = "extraction")))]
-     log::info!(
-         "spqr initiating state with version {:?} and direction {:?}",
-         params.version,
-         params.direction
-     );
+-    log::info!(
+-        "spqr initiating state with version {:?} and direction {:?}",
+-        params.version,
+-        params.direction
+-    );
++    // #[cfg(not(hax))]
++    // log::info!(
++    //     "spqr initiating state with version {:?} and direction {:?}",
++    //     params.version,
++    //     params.direction
++    // );
      match params.version {
          Version::V0 => Ok(empty_state()),
          _ => {

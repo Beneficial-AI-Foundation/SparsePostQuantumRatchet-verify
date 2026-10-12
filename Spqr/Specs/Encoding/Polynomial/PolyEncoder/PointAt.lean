@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Lacramioara Astefanoaei
 -/
-import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
-import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
-import Spqr.Math.Poly.Lagrange.CompletePoints
-import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+module
+
+public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+public import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+public import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 
 
 /-!
@@ -24,6 +26,8 @@ The proof composes `IteratorRange.next`, `Array.index_usize`, the inner enumerat
 `Poly::from_complete_points`, `Result.expect`, and `Array.update`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 

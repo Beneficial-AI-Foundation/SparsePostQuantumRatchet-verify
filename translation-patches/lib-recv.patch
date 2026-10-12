@@ -1,7 +1,7 @@
 Translation patch: spqr::recv
 
 Change:
-1. the `log::info!` call is gated on `not(any(hax, feature = "extraction"))` instead of `not(hax)`;
+1. the `log::info!` call is commented out;
 2. `current_version == 0` in the `(min_version, version_still_negotiating)` tuple becomes
    `matches!(current_version, 0)`;
 3. in the `Ordering::Less` arm, `version_negotiation` is taken by value (`.expect(..)`) instead of
@@ -15,11 +15,10 @@ Why:
    join the arms of the `match` ("Could not match the contexts");
 4. in the generated Lean, the locals `v1` (from `v`) and `chain` clash with the modules `v1` and
    `chain` (#101).
-Behaviour: identical (only with `extraction`: no log output).
-Relies on: Cargo-features.patch (defines the `extraction` feature).
+Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 6bc0197..a04bbc1 100644
+index 6bc0197..c40500e 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -355,132 +355,132 @@ fn chain_from(
@@ -109,8 +108,8 @@ index 6bc0197..a04bbc1 100644
                  .expect("should support all lower versions");
 -            #[cfg(not(hax))]
 -            log::info!("spqr negotiating version down to {v:?}");
-+            #[cfg(not(any(hax, feature = "extraction")))]
-+            log::info!("spqr negotiating version down to {version_to:?}");
++            // #[cfg(not(hax))]
++            // log::info!("spqr negotiating version down to {version_to:?}");
              pqrpb::PqRatchetState {
                  inner: init_inner(
 -                    v,

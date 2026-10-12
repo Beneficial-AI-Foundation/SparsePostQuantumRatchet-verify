@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
-import Spqr.Math.Poly.Lagrange.CompletePoints
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
+public import Spqr.Math.Poly.Lagrange.CompletePoints
 
 /-! # Spec theorem for `spqr::encoding::polynomial::COMPLETE_POINTS_POLYS_3`
 
@@ -21,6 +23,8 @@ In GF(2¹⁶) the points `0, 1, 2` are pairwise distinct, so the Fermat-inverse 
 `ones1[j].y / ∏_{k ≠ j} (ones1[j].x − ones1[k].x)`, and subtraction coincides with XOR.
 
 **Source**: spqr/src/encoding/polynomial.rs (line 501)-/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.gf Polynomial
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop

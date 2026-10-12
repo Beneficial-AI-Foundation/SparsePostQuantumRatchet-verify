@@ -3,13 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Math.Gf16.Field
-import Spqr.Specs.Encoding.Gf.GF16.Mul
-import Spqr.Specs.Encoding.Gf.Mul2U16
-import Spqr.Auxiliary.Aeneas.StdNextStepUsize
-import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Math.Gf16.Field
+public import Spqr.Specs.Encoding.Gf.GF16.Mul
+public import Spqr.Specs.Encoding.Gf.Mul2U16
+public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 
 /-! # Spec theorem for `spqr::encoding::gf::{impl ops::Div for GF16}::div_impl`
 
@@ -27,6 +29,8 @@ iterator is exhausted, either returns the accumulated `out` (loop exit) or compu
 
 **Source**: spqr/src/encoding/gf.rs (lines 451:8-454:9)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result core.ops.range
 

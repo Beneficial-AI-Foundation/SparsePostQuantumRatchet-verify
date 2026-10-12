@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Authenticator.MacCt
-import Spqr.Specs.Util.Compare
-import Spqr.Auxiliary.Aeneas.Vec
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Authenticator.MacCt
+public import Spqr.Specs.Util.Compare
+public import Spqr.Auxiliary.Aeneas.Vec
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::verify_ct`
@@ -16,6 +18,8 @@ against `expected_mac` using a constant-time byte comparison.
 
 Source: "spqr/src/authenticator.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator

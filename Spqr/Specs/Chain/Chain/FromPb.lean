@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.FromPb
-import Spqr.Specs.Chain.Chain.FunctionalModels
-import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.FromPb
+public import Spqr.Specs.Chain.Chain.FunctionalModels
+public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb`
 
@@ -19,6 +21,8 @@ is `into_pb`.
 
 **Source**: spqr/src/chain.rs (lines 445:4-475:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

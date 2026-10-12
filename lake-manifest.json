@@ -8,7 +8,7 @@
    "rev": "d119a474f852781f8ae88a85424f2f8ba8407b82",
    "name": "aeneas",
    "manifestFile": "lake-manifest.json",
-   "inputRev": "nightly-2026.10.11-d119a47",
+   "inputRev": "nightly-2026.10.12-d119a47",
    "inherited": false,
    "configFile": "lakefile.lean"},
   {"url": "https://github.com/leanprover-community/mathlib4.git",

@@ -3,11 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.Poly.Zero
-import Spqr.Specs.Encoding.Gf.GF16.Eq
-import Spqr.Specs.Encoding.Gf.GF16.ONE
-import Spqr.Specs.Encoding.Gf.GF16.ZERO
-import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
+module
+
+public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+public import Spqr.Specs.Encoding.Gf.GF16.Eq
+public import Spqr.Specs.Encoding.Gf.GF16.ONE
+public import Spqr.Specs.Encoding.Gf.GF16.ZERO
+public import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
+-- Unfolds `List.resize`, whose body upstream does not `@[expose]`.
+import all Aeneas.Data.List.List
 
 /-! # Spec theorem for `lagrange_interpolate_prepare`: loop body 0
 
@@ -20,6 +24,8 @@ Invariant: vector length = `offset + 1`; after `i` steps
 `p[offset−i..]` = `∏_{j<i} (x − pts[j].x)`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std  spqr.encoding.gf Polynomial
 

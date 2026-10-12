@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Types
+module
+
+public import SrcTranslated.Types
 
 /-!
 # Functional models of `spqr::chain::ChainEpochDirection::{into_pb, from_pb}`
@@ -14,6 +16,8 @@ in `IntoPb.lean` and `FromPb.lean` pin the extracted, monadic functions to these
 
 **Source:** "spqr/src/chain.rs"
 -/
+
+@[expose] public section
 
 open Aeneas.Std
 namespace spqr.chain.ChainEpochDirection.FunctionalModels

@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::authenticator::serialize::Authenticator::into_pb`
@@ -19,6 +21,8 @@ without losing information.
 
 **Source**: spqr/src/authenticator/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas
 namespace spqr.authenticator.serialize.Authenticator

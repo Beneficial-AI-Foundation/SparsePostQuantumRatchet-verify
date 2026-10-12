@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-! # Spec theorem for
 `spqr::chain::{impl core::default::Default for spqr::chain::ChainParams}::default`
 
@@ -12,6 +14,8 @@ import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 (`max_jump = 25000`, `max_ooo_keys = 2000`). Never fails.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

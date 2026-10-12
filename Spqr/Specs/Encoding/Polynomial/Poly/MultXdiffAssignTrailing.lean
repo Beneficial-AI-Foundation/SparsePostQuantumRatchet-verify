@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
-import Spqr.Specs.Encoding.Gf.GF16.Mul
-import Spqr.Specs.Encoding.Gf.GF16.SubAssign
-import Spqr.Specs.Aeneas.RangeIteratorNext
+module
+
+public import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
+public import Spqr.Specs.Encoding.Gf.GF16.Mul
+public import Spqr.Specs.Encoding.Gf.GF16.SubAssign
+public import Spqr.Specs.Aeneas.RangeIteratorNext
 /-! # Spec theorem for `mult_xdiff_assign_trailing`: loop body 0
 
 Let `v = [c₀, c₁, …, cₙ₋₁]` be a polynomial over `GF(2¹⁶)` stored in ascending degree order, and let
@@ -25,6 +27,8 @@ the `x · p(x)` term shifts coefficients by one degree, while `−d · p(x)` con
 position `i − 1`. The loop performs this update in place over the trailing range.
 
 **Source**: `spqr/src/encoding/polynomial.rs`-/
+
+@[expose] public section
 
 
 open Aeneas Aeneas.Std  spqr.encoding.gf
