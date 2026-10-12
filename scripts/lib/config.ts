@@ -101,7 +101,6 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   config.aeneas_args.options = config.aeneas_args.options ?? [];
   config.aeneas_args.dest = config.aeneas_args.dest ?? "output";
   config.crate.name = config.crate.name ?? config.crate.dir.replace(/-/g, "_");
-  config.library_patches = config.library_patches ?? [];
   config.llbc_tweaks = config.llbc_tweaks ?? { substitutions: [] };
   config.llbc_tweaks.substitutions = config.llbc_tweaks.substitutions ?? [];
   config.tweaks = config.tweaks ?? { files: [], substitutions: [] };
