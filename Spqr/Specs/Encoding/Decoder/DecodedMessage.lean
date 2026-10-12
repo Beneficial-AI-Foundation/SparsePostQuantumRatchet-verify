@@ -16,8 +16,8 @@ Extracted body: `as_ref` → `unwrap` → `DecoderInst.decoded_message`.
 Theorem:
   • `decoded_message_spec_lift` — lifts a postcondition through the `Option<T>` wrapper.
 
-The `PolyDecoder` instantiation takes the inner postcondition as a hypothesis since
-`PolyDecoder.decoded_message` is an external axiom.
+The inner decoder's postcondition is taken as a hypothesis (`h_inner`), so the theorem applies to
+any `Decoder T`.
 
 **Source**: spqr/src/encoding.rs (lines 94:4-100:5)
 -/
