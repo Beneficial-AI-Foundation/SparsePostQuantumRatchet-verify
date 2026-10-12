@@ -2,6 +2,8 @@ module
 public import Aeneas
 public import SrcTranslated.Types
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
+-- Remove when https://github.com/AeneasVerif/aeneas/issues/1415 lands
+import all Aeneas.Std.String
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false

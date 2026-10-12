@@ -8,52 +8,10 @@ import fs from "node:fs";
 import path from "node:path";
 import chalk from "chalk";
 import { loadConfig } from "./lib/config.js";
-import type { LibraryPatch } from "./lib/config.js";
 import { findBinary } from "./lib/paths.js";
 import { runStreaming } from "./lib/shell.js";
 import { applyTweaks, warnUnmatchedTweaks } from "./lib/tweaks.js";
 import { syncLeanToolchain } from "./lib/lean-toolchain.js";
-
-/**
- * Apply library patches to Aeneas Lean source files.
- *
- * Some upstream Aeneas files lack `@[expose]` on their `public section`,
- * making definition bodies opaque under the Lean 4 `module` system.
- * These patches fix that by performing find/replace on the source files
- * inside `.lake/packages/aeneas/`.
- */
-function applyLibraryPatches(root: string, patches: LibraryPatch[]): void {
-  if (patches.length === 0) return;
-
-  console.log(chalk.bold("Step 0: Applying library patches to Aeneas sources..."));
-
-  const aeneasPkgDir = path.join(root, ".lake", "packages", "aeneas");
-
-  for (const patch of patches) {
-    const filePath = path.join(aeneasPkgDir, patch.file);
-    if (!fs.existsSync(filePath)) {
-      console.log(chalk.yellow(`  Warning: Library file not found, skipping: ${patch.file}`));
-      continue;
-    }
-
-    let content = fs.readFileSync(filePath, "utf-8");
-    if (!content.includes(patch.find)) {
-      // Already patched or pattern not found
-      if (content.includes(patch.replace)) {
-        console.log(chalk.dim(`  Already patched: ${patch.file}`));
-      } else {
-        console.log(chalk.yellow(`  Warning: Pattern not found in ${patch.file}: "${patch.find}"`));
-      }
-      continue;
-    }
-
-    content = content.replace(patch.find, patch.replace);
-    fs.writeFileSync(filePath, content, "utf-8");
-    console.log(chalk.green(`  Patched: ${patch.file}`));
-  }
-
-  console.log();
-}
 
 async function main(): Promise<void> {
   console.log(chalk.bold("\nAeneas Extract\n"));
@@ -78,9 +36,6 @@ async function main(): Promise<void> {
     ? path.join(destDir, config.aeneas_args.subdir)
     : destDir;
   const logsDir = path.join(root, ".logs");
-
-  // ── Step 0: Library patches ─────────────────────────────────────────
-  applyLibraryPatches(root, config.library_patches);
 
   // ── Step 1: Charon ──────────────────────────────────────────────────
   console.log(chalk.bold("Step 1: Generating LLBC with Charon..."));

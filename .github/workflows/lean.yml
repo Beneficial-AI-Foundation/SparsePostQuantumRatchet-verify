@@ -42,23 +42,12 @@ jobs:
           lint: false
           use-mathlib-cache: true
 
-      - name: Apply library patches
-        run: |
-          # Patch upstream Aeneas files that lack @[expose] on their `public section`.
-          # Without this, definition bodies are opaque under the module system.
-          # Keep in sync with library_patches in aeneas-config.yml.
-          AENEAS_STRING=".lake/packages/aeneas/backends/lean/Aeneas/Std/String.lean"
-          if [ -f "$AENEAS_STRING" ]; then
-            sed -i 's/^public section$/@[expose] public section/' "$AENEAS_STRING"
-            echo "Patched $AENEAS_STRING"
-          fi
-
       - name: Build and check for non-sorry warnings
         run: |
           lake build --no-ansi 2>&1 | tee /tmp/lake-build.log
-          if grep 'warning:' /tmp/lake-build.log | grep -v 'declaration uses .sorry' | grep -qv 'has local changes'; then
+          if grep 'warning:' /tmp/lake-build.log | grep -qv 'declaration uses .sorry'; then
             echo "::error::Build produced warnings (other than sorry). Please fix them."
-            grep 'warning:' /tmp/lake-build.log | grep -v 'declaration uses .sorry' | grep -v 'has local changes'
+            grep 'warning:' /tmp/lake-build.log | grep -v 'declaration uses .sorry'
             exit 1
           fi
 

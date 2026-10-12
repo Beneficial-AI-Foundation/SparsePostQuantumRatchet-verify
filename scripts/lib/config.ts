@@ -8,12 +8,6 @@ export interface Substitution {
   replace: string;
 }
 
-export interface LibraryPatch {
-  file: string;
-  find: string;
-  replace: string;
-}
-
 export interface AeneasConfig {
   aeneas: {
     tag: string;
@@ -43,7 +37,6 @@ export interface AeneasConfig {
     dir: string;
     name: string;
   };
-  library_patches: LibraryPatch[];
   llbc_tweaks: {
     substitutions: Substitution[];
   };

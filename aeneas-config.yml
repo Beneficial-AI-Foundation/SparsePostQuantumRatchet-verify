@@ -54,17 +54,6 @@ aeneas_args:
     - emit-json # writes translation.json
   dest: "." # output directory (project root)
   subdir: "SrcTranslated" # sub-folder for files (sets import paths to SrcTranslated.*)
-  # Enabled for module system migration:
-  # https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/632
-  use_lean_modules: true
-
-# Patches applied to Aeneas library Lean files after install.
-# Needed because some upstream files lack @[expose] on their `public section`,
-# making definition bodies opaque under the `module` system.
-library_patches:
-  - file: "backends/lean/Aeneas/Std/String.lean"
-    find: "\npublic section\n"
-    replace: "\n@[expose] public section\n"
 
 # Post-extraction find/replace applied to generated Lean files.
 tweaks:
