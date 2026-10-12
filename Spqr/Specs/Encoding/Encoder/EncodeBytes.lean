@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 
 /-! # Spec theorems for `spqr::encoding::{Encoder for Option<T>}::encode_bytes`
 
@@ -16,6 +18,8 @@ Two theorems:
   • `encode_bytes_spec_poly_encoder` — instantiates the lift for `T = PolyEncoder`.
 
 **Source**: spqr/src/encoding.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial
 

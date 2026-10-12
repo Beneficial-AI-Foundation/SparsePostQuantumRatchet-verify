@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallMut
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallMut
 
 /-! # Spec theorem for `PolyEncoder::point_at` closure#1 `call_once`
 
@@ -16,6 +18,8 @@ returned closure state and keeping only the `Pt`. Postcondition inherited from
   - `result.y = p.2`
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.gf
 

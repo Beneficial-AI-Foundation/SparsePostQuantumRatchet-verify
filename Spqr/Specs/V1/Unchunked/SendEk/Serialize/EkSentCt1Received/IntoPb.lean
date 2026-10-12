@@ -6,6 +6,8 @@ Authors: Liao Zhang, Markus Dablander
 module
 
 public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSentCt1Received.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ek::serialize::EkSentCt1Received::into_pb`
