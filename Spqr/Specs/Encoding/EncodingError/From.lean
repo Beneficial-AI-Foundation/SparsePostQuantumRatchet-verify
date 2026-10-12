@@ -13,8 +13,7 @@ This is the `From` conversion that lifts a `polynomial::PolynomialError` into th
 `EncodingError` type, letting the `?` operator turn a polynomial-layer error into an
 encoding-layer error automatically.
 
-**Source**: src/encoding.rs (lines 18:0-22:1)
--/
+**Source**: src/encoding.rs-/
 
 open Aeneas Aeneas.Std Result
 
