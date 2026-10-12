@@ -21,7 +21,7 @@ also emits a key, the key carries the input epoch. All are in the "if it returns
 **Source**: spqr/src/v1/unchunked/send_ek.rs, spqr/src/v1/unchunked/send_ct.rs -/
 
 open Aeneas Aeneas.Std Result
-open core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible (from_residual_ne_ok)
+open core.result.Result.Insts.CoreOpsTry_traitFromResidualResult (from_residual_ne_ok)
 
 namespace spqr.v1.chunked.states.epoch_uniqueness
 

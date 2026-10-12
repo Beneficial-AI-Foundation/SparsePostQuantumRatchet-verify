@@ -34,7 +34,7 @@ Fig. 1 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
 
 open Aeneas Aeneas.Std Result
 open core.result.Result.Insts.CoreOpsTry (branch_eq_continue)
-open core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible (from_residual_ne_ok)
+open core.result.Result.Insts.CoreOpsTry_traitFromResidualResult (from_residual_ne_ok)
 open spqr.v1.chunked.states.epoch_uniqueness
 
 /-- Closes a `recv` branch, given its equation `h`, when the branch either returns `Err` or
@@ -87,7 +87,7 @@ theorem send_step {R : Type} (i₁ : rand.rng.Rng R) (i₂ : rand_core.CryptoRng
     send_ek.HeaderSent.epoch,
     send_ek.Ct1Received.epoch, send_ek.EkSentCt1Received.epoch, send_ct.NoHeaderReceived.epoch,
     send_ct.HeaderReceived.epoch, send_ct.Ct1Sampled.epoch, send_ct.EkReceivedCt1Sampled.epoch,
-    send_ct.Ct1Acknowledged.epoch, send_ct.Ct2Sampled.epoch, bind_tc_ok, bind_eq_ok,
+    send_ct.Ct1Acknowledged.epoch, send_ct.Ct2Sampled.epoch, bind_ok, bind_eq_ok,
     Prod.exists, uncurry_apply_pair, ok.injEq, Prod.mk.injEq, core.result.Result.Ok.injEq,
     exists_eq_right_right] at h
   case EkSentCt1Received | NoHeaderReceived | Ct1Acknowledged =>
@@ -139,7 +139,7 @@ theorem recv_step (s : States) (msg : Message) (r : v1.chunked.states.Recv)
     send_ek.Ct1Received.epoch, send_ek.EkSentCt1Received.epoch, send_ct.NoHeaderReceived.epoch,
     send_ct.HeaderReceived.epoch, send_ct.Ct1Sampled.epoch, send_ct.EkReceivedCt1Sampled.epoch,
     send_ct.Ct1Acknowledged.epoch, send_ct.Ct2Sampled.epoch, lift,
-    core.cmp.impls.OrdU64.cmp, bind_tc_ok] at h
+    core.cmp.impls.OrdU64.cmp, bind_ok] at h
   case KeysUnsampled | HeaderReceived => split at h <;> keep_arm at h
   case KeysSampled =>
     split at h <;> try keep_arm at h
@@ -274,7 +274,7 @@ theorem recv_EkSentCt1Received_key_isSome (st : v1.chunked.send_ek.EkSentCt1Rece
     (h : States.recv (.EkSentCt1Received st) msg = ok (.Ok r))
     (hs : r.state = .NoHeaderReceived st') : r.key.isSome := by
   simp only [States.recv, send_ek.EkSentCt1Received.epoch, lift, core.cmp.impls.OrdU64.cmp,
-    bind_tc_ok] at h
+    bind_ok] at h
   split at h <;> try other_state_arm at h, hs
   split at h <;> try other_state_arm at h, hs
   simp only [bind_eq_ok] at h

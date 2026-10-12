@@ -13,8 +13,8 @@ the two halves of the Rust `?` operator, `Result::branch` and `Result::from_resi
 namespace Aeneas.Std
 
 theorem Result.bind_eq_ok {α β : Type} {x : Result α} {f : α → Result β} {y : β} :
-    x >>= f = ok y ↔ ∃ a, x = ok a ∧ f a = ok y := by
-  cases x <;> simp [Bind.bind, Std.bind]
+    bind x f = ok y ↔ ∃ a, x = ok a ∧ f a = ok y := by
+  cases x <;> simp
 
 end Aeneas.Std
 
@@ -27,16 +27,14 @@ theorem core.result.Result.Insts.CoreOpsTry.branch_eq_continue {T E : Type}
   cases r <;> simp_all [core.result.Result.Insts.CoreOpsTry.branch]
 
 /-- The `Break` arm of a `?` never returns `Ok`. -/
-theorem core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual_ne_ok
+theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_ne_ok
     {T E F : Type} {inst : core.convert.From F E}
-    {r : core.result.Result core.convert.Infallible E} {x : T} :
-    core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
+    {r : core.result.Result Never E} {x : T} :
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
       T inst r ≠ Result.ok (.Ok x) := by
   intro h
   cases r with
   | Ok v => cases v
   | Err e =>
-    simp only [core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      Result.bind_eq_ok] at h
-    obtain ⟨_, _, h⟩ := h
-    cases h
+    simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] at h
+    cases hf : inst.from e <;> simp_all [Bind.bind]

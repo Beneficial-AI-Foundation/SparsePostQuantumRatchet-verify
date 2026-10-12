@@ -34,7 +34,7 @@ Fig. 1 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
 
 open Aeneas Aeneas.Std Result
 open core.result.Result.Insts.CoreOpsTry (branch_eq_continue)
-open core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible (from_residual_ne_ok)
+open core.result.Result.Insts.CoreOpsTry_traitFromResidualResult (from_residual_ne_ok)
 
 namespace spqr.v1.chunked.states.epoch_uniqueness
 
@@ -46,7 +46,7 @@ theorem KeysUnsampled_send_hdr_chunk_epoch {R : Type} (i₁ : rand.rng.Rng R)
     (h : v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk i₁ i₂ self rng = ok r) :
     r.1.1.uc.epoch = self.uc.epoch := by
   simp only [v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk,
-      v1.unchunked.send_ek.KeysUnsampled.send_header, bind_assoc, bind_eq_ok, Prod.exists,
+      v1.unchunked.send_ek.KeysUnsampled.send_header, Std.bind_assoc, bind_eq_ok, Prod.exists,
       uncurry_apply_pair, ok.injEq, exists_and_right, Prod.mk.injEq, and_assoc, ↓existsAndEq,
       true_and, exists_and_left] at h
   obtain ⟨_, _, -, _, -, _, -, _, -, _, -, _, _, -, rfl⟩ := h
@@ -93,7 +93,8 @@ theorem HeaderReceived_send_ct1_chunk_epoch {R : Type} (i₁ : rand.rng.Rng R)
   obtain ⟨_, -, h⟩ := bind_eq_ok.1 h
   obtain ⟨_, -, h⟩ := bind_eq_ok.1 h
   obtain ⟨⟨_, _⟩, -, h⟩ := bind_eq_ok.1 h
-  cases h
+  simp only [uncurry_apply_pair, ok.injEq] at h
+  subst h
   exact ⟨h1, h2⟩
 
 theorem Ct1Sampled_send_ct1_chunk_epoch (self : v1.chunked.send_ct.Ct1Sampled)
@@ -131,7 +132,7 @@ theorem KeysSampled_recv_ct1_chunk_epoch (self : v1.chunked.send_ek.KeysSampled)
     (h : v1.chunked.send_ek.KeysSampled.recv_ct1_chunk self epoch chunk = ok r) :
     r.uc.epoch = self.uc.epoch := by
   simp only [v1.chunked.send_ek.KeysSampled.recv_ct1_chunk, v1.unchunked.send_ek.HeaderSent.send_ek,
-      bind_tc_ok, uncurry_apply_pair, bind_eq_ok, ok.injEq, exists_and_right] at h
+      exists_eq_left', uncurry_apply_pair, bind_eq_ok, ok.injEq, exists_and_right] at h
   obtain ⟨-, _, -, _, -, _, -, _, -, _, -, _, -, rfl⟩ := h
   rfl
 
@@ -142,7 +143,7 @@ theorem HeaderSent_recv_ct1_chunk_epoch (self : v1.chunked.send_ek.HeaderSent)
     | .StillReceiving st => st.uc.epoch = self.uc.epoch
     | .Done st => st.uc.epoch = self.uc.epoch := by
   simp only [v1.chunked.send_ek.HeaderSent.recv_ct1_chunk, v1.unchunked.send_ek.EkSent.recv_ct1,
-      bind_assoc, bind_tc_ok, bind_eq_ok, exists_and_right] at h
+      Std.bind_assoc, bind_eq_ok, exists_and_right] at h
   obtain ⟨-, _, -, o, -, h⟩ := h
   cases o with
   | none =>
@@ -151,7 +152,7 @@ theorem HeaderSent_recv_ct1_chunk_epoch (self : v1.chunked.send_ek.HeaderSent)
     rfl
   | some _ =>
     obtain ⟨_, -, h⟩ := bind_eq_ok.1 h
-    simp only [ok.injEq] at h
+    simp only [bind_ok, ok.injEq] at h
     subst h
     rfl
 
@@ -261,8 +262,8 @@ theorem EkReceivedCt1Sampled_recv_ct1_ack_epoch
     (h : v1.chunked.send_ct.EkReceivedCt1Sampled.recv_ct1_ack self epoch = ok r) :
     r.uc.epoch = self.uc.epoch := by
   simp only [v1.chunked.send_ct.EkReceivedCt1Sampled.recv_ct1_ack,
-      v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2, bind_assoc, bind_tc_ok, uncurry_apply_pair,
-      bind_eq_ok, ok.injEq, exists_and_right] at h
+      v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2, Std.bind_assoc, exists_eq_left',
+      uncurry_apply_pair, bind_eq_ok, ok.injEq, exists_and_right] at h
   obtain ⟨-, _, -, _, -, _, -, _, -, rfl⟩ := h
   rfl
 
@@ -301,8 +302,8 @@ theorem Ct2Sampled_recv_next_epoch_epoch (self : v1.chunked.send_ct.Ct2Sampled)
     (h : v1.chunked.send_ct.Ct2Sampled.recv_next_epoch self epoch = ok r) :
     r.uc.epoch.val = self.uc.epoch.val + 1 := by
   simp only [v1.chunked.send_ct.Ct2Sampled.recv_next_epoch,
-      v1.unchunked.send_ct.Ct2Sent.recv_next_epoch, bind_assoc, bind_tc_ok, bind_eq_ok, ok.injEq,
-      exists_and_right] at h
+      v1.unchunked.send_ct.Ct2Sent.recv_next_epoch, Std.bind_assoc, bind_eq_ok, ok.injEq,
+      exists_and_right, exists_eq_left'] at h
   obtain ⟨_, ha, -, rfl⟩ := h
   exact UScalar.val_of_add_eq_ok ha
 
