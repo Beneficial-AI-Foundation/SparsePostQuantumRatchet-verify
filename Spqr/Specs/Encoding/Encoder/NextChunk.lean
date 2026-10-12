@@ -27,7 +27,7 @@ namespace spqr.core.option.Option.Insts.SpqrEncodingEncoder
 If `self.isSome` and the inner `EncoderInst.next_chunk` satisfies predicate `P`, then
 `next_chunk EncoderInst self` satisfies `P` lifted through `Some`. -/
 @[step]
-theorem next_chunk_spec_lift
+theorem next_chunk_spec
     {T : Type} (EncoderInst : encoding.Encoder T) (self : Option T)
     (h_some : self.isSome)
     (P : encoding.Chunk → T → Prop)
@@ -47,7 +47,6 @@ theorem next_chunk_spec_lift
 Lifts `PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec` through the `Option` wrapper via
 `next_chunk_spec_lift`. The result stays `Some` and the inner postcondition (chunk index, 32-byte
 data, wrapping index increment, polynomial evaluation / Lagrange interpolation) holds verbatim. -/
-@[step]
 theorem next_chunk_spec_poly_encoder
     (pe0 : PolyEncoder)
     (h_idx_fits : pe0.idx.val ≤ U16.max)
