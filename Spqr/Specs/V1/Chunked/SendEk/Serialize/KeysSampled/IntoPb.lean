@@ -56,6 +56,8 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
   unfold into_pb
   step*
   refine ⟨?_, ‹_›⟩
-  grind [cases proto.pq_ratchet.v1_state.unchunked.HeaderSent]
+  grind [cases proto.pq_ratchet.v1_state.unchunked.HeaderSent,
+    unchunked.send_ek.serialize.HeaderSent.FunctionalModels.intoPb,
+    authenticator.serialize.Authenticator.FunctionalModels.intoPb]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled
