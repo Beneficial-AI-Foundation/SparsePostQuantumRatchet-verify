@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Types
-import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
+module
+
+public import SrcTranslated.Types
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-!
 # Functional models of `spqr::v1::chunked::send_ek::serialize::KeysUnsampled::{into_pb, from_pb}`
@@ -17,6 +19,8 @@ model of the unchunked `KeysUnsampled`.
 
 **Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas.Std spqr.proto.pq_ratchet
 open spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels

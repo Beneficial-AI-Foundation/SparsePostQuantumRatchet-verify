@@ -3,12 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
 
 /-! # Zero-polynomial characterization
 
 The empty coefficient list maps to the zero polynomial under `listToGF216Poly`. As a
 consequence, a `Poly` with empty coefficient vector represents `0 : GF216[X]`. -/
+
+@[expose] public section
 
 namespace spqr.encoding.polynomial
 

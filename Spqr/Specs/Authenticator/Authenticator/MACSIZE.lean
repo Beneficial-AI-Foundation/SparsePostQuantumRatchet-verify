@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::MACSIZE`
@@ -13,6 +15,8 @@ import SrcTranslated.Funs
 
 **Source:** "spqr/src/authenticator.rs"
 -/
+
+@[expose] public section
 
 namespace spqr.authenticator.Authenticator
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
+module
+
+public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
 
 /-! # Spec theorem for `spqr::encoding::polynomial::const_polys_to_polys::{FnOnce}::call_once`
 
@@ -15,6 +17,8 @@ Postcondition (inherited from `call_mut_spec`):
   - `result.toGF216Poly = listToGF216Poly pc.coefficients.val`
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

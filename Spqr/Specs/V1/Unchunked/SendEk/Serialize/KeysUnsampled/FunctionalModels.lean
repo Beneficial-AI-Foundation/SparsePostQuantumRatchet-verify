@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Types
-import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
+module
+
+public import SrcTranslated.Types
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-!
 # Functional models of `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled::{into_pb, from_pb}`
@@ -16,6 +18,8 @@ nested `Authenticator` is handled by calling its own functional model.
 
 **Source**: spqr/src/v1/unchunked/send_ek/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas.Std spqr.proto.pq_ratchet spqr.authenticator.serialize
 namespace spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.FunctionalModels

@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 
 /-! # Spec theorems for `spqr::encoding::{Decoder for Option<T>}::add_chunk`
 
@@ -18,6 +20,8 @@ Two theorems:
   • `add_chunk_spec_poly_decoder` — instantiates the lift for `T = PolyDecoder`.
 
 **Source**: spqr/src/encoding.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial
 
@@ -45,7 +49,7 @@ Since the `Option` layer only re-injects along `Some`, whatever `P` holds for th
 holds — retagged with `Some` — for the wrapped one. This is the reusable building block behind
 `add_chunk_spec_poly_decoder`. -/
 @[step]
-theorem add_chunk_spec_lift
+theorem add_chunk_spec
     {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T)
     (chunk : encoding.Chunk)
     (h_some : self.isSome)
@@ -85,7 +89,6 @@ spec.
 Proved by feeding `PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_spec` (the inner `PolyDecoder`
 postcondition) into `add_chunk_spec_lift`, whose `Some`-lifted conclusion matches the target shape.
 -/
-@[step]
 theorem add_chunk_spec_poly_decoder
     (pd0 : PolyDecoder) (chunk : encoding.Chunk)
     (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)
@@ -119,7 +122,7 @@ theorem add_chunk_spec_poly_decoder
                    ((selfs (j + 1)).pts.val[poly]!).val p
                else
                  selfs (j + 1) = selfs j) ⦄ := by
-  apply add_chunk_spec_lift PolyDecoder.Insts.SpqrEncodingDecoder (some pd0) chunk (by simp)
+  apply add_chunk_spec PolyDecoder.Insts.SpqrEncodingDecoder (some pd0) chunk (by simp)
   intro tmp h_eq
   simp only [Option.some.injEq] at h_eq
   rw [h_eq] at h_push_cap

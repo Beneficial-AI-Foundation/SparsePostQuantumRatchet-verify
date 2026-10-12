@@ -3,9 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
-import Spqr.Specs.Aeneas.MapIteratorTransformerNext
-import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
+module
+
+public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
+public import Spqr.Specs.Aeneas.MapIteratorTransformerNext
+public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
+-- Unfolds `alloc.vec.FromIteratorVec.iterToList`, whose body upstream does not `@[expose]`.
+import all Aeneas.Std.VecIter
 
 /-!
 # Spec theorem for `core::iter::adapters::map::{Iterator for Map<I, F>}::collect`
@@ -23,20 +27,23 @@ closure value `m.f` fixed across steps, which is faithful here because `call_mut
 **Source**: core/src/iter/adapters/map.rs (lines 99:0-101:27)
 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open const_polys_to_polys.closure.Insts
 
 namespace Aeneas.Std.core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
 
--- Convenient aliases
-private abbrev ClosureN (N : Usize) := const_polys_to_polys.closure N
+/-- The `const_polys_to_polys` closure, at array size `N`. -/
+abbrev ClosureN (N : Usize) := const_polys_to_polys.closure N
 
-private abbrev MapIterT (N : Usize) :=
+/-- The map-of-slice iterator that `const_polys_to_polys` collects. -/
+abbrev MapIterT (N : Usize) :=
   core.iter.adapters.map.Map (core.slice.iter.Iter (PolyConst N)) (ClosureN N)
 
 /-- The `Poly`-valued iterator that `collect` drives: the slice iterator over `PolyConst N`
 transformed by the `const_polys_to_polys` closure. -/
-private abbrev transInst {N : Usize} (m : MapIterT N) :
+abbrev transInst {N : Usize} (m : MapIterT N) :
     core.iter.traits.iterator.Iterator (core.slice.iter.Iter (PolyConst N)) Poly :=
   core.iter.adapters.map.mapIteratorTransformer m
     (core.iter.traits.iterator.IteratorSliceIter (PolyConst N))

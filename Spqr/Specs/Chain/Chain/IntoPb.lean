@@ -3,12 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut
-import Spqr.Specs.Chain.Chain.ChainEpoch.CallOnce
-import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
-import Spqr.Specs.Chain.Chain.FunctionalModels
-import Spqr.Specs.Aeneas.MapCollectBridge
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut
+public import Spqr.Specs.Chain.Chain.ChainEpoch.CallOnce
+public import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
+public import Spqr.Specs.Chain.Chain.FunctionalModels
+public import Spqr.Specs.Aeneas.MapCollectBridge
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb`
 
@@ -21,6 +23,8 @@ The reverse direction is `from_pb`.
 
 **Source**: spqr/src/chain.rs (lines 415:4-431:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

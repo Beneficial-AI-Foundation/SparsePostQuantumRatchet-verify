@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Lib.MsgVersion.Defs
+module
+
+public import Spqr.Specs.Lib.MsgVersion.Defs
 /-!
 # Spec theorem for `spqr::msg_version`
 
@@ -12,6 +14,8 @@ Empty → `V0`, `0` → `V0`, `1` → `V1`, otherwise → `none`.
 
 **Source**: src/lib.rs (lines 464:0-470:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 

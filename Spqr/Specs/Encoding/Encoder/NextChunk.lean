@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 
 /-!
 # Spec theorems for `spqr::encoding::{Encoder for Option<T>}::next_chunk`
@@ -18,6 +20,8 @@ This file proves:
 
 **Source**: spqr/src/encoding.rs -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result spqr encoding.polynomial encoding.gf Polynomial
 
 namespace spqr.core.option.Option.Insts.SpqrEncodingEncoder
@@ -27,7 +31,7 @@ namespace spqr.core.option.Option.Insts.SpqrEncodingEncoder
 If `self.isSome` and the inner `EncoderInst.next_chunk` satisfies predicate `P`, then
 `next_chunk EncoderInst self` satisfies `P` lifted through `Some`. -/
 @[step]
-theorem next_chunk_spec_lift
+theorem next_chunk_spec
     {T : Type} (EncoderInst : encoding.Encoder T) (self : Option T)
     (h_some : self.isSome)
     (P : encoding.Chunk → T → Prop)
@@ -47,7 +51,6 @@ theorem next_chunk_spec_lift
 Lifts `PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec` through the `Option` wrapper via
 `next_chunk_spec_lift`. The result stays `Some` and the inner postcondition (chunk index, 32-byte
 data, wrapping index increment, polynomial evaluation / Lagrange interpolation) holds verbatim. -/
-@[step]
 theorem next_chunk_spec_poly_encoder
     (pe0 : PolyEncoder)
     (h_idx_fits : pe0.idx.val ≤ U16.max)

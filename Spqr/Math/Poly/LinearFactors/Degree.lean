@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.LinearFactors.Basic
+module
+
+public import Spqr.Math.Poly.LinearFactors.Basic
 
 /-!
 # Degree and structural properties of `prodLinearFactors`
@@ -16,6 +18,8 @@ import Spqr.Math.Poly.LinearFactors.Basic
 * `natDegree_prodLinearFactors_le` — degree bound.
 * `prodLinearFactors_coeff_eq_zero_high` — vanishing of high coefficients.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

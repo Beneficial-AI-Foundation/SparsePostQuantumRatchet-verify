@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
-import Spqr.Specs.Chain.Chain.New
-import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
-import Spqr.Auxiliary.Aeneas.SpecRefl
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
+public import Spqr.Specs.Chain.Chain.New
+public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+public import Spqr.Auxiliary.Aeneas.SpecRefl
 /-!
 # Spec theorem for `spqr::chain_from_version_negotiation`
 
@@ -18,6 +20,8 @@ Builds a `Chain` from a `VersionNegotiation` message by:
 
 **Source**: spqr/src/lib.rs (lines 333:0-341:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 

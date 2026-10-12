@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
-import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
-import Spqr.Specs.Chain.Chain.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
+public import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+public import Spqr.Specs.Chain.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb::closure::call_mut`
 
@@ -14,6 +16,8 @@ Closure mapping `ChainEpoch` to `pqrpb::chain::Epoch` by calling `into_pb` on
 `send`/`recv` and wrapping in `some`. Closure state `c` is unchanged. Infallible.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

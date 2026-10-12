@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Specs.Aeneas.VecClone
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state`
 
@@ -37,6 +39,8 @@ strong (non-saturating) iterator spec applies.
 
 **Source**: src/incremental_mlkem768.rs (lines 143:0-151:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

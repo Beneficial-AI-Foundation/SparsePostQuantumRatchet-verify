@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 
 /-! # Spec theorem for `PolyDecoder::new_with_poly_count` closure `call_once`
 
@@ -13,6 +15,8 @@ state is `Unit`. The extracted `call_once` delegates to `call_mut` and returns
 just the resulting sorted set (without the closure state).
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial
 

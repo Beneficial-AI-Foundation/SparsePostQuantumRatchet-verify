@@ -1,4 +1,6 @@
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import SrcTranslated.Types
-import SrcTranslated.TypesExternal
+module  -- shake: keep-all --deprecated_module: ignore
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import SrcTranslated.Types
+public import SrcTranslated.TypesExternal

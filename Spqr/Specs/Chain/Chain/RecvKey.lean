@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.Chain.EpochIdx
-import Spqr.Specs.Chain.ChainEpochDirection.Key
-import Spqr.Specs.Aeneas.VecDerefMut
-import Spqr.Specs.Chain.Chain.Defs
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.Chain.EpochIdx
+public import Spqr.Specs.Chain.ChainEpochDirection.Key
+public import Spqr.Specs.Aeneas.VecDerefMut
+public import Spqr.Specs.Chain.Chain.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::recv_key`
 
 `Chain::recv_key` retrieves (or derives) the receiving key for a given `Epoch` and message
@@ -27,6 +29,8 @@ indexing, stating that on success the `recv` field of the targeted `ChainEpoch` 
 while everything else in the chain is preserved.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 

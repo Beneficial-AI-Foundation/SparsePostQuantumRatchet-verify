@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Lagrange.DenomProd
-import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
+module
+
+public import Spqr.Math.Poly.Lagrange.DenomProd
+public import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
 
 /-!
 # Complete evaluation points and scaled Lagrange basis
@@ -23,6 +25,8 @@ for Lagrange interpolation over `0, 1, …, N−1` in `GF(2¹⁶)`.
 * `pt_ext` — structure extensionality for `Pt`.
 * `gf16_ext` — extensionality for `GF16`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Polynomial
 open spqr.encoding.gf

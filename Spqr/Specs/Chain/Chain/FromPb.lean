@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.FromPb
-import Spqr.Specs.Chain.Chain.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.FromPb
+public import Spqr.Specs.Chain.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb`
 
@@ -16,6 +18,8 @@ fields, and `params` is unwrapped from `Option`. The reverse direction is `into_
 
 **Source**: spqr/src/chain.rs (lines 434:4-452:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

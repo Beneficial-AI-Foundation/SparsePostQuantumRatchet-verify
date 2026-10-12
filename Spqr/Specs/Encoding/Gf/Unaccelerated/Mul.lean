@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
-import Spqr.Math.Poly.ModByMonic
-import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
-import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
+public import Spqr.Math.Poly.ModByMonic
+public import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
+public import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
 /-!
 # Spec theorem for `spqr::encoding::gf::unaccelerated::mul`
@@ -25,6 +27,8 @@ The function proceeds in two stages:
 
 **Source**: spqr/src/encoding/gf.rs (lines 444:4-446:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.math.gf
 

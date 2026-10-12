@@ -3,14 +3,18 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Liao Zhang
 -/
-import Spqr.Math.Poly.Identities.Basic
-import Spqr.Specs.Aeneas.VecClone
+module
+
+public import Spqr.Math.Poly.Identities.Basic
+public import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Clone for Poly}::clone`
 
 Cloning preserves the polynomial interpretation: `result.toGF216Poly = self.toGF216Poly`.
 
 **Source**: spqr/src/encoding/polynomial.rs (`#[derive(Clone, PartialEq)]`)-/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf
 

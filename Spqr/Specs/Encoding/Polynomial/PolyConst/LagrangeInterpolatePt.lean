@@ -3,12 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
-import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
-import Spqr.Specs.Encoding.Gf.GF16.ONE
-import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
-import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
-import Spqr.Math.Poly.Lagrange.CountNonSkip
+module
+
+public import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
+public import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
+public import Spqr.Specs.Encoding.Gf.GF16.ONE
+public import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
+public import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
+public import Spqr.Math.Poly.Lagrange.CountNonSkip
 
 /-! # Spec theorem for `PolyConst::lagrange_interpolate_pt`: loop body 0
 
@@ -26,6 +28,8 @@ unfolding and bound lemmas) live in `Spqr.Math.Poly.Lagrange.CondProdLinearFacto
 and `Spqr.Math.Poly.Lagrange.CountNonSkip` respectively.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
