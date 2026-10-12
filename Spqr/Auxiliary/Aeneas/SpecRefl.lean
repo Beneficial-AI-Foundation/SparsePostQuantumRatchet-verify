@@ -3,8 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import Spqr.Auxiliary.Aeneas.SpecImpExists
-import Aeneas
+module
+
+public import Spqr.Auxiliary.Aeneas.SpecImpExists
+public import Aeneas
+
 
 /-!
 # Reflexive spec strengthening (staged for upstream to the Aeneas WP layer)
@@ -13,6 +16,8 @@ import Aeneas
 elaborator lifts this over the binders of a `∀`-quantified spec theorem, so a reflexive spec can be
 dropped into a proof's local context.
 -/
+
+@[expose] public section
 -- https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/305
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP

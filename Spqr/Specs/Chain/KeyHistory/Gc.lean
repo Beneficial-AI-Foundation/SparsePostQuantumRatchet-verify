@@ -3,13 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
-import Spqr.Specs.Chain.ChainParams.TrimSize
-import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
-import Spqr.Specs.Aeneas.IndexRangeFull
-import Spqr.Specs.Chain.KeyHistory.Remove
-import Spqr.Specs.Chain.KeyHistory.Defs
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
+public import Spqr.Specs.Chain.ChainParams.TrimSize
+public import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+public import Spqr.Specs.Aeneas.IndexRangeFull
+public import Spqr.Specs.Chain.KeyHistory.Remove
+public import Spqr.Specs.Chain.KeyHistory.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::gc`: loop body 0
 
 One iteration of the garbage-collection loop. Given step size `i = 36`, the body inspects position
@@ -30,6 +32,8 @@ One iteration of the garbage-collection loop. Given step size `i = 36`, the body
   `i1 + 36 ≤ self.data.length`, and data length still 36-aligned and within `Usize.max`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

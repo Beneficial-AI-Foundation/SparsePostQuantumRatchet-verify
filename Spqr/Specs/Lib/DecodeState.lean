@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Lib.DecodeState.CallOnce
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Lib.DecodeState.CallOnce
 /-! # Spec theorem for `spqr::decode_state`
 
 Deserializes a `Vec<u8>` into a `PqRatchetState`. Empty input yields a default state (all `None`);
@@ -13,6 +15,8 @@ Roundtrip correctness is axiomatized in `Axioms.lean`.
 
 **Source**: spqr/src/lib.rs (lines 472:0-482:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

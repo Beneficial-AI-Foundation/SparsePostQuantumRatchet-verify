@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for `spqr::{impl core::fmt::Debug for spqr::SecretOutput}::fmt`
@@ -14,6 +16,8 @@ Dispatches on the constructor: `None` uses `write_str`, `Send`/`Recv` use
 `(.Ok (), f)`, so formatting always succeeds and preserves the formatter state.
 
 **Source**: spqr/src/lib.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

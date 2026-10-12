@@ -3,7 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import Aeneas
+module
+
+public import Aeneas
+
 
 /-!
 # `spec_imp_exists` / `exists_imp_spec` (removed upstream)
@@ -14,6 +17,8 @@ with `spec_bind`, `spec_mono`, `spec_and` and `spec_exists`. They are still true
 and divergence. This file re-proves them so existing proofs keep working while they are migrated
 to the compositional style.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

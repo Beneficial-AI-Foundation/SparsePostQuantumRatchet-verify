@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
-import Spqr.Specs.Encoding.EncodingError.From
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+public import Spqr.Specs.Encoding.EncodingError.From
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::new_with_poly_count`
 
 Builds a fresh `PolyDecoder` from `len_bytes` and an ignored `_polys` parameter.
@@ -16,6 +18,8 @@ Builds a fresh `PolyDecoder` from `len_bytes` and an ignored `_polys` parameter.
    pts := [SortedSet::new(); 16], is_complete := false })`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial
 

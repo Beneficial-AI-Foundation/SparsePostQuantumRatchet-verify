@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::serialize::{impl core::cmp::PartialEq<spqr::serialize::Error>`
@@ -14,6 +16,8 @@ reading their discriminants.
 
 **Source**: src/serialize.rs (line 6, `#[derive(..., PartialEq)]`)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

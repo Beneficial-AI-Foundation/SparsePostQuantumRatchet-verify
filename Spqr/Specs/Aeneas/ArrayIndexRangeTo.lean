@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for array indexing with `RangeTo` (`a[..end]`)
@@ -13,6 +15,8 @@ the first `end` elements of the array.
 
 **Source**: core/src/slice/index.rs (`SliceIndex<RangeTo<usize>, [T]>`)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

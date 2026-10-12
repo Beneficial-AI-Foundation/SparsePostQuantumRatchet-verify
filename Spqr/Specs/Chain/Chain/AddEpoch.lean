@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.Chain.CedForDirection
-import Spqr.Specs.Lib.Direction.Switch
-import Spqr.Specs.Kdf.HkdfToSlice
-import Spqr.Crypto.Hkdf
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.Chain.CedForDirection
+public import Spqr.Specs.Lib.Direction.Switch
+public import Spqr.Specs.Kdf.HkdfToSlice
+public import Spqr.Crypto.Hkdf
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::Chain}::add_epoch`
 
@@ -16,6 +18,8 @@ splits into new root (`[0..32]`), send (`[32..64]`) and recv (`[64..96]`) keys,
 pushes a new `ChainEpoch`, and updates `current_epoch`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 

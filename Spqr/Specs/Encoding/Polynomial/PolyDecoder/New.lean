@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Decoder for PolyDecoder}::new`
 
@@ -11,6 +13,8 @@ Delegates to `new_with_poly_count(len_bytes, 16)`. Returns `Ok` with
 `pts_needed = len_bytes / 2` when `len_bytes` is even, or `Err MessageLengthEven` otherwise.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial
 

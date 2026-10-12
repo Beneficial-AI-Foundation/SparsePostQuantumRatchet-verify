@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
-import Mathlib.RingTheory.Polynomial.Basic
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
+public import Mathlib.RingTheory.Polynomial.Basic
 
 /-! # Bridge frox the Aeneas-extracted `Poly` to `GF(2¹⁶)[X]`
 
@@ -24,6 +26,8 @@ The bridge from the implementation to the mathematics is:
           │                        │
   Poly                  ──────► GF216[X]
                Poly.toGF216Poly -/
+
+@[expose] public section
 
 open Polynomial
 

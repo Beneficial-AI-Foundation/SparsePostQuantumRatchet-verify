@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Aeneas.IndexRangeFull
-import Spqr.Specs.Aeneas.VecExtendFromSlice
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Aeneas.IndexRangeFull
+public import Spqr.Specs.Aeneas.VecExtendFromSlice
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::encode_chunk`
 
@@ -29,6 +31,8 @@ guard from `encode_varint_spec`'s generic 10-byte bound alone.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 184-188)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::into_pb`
 
@@ -16,6 +18,8 @@ copied verbatim and `prev` is unwrapped to `prev.data`. The reverse direction is
 
 **Source**: spqr/src/chain.rs (lines 298:4-304:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

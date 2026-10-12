@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 /-! # Spec theorem for `spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::trim_size`
 
 Computes the GC threshold as `max_ooo * 11 / 10 + 1`, where `max_ooo` comes from
@@ -12,6 +14,8 @@ Computes the GC threshold as `max_ooo * 11 / 10 + 1`, where `max_ooo` comes from
 even on 32-bit targets. Reintroduced here as `h_ooo` since Aeneas erases `hax_lib::assume!`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

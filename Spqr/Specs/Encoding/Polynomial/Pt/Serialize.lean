@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Aeneas.IndexRangeFull
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec Theorem for `Pt::serialize`
 
@@ -26,6 +28,8 @@ ensures that the serialized bytes faithfully represent the original point, and t
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 32:4-37:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

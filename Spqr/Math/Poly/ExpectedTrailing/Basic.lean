@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.ExpectedTrailing.Defs
-import Spqr.Math.Poly.LinearFactors.Basic
+module
+
+public import Spqr.Math.Poly.ExpectedTrailing.Defs
+public import Spqr.Math.Poly.LinearFactors.Basic
 
 /-!
 # Properties of `expectedTrailingPoly`
@@ -15,6 +17,8 @@ import Spqr.Math.Poly.LinearFactors.Basic
 * `expectedTrailingPoly_eq_prodLinearFactors` — collapse to `prodLinearFactors` under the
   leading-one / lower-zero hypothesis.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

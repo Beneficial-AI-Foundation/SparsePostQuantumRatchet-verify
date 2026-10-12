@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_chunk`
 
@@ -40,6 +42,8 @@ not from the proof: Aeneas models `core::fmt::Formatter` as an opaque type (`axi
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 190-202)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Error
 
