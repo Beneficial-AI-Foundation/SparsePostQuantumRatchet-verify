@@ -1,71 +1,128 @@
 Translation patch: spqr::recv
 
-Change: the `log::info!` call is removed.
-Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
-cannot translate).
-Behaviour: identical except that there is no log output.
+Change:
+1. the `log::info!` call is commented out;
+2. `current_version == 0` in the `(min_version, version_still_negotiating)` tuple becomes
+   `matches!(current_version, 0)`;
+3. in the `Ordering::Less` arm, `version_negotiation` is taken by value (`.expect(..)`) instead of
+   borrowed (`.as_ref().expect(..)`), and `chain_from` gets `Some(&vn)`;
+4. the locals `v` and `chain` are renamed `version_to` and `ratchet_chain`.
+Why:
+1. `log` is excluded from the translation; its macros make Aeneas fail ("Internal error");
+2. the `==` in the tuple is emitted as a Lean `Prop`, so the later `if`/`assert!` on it has no
+   `Decidable` instance;
+3. with that borrow alive next to the move of `prenegotiated_state_pb.chain`, Aeneas fails to
+   join the arms of the `match` ("Could not match the contexts");
+4. in the generated Lean, the locals `v1` (from `v`) and `chain` clash with the modules `v1` and
+   `chain` (#101).
+Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 7c3076f..bb22bfb 100644
+index 6bc0197..c40500e 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -354,100 +354,98 @@ fn chain_from(
+@@ -355,132 +355,132 @@ fn chain_from(
  pub fn recv(state: &SerializedState, msg: &SerializedMessage) -> Result<Recv, Error> {
+     let msg = msg_preamble(msg)?;
+ 
      // Perform version negotiation.  At the beginning of our interaction
      // with a remote party, we are set to allow negotiation.  This
      // allows either side to downgrade the connection to a protocol version
      // that that side supports, while still using the highest protocol
      // version supported by both sides.
      let prenegotiated_state_pb = decode_state(state)?;
-     let state_pb = match msg_version(msg) {
-         None => {
-             // They have presented a version we don't support; it's too high for us,
-             // so ignore it and keep sending our current version's format.
+ 
+     let current_version = state_version(&prenegotiated_state_pb) as u8;
+     let (min_version, version_still_negotiating) = match prenegotiated_state_pb.version_negotiation
+     {
+         Some(ref vn) => (vn.min_version as u8, true),
+-        None => (current_version, current_version == 0),
++        None => (current_version, matches!(current_version, 0)),
+     };
+     if msg.version < min_version {
+         return Err(Error::MinimumVersion);
+     } else if msg.version != current_version && !version_still_negotiating {
+         return Err(Error::VersionMismatch);
+     } else if current_version == 0 {
+         return Ok(Recv {
+             state: vec![],
+             key: None,
+         });
+     }
+ 
+     let state_pb = match msg.version.cmp(&current_version) {
+         Ordering::Greater => {
+             // Their version is greater than our own.  This means that we won't be able to
+             // decode the (SPQR) message they sent, but we should be able to provide the
+             // appropriate key back, and we should stay in a state which allows us to
+             // negotiate the version down to ours.
+             //
+             // We know that both our and their version is greater than zero, so we are required to
+             // provide a chain key to our caller.
+             //
+             // When two endpoints with the same version are talking to each other, they
+             // may compute the epoch to pull chain keys from based off of the msg.epoch,
+             // their internal state, etc.  We can't perform those calculations here, because
+             // we don't know the unsupported protocol yet.  However, we luckily don't need
+             // to.  You can only pull a chain key from an epoch you've already reached, and
+             // you can't reach an epoch above zero without some back-and-forth communication
+             // between two endpoints of the same version.  We know we haven't had that, because
+             // their version is higher than ours.  So, even without that per-version computation,
+             // we know that we need to pull the chain key from epoch zero.
+             const ZERO_EPOCH: Epoch = 0;
+-            let mut chain = chain_from(
++            let mut ratchet_chain = chain_from(
+                 prenegotiated_state_pb.chain,
+                 prenegotiated_state_pb.version_negotiation.as_ref(),
+             )?;
+-            let key = Some(chain.recv_key(ZERO_EPOCH, msg.index)?);
++            let key = Some(ratchet_chain.recv_key(ZERO_EPOCH, msg.index)?);
+ 
              return Ok(Recv {
-                 state: state.to_vec(),
-                 key: None,
+                 key,
+                 state: pqrpb::PqRatchetState {
+-                    chain: Some(chain.into_pb()),
++                    chain: Some(ratchet_chain.into_pb()),
+                     // We leave `version_negotiation` in our state to tell future calls to this
+                     // function that they're allowed to accept other messages from the greater
+                     // version number.
+                     version_negotiation: prenegotiated_state_pb.version_negotiation,
+                     inner: prenegotiated_state_pb.inner,
+                 }
+                 .encode_to_vec(),
              });
          }
-         Some(v) => match (v as u8).cmp(&(state_version(&prenegotiated_state_pb) as u8)) {
-             Ordering::Equal | Ordering::Greater => {
-                 // Our versions are equal; proceed with existing state
-                 prenegotiated_state_pb
+         Ordering::Equal => prenegotiated_state_pb,
+         Ordering::Less => {
+             // Their version is less than ours, and we are allowed to negotiate down
+             // to their version.  Do so.
+             assert!(current_version > 0 && version_still_negotiating);
+             let vn = prenegotiated_state_pb
+                 .version_negotiation
+-                .as_ref()
+                 .expect("still negotiating");
+-            let v: Version = msg
++            let version_to: Version = msg
+                 .version
+                 .try_into()
+                 .expect("should support all lower versions");
+-            #[cfg(not(hax))]
+-            log::info!("spqr negotiating version down to {v:?}");
++            // #[cfg(not(hax))]
++            // log::info!("spqr negotiating version down to {version_to:?}");
+             pqrpb::PqRatchetState {
+                 inner: init_inner(
+-                    v,
++                    version_to,
+                     vn.direction.try_into().map_err(|_| Error::StateDecode)?,
+                     &vn.auth_key,
+                 ),
+                 // This is our sole negotiation; we disallow any further.
+                 version_negotiation: None,
+-                chain: Some(chain_from(prenegotiated_state_pb.chain, Some(vn))?.into_pb()),
++                chain: Some(chain_from(prenegotiated_state_pb.chain, Some(&vn))?.into_pb()),
              }
-             Ordering::Less => {
-                 // Their version is less than ours.  If we are allowed to negotiate, we
-                 // should.  Otherwise, we should error out.
-                 //
-                 // When negotiating down a level, we disallow future negotiation.
-                 match prenegotiated_state_pb.version_negotiation {
-                     None => {
-                         return Err(Error::VersionMismatch);
-                     }
-                     Some(ref vn) => {
-                         if (v as i32) < vn.min_version {
-                             return Err(Error::MinimumVersion);
-                         }
--                        #[cfg(not(hax))]
--                        log::info!("spqr negotiating version down to {v:?}");
-                         pqrpb::PqRatchetState {
-                             inner: init_inner(
-                                 v,
-                                 vn.direction.try_into().map_err(|_| Error::StateDecode)?,
-                                 &vn.auth_key,
-                             ),
-                             // This is our negotiation; we disallow any further.
-                             version_negotiation: None,
-                             chain: Some(
-                                 chain_from(
-                                     prenegotiated_state_pb.chain,
-                                     prenegotiated_state_pb.version_negotiation.as_ref(),
-                                 )?
-                                 .into_pb(),
-                             ),
-                         }
-                     }
-                 }
-             }
-         },
+         }
      };
  
      // At this point, we have finished version negotiation and have made sure
@@ -77,27 +134,28 @@ index 7c3076f..bb22bfb 100644
              key: None,
          }),
          Some(pqrpb::pq_ratchet_state::Inner::V1(pb)) => {
-             let (scka_msg, index, _) = v1states::Message::deserialize(msg)?;
+             let scka_msg = v1states::Message::deserialize(msg.epoch, msg.remaining)?;
  
              let v1states::Recv { key, state } = v1states::States::from_pb(pb)?.recv(&scka_msg)?;
  
-             let msg_key_epoch = scka_msg.epoch - 1;
-             let mut chain = chain_from(state_pb.chain, state_pb.version_negotiation.as_ref())?;
+             let msg_key_epoch = msg.epoch - 1;
+-            let mut chain = chain_from(state_pb.chain, state_pb.version_negotiation.as_ref())?;
++            let mut ratchet_chain =
++                chain_from(state_pb.chain, state_pb.version_negotiation.as_ref())?;
              if let Some(epoch_secret) = key {
-                 chain.add_epoch(epoch_secret);
+-                chain.add_epoch(epoch_secret);
++                ratchet_chain.add_epoch(epoch_secret);
              }
-             let msg_key = if msg_key_epoch == 0 && index == 0 {
-                 vec![]
-             } else {
-                 chain.recv_key(msg_key_epoch, index)?
-             };
+-            let msg_key = chain.recv_key(msg_key_epoch, msg.index)?;
++            let msg_key = ratchet_chain.recv_key(msg_key_epoch, msg.index)?;
  
              Ok(Recv {
                  state: pqrpb::PqRatchetState {
                      inner: Some(pqrpb::pq_ratchet_state::Inner::V1(state.into_pb())),
                      // Receiving clears our version negotiation.
                      version_negotiation: None,
-                     chain: Some(chain.into_pb()),
+-                    chain: Some(chain.into_pb()),
++                    chain: Some(ratchet_chain.into_pb()),
                  }
                  .encode_to_vec(),
                  // hax does not like `filter`

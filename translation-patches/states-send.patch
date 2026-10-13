@@ -1,12 +1,11 @@
 Translation patch: <States>::send (spqr::v1::chunked::states)
 
 Change: the `log::info!` calls are commented out.
-Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
-cannot translate).
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
 Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/v1/chunked/states.rs b/src/v1/chunked/states.rs
-index 78a0f14..81a80cd 100644
+index 1de4bce..78c2560 100644
 --- a/src/v1/chunked/states.rs
 +++ b/src/v1/chunked/states.rs
 @@ -115,159 +115,159 @@ pub(crate) fn last_emitted_epoch(&self) -> Epoch {

@@ -1245,6 +1245,59 @@ theorem alloc.collections.vec_deque.VecDeque.push_back_spec
   simp only [dif_pos hbuf]
   step*
 
+/-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::new]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs'
+    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new]
+
+    Growing-list model: the empty deque (empty buffer, `head = 0`, `length = 0`). -/
+@[rust_fun
+  "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new"]
+def alloc.collections.vec_deque.VecDequeTGlobal.new
+  (T : Type) : Result (alloc.collections.vec_deque.VecDeque T Global) :=
+  ok { buf := alloc.vec.Vec.new T, head := 0#usize, length := 0#usize }
+
+/-- Spec: `new` returns the empty deque. -/
+@[step]
+theorem alloc.collections.vec_deque.VecDequeTGlobal.new_spec (T : Type) :
+    alloc.collections.vec_deque.VecDequeTGlobal.new T ⦃
+      (d : alloc.collections.vec_deque.VecDeque T Global) =>
+      d.buf.val = [] ∧ d.head = 0#usize ∧ d.length = 0#usize ⦄ := by
+  simp [alloc.collections.vec_deque.VecDequeTGlobal.new, alloc.vec.Vec.new, WP.spec_ok]
+
+/-- [core::hint::must_use]:
+    Source: '/rustc/library/core/src/hint.rs', lines 613:0-613:39
+    Name pattern: [core::hint::must_use]
+
+    The identity function (it only carries the `#[must_use]` lint). -/
+@[rust_fun "core::hint::must_use"]
+def core.hint.must_use {T : Type} (value : T) : Result T := ok value
+
+/-- [alloc::fmt::format]:
+    Source: '/rustc/library/alloc/src/fmt.rs', lines 651:0-651:52
+    Name pattern: [alloc::fmt::format]
+
+    Opaque: the formatted `String` (used only for error messages in spqr). No spec is assumed. -/
+@[rust_fun "alloc::fmt::format"]
+opaque alloc.fmt.format : core.fmt.Arguments → Result String
+
+/-- **Trusted spec axiom for `alloc::fmt::format`**: formatting into a `String` always
+succeeds. The resulting string is left unspecified (the model of `alloc.fmt.format` is opaque);
+spqr only uses it to build error messages. -/
+@[step]
+axiom alloc.fmt.format_spec (args : core.fmt.Arguments) :
+    alloc.fmt.format args ⦃ (_ : String) => True ⦄
+
+/-- [alloc::string::{impl core::fmt::Debug for alloc::string::String}::fmt]:
+    Source: '/rustc/library/alloc/src/string.rs', lines 2793:4-2793:60
+    Name pattern: [alloc::string::{core::fmt::Debug<alloc::string::String>}::fmt]
+
+    Opaque: debug formatting (only reached through `expect` on a `Result<_, String>`). No spec
+    is assumed. -/
+@[rust_fun "alloc::string::{core::fmt::Debug<alloc::string::String>}::fmt"]
+opaque alloc.string.String.Insts.CoreFmtDebug.fmt :
+  String → core.fmt.Formatter → Result ((core.result.Result Unit
+    core.fmt.Error) × core.fmt.Formatter)
+
 /-- [alloc::collections::vec_deque::{core::ops::index::IndexMut<usize, T> for alloc::collections::vec_deque::VecDeque<T, A>}::index_mut]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3634:4-3634:51
     Name pattern: [alloc::collections::vec_deque::{core::ops::index::IndexMut<alloc::collections::vec_deque::VecDeque<@T, @A>, usize, @T>}::index_mut]

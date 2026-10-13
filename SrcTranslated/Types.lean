@@ -146,18 +146,17 @@ structure bytes.buf.buf_mut.BufMut (Self : Type) where
     (bytes.buf.uninit_slice.UninitSlice → Self))
 
 /-- [libcrux_hmac::Algorithm]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-hmac-0.0.6/src/hmac.rs', lines 28:0-28:18
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-hmac-0.0.8/src/hmac.rs', lines 55:0-55:18
     Name pattern: [libcrux_hmac::Algorithm]
     Visibility: public -/
 @[discriminant isize, rust_type "libcrux_hmac::Algorithm"]
 inductive libcrux_hmac.Algorithm where
-| Sha1 : libcrux_hmac.Algorithm
 | Sha256 : libcrux_hmac.Algorithm
 | Sha384 : libcrux_hmac.Algorithm
 | Sha512 : libcrux_hmac.Algorithm
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::Error]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 14:0-14:14
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.10/src/ind_cca/incremental/types.rs', lines 14:0-14:14
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::Error]
     Visibility: public -/
 @[discriminant isize, rust_type
@@ -169,7 +168,7 @@ inductive libcrux_ml_kem.ind_cca.incremental.types.Error where
 | InsufficientRandomness : libcrux_ml_kem.ind_cca.incremental.types.Error
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 155:0-155:40
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.10/src/ind_cca/incremental/types.rs', lines 155:0-155:40
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1]
     Visibility: public -/
 @[rust_type "libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1"]
@@ -178,7 +177,7 @@ structure libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 (LEN :
   value : Array Std.U8 LEN
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 168:0-168:40
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.10/src/ind_cca/incremental/types.rs', lines 168:0-168:40
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2]
     Visibility: public -/
 @[rust_type "libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2"]
@@ -226,31 +225,31 @@ structure prost.message.Message (Self : Type) where
 @[reducible, rust_type "prost::error::UnknownEnumValue"]
 def prost.error.UnknownEnumValue := Std.I32
 
-/-- Trait declaration: [rand_core::RngCore]
+/-- Trait declaration: [rand_core#1::RngCore]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand_core-0.9.3/src/lib.rs', lines 130:0-130:17
-    Name pattern: [rand_core::RngCore]
+    Name pattern: [rand_core#1::RngCore]
     Visibility: public -/
-@[rust_trait "rand_core::RngCore"]
-structure rand_core.RngCore (Self : Type) where
+@[rust_trait "rand_core#1::RngCore"]
+structure rand_core_1.RngCore (Self : Type) where
   next_u32 : Self → Result (Std.U32 × Self)
   next_u64 : Self → Result (Std.U64 × Self)
   fill_bytes : Self → Slice Std.U8 → Result (Self × (Slice Std.U8))
 
-/-- Trait declaration: [rand::rng::Rng]
+/-- Trait declaration: [rand#1::rng::Rng]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand-0.9.1/src/rng.rs', lines 58:0-58:22
-    Name pattern: [rand::rng::Rng]
+    Name pattern: [rand#1::rng::Rng]
     Visibility: public -/
-@[rust_trait "rand::rng::Rng" (parentClauses := ["rand_coreRngCoreInst"])]
-structure rand.rng.Rng (Self : Type) where
-  rand_coreRngCoreInst : rand_core.RngCore Self
+@[rust_trait "rand#1::rng::Rng" (parentClauses := ["rand_core_1RngCoreInst"])]
+structure rand_1.rng.Rng (Self : Type) where
+  rand_core_1RngCoreInst : rand_core_1.RngCore Self
 
-/-- Trait declaration: [rand_core::CryptoRng]
+/-- Trait declaration: [rand_core#1::CryptoRng]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rand_core-0.9.3/src/lib.rs', lines 204:0-204:28
-    Name pattern: [rand_core::CryptoRng]
+    Name pattern: [rand_core#1::CryptoRng]
     Visibility: public -/
-@[rust_trait "rand_core::CryptoRng" (parentClauses := ["RngCoreInst"])]
-structure rand_core.CryptoRng (Self : Type) where
-  RngCoreInst : rand_core.RngCore Self
+@[rust_trait "rand_core#1::CryptoRng" (parentClauses := ["RngCoreInst"])]
+structure rand_core_1.CryptoRng (Self : Type) where
+  RngCoreInst : rand_core_1.RngCore Self
 
 /-- [spqr::encoding::gf::GF16]
     Source: 'src/encoding/gf.rs', lines 16:0-18:1
@@ -767,7 +766,7 @@ inductive serialize.Error where
 | EncodingDecoding : serialize.Error
 
 /-- [spqr::encoding::polynomial::PolynomialError]
-    Source: 'src/encoding/polynomial.rs', lines 13:0-20:1
+    Source: 'src/encoding/polynomial.rs', lines 17:0-24:1
     Visibility: public -/
 @[discriminant isize]
 inductive encoding.polynomial.PolynomialError where
@@ -787,7 +786,7 @@ inductive encoding.EncodingError where
 | ChunkDataDecodingError : encoding.EncodingError
 
 /-- [spqr::Error]
-    Source: 'src/lib.rs', lines 98:0-131:1
+    Source: 'src/lib.rs', lines 97:0-130:1
     Visibility: public -/
 @[discriminant isize]
 inductive Error where
@@ -809,56 +808,56 @@ inductive Error where
 | ChainNotAvailable : Error
 
 /-- [spqr::EpochSecret]
-    Source: 'src/lib.rs', lines 51:0-54:1
+    Source: 'src/lib.rs', lines 50:0-53:1
     Visibility: public -/
 structure EpochSecret where
   epoch : Std.U64
   secret : alloc.vec.Vec Std.U8
 
 /-- [spqr::chain::{spqr::chain::Chain}::into_pb::{closure}]
-    Source: 'src/chain.rs', lines 423:21-426:17 -/
+    Source: 'src/chain.rs', lines 433:21-436:17 -/
 @[reducible]
 def chain.Chain.into_pb.closure := Unit
 
 /-- [spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}]
-    Source: 'src/chain.rs', lines 443:21-448:17 -/
+    Source: 'src/chain.rs', lines 453:21-458:17 -/
 @[reducible]
 def chain.Chain.from_pb.closure_1 := Unit
 
 /-- [spqr::chain::{spqr::chain::Chain}::from_pb::{closure}]
-    Source: 'src/chain.rs', lines 436:49-436:71 -/
+    Source: 'src/chain.rs', lines 446:49-446:71 -/
 @[reducible]
 def chain.Chain.from_pb.closure := Unit
 
 /-- [spqr::encoding::polynomial::Pt]
-    Source: 'src/encoding/polynomial.rs', lines 26:0-29:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 30:0-33:1 -/
 structure encoding.polynomial.Pt where
   x : encoding.gf.GF16
   y : encoding.gf.GF16
 
 /-- [spqr::encoding::polynomial::Poly]
-    Source: 'src/encoding/polynomial.rs', lines 79:0-88:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 83:0-92:1 -/
 structure encoding.polynomial.Poly where
   coefficients : alloc.vec.Vec encoding.gf.GF16
 
-/-- [spqr::encoding::polynomial::const_polys_to_polys::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 470:19-470:34 -/
-@[reducible]
-def encoding.polynomial.const_polys_to_polys.closure (N : Std.Usize) := Unit
-
 /-- [spqr::encoding::polynomial::PolyConst]
-    Source: 'src/encoding/polynomial.rs', lines 361:0-363:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 373:0-375:1 -/
 structure encoding.polynomial.PolyConst (N : Std.Usize) where
   coefficients : Array encoding.gf.GF16 N
 
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{closure}]
+    Source: 'src/encoding/polynomial.rs', lines 319:25-322:21 -/
+@[reducible]
+def encoding.polynomial.Poly.from_complete_points.closure := Unit
+
 /-- [spqr::encoding::polynomial::Point]
-    Source: 'src/encoding/polynomial.rs', lines 518:0-521:1
+    Source: 'src/encoding/polynomial.rs', lines 539:0-542:1
     Visibility: public -/
 structure encoding.polynomial.Point where
   value : alloc.vec.Vec encoding.gf.GF16
 
 /-- [spqr::encoding::polynomial::EncoderState]
-    Source: 'src/encoding/polynomial.rs', lines 524:0-530:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 545:0-551:1 -/
 @[discriminant isize]
 inductive encoding.polynomial.EncoderState where
 | Points :
@@ -869,24 +868,34 @@ inductive encoding.polynomial.EncoderState where
   encoding.polynomial.EncoderState
 
 /-- [spqr::encoding::polynomial::PolyEncoder]
-    Source: 'src/encoding/polynomial.rs', lines 533:0-536:1
+    Source: 'src/encoding/polynomial.rs', lines 554:0-557:1
     Visibility: public -/
 structure encoding.polynomial.PolyEncoder where
   idx : Std.U32
   s : encoding.polynomial.EncoderState
 
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb::{closure#1}]
+    Source: 'src/encoding/polynomial.rs', lines 635:66-635:83 -/
+@[reducible]
+def encoding.polynomial.PolyEncoder.from_pb.closure_1 := Unit
+
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::from_pb::{closure}]
+    Source: 'src/encoding/polynomial.rs', lines 611:47-613:13 -/
+@[reducible]
+def encoding.polynomial.PolyEncoder.from_pb.closure := Unit
+
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}]
-    Source: 'src/encoding/polynomial.rs', lines 645:25-648:21 -/
+    Source: 'src/encoding/polynomial.rs', lines 665:25-668:21 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.point_at.closure_1 := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 639:68-639:85 -/
+    Source: 'src/encoding/polynomial.rs', lines 659:68-659:85 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.point_at.closure := Unit
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 680:63-682:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 700:63-702:9 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.encode_bytes_base.closure := Slice Std.U8
 
@@ -906,7 +915,7 @@ structure encoding.Encoder (Self : Type) where
   next_chunk : Self → Result (encoding.Chunk × Self)
 
 /-- [spqr::encoding::polynomial::PolyDecoder]
-    Source: 'src/encoding/polynomial.rs', lines 746:0-765:1
+    Source: 'src/encoding/polynomial.rs', lines 769:0-788:1
     Visibility: public -/
 structure encoding.polynomial.PolyDecoder where
   pts_needed : Std.Usize
@@ -914,9 +923,14 @@ structure encoding.polynomial.PolyDecoder where
   is_complete : Bool
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}]
-    Source: 'src/encoding/polynomial.rs', lines 792:38-792:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 815:38-815:58 -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.new_with_poly_count.closure := Unit
+
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{closure}]
+    Source: 'src/encoding/polynomial.rs', lines 851:47-851:67 -/
+@[reducible]
+def encoding.polynomial.PolyDecoder.from_pb.closure := Unit
 
 /-- Trait declaration: [spqr::encoding::Decoder]
     Source: 'src/encoding.rs', lines 40:0-47:1
@@ -935,7 +949,7 @@ structure incremental_mlkem768.Keys where
   hdr : alloc.vec.Vec Std.U8
 
 /-- [spqr::Params]
-    Source: 'src/lib.rs', lines 56:0-62:1
+    Source: 'src/lib.rs', lines 55:0-61:1
     Visibility: public -/
 structure Params where
   direction : proto.pq_ratchet.Direction
@@ -945,7 +959,7 @@ structure Params where
   chain_params : chain.ChainParams
 
 /-- [spqr::SecretOutput]
-    Source: 'src/lib.rs', lines 74:0-86:1
+    Source: 'src/lib.rs', lines 73:0-85:1
     Visibility: public -/
 @[discriminant isize]
 inductive SecretOutput where
@@ -954,7 +968,7 @@ inductive SecretOutput where
 | Recv : alloc.vec.Vec Std.U8 → SecretOutput
 
 /-- [spqr::CurrentVersion]
-    Source: 'src/lib.rs', lines 89:0-95:1
+    Source: 'src/lib.rs', lines 88:0-94:1
     Visibility: public -/
 @[discriminant isize]
 inductive CurrentVersion where
@@ -974,14 +988,14 @@ structure v1.unchunked.send_ek.EkSentCt1Received where
   ct1 : alloc.vec.Vec Std.U8
 
 /-- [spqr::v1::chunked::send_ek::EkSentCt1Received]
-    Source: 'src/v1/chunked/send_ek.rs', lines 44:0-49:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 45:0-50:1
     Visibility: public -/
 structure v1.chunked.send_ek.EkSentCt1Received where
   uc : v1.unchunked.send_ek.EkSentCt1Received
   receiving_ct2 : encoding.polynomial.PolyDecoder
 
 /-- [spqr::v1::chunked::send_ek::Ct1Received]
-    Source: 'src/v1/chunked/send_ek.rs', lines 37:0-40:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 38:0-41:1
     Visibility: public -/
 structure v1.chunked.send_ek.Ct1Received where
   uc : v1.unchunked.send_ek.EkSentCt1Received
@@ -996,7 +1010,7 @@ structure v1.unchunked.send_ek.EkSent where
   dk : alloc.vec.Vec Std.U8
 
 /-- [spqr::v1::chunked::send_ek::HeaderSent]
-    Source: 'src/v1/chunked/send_ek.rs', lines 28:0-34:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 29:0-35:1
     Visibility: public -/
 structure v1.chunked.send_ek.HeaderSent where
   uc : v1.unchunked.send_ek.EkSent
@@ -1013,7 +1027,7 @@ structure v1.unchunked.send_ek.HeaderSent where
   dk : alloc.vec.Vec Std.U8
 
 /-- [spqr::v1::chunked::send_ek::KeysSampled]
-    Source: 'src/v1/chunked/send_ek.rs', lines 21:0-24:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 22:0-25:1
     Visibility: public -/
 structure v1.chunked.send_ek.KeysSampled where
   uc : v1.unchunked.send_ek.HeaderSent
@@ -1027,7 +1041,7 @@ structure v1.unchunked.send_ek.KeysUnsampled where
   auth : authenticator.Authenticator
 
 /-- [spqr::v1::chunked::send_ek::KeysUnsampled]
-    Source: 'src/v1/chunked/send_ek.rs', lines 16:0-18:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 17:0-19:1
     Visibility: public -/
 structure v1.chunked.send_ek.KeysUnsampled where
   uc : v1.unchunked.send_ek.KeysUnsampled
@@ -1145,7 +1159,7 @@ inductive v1.chunked.states.States where
 | Ct2Sampled : v1.chunked.send_ct.Ct2Sampled → v1.chunked.states.States
 
 /-- [spqr::Send]
-    Source: 'src/lib.rs', lines 237:0-241:1
+    Source: 'src/lib.rs', lines 242:0-246:1
     Visibility: public -/
 structure Send where
   state : alloc.vec.Vec Std.U8
@@ -1153,12 +1167,12 @@ structure Send where
   key : Option (alloc.vec.Vec Std.U8)
 
 /-- [spqr::decode_state::{closure}]
-    Source: 'src/lib.rs', lines 472:72-472:94 -/
+    Source: 'src/lib.rs', lines 503:72-503:94 -/
 @[reducible]
 def decode_state.closure := Unit
 
 /-- [spqr::current_version::{closure}]
-    Source: 'src/lib.rs', lines 253:59-253:81 -/
+    Source: 'src/lib.rs', lines 258:59-258:81 -/
 @[reducible]
 def current_version.closure := Unit
 
@@ -1191,7 +1205,7 @@ structure v1.chunked.states.Send where
   state : v1.chunked.states.States
 
 /-- [spqr::v1::chunked::states::serialize::MessageType]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 97:0-105:1 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 95:0-103:1 -/
 @[discriminant u8]
 inductive v1.chunked.states.serialize.MessageType where
 | None : v1.chunked.states.serialize.MessageType
@@ -1263,12 +1277,12 @@ def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
 def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
 
 /-- [spqr::chain_from_version_negotiation::{closure}]
-    Source: 'src/lib.rs', lines 332:40-332:62 -/
+    Source: 'src/lib.rs', lines 337:40-337:62 -/
 @[reducible]
 def chain_from_version_negotiation.closure := Unit
 
 /-- [spqr::Recv]
-    Source: 'src/lib.rs', lines 322:0-325:1
+    Source: 'src/lib.rs', lines 327:0-330:1
     Visibility: public -/
 structure Recv where
   state : alloc.vec.Vec Std.U8
@@ -1282,7 +1296,7 @@ structure v1.chunked.states.Recv where
   state : v1.chunked.states.States
 
 /-- [spqr::v1::chunked::send_ek::EkSentCt1ReceivedRecvChunk]
-    Source: 'src/v1/chunked/send_ek.rs', lines 186:0-189:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 187:0-190:1
     Visibility: public -/
 @[discriminant isize]
 inductive v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk where
@@ -1294,7 +1308,7 @@ inductive v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk where
   v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk
 
 /-- [spqr::v1::chunked::send_ek::HeaderSentRecvChunk]
-    Source: 'src/v1/chunked/send_ek.rs', lines 105:0-108:1
+    Source: 'src/v1/chunked/send_ek.rs', lines 106:0-109:1
     Visibility: public -/
 @[discriminant isize]
 inductive v1.chunked.send_ek.HeaderSentRecvChunk where
@@ -1306,7 +1320,7 @@ inductive v1.chunked.send_ek.HeaderSentRecvChunk where
   v1.chunked.send_ek.HeaderSentRecvChunk
 
 /-- [spqr::v1::chunked::send_ct::Ct1AcknowledgedRecvChunk]
-    Source: 'src/v1/chunked/send_ct.rs', lines 248:0-251:1
+    Source: 'src/v1/chunked/send_ct.rs', lines 251:0-254:1
     Visibility: public -/
 @[discriminant isize]
 inductive v1.chunked.send_ct.Ct1AcknowledgedRecvChunk where
@@ -1318,7 +1332,7 @@ inductive v1.chunked.send_ct.Ct1AcknowledgedRecvChunk where
   v1.chunked.send_ct.Ct1AcknowledgedRecvChunk
 
 /-- [spqr::v1::chunked::send_ct::Ct1SampledRecvChunk]
-    Source: 'src/v1/chunked/send_ct.rs', lines 148:0-153:1
+    Source: 'src/v1/chunked/send_ct.rs', lines 151:0-156:1
     Visibility: public -/
 @[discriminant isize]
 inductive v1.chunked.send_ct.Ct1SampledRecvChunk where
@@ -1347,18 +1361,26 @@ inductive v1.chunked.send_ct.NoHeaderReceivedRecvChunk where
   v1.chunked.send_ct.HeaderReceived →
   v1.chunked.send_ct.NoHeaderReceivedRecvChunk
 
-/-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{closure#1}]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 263:63-263:83 -/
-@[reducible]
-def v1.chunked.states.serialize.Message.deserialize.closure_1 := Unit
-
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{closure}]
-    Source: 'src/v1/chunked/states/serialize.rs', lines 259:21-259:41 -/
+    Source: 'src/v1/chunked/states/serialize.rs', lines 204:62-204:82 -/
 @[reducible]
 def v1.chunked.states.serialize.Message.deserialize.closure := Unit
 
+/-- [spqr::msg_preamble::{closure}]
+    Source: 'src/lib.rs', lines 580:17-580:37 -/
+@[reducible]
+def msg_preamble.closure := Unit
+
+/-- [spqr::MsgPreamble]
+    Source: 'src/lib.rs', lines 556:0-561:1 -/
+structure MsgPreamble where
+  version : Std.U8
+  epoch : Std.U64
+  index : Std.U32
+  remaining : Slice Std.U8
+
 /-- [spqr::recv::{closure}]
-    Source: 'src/lib.rs', lines 387:64-387:86 -/
+    Source: 'src/lib.rs', lines 438:52-438:74 -/
 @[reducible]
 def recv.closure := Unit
 

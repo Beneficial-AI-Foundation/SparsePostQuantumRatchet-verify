@@ -362,7 +362,8 @@ impl States {
                                 #[cfg(not(hax))]
                                 log::info!(
                                     "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
-                                    msg.epoch, msg.epoch+1
+                                    msg.epoch,
+                                    msg.epoch + 1
                                 );
                                 key = Some(sec);
                                 Self::NoHeaderReceived(state)

@@ -9,6 +9,7 @@ public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 public import Spqr.Specs.Aeneas.SliceChunksExact
 public import Spqr.Specs.Encoding.Gf.GF16.New
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+public import Spqr.Auxiliary.Aeneas.Slice
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop body 0
 
@@ -19,9 +20,6 @@ and leaves other slots unchanged. -/
 @[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
-
-noncomputable instance instInhabitedSliceU8 : Inhabited (Slice U8) :=
-  ⟨Slice.from [] (by simp)⟩
 
 namespace spqr.encoding.polynomial.PolyEncoder.encode_bytes_base_loop
 

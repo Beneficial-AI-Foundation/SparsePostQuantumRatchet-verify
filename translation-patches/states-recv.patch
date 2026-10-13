@@ -1,15 +1,14 @@
 Translation patch: <States>::recv (spqr::v1::chunked::states)
 
 Change: the `log::info!` calls are commented out.
-Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
-cannot translate).
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
 Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/v1/chunked/states.rs b/src/v1/chunked/states.rs
-index 78a0f14..761ec2e 100644
+index 1de4bce..42a8e23 100644
 --- a/src/v1/chunked/states.rs
 +++ b/src/v1/chunked/states.rs
-@@ -275,259 +275,259 @@ pub(crate) fn send<R: Rng + CryptoRng>(self, rng: &mut R) -> Result<Send, Error>
+@@ -275,260 +275,260 @@ pub(crate) fn send<R: Rng + CryptoRng>(self, rng: &mut R) -> Result<Send, Error>
      pub(crate) fn recv(self, msg: &Message) -> Result<Recv, Error> {
          // println!("send_ct recv msg: {:?}", msg);
          let mut key = None;
@@ -115,12 +114,14 @@ index 78a0f14..761ec2e 100644
 -                                #[cfg(not(hax))]
 -                                log::info!(
 -                                    "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
--                                    msg.epoch, msg.epoch+1
+-                                    msg.epoch,
+-                                    msg.epoch + 1
 -                                );
 +                                // #[cfg(not(hax))]
 +                                // log::info!(
 +                                //     "spqr v1.send_ek.recv epoch {}->{}: EkSentCt1Received -> NoHeaderReceived",
-+                                //     msg.epoch, msg.epoch+1
++                                //     msg.epoch,
++                                //     msg.epoch + 1
 +                                // );
                                  key = Some(sec);
                                  Self::NoHeaderReceived(state)

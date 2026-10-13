@@ -1,15 +1,18 @@
 Translation patch: <Poly>::lagrange_sum
 
 Change: the `zip` over `pts` and `polys` becomes an index loop over `pts`.
-Why: iterator adapters (`zip`) are not modelled by the Aeneas Lean library (aeneas#1043).
+Why: `zip` is not modelled by the Aeneas Lean library ("`zip` is not a field of structure
+`core.iter.traits.iterator.Iterator`").
 Behaviour: identical.
-Relies on: its only caller, `from_complete_points`, passes `polys.len() == pts.len()`.
+Relies on: its only caller, `from_complete_points`, passes as many `polys` as `pts`
+(`const_polys_to_polys(&COMPLETE_POINTS_POLYS_N)` gives N polys for N points, and the fallback
+builds one per point).
 
 diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
-index 03315cd..56789cd 100644
+index 65f33f8..2dd091b 100644
 --- a/src/encoding/polynomial.rs
 +++ b/src/encoding/polynomial.rs
-@@ -274,17 +274,17 @@ fn compute_at(&self, x: GF16) -> GF16 {
+@@ -280,17 +280,17 @@ fn compute_at(&self, x: GF16) -> GF16 {
      /// Internal function for lagrange_polynomial_from_complete_points.
      #[hax_lib::opaque] // zip
      fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {

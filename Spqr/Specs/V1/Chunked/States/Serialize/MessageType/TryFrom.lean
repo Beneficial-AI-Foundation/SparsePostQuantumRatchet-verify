@@ -13,16 +13,18 @@ public import SrcTranslated.Funs
 
 `try_from` converts a `u8` tag byte back into a `MessageType` variant: `0 ↦ None`, `1 ↦ Hdr`,
 `2 ↦ Ek`, `3 ↦ EkCt1Ack`, `4 ↦ Ct1Ack`, `5 ↦ Ct1`, `6 ↦ Ct2`, and returns
-`Err("Expected a number between 0 and 6")` for any other byte. It is the inverse of the derived
+`Err(format!("Expected a number between 0 and 6, got {value}"))` for any
+other byte. It is the inverse of the derived
 `From<MessageType> for u8` conversion and is used by `Message::deserialize` to decode the
 message-type tag byte.
 
-The out-of-range branch builds the error string via the external function
-`Str.Insts.AllocBorrowToOwnedString.to_owned`, modeled in `SrcTranslated/FunsExternal.lean` as
-UTF-8 decoding of the slice's bytes; the spec theorem `to_owned_eq` proved there shows the call
-succeeds and returns the same string, which lets the spec below cover the full input range.
+The out-of-range branch builds the error string with `format!`, i.e. the external
+`alloc::fmt::format`, modelled as an `opaque` function in `SrcTranslated/FunsExternal.lean`.
+Its output is unspecified, so the spec below only says the result is *some* `Err`; that the
+call succeeds comes from the trusted spec axiom `alloc.fmt.format_spec`
+(see `Spqr/Specs/Lib/Version/TryFrom.lean`).
 
-**Source**: src/v1/chunked/states/serialize.rs (lines 109:4-120:5)
+**Source**: src/v1/chunked/states/serialize.rs (lines 107:4-118:5)
 -/
 
 @[expose] public section
@@ -38,36 +40,36 @@ namespace spqr.v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU
 • For an in-range tag byte (`value ≤ 6`) the result is `Ok` of the variant whose discriminant
   is `value`: `0 ↦ None`, `1 ↦ Hdr`, `2 ↦ Ek`, `3 ↦ EkCt1Ack`, `4 ↦ Ct1Ack`, `5 ↦ Ct1`,
   `6 ↦ Ct2`, i.e. `try_from` is a left inverse of `From<MessageType> for u8` on that range.
-• For an out-of-range byte (`value > 6`) the result is
-  `Err "Expected a number between 0 and 6"`. -/
+• For an out-of-range byte (`value > 6`) the result is an `Err` (its message, produced by
+  the opaque `alloc.fmt.format`, is left unspecified). -/
 @[step]
 theorem try_from_spec (value : Std.U8) :
     try_from value ⦃ (result : core.result.Result v1.chunked.states.serialize.MessageType
         String) =>
-      result = match value.val with
-        | 0 => .Ok .None
-        | 1 => .Ok .Hdr
-        | 2 => .Ok .Ek
-        | 3 => .Ok .EkCt1Ack
-        | 4 => .Ok .Ct1Ack
-        | 5 => .Ok .Ct1
-        | 6 => .Ok .Ct2
-        | _ => .Err "Expected a number between 0 and 6" ⦄ := by
+      match value.val with
+        | 0 => result = .Ok .None
+        | 1 => result = .Ok .Hdr
+        | 2 => result = .Ok .Ek
+        | 3 => result = .Ok .EkCt1Ack
+        | 4 => result = .Ok .Ct1Ack
+        | 5 => result = .Ok .Ct1
+        | 6 => result = .Ok .Ct2
+        | _ => ∃ e, result = .Err e ⦄ := by
   unfold try_from
-  generalize hp : ((match value.val with
-    | 0 => .Ok .None
-    | 1 => .Ok .Hdr
-    | 2 => .Ok .Ek
-    | 3 => .Ok .EkCt1Ack
-    | 4 => .Ok .Ct1Ack
-    | 5 => .Ok .Ct1
-    | 6 => .Ok .Ct2
-    | _ => .Err "Expected a number between 0 and 6" :
-    core.result.Result v1.chunked.states.serialize.MessageType String)) = expected
-  split <;>
-    first
-    | (simp only [WP.spec_ok]; subst hp; rfl)
-    | step*
-      grind
+  split
+  case h_8 h0 h1 h2 h3 h4 h5 h6 =>
+    have hv : 6 < value.val := by
+      by_contra hle
+      have hcases : value.val = 0 ∨ value.val = 1 ∨ value.val = 2 ∨ value.val = 3 ∨
+          value.val = 4 ∨ value.val = 5 ∨ value.val = 6 := by omega
+      rcases hcases with h | h | h | h | h | h | h
+      exacts [h0 (UScalar.eq_of_val_eq h), h1 (UScalar.eq_of_val_eq h),
+        h2 (UScalar.eq_of_val_eq h), h3 (UScalar.eq_of_val_eq h), h4 (UScalar.eq_of_val_eq h),
+        h5 (UScalar.eq_of_val_eq h), h6 (UScalar.eq_of_val_eq h)]
+    simp only [core.fmt.rt.Argument.new_display, core.fmt.Arguments.new, core.hint.must_use,
+      bind_ok]
+    step*
+    split <;> first | omega | exact ⟨_, rfl⟩
+  all_goals (simp only [WP.spec_ok]; exact trivial)
 
 end spqr.v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String

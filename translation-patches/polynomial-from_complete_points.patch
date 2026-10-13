@@ -1,16 +1,15 @@
 Translation patch: <Poly>::from_complete_points
 
-Change: the `iter().map(..).collect()` and `iter().enumerate().map(..).collect()` chains become
-index loops that push into vectors.
-Why: iterator adapters (`map`, `enumerate`, `collect`) are not modelled by the Aeneas Lean library
-(aeneas#1043).
+Change: the `iter().enumerate().map(..).collect()` chain building the fallback `polys` becomes
+an index loop that pushes into a vector.
+Why: with this `map` closure (it captures `&ones`), Aeneas fails ("Could not match the contexts").
 Behaviour: identical.
 
 diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
-index 03315cd..237c733 100644
+index 65f33f8..bfdba12 100644
 --- a/src/encoding/polynomial.rs
 +++ b/src/encoding/polynomial.rs
-@@ -286,39 +286,41 @@ fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {
+@@ -292,39 +292,40 @@ fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {
      /// Given a set of "complete" points with x values that fully fill the
      /// range [0..pts.len()), return a polynomial that computes those points.
      #[hax_lib::requires(pts.len() == 0 || pts.len() == 1 || pts.len() == 3 || pts.len() == 5
@@ -35,24 +34,17 @@ index 03315cd..237c733 100644
              36 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_36),
              _ => {
                  debug_assert!(false, "missing precomputed poly of size {}", pts.len());
--                let ones = pts
--                    .iter()
--                    .map(|pt| Pt {
--                        x: pt.x,
-+                let mut ones = Vec::with_capacity(pts.len());
-+                #[allow(clippy::needless_range_loop)]
-+                for i in 0..pts.len() {
-+                    ones.push(Pt {
-+                        x: pts[i].x,
+                 let ones = pts
+                     .iter()
+                     .map(|pt| Pt {
+                         x: pt.x,
                          y: GF16::ONE,
--                    })
--                    .collect::<Vec<_>>();
+                     })
+                     .collect::<Vec<_>>();
 -                pts.iter()
 -                    .enumerate()
 -                    .map(|(i, _pt)| Self::lagrange_interpolate_pt(&ones, i))
 -                    .collect::<Vec<_>>()
-+                    });
-+                }
 +                let mut polys = Vec::with_capacity(pts.len());
 +                for i in 0..pts.len() {
 +                    polys.push(Self::lagrange_interpolate_pt(&ones, i));

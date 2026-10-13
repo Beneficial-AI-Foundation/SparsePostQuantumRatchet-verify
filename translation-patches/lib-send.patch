@@ -1,0 +1,80 @@
+Translation patch: spqr::send
+
+Change: the local `chain` is renamed `ratchet_chain`.
+Why: in the generated Lean, the local `chain` clashes with the module `chain` (#101).
+Behaviour: identical.
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 6bc0197..b987bfc 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -263,63 +263,63 @@ pub fn current_version(state: &SerializedState) -> Result<CurrentVersion, Error>
+ #[hax_lib::fstar::verification_status(lax)]
+ pub fn send<R: Rng + CryptoRng>(state: &SerializedState, rng: &mut R) -> Result<Send, Error> {
+     let state_pb = decode_state(state)?;
+     match state_pb.inner {
+         None => Ok(Send {
+             state: vec![],
+             msg: vec![],
+             key: None,
+         }),
+         Some(pqrpb::pq_ratchet_state::Inner::V1(pb)) => {
+             let v1states::Send { msg, key, state } = v1states::States::from_pb(pb)?.send(rng)?;
+-            let chain = match state_pb.chain {
++            let ratchet_chain = match state_pb.chain {
+                 None => match state_pb.version_negotiation.as_ref() {
+                     Some(vn) => {
+                         if vn.min_version > Version::V0 as i32 {
+                             Some(chain_from_version_negotiation(vn)?)
+                         } else {
+                             None
+                         }
+                     }
+                     None => {
+                         return Err(Error::ChainNotAvailable);
+                     }
+                 },
+                 Some(pb) => Some(Chain::from_pb(pb)?),
+             };
+-            let (index, msg_key, chain_pb) = match chain {
++            let (index, msg_key, chain_pb) = match ratchet_chain {
+                 None => {
+                     hax_lib::assume!(key.is_none());
+                     assert!(key.is_none());
+                     (0, vec![], None)
+                 }
+-                Some(mut chain) => {
++                Some(mut ratchet_chain) => {
+                     if let Some(epoch_secret) = key {
+-                        chain.add_epoch(epoch_secret);
++                        ratchet_chain.add_epoch(epoch_secret);
+                     }
+-                    let (index, msg_key) = chain.send_key(msg.epoch - 1)?;
+-                    (index, msg_key, Some(chain.into_pb()))
++                    let (index, msg_key) = ratchet_chain.send_key(msg.epoch - 1)?;
++                    (index, msg_key, Some(ratchet_chain.into_pb()))
+                 }
+             };
+ 
+             let msg = msg.serialize(index);
+             assert!(!msg.is_empty());
+             assert_eq!(msg[0], Version::V1.into());
+             Ok(Send {
+                 state: pqrpb::PqRatchetState {
+                     inner: Some(pqrpb::pq_ratchet_state::Inner::V1(state.into_pb())),
+                     // Sending never changes our version negotiation.
+                     version_negotiation: state_pb.version_negotiation,
+                     chain: chain_pb,
+                 }
+                 .encode_to_vec(),
+                 msg,
+                 // hax does not like `filter`
+                 key: if msg_key.is_empty() {
+                     None
+                 } else {
+                     Some(msg_key)
+                 },
+             })
+         }
+     }
+ }

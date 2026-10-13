@@ -1,15 +1,14 @@
 Translation patch: spqr::initial_state
 
-Change: the `log::info!` call is removed.
-Why: `log` is excluded from the translation (its macros expand to `fmt::Arguments`, which Aeneas
-cannot translate).
-Behaviour: identical except that there is no log output.
+Change: the `log::info!` call is commented out.
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
+Behaviour: identical apart from logging (no log output).
 
 diff --git a/src/lib.rs b/src/lib.rs
-index 7c3076f..5618541 100644
+index 6bc0197..d87d360 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -208,27 +208,21 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
+@@ -209,27 +209,27 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
  }
  
  pub fn initial_state(params: Params) -> Result<SerializedState, Error> {
@@ -19,6 +18,12 @@ index 7c3076f..5618541 100644
 -        params.version,
 -        params.direction
 -    );
++    // #[cfg(not(hax))]
++    // log::info!(
++    //     "spqr initiating state with version {:?} and direction {:?}",
++    //     params.version,
++    //     params.direction
++    // );
      match params.version {
          Version::V0 => Ok(empty_state()),
          _ => {

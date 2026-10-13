@@ -305,8 +305,10 @@ theorem lagrange_interpolate_formula
     step with lagrange_interpolate_complete_spec template pts 0#usize
       h_nonempty (by grind) h_root_template as ⟨working1, h_w1_len, h_w1_id⟩
     have h_one_le_w1 : (1 : Nat) ≤ working1.degree := by grind
-    step with alloc.vec.Vec.index_RangeFrom_spec working1.coefficients ⟨1#usize⟩ h_one_le_w1
-      as ⟨s, h_s_val, h_s_len⟩
+    step as ⟨s0, h_s0⟩
+    step as ⟨s, h_s_val, h_s_len⟩
+    · simp only [Slice.length, h_s0]; exact h_one_le_w1
+    rw [h_s0] at h_s_val
     have h_s_len_pts : s.length = pts.length := by grind [degree]
     step with extend_from_slice_GF16_spec out.coefficients s (by grind [degree]) as ⟨v, h_v_val⟩
     have h_v_val' : v = s.val := by rw [h_v_val, List.length_eq_zero_iff.mp h_out_len,

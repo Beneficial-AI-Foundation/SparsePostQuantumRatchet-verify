@@ -1,6 +1,7 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
 public import Spqr.Auxiliary.Aeneas.Scalar
+public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
 public import Spqr.Auxiliary.Aeneas.SpecRefl
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
@@ -155,10 +156,7 @@ public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
-public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallMut
-public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.CallOnce
 public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
-public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.SliceIterMapCollect
 public import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 public import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 public import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
@@ -222,8 +220,7 @@ public import Spqr.Specs.Lib.DecodeState.CallOnce
 public import Spqr.Specs.Lib.Direction.Switch
 public import Spqr.Specs.Lib.EmptyState
 public import Spqr.Specs.Lib.Error.From
-public import Spqr.Specs.Lib.MsgVersion
-public import Spqr.Specs.Lib.MsgVersion.Defs
+public import Spqr.Specs.Lib.MsgPreamble
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
 public import Spqr.Specs.Lib.SecretOutput.HasSecret

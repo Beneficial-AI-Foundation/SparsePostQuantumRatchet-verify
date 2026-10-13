@@ -1,14 +1,15 @@
 Translation patch: <GF16 as MulAssign<&GF16>>::mul_assign
 
-Change: the hardware-accelerated branch is removed.
-Why: the SIMD code (`gf::accelerated`, `gf::check_accelerated`) is excluded from the translation.
-Behaviour: identical (the accelerated and portable multiplications compute the same product).
+Change: the hardware-accelerated branch is commented out.
+Why: with the branch, Aeneas fails on `check_accelerated::TOKEN.get()` ("Internal error"; the
+SIMD code `gf::accelerated`/`gf::check_accelerated` is excluded from the translation).
+Behaviour: identical (the portable multiplication computes the same product).
 
 diff --git a/src/encoding/gf.rs b/src/encoding/gf.rs
-index 3d78854..7602d76 100644
+index 963e119..1c5e601 100644
 --- a/src/encoding/gf.rs
 +++ b/src/encoding/gf.rs
-@@ -125,16 +125,8 @@ fn sub(self, other: &Self) -> Self {
+@@ -125,16 +125,16 @@ fn sub(self, other: &Self) -> Self {
  #[hax_lib::attributes]
  impl ops::MulAssign<&GF16> for GF16 {
      fn mul_assign(&mut self, other: &Self) {
@@ -20,6 +21,14 @@ index 3d78854..7602d76 100644
 -            self.value = accelerated::mul(self.value, other.value);
 -            return;
 -        }
++        // #[cfg(all(
++        //     not(hax),
++        //     any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
++        // ))]
++        // if check_accelerated::TOKEN.get() {
++        //     self.value = accelerated::mul(self.value, other.value);
++        //     return;
++        // }
          self.value = unaccelerated::mul(self.value, other.value);
      }
  }

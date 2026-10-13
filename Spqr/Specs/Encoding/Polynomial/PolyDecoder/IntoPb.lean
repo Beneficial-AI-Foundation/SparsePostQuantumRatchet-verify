@@ -141,9 +141,10 @@ end spqr.encoding.polynomial.PolyDecoder.into_pb_loop0_loop0
 
 /-! # Spec theorem for `PolyDecoder::into_pb`: loop body 0
 
-One step of the outer loop. Given a slice iterator over `SortedSet<Pt>` arrays and output
-accumulator `v : Vec<Vec<u8>>`, either returns `v` unchanged (iterator exhausted) or serializes
-all points in the next sorted set into a byte vector and pushes it onto `v`.
+One step of the outer loop. Given a `Range<usize>` iterator over the indices of the array
+`a : [SortedSet<Pt>; 16]` and output accumulator `v : Vec<Vec<u8>>`, either returns `v`
+unchanged (iterator exhausted) or serializes all points in `a[i]` into a byte vector and pushes
+it onto `v`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
@@ -152,43 +153,44 @@ namespace spqr.encoding.polynomial.PolyDecoder.into_pb_loop0
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.into_pb_loop0.body`**:
 
 One step of the outer loop: terminates if the iterator is exhausted, otherwise serializes all
-points in `iter.slice[iter.i]` into 4-byte big-endian encodings and pushes the result onto `v`.
+points in `a[iter.start]` into 4-byte big-endian encodings and pushes the result onto `v`.
 
 Succeeds when `v.length + 1 ≤ Usize.max` and inner loops won't overflow. -/
 @[step]
 theorem body_spec
-    (iter : core.slice.iter.Iter (sorted_vec.SortedSet Pt))
+    (a : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (iter : core.ops.range.Range Usize)
     (v : alloc.vec.Vec (alloc.vec.Vec U8))
+    (h_end_le : iter.end ≤ a.val.length)
     (h_out_overflow : v.length + 1 ≤ Usize.max)
-    (h_inner_overflow : ∀ j < iter.slice.length, 4 * (iter.slice[j]!).length + 4 ≤ Usize.max) :
-    body iter v ⦃ cf =>
+    (h_inner_overflow : ∀ j < a.length, 4 * (a.val[j]!).length + 4 ≤ Usize.max) :
+    body a iter v ⦃ cf =>
       match cf with
       | ControlFlow.done v' =>
-          v' = v ∧ ¬(iter.i < iter.slice.length)
+          v' = v ∧ ¬(iter.start < iter.end)
       | ControlFlow.cont (iter1, v1) =>
-          iter.i < iter.slice.length ∧
-          iter1.i = iter.i + 1 ∧
-          iter1.slice = iter.slice ∧
+          iter.start < iter.end ∧
+          iter1.start = iter.start.val + 1 ∧
+          iter1.end = iter.end ∧
           ∃ (serialized : alloc.vec.Vec U8),
             v1 = v ++ [serialized] ∧
-            serialized.length = 4 * (iter.slice[iter.i]!).length ∧
-            ∀ (j : Nat), j < (iter.slice[iter.i]!).length →
+            serialized.length = 4 * (a.val[iter.start.val]!).length ∧
+            ∀ (j : Nat), j < (a.val[iter.start.val]!).length →
                 256 * (serialized[4 * j]!) + serialized[4 * j + 1]! =
-                  ((iter.slice[iter.i]!).val[j]!).x.value.val ∧
+                  ((a.val[iter.start.val]!).val[j]!).x.value.val ∧
                 256 * (serialized[4 * j + 2]!) + serialized[4 * j + 3]! =
-                  ((iter.slice[iter.i]!).val[j]!).y.value.val ⦄ := by
+                  ((a.val[iter.start.val]!).val[j]!).y.value.val ⦄ := by
   unfold body
-  obtain ⟨opt, iter1', hnext, h_none, h_some⟩ :=
-    core.slice.iter.IteratorSliceIter.next_post iter
-  rw [hnext]
-  simp only [bind_ok]
-  by_cases h_lt : iter.i < iter.slice.length
-  · obtain ⟨h_opt_eq, h_i1, h_slice1⟩ := h_some h_lt
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    have h_inner := h_inner_overflow iter.i h_lt
-    have h_getelem : (iter.slice.val[iter.i]! : sorted_vec.SortedSet Pt) =
-        iter.slice.val[iter.i]'h_lt := by
-      rw [← List.Inhabited_getElem_eq_getElem! (hi := h_lt)]
+    have h_j_lt : iter.start.val < a.val.length := by omega
+    have h_inner := h_inner_overflow iter.start.val h_j_lt
+    have h_getelem : (a.val[iter.start.val]! : sorted_vec.SortedSet Pt) =
+        a.val[iter.start.val]'h_j_lt := by
+      rw [← List.Inhabited_getElem_eq_getElem! (hi := h_j_lt)]
     step*
     · simp_all [alloc.vec.Vec.with_capacity]
     · simp_all
@@ -197,76 +199,78 @@ theorem body_spec
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.into_pb_loop0`**:
 
-Full outer loop: serializes all sorted sets into byte vectors in the output accumulator.
+Full outer loop: serializes the sorted sets `a[iter.start..iter.end]` into byte vectors in the
+output accumulator.
 
-Postcondition: `result.length = iter.slice.length` and for every `j < iter.slice.length`,
-`(result[j]).length = 4 * (iter.slice[j]).length` with each 4-byte chunk encoding the
+Postcondition: `result.length = iter.end` and for every `j < iter.end`,
+`(result[j]).length = 4 * (a[j]).length` with each 4-byte chunk encoding the
 corresponding point's `(x, y)` in big-endian format.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 @[step]
 theorem loop_spec
-    (iter : core.slice.iter.Iter (sorted_vec.SortedSet Pt))
+    (a : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (iter : core.ops.range.Range Usize)
     (v : alloc.vec.Vec (alloc.vec.Vec U8))
-    (h_start_le : iter.i ≤ iter.slice.length)
-    (h_out_len : v.length = iter.i)
-    (h_out_overflow : iter.slice.length + 1 ≤ Usize.max)
-    (h_inner_overflow : ∀ j < iter.slice.length, 4 * (iter.slice[j]!).length + 4 ≤ Usize.max)
-    (h_pre : ∀ (j : Nat), j < iter.i →
-          (v[j]!).length = 4 * (iter.slice[j]!).length ∧
-          ∀ (k : Nat), k < (iter.slice[j]!).length →
+    (h_end_le : iter.end ≤ a.length)
+    (h_start_le : iter.start ≤ iter.end.val)
+    (h_out_len : v.length = iter.start)
+    (h_out_overflow : a.length + 1 ≤ Usize.max)
+    (h_inner_overflow : ∀ j < a.length, 4 * (a.val[j]!).length + 4 ≤ Usize.max)
+    (h_pre : ∀ (j : Nat), j < iter.start.val →
+          (v[j]!).length = 4 * (a.val[j]!).length ∧
+          ∀ (k : Nat), k < (a.val[j]!).length →
               256 * ((v[j]!)[4 * k]!) + ((v[j]!)[4 * k + 1]!) =
-                ((iter.slice[j]!).val[k]!).x.value.val ∧
+                ((a.val[j]!).val[k]!).x.value.val ∧
               256 * ((v[j]!)[4 * k + 2]!) + ((v[j]!)[4 * k + 3]!) =
-                ((iter.slice[j]!).val[k]!).y.value.val) :
-    into_pb_loop0 iter v ⦃ (result : alloc.vec.Vec (alloc.vec.Vec U8)) =>
-      result.length = iter.slice.length ∧
-      ∀ (j : Nat), j < iter.slice.length →
-          (result[j]!).length = 4 * (iter.slice[j]!).length ∧
-          ∀ (k : Nat), k < (iter.slice[j]!).length →
+                ((a.val[j]!).val[k]!).y.value.val) :
+    into_pb_loop0 iter a v ⦃ (result : alloc.vec.Vec (alloc.vec.Vec U8)) =>
+      result.length = iter.end ∧
+      ∀ (j : Nat), j < iter.end.val →
+          (result[j]!).length = 4 * (a.val[j]!).length ∧
+          ∀ (k : Nat), k < (a.val[j]!).length →
               256 * ((result[j]!)[4 * k]!) + ((result[j]!)[4 * k + 1]!) =
-                ((iter.slice[j]!).val[k]!).x.value.val ∧
+                ((a.val[j]!).val[k]!).x.value.val ∧
               256 * ((result[j]!)[4 * k + 2]!) + ((result[j]!)[4 * k + 3]!) =
-                ((iter.slice[j]!).val[k]!).y.value.val ⦄ := by
+                ((a.val[j]!).val[k]!).y.value.val ⦄ := by
   unfold into_pb_loop0
   apply loop.spec_decr_nat
-    (measure := fun (p : core.slice.iter.Iter (sorted_vec.SortedSet Pt) ×
+    (measure := fun (p : core.ops.range.Range Usize ×
                        alloc.vec.Vec (alloc.vec.Vec U8)) =>
-                  p.1.slice.length - p.1.i)
-    (inv := fun (p : core.slice.iter.Iter (sorted_vec.SortedSet Pt) ×
+                  p.1.end - p.1.start)
+    (inv := fun (p : core.ops.range.Range Usize ×
                       alloc.vec.Vec (alloc.vec.Vec U8)) =>
-        p.1.slice = iter.slice ∧
-        p.1.i ≤ p.1.slice.length ∧
-        p.2.length = p.1.i ∧
-        (∀ (j : Nat), j < p.1.i →
-            (p.2[j]!).length = 4 * (iter.slice[j]!).length ∧
-            ∀ (k : Nat), k < (iter.slice[j]!).length →
+        p.1.end = iter.end ∧
+        p.1.start ≤ p.1.end ∧
+        p.2.length = p.1.start ∧
+        (∀ (j : Nat), j < p.1.start.val →
+            (p.2[j]!).length = 4 * (a.val[j]!).length ∧
+            ∀ (k : Nat), k < (a.val[j]!).length →
                 256 * ((p.2[j]!)[4 * k]!) + ((p.2[j]!)[4 * k + 1]!) =
-                  ((iter.slice[j]!).val[k]!).x.value.val ∧
+                  ((a.val[j]!).val[k]!).x.value.val ∧
                 256 * ((p.2[j]!)[4 * k + 2]!) + ((p.2[j]!)[4 * k + 3]!) =
-                  ((iter.slice[j]!).val[k]!).y.value.val))
-  · rintro ⟨iter', v'⟩ ⟨h_slice', h_i_le', h_out_len', h_pre'⟩
-    simp only [] at h_slice' h_i_le' h_out_len' h_pre' ⊢
-    have h_body := body_spec iter' v'
-      (by rw [h_out_len']; rw [h_slice'] at h_i_le'; omega)
-      (by rw [h_slice']; exact h_inner_overflow)
+                  ((a.val[j]!).val[k]!).y.value.val))
+  · rintro ⟨iter', v'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
+    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
+    have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_body := body_spec a iter' v' (by grind) (by grind) h_inner_overflow
     apply WP.spec_mono h_body
     intro cf h_cf
     match cf with
     | ControlFlow.done v'' => grind
     | ControlFlow.cont (iter'', v'') =>
       simp only [] at h_cf ⊢
-      obtain ⟨h_lt, h_i1, h_slice1, serialized, h_v_eq, h_ser_len, h_ser_enc⟩ := h_cf
+      obtain ⟨h_lt, h_start1, h_end1, serialized, h_v_eq, h_ser_len, h_ser_enc⟩ := h_cf
+      have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
       have h_val : v''.val = v'.val ++ [serialized] := h_v_eq
-      have h_len : v'.val.length = iter'.i := h_out_len'
+      have h_len : v'.val.length = iter'.start.val := h_out_len'
       refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
-      by_cases hj_lt : j < iter'.i
+      by_cases hj_lt : j < iter'.start.val
       · grind
-      · have hj_eq : j = iter'.i := by omega
+      · have hj_eq : j = iter'.start.val := by omega
         subst hj_eq
-        have h_get : v''[iter'.i]! = serialized := by grind
+        have h_get : v''[iter'.start.val]! = serialized := by grind
         rw [h_get]
-        rw [h_slice'] at h_ser_len h_ser_enc
         exact ⟨h_ser_len, h_ser_enc⟩
   · grind
 
@@ -308,22 +312,17 @@ theorem into_pb_spec
   unfold into_pb
   simp only [alloc.vec.Vec.with_capacity]
   step*
-  unfold core.slice.Slice.iter
-  step*
-  have h_len : s1.length = 16 := by simp [*]
-  have h_get : ∀ j : Nat, s1[j]! = self.pts.val[j]! := by
-    intro j; simp [*, Slice.getElem!_Nat_eq]
-  refine ⟨?_, by grind, fun j hj => ?_⟩
-  · simp only [UScalar.cast_val_eq, *]
-    scalar_tac
-  · have h_enc : ∀ j < s1.length,
-        (v1[j]!).length = 4 * (s1[j]!).length ∧
-        ∀ k < (s1[j]!).length,
-          256 * ((v1[j]!)[4 * k]!) + ((v1[j]!)[4 * k + 1]!) = ((s1[j]!).val[k]!).x.value.val ∧
-          256 * ((v1[j]!)[4 * k + 2]!) + ((v1[j]!)[4 * k + 3]!) =
-            ((s1[j]!).val[k]!).y.value.val := by
-      assumption
-    rw [← h_get]
-    exact h_enc j (by omega)
+  have h_len : (s1.len : Usize).val = 16 := by simp [*]
+  have h_enc : ∀ j < (s1.len : Usize).val,
+      (v1[j]!).length = 4 * (self.pts.val[j]!).length ∧
+      ∀ k < (self.pts.val[j]!).length,
+        256 * ((v1[j]!)[4 * k]!) + ((v1[j]!)[4 * k + 1]!) =
+          ((self.pts.val[j]!).val[k]!).x.value.val ∧
+        256 * ((v1[j]!)[4 * k + 2]!) + ((v1[j]!)[4 * k + 3]!) =
+          ((self.pts.val[j]!).val[k]!).y.value.val := by
+    assumption
+  refine ⟨?_, by omega, fun j hj => h_enc j (by omega)⟩
+  simp only [UScalar.cast_val_eq, *]
+  scalar_tac
 
 end spqr.encoding.polynomial.PolyDecoder
