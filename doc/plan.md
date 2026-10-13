@@ -282,8 +282,8 @@ tail bound on the centred-binomial noise, FIPS 203 § 3.3 / Table 2.
 |------|------|-------------------|
 | 6.1 | `Bridge/KeyPairBytes.lean`, `Bridge/LibcruxKeygen.lean` | `from_seed seed = ok {value := keyPairArray seed}` where `keyPairArray seed = (mlkemKeyGen seed[0:32] seed[32:64] mlkem768).dk`. **Done — no axioms, no `sorry`.** |
 | 6.2 | `KEM/EncapsIncremental.lean`, `Bridge/EncapsBytes.lean`, `Bridge/LibcruxEncaps1.lean` | `encapsulate1 pk1 rand state ss = ok (.Ok c₁, state', ss')` with `c₁ = (mlkemEncapsPhase1 (ρ,h) m).ct1`, `state'[0:2080] = stateBytes (ŷ,e₂,m)`, `ss'[0:32] = K`. **Done — no axioms, no `sorry`.** |
-| 6.3 | `Bridge/LibcruxEncaps2.lean` | `aeneas_encapsulate2 ek state = mlkemEncaps_phase2 …` |
-| 6.4 | `Bridge/LibcruxDecaps.lean` | `aeneas_decaps dk ct1 ct2 = mlkemDecaps dk (ct1,ct2)` |
+| 6.3 | `Bridge/LibcruxEncaps2.lean` | `encapsulate2 state pk2 = ok {value := ct2Array state pk2}` with `ct2Array = mlkemEncapsPhase2 (decodeEncapsState state) (decodePk2THat pk2)`. **Done — no axioms, no `sorry`.** |
+| 6.4 | `Bridge/DecapsBytes.lean`, `Bridge/LibcruxDecaps.lean` | `decapsulate_compressed_key dk ct1 ct2 = ok (ssArray dk ct1 ct2)` with `ssArray = mlkemDecaps (dkOfArray dk) (ctOfParts ct1 ct2)`; end-to-end `ssBytes_roundTrip` across all four bridges. **Done — no axioms, no `sorry`.** |
 
 #### 6.1 — Notes
 
@@ -330,6 +330,37 @@ tail bound on the centred-binomial noise, FIPS 203 § 3.3 / Table 2.
   `encapsulate1_short_header`, and the composition with 6.1: `ssOut_pk1Bytes`
   (`= (mlkemEncaps ek m).ss`) and `ct1Bytes_pk1Bytes` (`= (mlkemEncaps ek m).ct[0:960]`).
 
+#### 6.4 — Notes
+
+* **Byte model** (`Bridge/DecapsBytes.lean`, imported by `FunsExternal`): `dkOfArray` reads the
+  2400-byte compressed key-pair buffer as the FIPS 203 `dk` (round trip
+  `dkOfArray_keyPairArray` on a generated key), `ctOfParts` reassembles `c = c₁ ‖ c₂` from the
+  two fixed-size halves, and `ssBytes/List/Array` give the 32-byte shared secret
+  `mlkemDecaps dk (c₁ ‖ c₂)`.
+* **External** (`SrcTranslated/FunsExternal.lean`): `decapsulate_compressed_key` is now a `def`
+  (was an axiom) returning `ok (ssArray dk ct1 ct2)` — all inputs are fixed-size arrays, so
+  there are no error cases — with a `@[step]` spec `decapsulate_compressed_key_spec`.
+* **Bridge** (`Bridge/LibcruxDecaps.lean`): `decapsulate_eq_mlkemDecaps`, `decapsulate_ss`, the
+  composition with 6.1–6.3 `ctOfParts_ct1Array_ct2Array` (the reassembled ciphertext is
+  `(mlkemEncaps ek m).ct` byte-for-byte on a generated key), and the end-to-end KEM round trip
+  `ssBytes_roundTrip`: decapsulating the incremental ciphertext with the `from_seed` key pair
+  recovers `(mlkemEncaps ek m).ss` under the K-PKE noise bound (via `mlkem_roundTrip_768`).
+
+#### 6.3 — Notes
+
+* **Byte model** (`Bridge/EncapsBytes.lean`): `stateOfArray`/`pk2OfArray` read the fixed-size
+  Aeneas arrays, `decodePk2THat` recovers `t̂` from `pk2 = ByteEncode₁₂(t̂)` via `ByteDecode₁₂`
+  (with `decodePk2THat_pk2Bytes` connecting it to `decodeEkTHat` on a generated key's `ek`), and
+  `ct2Bytes/List/Array` give the 128-byte `c₂` of `mlkemEncapsPhase2`.
+* **External** (`SrcTranslated/FunsExternal.lean`): `encapsulate2` is now a `def` (was an axiom)
+  returning `ok {value := ct2Array state pk2}` — both inputs are fixed-size arrays, so there are
+  no error cases — with a `@[step]` spec `encapsulate2_spec`.
+* **Bridge** (`Bridge/LibcruxEncaps2.lean`): `encapsulate2_eq_mlkemEncapsPhase2`,
+  `encapsulate2_ct2`, round-trip lemmas `stateOfArray_stateArray`/`pk2OfArray_pk2Array`,
+  `ct2Bytes_stateArray` (round 2 on a serialised round-1 state), the composition with 6.1/6.2:
+  `ct2Bytes_stateOut_pk2Bytes` (`= (mlkemEncaps ek m).ct[960 + i]`), and the full three-bridge
+  composition `ct_eq_ct1Bytes_append_ct2Bytes` (`ct = c₁ ‖ c₂` byte-for-byte on a generated key).
+
 **Bridge proof strategy:** Unfold Aeneas definition layer by layer →
 apply `@[step]` spec theorems for externals → show each computational
 step matches a FIPS 203 algorithm step → close with `omega`/`ring`/`decide`.
@@ -338,10 +369,10 @@ step matches a FIPS 203 algorithm step → close with `omega`/`ring`/`decide`.
 
 | Step | File | Description |
 |------|------|-------------|
-| 7.1 | `IncrementalMlkem768/Generate.lean` | Strengthen `generate_spec` with FIPS 203 value semantics. |
-| 7.2 | `IncrementalMlkem768/Encaps1.lean` | Remove `sorry`, add value-level post via bridge. |
-| 7.3 | New `Encaps2.lean` | Spec theorem for `encaps2`. |
-| 7.4 | New `Decaps.lean` | Spec theorem for `decaps`. |
+| 7.1 | `IncrementalMlkem768/Generate.lean` | Strengthen `generate_spec` with FIPS 203 value semantics: the postcondition now exhibits a seed with `dk = keyPairList seed`, `ek = pk2Bytes seed`, `hdr = pk1Bytes seed` (via Bridge 6.1), on top of the layout facts. **Done — no axioms, no `sorry`.** |
+| 7.2 | `IncrementalMlkem768/Encaps1.lean` | `encaps1_spec`: assuming `fill_bytes` is panic-free and `64 ≤ hdr.len()`, `encaps1` returns `(ct1, es, ss)` where there is a 32-byte message `m` (the one `fill_bytes` wrote) with `ct1 = ct1List hdr m`, `es = stateOut hdr m`, `ss = ssOut hdr m` (round 1 of Algorithm 17 via Bridge 6.2), plus the length facts `960 / 2080 / 32`. **Done — no custom axioms, no `sorry`** (only the `Formatter`/`CoreFmtDebug.fmt`/`native.decide` axioms already carried by the extracted `encaps1` body itself, via `expect`'s message string). |
+| 7.3 | `IncrementalMlkem768/Encaps2.lean` | `encaps2_spec`: assuming the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`) and the hax contract of the opaque endianness workaround (it succeeds and any `Some` output has 2080 bytes), `encaps2` returns the 128-byte `c₂ = ct2List st pk` of round 2 of Algorithm 17 (Bridge 6.3), where `st` is the state the workaround selected (the fixed one on `Some`, `es` on `None`) and `pk` holds the bytes of `ek`, plus the length fact `128`. **Done — no custom axioms beyond the opaque workaround's contract hypothesis, no `sorry`.** |
+| 7.4 | `IncrementalMlkem768/Decaps.lean` | `decaps_spec`: assuming the Rust `requires` (`dk.len() = 2400`, `ct1.len() = 960`, `ct2.len() = 128`), `decaps` returns the 32-byte shared secret `Fips203.Bridge.ssList dk ct1 ct2` of FIPS 203 Algorithm 18 (`mlkemDecaps`, via Bridge 6.4) on the decapsulation key read from the key-pair buffer and the reassembled ciphertext `c₁ ‖ c₂`, plus the length fact `32`. Composed with `ssBytes_roundTrip` (Bridge 6.4) this recovers the encapsulated secret on a generated key under the noise bound. **Done — no custom axioms, no `sorry`** (only the `Formatter`/`CoreFmtDebug.fmt` axioms already carried by the extracted `decaps` body itself, via `expect`'s message string). |
 
 ---
 

@@ -266,4 +266,60 @@ def ssOut (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) : Fin 3
 def msgOfArray (r : Array U8 32#usize) : Fin 32 → UInt8 :=
   fun i => (r.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
 
+/-! ## The FIPS 203 model of `encapsulate2` (ML-KEM-768)
+
+libcrux `encapsulate2(state, pk2)` (`src/mlkem.rs`, `mlkem768::incremental::encapsulate2`) takes
+the 2080-byte serialised round-1 state and the 1152-byte `pk2 = ByteEncode₁₂(t̂)` — both as
+fixed-size arrays, so there are no error cases — decodes them and runs round 2 of Algorithm 17
+(`Fips203.mlkemEncapsPhase2`): `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ +
+Decompress₁(m)))`. -/
+
+/-- libcrux `Ciphertext2::len()` for ML-KEM-768: `32 · d_v`. -/
+def ct2Size : ℕ := 128
+
+theorem ct2Size_eq : 32 * mlkem768.d_v = ct2Size := by
+  simp only [mlkem768_d_v, ct2Size]
+
+/-- Read the 2080-byte Aeneas state array as a `Fin 2080 → UInt8` byte vector. -/
+def stateOfArray (st : Array U8 2080#usize) : Fin encapsStateSize → UInt8 :=
+  fun i => (st.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
+
+/-- Read the 1152-byte Aeneas `pk2` array as a `Fin 1152 → UInt8` byte vector. -/
+def pk2OfArray (pk2 : Array U8 1152#usize) : Fin 1152 → UInt8 :=
+  fun i => (pk2.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
+
+/-- Recover `t̂` from the serialised `pk2 = ByteEncode₁₂(t̂)` via `ByteDecode₁₂` (the first
+`1152` bytes of `ek`, cf. `decodeEkTHat`). -/
+def decodePk2THat (pk2 : Fin 1152 → UInt8) : Fin mlkem768.k → (Fin n → Zq) :=
+  fun i => byteDecodeZq 12 (fun idx =>
+    pk2 ⟨384 * i.val + idx.val, by
+      have hi : i.val < 3 := i.isLt
+      have hidx := idx.isLt
+      have : 32 * 12 = 384 := by norm_num
+      omega⟩)
+
+/-- On a generated key, decoding `pk2` gives the same `t̂` as decoding the full `ek`. -/
+theorem decodePk2THat_pk2Bytes (seed : Fin 64 → UInt8) :
+    decodePk2THat (pk2Bytes seed) = decodeEkTHat (ekBytes seed) := by
+  funext i
+  simp only [decodePk2THat, decodeEkTHat, decodeEkPoly, pk2Bytes]
+
+/-- The 128-byte second ciphertext half: round 2 of Algorithm 17 on the decoded state and `t̂`. -/
+def ct2Bytes (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : Fin ct2Size → UInt8 :=
+  fun i =>
+    mlkemEncapsPhase2 mlkem768 (decodeEncapsState (stateOfArray st))
+      (decodePk2THat (pk2OfArray pk2)) ⟨i.val, by have := i.isLt; rw [ct2Size_eq]; exact this⟩
+
+/-- The second ciphertext half as an Aeneas list. -/
+def ct2List (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : List U8 :=
+  toU8List (ct2Bytes st pk2)
+
+theorem ct2List_length (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) :
+    (ct2List st pk2).length = 128 := by
+  simp only [ct2List, toU8List_length, ct2Size]
+
+/-- The second ciphertext half as an Aeneas `Array U8 128`. -/
+def ct2Array (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : Array U8 128#usize :=
+  Array.make 128#usize (ct2List st pk2) (ct2List_length st pk2)
+
 end Fips203.Bridge

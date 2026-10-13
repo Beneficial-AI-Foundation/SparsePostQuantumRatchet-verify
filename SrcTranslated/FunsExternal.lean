@@ -2,6 +2,7 @@ import Aeneas
 import SrcTranslated.Types
 import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
 import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+import Spqr.Crypto.Fips203.Bridge.DecapsBytes
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
@@ -1875,10 +1876,30 @@ theorem libcrux_ml_kem.mlkem768.incremental.encaps_state_len_spec :
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 407:8-407:111
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate2"]
-axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
-  :
-  Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
-    (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
+noncomputable def libcrux_ml_kem.mlkem768.incremental.encapsulate2
+  (state : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
+  Result (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :=
+  -- Model: round 2 of FIPS 203 `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase2`): decode the
+  -- 2080-byte state `ŷ ‖ e₂ ‖ m` and `t̂` from `pk2 = ByteEncode₁₂(t̂)`, then output
+  -- `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))`.  Both inputs are
+  -- fixed-size arrays, so there are no error cases and the function never fails.
+  -- See `Spqr/Crypto/Fips203/Bridge/EncapsBytes.lean`.
+  ok { value := Fips203.Bridge.ct2Array state pk2 }
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encapsulate2`**
+
+- Never panics (both inputs are fixed-size arrays, so there are no length checks).
+- Returns the `128`-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17
+  (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `state` and the
+  NTT-domain vector `t̂` decoded from `pk2` (`Fips203.Bridge.ct2List`). -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encapsulate2_spec
+    (state : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
+    libcrux_ml_kem.mlkem768.incremental.encapsulate2 state pk2
+      ⦃ (r : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) =>
+      r.value.length = 128 ∧ r.value.val = Fips203.Bridge.ct2List state pk2 ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.encapsulate2, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
@@ -2093,12 +2114,35 @@ theorem libcrux_ml_kem.mlkem768.incremental.encapsulate1_spec
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key"]
-axiom libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
-  :
-  Array Std.U8 2400#usize →
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize →
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize → Result
-    (Array Std.U8 32#usize)
+noncomputable def libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
+  (key_pair : Array Std.U8 2400#usize)
+  (ciphertext1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+  (ciphertext2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
+  Result (Array Std.U8 32#usize) :=
+  -- Model: FIPS 203 `ML-KEM.Decaps_internal` (`Fips203.mlkemDecaps`, Algorithm 18) on the
+  -- decapsulation key read from the 2400-byte compressed key-pair buffer and the reassembled
+  -- ciphertext `c = c₁ ‖ c₂`.  All inputs are fixed-size arrays, so there are no error cases
+  -- and the function never fails.  See `Spqr/Crypto/Fips203/Bridge/DecapsBytes.lean`.
+  ok (Fips203.Bridge.ssArray key_pair ciphertext1.value ciphertext2.value)
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key`**
+
+- Never panics (all inputs are fixed-size arrays, so there are no length checks).
+- Returns the 32-byte shared secret of FIPS 203 Algorithm 18 (`Fips203.mlkemDecaps`) on the
+  decapsulation key stored in `key_pair` and the ciphertext `c₁ ‖ c₂`
+  (`Fips203.Bridge.ssList`). -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key_spec
+    (key_pair : Array Std.U8 2400#usize)
+    (ciphertext1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+    (ciphertext2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
+    libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key key_pair ciphertext1
+      ciphertext2
+      ⦃ (ss : Array Std.U8 32#usize) =>
+      ss.length = 32 ∧
+      ss.val = Fips203.Bridge.ssList key_pair ciphertext1.value ciphertext2.value ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [prost::encoding::bool::encode]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 263:12-263:82
