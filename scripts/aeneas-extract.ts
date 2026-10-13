@@ -9,7 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import chalk from "chalk";
-import { loadConfig } from "./lib/config.js";
+import { loadConfig, readLakefileAeneasTag } from "./lib/config.js";
 import { findBinary } from "./lib/paths.js";
 import { run, runStreaming } from "./lib/shell.js";
 import { applyPatches, listPatches, revertPatches } from "./lib/patches.js";
@@ -31,10 +31,11 @@ async function main(): Promise<void> {
   if (!aeneasBin) {
     throw new Error("Aeneas binary not found. Run 'npm run aeneas-install' first.");
   }
+  const tag = readLakefileAeneasTag(root);
   const installed = (await run(aeneasBin, ["-version"])).trim();
-  if (installed !== `aeneas ${config.aeneas.tag}`) {
+  if (installed !== `aeneas ${tag}`) {
     throw new Error(
-      `Installed '${installed}' does not match the pinned tag '${config.aeneas.tag}' (lakefile.toml). ` +
+      `Installed '${installed}' does not match the pinned tag '${tag}' (lakefile.toml). ` +
         "Run 'npm run aeneas-install' first.",
     );
   }
@@ -67,12 +68,8 @@ async function main(): Promise<void> {
   if (config.charon.start_from_pub) {
     charonArgs.push("--start-from-pub");
   }
-  for (const item of config.charon.exclude) {
-    charonArgs.push("--exclude", item);
-  }
-  for (const item of config.charon.opaque) {
-    charonArgs.push("--opaque", item);
-  }
+  // `exclude`/`opaque` are read by `charon cargo` from the `[package.metadata.charon]` section of
+  // Cargo.toml.
 
   // Cargo args go after --
   if (config.charon.cargo_args.length > 0) {

@@ -9,12 +9,13 @@
 
 ## Configuration
 
-All extraction options live in `aeneas-config.yml` at the project root.
+Extraction options live in `aeneas-config.yml` at the project root, except Charon's `exclude`/`opaque`
+lists, which `charon cargo` reads from the `[package.metadata.charon]` section of `Cargo.toml`.
 
 ## Translation patches
 
-The Rust sources (`src/`, `build.rs`, `Cargo.toml`) are kept identical to the upstream commit
-named in `aeneas-config.yml`. Every change needed for the translation is a patch in
+The Rust sources (`src/`, `build.rs`, and `Cargo.toml` apart from its `[package.metadata.charon]`
+section) are kept identical to the upstream commit named in `aeneas-config.yml`. Every change needed for the translation is a patch in
 `translation-patches/`, one function per patch, applied only while Charon runs:
 
 - File name: `<file-stem>-<function>.patch`, with `-<Type>` before the function only when the
@@ -31,8 +32,6 @@ named in `aeneas-config.yml`. Every change needed for the translation is a patch
   Behaviour: identical. | <exactly what differs>
   Relies on: <a fact not visible in the diff>      (only when there is one)
   ```
-
-See `extraction.md` for the full procedure.
 
 ## Updating the aeneas version
 

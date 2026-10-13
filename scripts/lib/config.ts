@@ -9,11 +9,6 @@ export interface Substitution {
 }
 
 export interface AeneasConfig {
-  aeneas: {
-    /** Release tag, read from `lakefile.toml` (the single source of truth), not from the YAML. */
-    tag: string;
-    repo: string;
-  };
   upstream: {
     repo: string;
     commit: string;
@@ -25,8 +20,6 @@ export interface AeneasConfig {
     cargo_args: string[];
     start_from: string[];
     start_from_pub?: boolean;
-    exclude: string[];
-    opaque: string[];
   };
   aeneas_args: {
     options: string[];
@@ -85,11 +78,6 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   const config = raw as unknown as AeneasConfig;
 
   // Validate required fields
-  if (!config.aeneas?.repo) throw new Error("Missing required field: aeneas.repo");
-  if ((config.aeneas as { tag?: string }).tag) {
-    throw new Error("aeneas.tag is no longer read from aeneas-config.yml: the tag is pinned only in lakefile.toml");
-  }
-  config.aeneas.tag = readLakefileAeneasTag(projectRoot);
   if (!config.crate?.dir) throw new Error("Missing required field: crate.dir");
 
   // Apply defaults
@@ -101,8 +89,6 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   config.charon.cargo_args = config.charon.cargo_args ?? [];
   config.charon.start_from = config.charon.start_from ?? [];
   config.charon.start_from_pub = config.charon.start_from_pub ?? false;
-  config.charon.exclude = config.charon.exclude ?? [];
-  config.charon.opaque = config.charon.opaque ?? [];
   config.aeneas_args = config.aeneas_args ?? {} as AeneasConfig["aeneas_args"];
   config.aeneas_args.options = config.aeneas_args.options ?? [];
   config.aeneas_args.dest = config.aeneas_args.dest ?? "output";
