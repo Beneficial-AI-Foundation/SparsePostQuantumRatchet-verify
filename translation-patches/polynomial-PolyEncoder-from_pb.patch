@@ -1,0 +1,84 @@
+Translation patch: <PolyEncoder>::from_pb
+
+Change: `core::array::from_fn` becomes array literals; the loop over `pts.chunks_exact(2)` becomes
+an index loop; the `let s = if .. else if .. else ..` with an early `return` inside becomes
+straight-line early returns.
+Why: `array::from_fn` and `chunks_exact` are not modelled by the Aeneas Lean library, and the
+`?`/`return` inside a loop nested in a value-producing `if` does not translate.
+Behaviour: identical (only the initial capacity of `v` is `pts.len() / 2` instead of
+`pts.len()`).
+Relies on: `pts.len()` is even (checked just above), so there is no remainder.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 03315cd..f435a45 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -569,42 +569,51 @@ pub fn into_pb(self) -> proto::pq_ratchet::PolynomialEncoder {
+     pub(crate) fn from_pb(
+         pb: proto::pq_ratchet::PolynomialEncoder,
+     ) -> Result<Self, PolynomialError> {
+-        let s = if !pb.pts.is_empty() {
++        if !pb.pts.is_empty() {
+             if !pb.polys.is_empty() {
+                 return Err(PolynomialError::SerializationInvalid);
+             }
+             if pb.pts.len() != NUM_POLYS {
+                 return Err(PolynomialError::SerializationInvalid);
+             }
+-            let mut out = core::array::from_fn(|_| Point {
+-                value: Vec::<GF16>::new(),
+-            });
++            let mut out = [Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
++                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() }];
+ 
+             #[allow(clippy::needless_range_loop)]
+             for i in 0..NUM_POLYS {
+                 let pts = &pb.pts[i];
+                 if pts.len() % 2 != 0 {
+                     return Err(PolynomialError::SerializationInvalid);
+                 }
+-                let mut v = Vec::<GF16>::with_capacity(pts.len());
+-                for pt in pts.chunks_exact(2) {
+-                    v.push(GF16::new(u16::from_be_bytes(pt.try_into().unwrap())));
++                let mut v = Vec::<GF16>::with_capacity(pts.len() / 2);
++                for k in 0..(pts.len() / 2) {
++                    let j = k * 2;
++                    v.push(GF16::new(u16::from_be_bytes([pts[j], pts[j + 1]])));
+                 }
+                 hax_lib::assume!(v.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1);
+                 out[i] = Point { value: v };
+             }
+-            EncoderState::Points(out)
+-        } else if pb.polys.len() == NUM_POLYS {
+-            let mut out: [Poly; NUM_POLYS] = core::array::from_fn(|_| Poly::zero(1));
+-            for (i, poly) in pb.polys.iter().enumerate() {
+-                out[i] = Poly::deserialize(poly)?;
++            return Ok(Self { idx: pb.idx, s: EncoderState::Points(out) });
++        }
++        if pb.polys.len() == NUM_POLYS {
++            let mut out = [Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
++                          Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
++                          Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
++                          Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1)];
++            #[allow(clippy::needless_range_loop)]
++            for i in 0..NUM_POLYS {
++                out[i] = Poly::deserialize(&pb.polys[i])?;
+             }
+-            EncoderState::Polys(out)
+-        } else {
+-            return Err(PolynomialError::SerializationInvalid);
+-        };
+-        Ok(Self { idx: pb.idx, s })
++            return Ok(Self { idx: pb.idx, s: EncoderState::Polys(out) });
++        }
++        Err(PolynomialError::SerializationInvalid)
+     }
+ 
+     #[requires(poly < 16)]
+     #[hax_lib::opaque] // iterators

@@ -191,13 +191,13 @@ def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type} (corecloneCloneInst :
 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
-    Source: 'src/encoding/gf.rs', lines 543:4-543:44
+    Source: 'src/encoding/gf.rs', lines 527:4-527:44
     Visibility: public -/
 @[global_simps, irreducible]
 def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
-    Source: 'src/encoding/gf.rs', lines 542:4-542:45
+    Source: 'src/encoding/gf.rs', lines 526:4-526:45
     Visibility: public -/
 @[global_simps, irreducible]
 def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
@@ -2249,7 +2249,7 @@ def
   := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Direction}::default]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87
     Visibility: public -/
 def proto.pq_ratchet.Direction.Insts.CoreDefaultDefault.default
   : Result proto.pq_ratchet.Direction := do
@@ -2292,7 +2292,7 @@ def
 }
 
 /-- [spqr::proto::pq_ratchet::{impl core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Direction}::try_from]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87
     Visibility: public -/
 def
   proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue.try_from
@@ -4614,14 +4614,14 @@ def proto.pq_ratchet.Version.from_i32
   | _ => ok none
 
 /-- [spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::Direction}::clone]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:9-402:14
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:9-400:14
     Visibility: public -/
 def proto.pq_ratchet.Direction.Insts.CoreCloneClone.clone
   (self : proto.pq_ratchet.Direction) : Result proto.pq_ratchet.Direction := do
   ok self
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:9-402:14 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:9-400:14 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCloneClone : core.clone.Clone
   proto.pq_ratchet.Direction := {
@@ -4629,7 +4629,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::marker::Copy for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:16-402:20 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:16-400:20 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreMarkerCopy : core.marker.Copy
   proto.pq_ratchet.Direction := {
@@ -4637,14 +4637,14 @@ def proto.pq_ratchet.Direction.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:29-402:38 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:29-400:38 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Direction := {
 }
 
 /-- [spqr::proto::pq_ratchet::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::eq]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:29-402:38
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:29-400:38
     Visibility: public -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection.eq
   (self : proto.pq_ratchet.Direction) (other : proto.pq_ratchet.Direction) :
@@ -4655,7 +4655,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:29-402:38 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:29-400:38 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection :
   core.cmp.PartialEq proto.pq_ratchet.Direction proto.pq_ratchet.Direction := {
@@ -4663,7 +4663,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::cmp::Eq for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:40-402:42 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:40-400:42 -/
 @[reducible]
 impl_def proto.pq_ratchet.Direction.Insts.CoreCmpEq : core.cmp.Eq
   proto.pq_ratchet.Direction := {
@@ -4673,7 +4673,7 @@ impl_def proto.pq_ratchet.Direction.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [spqr::proto::pq_ratchet::{impl core::cmp::Ord for spqr::proto::pq_ratchet::Direction}::cmp]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:62-402:65
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:62-400:65
     Visibility: public -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp
   (self : proto.pq_ratchet.Direction) (other : proto.pq_ratchet.Direction) :
@@ -4684,7 +4684,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp
   ok (core.cmp.impls.OrdI32.cmp self1 other1)
 
 /-- [spqr::proto::pq_ratchet::{impl core::cmp::PartialOrd<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::partial_cmp]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:50-402:60
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:50-400:60
     Visibility: public -/
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.partial_cmp
   (self : proto.pq_ratchet.Direction) (other : proto.pq_ratchet.Direction) :
@@ -4694,7 +4694,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.partial_cmp
   ok (some o)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::cmp::PartialOrd<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:50-402:60 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:50-400:60 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection :
   core.cmp.PartialOrd proto.pq_ratchet.Direction proto.pq_ratchet.Direction
@@ -4705,7 +4705,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::cmp::Ord for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:62-402:65 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:62-400:65 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreCmpOrd : core.cmp.Ord
   proto.pq_ratchet.Direction := {
@@ -4715,7 +4715,7 @@ def proto.pq_ratchet.Direction.Insts.CoreCmpOrd : core.cmp.Ord
 }
 
 /-- [spqr::proto::pq_ratchet::{impl core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}::from]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87
     Visibility: public -/
 def I32.Insts.CoreConvertFromDirection.from
   (value : proto.pq_ratchet.Direction) : Result Std.I32 := do
@@ -4723,7 +4723,7 @@ def I32.Insts.CoreConvertFromDirection.from
   ok (IScalar.cast .I32 value1)
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::convert::From<spqr::proto::pq_ratchet::Direction> for i32}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87 -/
 @[reducible]
 def I32.Insts.CoreConvertFromDirection : core.convert.From Std.I32
   proto.pq_ratchet.Direction := {
@@ -4731,7 +4731,7 @@ def I32.Insts.CoreConvertFromDirection : core.convert.From Std.I32
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::convert::TryFrom<i32, prost::error::UnknownEnumValue> for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue :
   core.convert.TryFrom proto.pq_ratchet.Direction Std.I32
@@ -4741,7 +4741,7 @@ def proto.pq_ratchet.Direction.Insts.CoreConvertTryFromI32UnknownEnumValue :
 }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Direction}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87 -/
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87 -/
 @[reducible]
 def proto.pq_ratchet.Direction.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.Direction := {
@@ -4749,7 +4749,7 @@ def proto.pq_ratchet.Direction.Insts.CoreDefaultDefault : core.default.Default
 }
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::is_valid]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87
     Visibility: public -/
 def proto.pq_ratchet.Direction.is_valid (value : Std.I32) : Result Bool := do
   match value with
@@ -4758,7 +4758,7 @@ def proto.pq_ratchet.Direction.is_valid (value : Std.I32) : Result Bool := do
   | _ => ok false
 
 /-- [spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::from_i32]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:67-402:87
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87
     Visibility: public -/
 def proto.pq_ratchet.Direction.from_i32
   (value : Std.I32) : Result (Option proto.pq_ratchet.Direction) := do
@@ -6262,7 +6262,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithSubShared0GF16GF16 : core.ops.arith.Sub
 }
 
 /-- [spqr::encoding::gf::reduce::reduce_from_byte]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 506:8-514:9 -/
+    Source: 'src/encoding/gf.rs', lines 490:8-498:9 -/
 @[rust_loop_body]
 def encoding.gf.reduce.reduce_from_byte_loop.body
   (a : Std.U8) (out : Std.U32) (i : Std.U32) :
@@ -6285,7 +6285,7 @@ def encoding.gf.reduce.reduce_from_byte_loop.body
   else ok (done out)
 
 /-- [spqr::encoding::gf::reduce::reduce_from_byte]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 506:8-514:9 -/
+    Source: 'src/encoding/gf.rs', lines 490:8-498:9 -/
 @[rust_loop]
 def encoding.gf.reduce.reduce_from_byte_loop
   (a : Std.U8) (out : Std.U32) (i : Std.U32) : Result Std.U32 := do
@@ -6295,13 +6295,13 @@ def encoding.gf.reduce.reduce_from_byte_loop
     (a, out, i)
 
 /-- [spqr::encoding::gf::reduce::reduce_from_byte]:
-    Source: 'src/encoding/gf.rs', lines 503:4-516:5 -/
+    Source: 'src/encoding/gf.rs', lines 487:4-500:5 -/
 @[reducible]
 def encoding.gf.reduce.reduce_from_byte (a : Std.U8) : Result Std.U32 := do
   encoding.gf.reduce.reduce_from_byte_loop a 0#u32 8#u32
 
 /-- [spqr::encoding::gf::reduce::reduce_bytes]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 523:8-534:9 -/
+    Source: 'src/encoding/gf.rs', lines 507:8-518:9 -/
 @[rust_loop_body]
 def encoding.gf.reduce.reduce_bytes_loop.body
   (out : Array Std.U16 256#usize) (i : Std.Usize) :
@@ -6319,7 +6319,7 @@ def encoding.gf.reduce.reduce_bytes_loop.body
   else ok (done out)
 
 /-- [spqr::encoding::gf::reduce::reduce_bytes]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 523:8-534:9 -/
+    Source: 'src/encoding/gf.rs', lines 507:8-518:9 -/
 @[rust_loop]
 def encoding.gf.reduce.reduce_bytes_loop
   (out : Array Std.U16 256#usize) (i : Std.Usize) :
@@ -6330,19 +6330,19 @@ def encoding.gf.reduce.reduce_bytes_loop
     (out, i)
 
 /-- [spqr::encoding::gf::reduce::reduce_bytes]:
-    Source: 'src/encoding/gf.rs', lines 520:4-536:5 -/
+    Source: 'src/encoding/gf.rs', lines 504:4-520:5 -/
 def encoding.gf.reduce.reduce_bytes : Result (Array Std.U16 256#usize) := do
   let out := Array.repeat 256#usize 0#u16
   encoding.gf.reduce.reduce_bytes_loop out 0#usize
 
 /-- [spqr::encoding::gf::reduce::REDUCE_BYTES]
-    Source: 'src/encoding/gf.rs', lines 538:4-538:52 -/
+    Source: 'src/encoding/gf.rs', lines 522:4-522:52 -/
 @[global_simps, irreducible]
 def encoding.gf.reduce.REDUCE_BYTES : Result (Array Std.U16 256#usize) :=
   encoding.gf.reduce.reduce_bytes
 
 /-- [spqr::encoding::gf::reduce::poly_reduce]:
-    Source: 'src/encoding/gf.rs', lines 490:4-499:5
+    Source: 'src/encoding/gf.rs', lines 474:4-483:5
     Visibility: public -/
 def encoding.gf.reduce.poly_reduce (v : Std.U32) : Result Std.U16 := do
   let i ← v >>> 24#i32
@@ -6361,7 +6361,7 @@ def encoding.gf.reduce.poly_reduce (v : Std.U32) : Result Std.U16 := do
   ok (UScalar.cast .U16 v2)
 
 /-- [spqr::encoding::gf::unaccelerated::poly_mul]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 395:8-426:9 -/
+    Source: 'src/encoding/gf.rs', lines 379:8-410:9 -/
 @[rust_loop_body]
 def encoding.gf.unaccelerated.poly_mul_loop.body
   (b : Std.U16) (me : Std.U32) (acc : Std.U32) (shift : Std.U32) :
@@ -6382,7 +6382,7 @@ def encoding.gf.unaccelerated.poly_mul_loop.body
   else ok (done acc)
 
 /-- [spqr::encoding::gf::unaccelerated::poly_mul]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 395:8-426:9 -/
+    Source: 'src/encoding/gf.rs', lines 379:8-410:9 -/
 @[rust_loop]
 def encoding.gf.unaccelerated.poly_mul_loop
   (b : Std.U16) (acc : Std.U32) (me : Std.U32) (shift : Std.U32) :
@@ -6394,14 +6394,14 @@ def encoding.gf.unaccelerated.poly_mul_loop
     (acc, shift)
 
 /-- [spqr::encoding::gf::unaccelerated::poly_mul]:
-    Source: 'src/encoding/gf.rs', lines 382:4-428:5 -/
+    Source: 'src/encoding/gf.rs', lines 366:4-412:5 -/
 def encoding.gf.unaccelerated.poly_mul
   (a : Std.U16) (b : Std.U16) : Result Std.U32 := do
   let me ← lift (UScalar.cast .U32 a)
   encoding.gf.unaccelerated.poly_mul_loop b 0#u32 me 0#u32
 
 /-- [spqr::encoding::gf::unaccelerated::mul]:
-    Source: 'src/encoding/gf.rs', lines 445:4-447:5
+    Source: 'src/encoding/gf.rs', lines 429:4-431:5
     Visibility: public -/
 def encoding.gf.unaccelerated.mul
   (a : Std.U16) (b : Std.U16) : Result Std.U16 := do
@@ -6409,7 +6409,7 @@ def encoding.gf.unaccelerated.mul
   encoding.gf.reduce.poly_reduce i
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::MulAssign<&'_0 spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul_assign]:
-    Source: 'src/encoding/gf.rs', lines 127:4-137:5
+    Source: 'src/encoding/gf.rs', lines 127:4-129:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6419,7 +6419,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign
   ok { value := i }
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::MulAssign<&'_0 spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 126:0-138:1 -/
+    Source: 'src/encoding/gf.rs', lines 126:0-130:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16 :
   core.ops.arith.MulAssign encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6428,7 +6428,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16 :
 }
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::MulAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul_assign]:
-    Source: 'src/encoding/gf.rs', lines 142:4-144:5
+    Source: 'src/encoding/gf.rs', lines 134:4-136:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6437,7 +6437,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16.mul_assign
   encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::MulAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 141:0-145:1 -/
+    Source: 'src/encoding/gf.rs', lines 133:0-137:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16 : core.ops.arith.MulAssign
   encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6445,7 +6445,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulAssignGF16 : core.ops.arith.MulAssign
 }
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::Mul<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
-    Source: 'src/encoding/gf.rs', lines 150:4-154:5
+    Source: 'src/encoding/gf.rs', lines 142:4-146:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6454,7 +6454,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16.mul
   encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::Mul<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 148:0-155:1 -/
+    Source: 'src/encoding/gf.rs', lines 140:0-147:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16 : core.ops.arith.Mul
   encoding.gf.GF16 encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6462,7 +6462,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulGF16GF16 : core.ops.arith.Mul
 }
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::Mul<&'_0 spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::mul]:
-    Source: 'src/encoding/gf.rs', lines 160:4-164:5
+    Source: 'src/encoding/gf.rs', lines 152:4-156:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithMulShared0GF16GF16.mul
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6471,7 +6471,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulShared0GF16GF16.mul
   encoding.gf.GF16.Insts.CoreOpsArithMulAssignShared0GF16.mul_assign self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::Mul<&'_0 spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 158:0-165:1 -/
+    Source: 'src/encoding/gf.rs', lines 150:0-157:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithMulShared0GF16GF16 : core.ops.arith.Mul
   encoding.gf.GF16 encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6479,7 +6479,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithMulShared0GF16GF16 : core.ops.arith.Mul
 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 554:8-557:9 -/
+    Source: 'src/encoding/gf.rs', lines 538:8-541:9 -/
 @[rust_loop_body]
 def encoding.gf.GF16.div_impl_loop.body
   (iter : core.ops.range.Range Std.I32) (square : encoding.gf.GF16)
@@ -6499,7 +6499,7 @@ def encoding.gf.GF16.div_impl_loop.body
     ok (cont (iter1, square1, out1))
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 554:8-557:9 -/
+    Source: 'src/encoding/gf.rs', lines 538:8-541:9 -/
 @[rust_loop]
 def encoding.gf.GF16.div_impl_loop
   (iter : core.ops.range.Range Std.I32) (square : encoding.gf.GF16)
@@ -6512,7 +6512,7 @@ def encoding.gf.GF16.div_impl_loop
     (iter, square, out)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::div_impl]:
-    Source: 'src/encoding/gf.rs', lines 549:4-559:5 -/
+    Source: 'src/encoding/gf.rs', lines 533:4-543:5 -/
 def encoding.gf.GF16.div_impl
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
   Result encoding.gf.GF16
@@ -6522,7 +6522,7 @@ def encoding.gf.GF16.div_impl
     self
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::DivAssign<&'_0 spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div_assign]:
-    Source: 'src/encoding/gf.rs', lines 170:4-172:5
+    Source: 'src/encoding/gf.rs', lines 162:4-164:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16.div_assign
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6531,7 +6531,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16.div_assign
   encoding.gf.GF16.div_impl self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::DivAssign<&'_0 spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 168:0-173:1 -/
+    Source: 'src/encoding/gf.rs', lines 160:0-165:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16 :
   core.ops.arith.DivAssign encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6540,7 +6540,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16 :
 }
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::DivAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div_assign]:
-    Source: 'src/encoding/gf.rs', lines 177:4-179:5
+    Source: 'src/encoding/gf.rs', lines 169:4-171:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16.div_assign
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6549,7 +6549,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16.div_assign
   encoding.gf.GF16.div_impl self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::DivAssign<spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 176:0-180:1 -/
+    Source: 'src/encoding/gf.rs', lines 168:0-172:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16 : core.ops.arith.DivAssign
   encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6557,7 +6557,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivAssignGF16 : core.ops.arith.DivAssign
 }
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::Div<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div]:
-    Source: 'src/encoding/gf.rs', lines 185:4-187:5
+    Source: 'src/encoding/gf.rs', lines 177:4-179:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithDivGF16GF16.div
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6566,7 +6566,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivGF16GF16.div
   encoding.gf.GF16.div_impl self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::Div<spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 183:0-188:1 -/
+    Source: 'src/encoding/gf.rs', lines 175:0-180:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithDivGF16GF16 : core.ops.arith.Div
   encoding.gf.GF16 encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6574,7 +6574,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivGF16GF16 : core.ops.arith.Div
 }
 
 /-- [spqr::encoding::gf::{impl core::ops::arith::Div<&'_0 spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}::div]:
-    Source: 'src/encoding/gf.rs', lines 193:4-195:5
+    Source: 'src/encoding/gf.rs', lines 185:4-187:5
     Visibility: public -/
 def encoding.gf.GF16.Insts.CoreOpsArithDivShared0GF16GF16.div
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6583,7 +6583,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivShared0GF16GF16.div
   encoding.gf.GF16.div_impl self other
 
 /-- Trait implementation: [spqr::encoding::gf::{impl core::ops::arith::Div<&'_0 spqr::encoding::gf::GF16, spqr::encoding::gf::GF16> for spqr::encoding::gf::GF16}]
-    Source: 'src/encoding/gf.rs', lines 191:0-196:1 -/
+    Source: 'src/encoding/gf.rs', lines 183:0-188:1 -/
 @[reducible]
 def encoding.gf.GF16.Insts.CoreOpsArithDivShared0GF16GF16 : core.ops.arith.Div
   encoding.gf.GF16 encoding.gf.GF16 encoding.gf.GF16 := {
@@ -6591,7 +6591,7 @@ def encoding.gf.GF16.Insts.CoreOpsArithDivShared0GF16GF16 : core.ops.arith.Div
 }
 
 /-- [spqr::encoding::gf::mul2_u16]:
-    Source: 'src/encoding/gf.rs', lines 216:0-226:1 -/
+    Source: 'src/encoding/gf.rs', lines 208:0-210:1 -/
 def encoding.gf.mul2_u16
   (a : Std.U16) (b1 : Std.U16) (b2 : Std.U16) :
   Result (Std.U16 × Std.U16)
@@ -6601,7 +6601,7 @@ def encoding.gf.mul2_u16
   ok (i, i1)
 
 /-- [spqr::encoding::gf::parallel_mult]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 205:4-210:5
+    Source: 'src/encoding/gf.rs', lines 197:4-202:5
     Visibility: public -/
 @[rust_loop_body]
 def encoding.gf.parallel_mult_loop.body
@@ -6623,7 +6623,7 @@ def encoding.gf.parallel_mult_loop.body
   else ok (done (a, into, i))
 
 /-- [spqr::encoding::gf::parallel_mult]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 205:4-210:5
+    Source: 'src/encoding/gf.rs', lines 197:4-202:5
     Visibility: public -/
 @[rust_loop]
 def encoding.gf.parallel_mult_loop
@@ -6635,7 +6635,7 @@ def encoding.gf.parallel_mult_loop
     (into, i)
 
 /-- [spqr::encoding::gf::parallel_mult]:
-    Source: 'src/encoding/gf.rs', lines 201:0-214:1
+    Source: 'src/encoding/gf.rs', lines 193:0-206:1
     Visibility: public -/
 def encoding.gf.parallel_mult
   (a : encoding.gf.GF16) (into : Slice encoding.gf.GF16) :
@@ -6651,7 +6651,7 @@ def encoding.gf.parallel_mult
   else ok into1
 
 /-- [spqr::encoding::gf::unaccelerated::mul2]:
-    Source: 'src/encoding/gf.rs', lines 437:4-439:5
+    Source: 'src/encoding/gf.rs', lines 421:4-423:5
     Visibility: public -/
 def encoding.gf.unaccelerated.mul2
   (a : Std.U16) (b1 : Std.U16) (b2 : Std.U16) :
@@ -6662,13 +6662,13 @@ def encoding.gf.unaccelerated.mul2
   ok (i, i1)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::new]:
-    Source: 'src/encoding/gf.rs', lines 545:4-547:5
+    Source: 'src/encoding/gf.rs', lines 529:4-531:5
     Visibility: public -/
 def encoding.gf.GF16.new (value : Std.U16) : Result encoding.gf.GF16 := do
   ok { value }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_mul]:
-    Source: 'src/encoding/gf.rs', lines 561:4-565:5
+    Source: 'src/encoding/gf.rs', lines 545:4-549:5
     Visibility: public -/
 def encoding.gf.GF16.const_mul
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6678,7 +6678,7 @@ def encoding.gf.GF16.const_mul
   ok { value := i }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_sub]:
-    Source: 'src/encoding/gf.rs', lines 567:4-571:5
+    Source: 'src/encoding/gf.rs', lines 551:4-555:5
     Visibility: public -/
 def encoding.gf.GF16.const_sub
   (self : encoding.gf.GF16) (other : encoding.gf.GF16) :
@@ -6688,7 +6688,7 @@ def encoding.gf.GF16.const_sub
   ok { value := i }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div]: loop body 0:
-    Source: 'src/encoding/gf.rs', lines 581:12-587:13
+    Source: 'src/encoding/gf.rs', lines 565:12-571:13
     Visibility: public -/
 @[rust_loop_body]
 def encoding.gf.GF16.const_div_loop.body
@@ -6705,7 +6705,7 @@ def encoding.gf.GF16.const_div_loop.body
   else ok (done out)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div]: loop 0:
-    Source: 'src/encoding/gf.rs', lines 581:12-587:13
+    Source: 'src/encoding/gf.rs', lines 565:12-571:13
     Visibility: public -/
 @[rust_loop]
 def encoding.gf.GF16.const_div_loop
@@ -6718,7 +6718,7 @@ def encoding.gf.GF16.const_div_loop
     (square, out, i)
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::const_div]:
-    Source: 'src/encoding/gf.rs', lines 573:4-590:5
+    Source: 'src/encoding/gf.rs', lines 557:4-574:5
     Visibility: public -/
 @[reducible]
 def encoding.gf.GF16.const_div
@@ -10804,7 +10804,7 @@ def init_inner
       ok (some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs))
 
 /-- [spqr::initial_state]:
-    Source: 'src/lib.rs', lines 212:0-236:1
+    Source: 'src/lib.rs', lines 212:0-230:1
     Visibility: public -/
 def initial_state
   (params : Params) :
@@ -10843,19 +10843,19 @@ def initial_state
     ok (core.result.Result.Ok v1)
 
 /-- [spqr::{spqr::proto::pq_ratchet::Version}::DISABLED]
-    Source: 'src/lib.rs', lines 239:4-239:43
+    Source: 'src/lib.rs', lines 233:4-233:43
     Visibility: public -/
 @[global_simps, irreducible]
 def Version.DISABLED : proto.pq_ratchet.Version := proto.pq_ratchet.Version.V0
 
 /-- [spqr::{spqr::proto::pq_ratchet::Version}::MAX]
-    Source: 'src/lib.rs', lines 240:4-240:38
+    Source: 'src/lib.rs', lines 234:4-234:38
     Visibility: public -/
 @[global_simps, irreducible]
 def Version.MAX : proto.pq_ratchet.Version := proto.pq_ratchet.Version.V1
 
 /-- [spqr::decode_state::{impl core::ops::function::FnOnce<(prost::error::DecodeError,), spqr::Error> for spqr::decode_state::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 480:72-480:94 -/
+    Source: 'src/lib.rs', lines 472:72-472:94 -/
 def
   decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError.call_once
   (c : decode_state.closure) (tupled_args : prost.error.DecodeError) :
@@ -10864,7 +10864,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::decode_state::{impl core::ops::function::FnOnce<(prost::error::DecodeError,), spqr::Error> for spqr::decode_state::{closure}}]
-    Source: 'src/lib.rs', lines 480:72-480:94 -/
+    Source: 'src/lib.rs', lines 472:72-472:94 -/
 @[reducible]
 def decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError :
   core.ops.function.FnOnce decode_state.closure prost.error.DecodeError Error
@@ -10874,7 +10874,7 @@ def decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError :
 }
 
 /-- [spqr::decode_state]:
-    Source: 'src/lib.rs', lines 472:0-482:1 -/
+    Source: 'src/lib.rs', lines 464:0-474:1 -/
 def decode_state
   (s : alloc.vec.Vec Std.U8) :
   Result (core.result.Result proto.pq_ratchet.PqRatchetState Error)
@@ -10896,7 +10896,7 @@ def decode_state
       ()
 
 /-- [spqr::current_version::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::current_version::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 259:59-259:81 -/
+    Source: 'src/lib.rs', lines 253:59-253:81 -/
 def
   current_version.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : current_version.closure) (tupled_args : prost.error.UnknownEnumValue) :
@@ -10905,7 +10905,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::current_version::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::current_version::{closure}}]
-    Source: 'src/lib.rs', lines 259:59-259:81 -/
+    Source: 'src/lib.rs', lines 253:59-253:81 -/
 @[reducible]
 def
   current_version.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
@@ -10916,7 +10916,7 @@ def
 }
 
 /-- [spqr::current_version]:
-    Source: 'src/lib.rs', lines 249:0-262:1
+    Source: 'src/lib.rs', lines 243:0-256:1
     Visibility: public -/
 def current_version
   (state : alloc.vec.Vec Std.U8) :
@@ -12901,7 +12901,7 @@ def v1.chunked.states.serialize.States.from_pb
           v1.chunked.states.States (core.convert.FromSame Error) residual
 
 /-- [spqr::chain_from_version_negotiation::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain_from_version_negotiation::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 338:40-338:62 -/
+    Source: 'src/lib.rs', lines 332:40-332:62 -/
 def
   chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : chain_from_version_negotiation.closure)
@@ -12911,7 +12911,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::chain_from_version_negotiation::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain_from_version_negotiation::{closure}}]
-    Source: 'src/lib.rs', lines 338:40-338:62 -/
+    Source: 'src/lib.rs', lines 332:40-332:62 -/
 @[reducible]
 def
   chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
@@ -12922,7 +12922,7 @@ def
 }
 
 /-- [spqr::chain_from_version_negotiation]:
-    Source: 'src/lib.rs', lines 333:0-341:1 -/
+    Source: 'src/lib.rs', lines 327:0-335:1 -/
 def chain_from_version_negotiation
   (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
   Result (core.result.Result chain.Chain Error)
@@ -12951,7 +12951,7 @@ def chain_from_version_negotiation
       chain.Chain (core.convert.FromSame Error) residual
 
 /-- [spqr::send]:
-    Source: 'src/lib.rs', lines 265:0-326:1
+    Source: 'src/lib.rs', lines 259:0-320:1
     Visibility: public -/
 def send
   {R : Type} (randrngRngInst : rand.rng.Rng R) (rand_coreCryptoRngInst :
@@ -13167,7 +13167,7 @@ def send
     ok (r1, rng)
 
 /-- [spqr::chain_from]:
-    Source: 'src/lib.rs', lines 343:0-354:1 -/
+    Source: 'src/lib.rs', lines 337:0-348:1 -/
 def chain_from
   (pb : Option proto.pq_ratchet.Chain)
   (vn : Option proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
@@ -14306,7 +14306,7 @@ def v1.chunked.states.serialize.Message.deserialize
           (core.convert.FromSame Error) residual
 
 /-- [spqr::msg_version]:
-    Source: 'src/lib.rs', lines 464:0-470:1 -/
+    Source: 'src/lib.rs', lines 456:0-462:1 -/
 def msg_version
   (msg : alloc.vec.Vec Std.U8) : Result (Option proto.pq_ratchet.Version) := do
   let b ← alloc.vec.Vec.is_empty Global msg
@@ -14321,7 +14321,7 @@ def msg_version
     core.result.Result.ok r
 
 /-- [spqr::state_version]:
-    Source: 'src/lib.rs', lines 457:0-462:1 -/
+    Source: 'src/lib.rs', lines 449:0-454:1 -/
 def state_version
   (state : proto.pq_ratchet.PqRatchetState) :
   Result proto.pq_ratchet.Version
@@ -14331,7 +14331,7 @@ def state_version
   | some _ => ok proto.pq_ratchet.Version.V1
 
 /-- [spqr::recv::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::recv::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 395:64-395:86 -/
+    Source: 'src/lib.rs', lines 387:64-387:86 -/
 def
   recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : recv.closure) (tupled_args : prost.error.UnknownEnumValue) :
@@ -14340,7 +14340,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::recv::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::recv::{closure}}]
-    Source: 'src/lib.rs', lines 395:64-395:86 -/
+    Source: 'src/lib.rs', lines 387:64-387:86 -/
 @[reducible]
 def recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError :
   core.ops.function.FnOnce recv.closure prost.error.UnknownEnumValue Error := {
@@ -14349,7 +14349,7 @@ def recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError :
 }
 
 /-- [spqr::recv]:
-    Source: 'src/lib.rs', lines 356:0-455:1
+    Source: 'src/lib.rs', lines 350:0-447:1
     Visibility: public -/
 def recv
   (state : alloc.vec.Vec Std.U8) (msg : alloc.vec.Vec Std.U8) :

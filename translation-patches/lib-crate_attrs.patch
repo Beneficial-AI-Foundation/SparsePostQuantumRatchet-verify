@@ -1,0 +1,56 @@
+Translation patch: src/lib.rs crate attributes
+
+Change: `#![allow(dead_code)]`.
+Why: with the other patches, the items only used by the removed code become dead code.
+Behaviour: identical.
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 7c3076f..2e554a0 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,43 +1,45 @@
+ // Copyright 2025 Signal Messenger, LLC
+ // SPDX-License-Identifier: AGPL-3.0-only
+ 
++#![allow(dead_code)]
++
+ pub(crate) mod authenticator;
+ #[cfg(feature = "test-utils")]
+ pub mod chain;
+ #[cfg(not(feature = "test-utils"))]
+ pub(crate) mod chain;
+ #[cfg(feature = "test-utils")]
+ pub mod encoding;
+ #[cfg(not(feature = "test-utils"))]
+ pub(crate) mod encoding;
+ pub(crate) mod incremental_mlkem768;
+ pub(crate) mod kdf;
+ pub(crate) mod serialize;
+ pub(crate) mod test;
+ pub(crate) mod util;
+ mod v1;
+ 
+ #[cfg(feature = "test-utils")]
+ pub mod proto;
+ #[cfg(not(feature = "test-utils"))]
+ mod proto;
+ 
+ use crate::chain::Chain;
+ pub use crate::chain::ChainParams;
+ use crate::proto::pq_ratchet as pqrpb;
+ pub use crate::proto::pq_ratchet::{Direction, Version};
+ // Re-export error types that are part of the public Error enum
+ pub use crate::authenticator::Error as AuthenticatorError;
+ pub use crate::encoding::polynomial::PolynomialError;
+ pub use crate::encoding::EncodingError;
+ pub use crate::serialize::Error as SerializationError;
+ use prost::Message;
+ use rand::{CryptoRng, Rng};
+ use std::cmp::Ordering;
+ use v1::chunked::states as v1states;
+ 
+ pub type Epoch = u64;
+ pub type Secret = Vec<u8>;
+ pub type MessageKey = Option<Vec<u8>>;
+ pub type SerializedState = Vec<u8>;
+ pub type SerializedMessage = Vec<u8>;

@@ -1,0 +1,32 @@
+Translation patch: <Poly>::lagrange_sum
+
+Change: the `zip` over `pts` and `polys` becomes an index loop over `pts`.
+Why: iterator adapters (`zip`) are not modelled by the Aeneas Lean library (aeneas#1043).
+Behaviour: identical.
+Relies on: its only caller, `from_complete_points`, passes `polys.len() == pts.len()`.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 03315cd..56789cd 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -274,17 +274,17 @@ fn compute_at(&self, x: GF16) -> GF16 {
+     /// Internal function for lagrange_polynomial_from_complete_points.
+     #[hax_lib::opaque] // zip
+     fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {
+         let mut out = Poly::zero(pts.len());
+-        for (pt, poly) in pts.iter().zip(polys.iter()) {
+-            let mut p = poly.clone();
+-            p.mult_assign(pt.y);
++        for i in 0..pts.len() {
++            let mut p = polys[i].clone();
++            p.mult_assign(pts[i].y);
+             out.add_assign(&p);
+         }
+         out
+     }
+ 
+     /// Given a set of "complete" points with x values that fully fill the
+     /// range [0..pts.len()), return a polynomial that computes those points.
+     #[hax_lib::requires(pts.len() == 0 || pts.len() == 1 || pts.len() == 3 || pts.len() == 5
+     || pts.len() == 30 || pts.len() == 34 || pts.len() == 36)]
+     #[hax_lib::opaque] // iterators

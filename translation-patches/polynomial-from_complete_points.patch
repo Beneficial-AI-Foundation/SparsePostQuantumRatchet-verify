@@ -1,0 +1,64 @@
+Translation patch: <Poly>::from_complete_points
+
+Change: the `iter().map(..).collect()` and `iter().enumerate().map(..).collect()` chains become
+index loops that push into vectors.
+Why: iterator adapters (`map`, `enumerate`, `collect`) are not modelled by the Aeneas Lean library
+(aeneas#1043).
+Behaviour: identical.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 03315cd..237c733 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -286,39 +286,41 @@ fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {
+     /// Given a set of "complete" points with x values that fully fill the
+     /// range [0..pts.len()), return a polynomial that computes those points.
+     #[hax_lib::requires(pts.len() == 0 || pts.len() == 1 || pts.len() == 3 || pts.len() == 5
+     || pts.len() == 30 || pts.len() == 34 || pts.len() == 36)]
+     #[hax_lib::opaque] // iterators
+     fn from_complete_points(pts: &[Pt]) -> Result<Poly, ()> {
+         for (i, pt) in pts.iter().enumerate() {
+             if pt.x.value != i as u16 {
+                 return Err(());
+             }
+         }
+         // The `as u64` is for hax.
+         // The following constraint holds for Protocol V1
+         // polys.len() <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1
+         let polys = match pts.len() as u64 {
+             0 => vec![],
+             1 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_1),
+             3 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_3),
+             5 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_5),
+             30 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_30),
+             34 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_34),
+             36 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_36),
+             _ => {
+                 debug_assert!(false, "missing precomputed poly of size {}", pts.len());
+-                let ones = pts
+-                    .iter()
+-                    .map(|pt| Pt {
+-                        x: pt.x,
++                let mut ones = Vec::with_capacity(pts.len());
++                #[allow(clippy::needless_range_loop)]
++                for i in 0..pts.len() {
++                    ones.push(Pt {
++                        x: pts[i].x,
+                         y: GF16::ONE,
+-                    })
+-                    .collect::<Vec<_>>();
+-                pts.iter()
+-                    .enumerate()
+-                    .map(|(i, _pt)| Self::lagrange_interpolate_pt(&ones, i))
+-                    .collect::<Vec<_>>()
++                    });
++                }
++                let mut polys = Vec::with_capacity(pts.len());
++                for i in 0..pts.len() {
++                    polys.push(Self::lagrange_interpolate_pt(&ones, i));
++                }
++                polys
+             }
+         };
+         Ok(Self::lagrange_sum(pts, &polys))
+     }

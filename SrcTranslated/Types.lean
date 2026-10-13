@@ -539,7 +539,7 @@ structure proto.pq_ratchet.PqRatchetState where
   inner : Option proto.pq_ratchet.pq_ratchet_state.Inner
 
 /-- [spqr::proto::pq_ratchet::Direction]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 404:0-407:1
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 402:0-405:1
     Visibility: public -/
 @[discriminant i32]
 inductive proto.pq_ratchet.Direction where
@@ -1145,7 +1145,7 @@ inductive v1.chunked.states.States where
 | Ct2Sampled : v1.chunked.send_ct.Ct2Sampled → v1.chunked.states.States
 
 /-- [spqr::Send]
-    Source: 'src/lib.rs', lines 243:0-247:1
+    Source: 'src/lib.rs', lines 237:0-241:1
     Visibility: public -/
 structure Send where
   state : alloc.vec.Vec Std.U8
@@ -1153,12 +1153,12 @@ structure Send where
   key : Option (alloc.vec.Vec Std.U8)
 
 /-- [spqr::decode_state::{closure}]
-    Source: 'src/lib.rs', lines 480:72-480:94 -/
+    Source: 'src/lib.rs', lines 472:72-472:94 -/
 @[reducible]
 def decode_state.closure := Unit
 
 /-- [spqr::current_version::{closure}]
-    Source: 'src/lib.rs', lines 259:59-259:81 -/
+    Source: 'src/lib.rs', lines 253:59-253:81 -/
 @[reducible]
 def current_version.closure := Unit
 
@@ -1263,12 +1263,12 @@ def v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure := Unit
 def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure := Unit
 
 /-- [spqr::chain_from_version_negotiation::{closure}]
-    Source: 'src/lib.rs', lines 338:40-338:62 -/
+    Source: 'src/lib.rs', lines 332:40-332:62 -/
 @[reducible]
 def chain_from_version_negotiation.closure := Unit
 
 /-- [spqr::Recv]
-    Source: 'src/lib.rs', lines 328:0-331:1
+    Source: 'src/lib.rs', lines 322:0-325:1
     Visibility: public -/
 structure Recv where
   state : alloc.vec.Vec Std.U8
@@ -1358,7 +1358,7 @@ def v1.chunked.states.serialize.Message.deserialize.closure_1 := Unit
 def v1.chunked.states.serialize.Message.deserialize.closure := Unit
 
 /-- [spqr::recv::{closure}]
-    Source: 'src/lib.rs', lines 395:64-395:86 -/
+    Source: 'src/lib.rs', lines 387:64-387:86 -/
 @[reducible]
 def recv.closure := Unit
 

@@ -141,10 +141,11 @@ fn encode_varint(mut a: u64, into: &mut SerializedMessage) {
         let byte = (a & 0x7F) as u8;
         if a < 0x80 {
             into.push(byte);
-            return;
+            break;
+        } else {
+            into.push(0x80 | byte);
+            a >>= 7;
         }
-        into.push(0x80 | byte);
-        a >>= 7;
     }
 }
 

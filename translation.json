@@ -21,7 +21,7 @@
       "reducible": false
     },
     {
-      "def_id": 981,
+      "def_id": 985,
       "lean_name": "core.array.from_fn",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::array::from_fn",
@@ -38,7 +38,7 @@
       "reducible": false
     },
     {
-      "def_id": 913,
+      "def_id": 917,
       "lean_name": "Shared0T.Insts.CoreBorrowBorrow.borrow",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::borrow::{impl core::borrow::Borrow<T> for &'_0 T}::borrow",
@@ -55,7 +55,7 @@
       "reducible": false
     },
     {
-      "def_id": 893,
+      "def_id": 897,
       "lean_name": "U32.Insts.CoreConvertTryFromU64TryFromIntError.try_from",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::convert::num::{impl core::convert::TryFrom<u64, core::num::error::TryFromIntError> for u32}::try_from",
@@ -72,7 +72,7 @@
       "reducible": false
     },
     {
-      "def_id": 992,
+      "def_id": 996,
       "lean_name": "Shared0T.Insts.CoreFmtDisplay.fmt",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::fmt::{impl core::fmt::Display for &'_0 T}::fmt",
@@ -123,7 +123,7 @@
       "reducible": false
     },
     {
-      "def_id": 855,
+      "def_id": 859,
       "lean_name": "core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.next",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::iter::adapters::map::{impl core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}::next",
@@ -140,7 +140,7 @@
       "reducible": false
     },
     {
-      "def_id": 936,
+      "def_id": 940,
       "lean_name": "core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::ops::range::{impl core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::end_bound",
@@ -157,7 +157,7 @@
       "reducible": false
     },
     {
-      "def_id": 935,
+      "def_id": 939,
       "lean_name": "core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::ops::range::{impl core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}::start_bound",
@@ -191,7 +191,7 @@
       "reducible": false
     },
     {
-      "def_id": 1032,
+      "def_id": 1036,
       "lean_name": "core.option.Option.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::option::{impl core::clone::Clone for core::option::Option<T>}::clone",
@@ -208,7 +208,7 @@
       "reducible": false
     },
     {
-      "def_id": 910,
+      "def_id": 914,
       "lean_name": "core.option.Option.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::option::{impl core::default::Default for core::option::Option<T>}::default",
@@ -225,7 +225,7 @@
       "reducible": false
     },
     {
-      "def_id": 1033,
+      "def_id": 1037,
       "lean_name": "core.option.Option.Insts.CoreCmpPartialEqOption.eq",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::option::{impl core::cmp::PartialEq<core::option::Option<T>> for core::option::Option<T>}::eq",
@@ -259,7 +259,7 @@
       "reducible": false
     },
     {
-      "def_id": 1235,
+      "def_id": 1239,
       "lean_name": "core.result.Result.map",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::result::{core::result::Result<T, E>}::map",
@@ -276,7 +276,7 @@
       "reducible": false
     },
     {
-      "def_id": 860,
+      "def_id": 864,
       "lean_name": "core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult.from_iter",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::result::{impl core::iter::traits::collect::FromIterator<core::result::Result<T, E>> for core::result::Result<V, E>}::from_iter",
@@ -310,7 +310,7 @@
       "reducible": false
     },
     {
-      "def_id": 951,
+      "def_id": 955,
       "lean_name": "core.slice.Slice.clone_from_slice",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "core::slice::{[T]}::clone_from_slice",
@@ -344,7 +344,7 @@
       "reducible": false
     },
     {
-      "def_id": 869,
+      "def_id": 873,
       "lean_name": "alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::collections::vec_deque::into_iter::{impl core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::next",
@@ -429,7 +429,7 @@
       "reducible": false
     },
     {
-      "def_id": 861,
+      "def_id": 865,
       "lean_name": "alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator.from_iter",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::collections::vec_deque::{impl core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from_iter",
@@ -497,7 +497,7 @@
       "reducible": false
     },
     {
-      "def_id": 912,
+      "def_id": 916,
       "lean_name": "Slice.Insts.AllocSliceConcatTVec.concat",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::slice::{impl alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}::concat",
@@ -565,7 +565,7 @@
       "reducible": false
     },
     {
-      "def_id": 959,
+      "def_id": 963,
       "lean_name": "alloc.vec.Vec.remove",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::vec::{alloc::vec::Vec<T>}::remove",
@@ -582,7 +582,7 @@
       "reducible": false
     },
     {
-      "def_id": 840,
+      "def_id": 844,
       "lean_name": "alloc.vec.Vec.append",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::vec::{alloc::vec::Vec<T>}::append",
@@ -633,7 +633,7 @@
       "reducible": false
     },
     {
-      "def_id": 899,
+      "def_id": 903,
       "lean_name": "alloc.vec.Vec.split_off",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::vec::{alloc::vec::Vec<T>}::split_off",
@@ -650,7 +650,7 @@
       "reducible": false
     },
     {
-      "def_id": 1056,
+      "def_id": 1060,
       "lean_name": "alloc.vec.Vec.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "alloc::vec::{impl core::default::Default for alloc::vec::Vec<T>}::default",
@@ -973,7 +973,7 @@
       "reducible": false
     },
     {
-      "def_id": 1239,
+      "def_id": 1243,
       "lean_name": "prost.encoding.bool.encode",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "prost::encoding::bool::encode",
@@ -990,7 +990,7 @@
       "reducible": false
     },
     {
-      "def_id": 1241,
+      "def_id": 1245,
       "lean_name": "prost.encoding.bool.merge",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "prost::encoding::bool::merge",
@@ -1007,7 +1007,7 @@
       "reducible": false
     },
     {
-      "def_id": 1242,
+      "def_id": 1246,
       "lean_name": "prost.encoding.bool.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "prost::encoding::bool::encoded_len",
@@ -1024,7 +1024,7 @@
       "reducible": false
     },
     {
-      "def_id": 1233,
+      "def_id": 1237,
       "lean_name": "prost.encoding.message.encode",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "prost::encoding::message::encode",
@@ -1041,7 +1041,7 @@
       "reducible": false
     },
     {
-      "def_id": 1234,
+      "def_id": 1238,
       "lean_name": "prost.encoding.message.merge",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "prost::encoding::message::merge",
@@ -1058,7 +1058,7 @@
       "reducible": false
     },
     {
-      "def_id": 1236,
+      "def_id": 1240,
       "lean_name": "prost.encoding.message.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "prost::encoding::message::encoded_len",
@@ -1109,7 +1109,7 @@
       "reducible": false
     },
     {
-      "def_id": 1226,
+      "def_id": 1230,
       "lean_name": "sorted_vec.SortedSet.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "sorted_vec::{impl core::clone::Clone for sorted_vec::SortedSet<T>}::clone",
@@ -1126,7 +1126,7 @@
       "reducible": false
     },
     {
-      "def_id": 988,
+      "def_id": 992,
       "lean_name": "sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "sorted_vec::{impl core::ops::deref::Deref<alloc::vec::Vec<T>> for sorted_vec::SortedVec<T>}::deref",
@@ -1143,7 +1143,7 @@
       "reducible": false
     },
     {
-      "def_id": 989,
+      "def_id": 993,
       "lean_name": "sorted_vec.SortedSet.new",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "sorted_vec::{sorted_vec::SortedSet<T>}::new",
@@ -1160,7 +1160,7 @@
       "reducible": false
     },
     {
-      "def_id": 990,
+      "def_id": 994,
       "lean_name": "sorted_vec.SortedSet.with_capacity",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "sorted_vec::{sorted_vec::SortedSet<T>}::with_capacity",
@@ -1177,7 +1177,7 @@
       "reducible": false
     },
     {
-      "def_id": 991,
+      "def_id": 995,
       "lean_name": "sorted_vec.SortedSet.push",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "sorted_vec::{sorted_vec::SortedSet<T>}::push",
@@ -1194,7 +1194,7 @@
       "reducible": false
     },
     {
-      "def_id": 987,
+      "def_id": 991,
       "lean_name": "sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "sorted_vec::{impl core::ops::deref::Deref<sorted_vec::SortedVec<T>> for sorted_vec::SortedSet<T>}::deref",
@@ -1432,7 +1432,7 @@
       "reducible": false
     },
     {
-      "def_id": 1041,
+      "def_id": 1045,
       "lean_name": "proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::clear",
@@ -1449,7 +1449,7 @@
       "reducible": false
     },
     {
-      "def_id": 1040,
+      "def_id": 1044,
       "lean_name": "proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::encoded_len",
@@ -1466,7 +1466,7 @@
       "reducible": false
     },
     {
-      "def_id": 1039,
+      "def_id": 1043,
       "lean_name": "proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::merge_field",
@@ -1483,7 +1483,7 @@
       "reducible": false
     },
     {
-      "def_id": 1038,
+      "def_id": 1042,
       "lean_name": "proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::encode_raw",
@@ -1772,7 +1772,7 @@
       "reducible": false
     },
     {
-      "def_id": 1073,
+      "def_id": 1077,
       "lean_name": "proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::clear",
@@ -1789,7 +1789,7 @@
       "reducible": false
     },
     {
-      "def_id": 1072,
+      "def_id": 1076,
       "lean_name": "proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::encoded_len",
@@ -1806,7 +1806,7 @@
       "reducible": false
     },
     {
-      "def_id": 1071,
+      "def_id": 1075,
       "lean_name": "proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::merge_field",
@@ -1823,7 +1823,7 @@
       "reducible": false
     },
     {
-      "def_id": 1070,
+      "def_id": 1074,
       "lean_name": "proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}::encode_raw",
@@ -1840,7 +1840,7 @@
       "reducible": false
     },
     {
-      "def_id": 1250,
+      "def_id": 1254,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::clear",
@@ -1857,7 +1857,7 @@
       "reducible": false
     },
     {
-      "def_id": 1249,
+      "def_id": 1253,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::encoded_len",
@@ -1874,7 +1874,7 @@
       "reducible": false
     },
     {
-      "def_id": 1248,
+      "def_id": 1252,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::merge_field",
@@ -1891,7 +1891,7 @@
       "reducible": false
     },
     {
-      "def_id": 1247,
+      "def_id": 1251,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::encode_raw",
@@ -1908,7 +1908,7 @@
       "reducible": false
     },
     {
-      "def_id": 1260,
+      "def_id": 1264,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::clear",
@@ -1925,7 +1925,7 @@
       "reducible": false
     },
     {
-      "def_id": 1259,
+      "def_id": 1263,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::encoded_len",
@@ -1942,7 +1942,7 @@
       "reducible": false
     },
     {
-      "def_id": 1258,
+      "def_id": 1262,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::merge_field",
@@ -1959,7 +1959,7 @@
       "reducible": false
     },
     {
-      "def_id": 1257,
+      "def_id": 1261,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::encode_raw",
@@ -1976,7 +1976,7 @@
       "reducible": false
     },
     {
-      "def_id": 1270,
+      "def_id": 1274,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::clear",
@@ -1993,7 +1993,7 @@
       "reducible": false
     },
     {
-      "def_id": 1269,
+      "def_id": 1273,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::encoded_len",
@@ -2010,7 +2010,7 @@
       "reducible": false
     },
     {
-      "def_id": 1268,
+      "def_id": 1272,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::merge_field",
@@ -2027,7 +2027,7 @@
       "reducible": false
     },
     {
-      "def_id": 1267,
+      "def_id": 1271,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::encode_raw",
@@ -2044,7 +2044,7 @@
       "reducible": false
     },
     {
-      "def_id": 1280,
+      "def_id": 1284,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::clear",
@@ -2061,7 +2061,7 @@
       "reducible": false
     },
     {
-      "def_id": 1279,
+      "def_id": 1283,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::encoded_len",
@@ -2078,7 +2078,7 @@
       "reducible": false
     },
     {
-      "def_id": 1278,
+      "def_id": 1282,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::merge_field",
@@ -2095,7 +2095,7 @@
       "reducible": false
     },
     {
-      "def_id": 1277,
+      "def_id": 1281,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::encode_raw",
@@ -2112,7 +2112,7 @@
       "reducible": false
     },
     {
-      "def_id": 1290,
+      "def_id": 1294,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::clear",
@@ -2129,7 +2129,7 @@
       "reducible": false
     },
     {
-      "def_id": 1289,
+      "def_id": 1293,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::encoded_len",
@@ -2146,7 +2146,7 @@
       "reducible": false
     },
     {
-      "def_id": 1288,
+      "def_id": 1292,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::merge_field",
@@ -2163,7 +2163,7 @@
       "reducible": false
     },
     {
-      "def_id": 1287,
+      "def_id": 1291,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::encode_raw",
@@ -2180,7 +2180,7 @@
       "reducible": false
     },
     {
-      "def_id": 1300,
+      "def_id": 1304,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::clear",
@@ -2197,7 +2197,7 @@
       "reducible": false
     },
     {
-      "def_id": 1299,
+      "def_id": 1303,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::encoded_len",
@@ -2214,7 +2214,7 @@
       "reducible": false
     },
     {
-      "def_id": 1298,
+      "def_id": 1302,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::merge_field",
@@ -2231,7 +2231,7 @@
       "reducible": false
     },
     {
-      "def_id": 1297,
+      "def_id": 1301,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::encode_raw",
@@ -2248,7 +2248,7 @@
       "reducible": false
     },
     {
-      "def_id": 1310,
+      "def_id": 1314,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::clear",
@@ -2265,7 +2265,7 @@
       "reducible": false
     },
     {
-      "def_id": 1309,
+      "def_id": 1313,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::encoded_len",
@@ -2282,7 +2282,7 @@
       "reducible": false
     },
     {
-      "def_id": 1308,
+      "def_id": 1312,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::merge_field",
@@ -2299,7 +2299,7 @@
       "reducible": false
     },
     {
-      "def_id": 1307,
+      "def_id": 1311,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::encode_raw",
@@ -2316,7 +2316,7 @@
       "reducible": false
     },
     {
-      "def_id": 1320,
+      "def_id": 1324,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::clear",
@@ -2333,7 +2333,7 @@
       "reducible": false
     },
     {
-      "def_id": 1319,
+      "def_id": 1323,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::encoded_len",
@@ -2350,7 +2350,7 @@
       "reducible": false
     },
     {
-      "def_id": 1318,
+      "def_id": 1322,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::merge_field",
@@ -2367,7 +2367,7 @@
       "reducible": false
     },
     {
-      "def_id": 1317,
+      "def_id": 1321,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::encode_raw",
@@ -2384,7 +2384,7 @@
       "reducible": false
     },
     {
-      "def_id": 1330,
+      "def_id": 1334,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::clear",
@@ -2401,7 +2401,7 @@
       "reducible": false
     },
     {
-      "def_id": 1329,
+      "def_id": 1333,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::encoded_len",
@@ -2418,7 +2418,7 @@
       "reducible": false
     },
     {
-      "def_id": 1328,
+      "def_id": 1332,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::merge_field",
@@ -2435,7 +2435,7 @@
       "reducible": false
     },
     {
-      "def_id": 1327,
+      "def_id": 1331,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::encode_raw",
@@ -2452,7 +2452,7 @@
       "reducible": false
     },
     {
-      "def_id": 1340,
+      "def_id": 1344,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::clear",
@@ -2469,7 +2469,7 @@
       "reducible": false
     },
     {
-      "def_id": 1339,
+      "def_id": 1343,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::encoded_len",
@@ -2486,7 +2486,7 @@
       "reducible": false
     },
     {
-      "def_id": 1338,
+      "def_id": 1342,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::merge_field",
@@ -2503,7 +2503,7 @@
       "reducible": false
     },
     {
-      "def_id": 1337,
+      "def_id": 1341,
       "lean_name": "proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::encode_raw",
@@ -2520,7 +2520,7 @@
       "reducible": false
     },
     {
-      "def_id": 1083,
+      "def_id": 1087,
       "lean_name": "proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::clear",
@@ -2537,7 +2537,7 @@
       "reducible": false
     },
     {
-      "def_id": 1082,
+      "def_id": 1086,
       "lean_name": "proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::encoded_len",
@@ -2554,7 +2554,7 @@
       "reducible": false
     },
     {
-      "def_id": 1081,
+      "def_id": 1085,
       "lean_name": "proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::merge_field",
@@ -2571,7 +2571,7 @@
       "reducible": false
     },
     {
-      "def_id": 1080,
+      "def_id": 1084,
       "lean_name": "proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}::encode_raw",
@@ -2588,7 +2588,7 @@
       "reducible": false
     },
     {
-      "def_id": 1350,
+      "def_id": 1354,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::clear",
@@ -2605,7 +2605,7 @@
       "reducible": false
     },
     {
-      "def_id": 1349,
+      "def_id": 1353,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::encoded_len",
@@ -2622,7 +2622,7 @@
       "reducible": false
     },
     {
-      "def_id": 1348,
+      "def_id": 1352,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::merge_field",
@@ -2639,7 +2639,7 @@
       "reducible": false
     },
     {
-      "def_id": 1347,
+      "def_id": 1351,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::encode_raw",
@@ -2656,7 +2656,7 @@
       "reducible": false
     },
     {
-      "def_id": 1360,
+      "def_id": 1364,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::clear",
@@ -2673,7 +2673,7 @@
       "reducible": false
     },
     {
-      "def_id": 1359,
+      "def_id": 1363,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::encoded_len",
@@ -2690,7 +2690,7 @@
       "reducible": false
     },
     {
-      "def_id": 1358,
+      "def_id": 1362,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::merge_field",
@@ -2707,7 +2707,7 @@
       "reducible": false
     },
     {
-      "def_id": 1357,
+      "def_id": 1361,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::encode_raw",
@@ -2724,7 +2724,7 @@
       "reducible": false
     },
     {
-      "def_id": 1370,
+      "def_id": 1374,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::clear",
@@ -2741,7 +2741,7 @@
       "reducible": false
     },
     {
-      "def_id": 1369,
+      "def_id": 1373,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::encoded_len",
@@ -2758,7 +2758,7 @@
       "reducible": false
     },
     {
-      "def_id": 1368,
+      "def_id": 1372,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::merge_field",
@@ -2775,7 +2775,7 @@
       "reducible": false
     },
     {
-      "def_id": 1367,
+      "def_id": 1371,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::encode_raw",
@@ -2792,7 +2792,7 @@
       "reducible": false
     },
     {
-      "def_id": 1380,
+      "def_id": 1384,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::clear",
@@ -2809,7 +2809,7 @@
       "reducible": false
     },
     {
-      "def_id": 1379,
+      "def_id": 1383,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::encoded_len",
@@ -2826,7 +2826,7 @@
       "reducible": false
     },
     {
-      "def_id": 1378,
+      "def_id": 1382,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::merge_field",
@@ -2843,7 +2843,7 @@
       "reducible": false
     },
     {
-      "def_id": 1377,
+      "def_id": 1381,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::encode_raw",
@@ -2860,7 +2860,7 @@
       "reducible": false
     },
     {
-      "def_id": 1390,
+      "def_id": 1394,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::clear",
@@ -2877,7 +2877,7 @@
       "reducible": false
     },
     {
-      "def_id": 1389,
+      "def_id": 1393,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::encoded_len",
@@ -2894,7 +2894,7 @@
       "reducible": false
     },
     {
-      "def_id": 1388,
+      "def_id": 1392,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::merge_field",
@@ -2911,7 +2911,7 @@
       "reducible": false
     },
     {
-      "def_id": 1387,
+      "def_id": 1391,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::encode_raw",
@@ -2928,7 +2928,7 @@
       "reducible": false
     },
     {
-      "def_id": 1400,
+      "def_id": 1404,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::clear",
@@ -2945,7 +2945,7 @@
       "reducible": false
     },
     {
-      "def_id": 1399,
+      "def_id": 1403,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::encoded_len",
@@ -2962,7 +2962,7 @@
       "reducible": false
     },
     {
-      "def_id": 1398,
+      "def_id": 1402,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::merge_field",
@@ -2979,7 +2979,7 @@
       "reducible": false
     },
     {
-      "def_id": 1397,
+      "def_id": 1401,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::encode_raw",
@@ -2996,7 +2996,7 @@
       "reducible": false
     },
     {
-      "def_id": 1410,
+      "def_id": 1414,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::clear",
@@ -3013,7 +3013,7 @@
       "reducible": false
     },
     {
-      "def_id": 1409,
+      "def_id": 1413,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::encoded_len",
@@ -3030,7 +3030,7 @@
       "reducible": false
     },
     {
-      "def_id": 1408,
+      "def_id": 1412,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::merge_field",
@@ -3047,7 +3047,7 @@
       "reducible": false
     },
     {
-      "def_id": 1407,
+      "def_id": 1411,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::encode_raw",
@@ -3064,7 +3064,7 @@
       "reducible": false
     },
     {
-      "def_id": 1420,
+      "def_id": 1424,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::clear",
@@ -3081,7 +3081,7 @@
       "reducible": false
     },
     {
-      "def_id": 1419,
+      "def_id": 1423,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::encoded_len",
@@ -3098,7 +3098,7 @@
       "reducible": false
     },
     {
-      "def_id": 1418,
+      "def_id": 1422,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::merge_field",
@@ -3115,7 +3115,7 @@
       "reducible": false
     },
     {
-      "def_id": 1417,
+      "def_id": 1421,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::encode_raw",
@@ -3132,7 +3132,7 @@
       "reducible": false
     },
     {
-      "def_id": 1430,
+      "def_id": 1434,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::clear",
@@ -3149,7 +3149,7 @@
       "reducible": false
     },
     {
-      "def_id": 1429,
+      "def_id": 1433,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::encoded_len",
@@ -3166,7 +3166,7 @@
       "reducible": false
     },
     {
-      "def_id": 1428,
+      "def_id": 1432,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::merge_field",
@@ -3183,7 +3183,7 @@
       "reducible": false
     },
     {
-      "def_id": 1427,
+      "def_id": 1431,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::encode_raw",
@@ -3200,7 +3200,7 @@
       "reducible": false
     },
     {
-      "def_id": 1440,
+      "def_id": 1444,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::clear",
@@ -3217,7 +3217,7 @@
       "reducible": false
     },
     {
-      "def_id": 1439,
+      "def_id": 1443,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::encoded_len",
@@ -3234,7 +3234,7 @@
       "reducible": false
     },
     {
-      "def_id": 1438,
+      "def_id": 1442,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::merge_field",
@@ -3251,7 +3251,7 @@
       "reducible": false
     },
     {
-      "def_id": 1437,
+      "def_id": 1441,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::encode_raw",
@@ -3268,7 +3268,7 @@
       "reducible": false
     },
     {
-      "def_id": 1450,
+      "def_id": 1454,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::clear",
@@ -3285,7 +3285,7 @@
       "reducible": false
     },
     {
-      "def_id": 1449,
+      "def_id": 1453,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::encoded_len",
@@ -3302,7 +3302,7 @@
       "reducible": false
     },
     {
-      "def_id": 1448,
+      "def_id": 1452,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::merge_field",
@@ -3319,7 +3319,7 @@
       "reducible": false
     },
     {
-      "def_id": 1447,
+      "def_id": 1451,
       "lean_name": "proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::encode_raw",
@@ -3404,7 +3404,7 @@
       "reducible": false
     },
     {
-      "def_id": 1103,
+      "def_id": 1107,
       "lean_name": "proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::clear",
@@ -3421,7 +3421,7 @@
       "reducible": false
     },
     {
-      "def_id": 1102,
+      "def_id": 1106,
       "lean_name": "proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::encoded_len",
@@ -3438,7 +3438,7 @@
       "reducible": false
     },
     {
-      "def_id": 1101,
+      "def_id": 1105,
       "lean_name": "proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::merge_field",
@@ -3455,7 +3455,7 @@
       "reducible": false
     },
     {
-      "def_id": 1100,
+      "def_id": 1104,
       "lean_name": "proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}::encode_raw",
@@ -3472,7 +3472,7 @@
       "reducible": false
     },
     {
-      "def_id": 1460,
+      "def_id": 1464,
       "lean_name": "proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.clear",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::clear",
@@ -3489,7 +3489,7 @@
       "reducible": false
     },
     {
-      "def_id": 1459,
+      "def_id": 1463,
       "lean_name": "proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.encoded_len",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::encoded_len",
@@ -3506,7 +3506,7 @@
       "reducible": false
     },
     {
-      "def_id": 1458,
+      "def_id": 1462,
       "lean_name": "proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.merge_field",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::merge_field",
@@ -3523,7 +3523,7 @@
       "reducible": false
     },
     {
-      "def_id": 1457,
+      "def_id": 1461,
       "lean_name": "proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.encode_raw",
       "lean_file": "SrcTranslated/FunsExternal_Template.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::encode_raw",
@@ -3808,7 +3808,7 @@
       "reducible": false
     },
     {
-      "def_id": 1453,
+      "def_id": 1457,
       "lean_name": "spqr.proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl core::clone::Clone for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::clone",
@@ -3825,7 +3825,7 @@
       "reducible": false
     },
     {
-      "def_id": 1096,
+      "def_id": 1100,
       "lean_name": "spqr.proto.pq_ratchet.chain.Epoch.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl core::clone::Clone for spqr::proto::pq_ratchet::chain::Epoch}::clone",
@@ -3876,7 +3876,7 @@
       "reducible": false
     },
     {
-      "def_id": 1333,
+      "def_id": 1337,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::clone",
@@ -3893,7 +3893,7 @@
       "reducible": false
     },
     {
-      "def_id": 1443,
+      "def_id": 1447,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::clone",
@@ -3910,7 +3910,7 @@
       "reducible": false
     },
     {
-      "def_id": 1313,
+      "def_id": 1317,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::clone",
@@ -3927,7 +3927,7 @@
       "reducible": false
     },
     {
-      "def_id": 1433,
+      "def_id": 1437,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::clone",
@@ -3944,7 +3944,7 @@
       "reducible": false
     },
     {
-      "def_id": 1323,
+      "def_id": 1327,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::clone",
@@ -3961,7 +3961,7 @@
       "reducible": false
     },
     {
-      "def_id": 1423,
+      "def_id": 1427,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::clone",
@@ -3978,7 +3978,7 @@
       "reducible": false
     },
     {
-      "def_id": 1413,
+      "def_id": 1417,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::clone",
@@ -3995,7 +3995,7 @@
       "reducible": false
     },
     {
-      "def_id": 1293,
+      "def_id": 1297,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::clone",
@@ -4012,7 +4012,7 @@
       "reducible": false
     },
     {
-      "def_id": 1403,
+      "def_id": 1407,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::clone",
@@ -4029,7 +4029,7 @@
       "reducible": false
     },
     {
-      "def_id": 1283,
+      "def_id": 1287,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::clone",
@@ -4046,7 +4046,7 @@
       "reducible": false
     },
     {
-      "def_id": 1393,
+      "def_id": 1397,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::clone",
@@ -4063,7 +4063,7 @@
       "reducible": false
     },
     {
-      "def_id": 1273,
+      "def_id": 1277,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::clone",
@@ -4080,7 +4080,7 @@
       "reducible": false
     },
     {
-      "def_id": 1383,
+      "def_id": 1387,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::clone",
@@ -4097,7 +4097,7 @@
       "reducible": false
     },
     {
-      "def_id": 1373,
+      "def_id": 1377,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::clone",
@@ -4114,7 +4114,7 @@
       "reducible": false
     },
     {
-      "def_id": 1263,
+      "def_id": 1267,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::clone",
@@ -4131,7 +4131,7 @@
       "reducible": false
     },
     {
-      "def_id": 1363,
+      "def_id": 1367,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::clone",
@@ -4148,7 +4148,7 @@
       "reducible": false
     },
     {
-      "def_id": 1253,
+      "def_id": 1257,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::clone",
@@ -4165,7 +4165,7 @@
       "reducible": false
     },
     {
-      "def_id": 1353,
+      "def_id": 1357,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::clone",
@@ -4182,7 +4182,7 @@
       "reducible": false
     },
     {
-      "def_id": 1243,
+      "def_id": 1247,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::clone",
@@ -4199,7 +4199,7 @@
       "reducible": false
     },
     {
-      "def_id": 1343,
+      "def_id": 1347,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::clone",
@@ -4216,7 +4216,7 @@
       "reducible": false
     },
     {
-      "def_id": 1086,
+      "def_id": 1090,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::InnerState}::clone",
@@ -4250,7 +4250,7 @@
       "reducible": false
     },
     {
-      "def_id": 1048,
+      "def_id": 1052,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl core::clone::Clone for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::clone",
@@ -4267,7 +4267,7 @@
       "reducible": false
     },
     {
-      "def_id": 1034,
+      "def_id": 1038,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl core::clone::Clone for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::clone",
@@ -4318,7 +4318,7 @@
       "reducible": false
     },
     {
-      "def_id": 1454,
+      "def_id": 1458,
       "lean_name": "spqr.proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreCmpPartialEqEpochDirection.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::epoch::EpochDirection> for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::eq",
@@ -4335,7 +4335,7 @@
       "reducible": false
     },
     {
-      "def_id": 1097,
+      "def_id": 1101,
       "lean_name": "spqr.proto.pq_ratchet.chain.Epoch.Insts.CoreCmpPartialEqEpoch.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::chain::Epoch> for spqr::proto::pq_ratchet::chain::Epoch}::eq",
@@ -4386,7 +4386,7 @@
       "reducible": false
     },
     {
-      "def_id": 1334,
+      "def_id": 1338,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreCmpPartialEqCt2Sent.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::eq",
@@ -4403,7 +4403,7 @@
       "reducible": false
     },
     {
-      "def_id": 1444,
+      "def_id": 1448,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCmpPartialEqCt2Sampled.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::eq",
@@ -4420,7 +4420,7 @@
       "reducible": false
     },
     {
-      "def_id": 1314,
+      "def_id": 1318,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreCmpPartialEqCt1Sent.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::eq",
@@ -4437,7 +4437,7 @@
       "reducible": false
     },
     {
-      "def_id": 1434,
+      "def_id": 1438,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCmpPartialEqCt1Acknowledged.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::eq",
@@ -4454,7 +4454,7 @@
       "reducible": false
     },
     {
-      "def_id": 1324,
+      "def_id": 1328,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreCmpPartialEqCt1SentEkReceived.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::eq",
@@ -4471,7 +4471,7 @@
       "reducible": false
     },
     {
-      "def_id": 1424,
+      "def_id": 1428,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCmpPartialEqEkReceivedCt1Sampled.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::eq",
@@ -4488,7 +4488,7 @@
       "reducible": false
     },
     {
-      "def_id": 1414,
+      "def_id": 1418,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCmpPartialEqCt1Sampled.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::eq",
@@ -4505,7 +4505,7 @@
       "reducible": false
     },
     {
-      "def_id": 1294,
+      "def_id": 1298,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::eq",
@@ -4522,7 +4522,7 @@
       "reducible": false
     },
     {
-      "def_id": 1404,
+      "def_id": 1408,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCmpPartialEqHeaderReceived.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::eq",
@@ -4539,7 +4539,7 @@
       "reducible": false
     },
     {
-      "def_id": 1284,
+      "def_id": 1288,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::eq",
@@ -4556,7 +4556,7 @@
       "reducible": false
     },
     {
-      "def_id": 1394,
+      "def_id": 1398,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCmpPartialEqNoHeaderReceived.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived> for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::eq",
@@ -4573,7 +4573,7 @@
       "reducible": false
     },
     {
-      "def_id": 1274,
+      "def_id": 1278,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::eq",
@@ -4590,7 +4590,7 @@
       "reducible": false
     },
     {
-      "def_id": 1384,
+      "def_id": 1388,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCmpPartialEqEkSentCt1Received.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received> for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::eq",
@@ -4607,7 +4607,7 @@
       "reducible": false
     },
     {
-      "def_id": 1374,
+      "def_id": 1378,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCmpPartialEqCt1Received.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received> for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::eq",
@@ -4624,7 +4624,7 @@
       "reducible": false
     },
     {
-      "def_id": 1264,
+      "def_id": 1268,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreCmpPartialEqEkSent.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkSent> for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::eq",
@@ -4641,7 +4641,7 @@
       "reducible": false
     },
     {
-      "def_id": 1364,
+      "def_id": 1368,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::eq",
@@ -4658,7 +4658,7 @@
       "reducible": false
     },
     {
-      "def_id": 1254,
+      "def_id": 1258,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreCmpPartialEqHeaderSent.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent> for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::eq",
@@ -4675,7 +4675,7 @@
       "reducible": false
     },
     {
-      "def_id": 1354,
+      "def_id": 1358,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCmpPartialEqKeysSampled.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::eq",
@@ -4692,7 +4692,7 @@
       "reducible": false
     },
     {
-      "def_id": 1244,
+      "def_id": 1248,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::eq",
@@ -4709,7 +4709,7 @@
       "reducible": false
     },
     {
-      "def_id": 1344,
+      "def_id": 1348,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCmpPartialEqKeysUnsampled.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled> for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::eq",
@@ -4726,7 +4726,7 @@
       "reducible": false
     },
     {
-      "def_id": 1087,
+      "def_id": 1091,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.Insts.CoreCmpPartialEqInnerState.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::InnerState> for spqr::proto::pq_ratchet::v1_state::InnerState}::eq",
@@ -4760,7 +4760,7 @@
       "reducible": false
     },
     {
-      "def_id": 1049,
+      "def_id": 1053,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.Inner.Insts.CoreCmpPartialEqInner.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::Inner> for spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::eq",
@@ -4777,7 +4777,7 @@
       "reducible": false
     },
     {
-      "def_id": 1035,
+      "def_id": 1039,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreCmpPartialEqVersionNegotiation.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation> for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::eq",
@@ -4828,15 +4828,15 @@
       "reducible": false
     },
     {
-      "def_id": 740,
+      "def_id": 742,
       "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Direction}::default",
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -4862,7 +4862,7 @@
       "reducible": false
     },
     {
-      "def_id": 1042,
+      "def_id": 1046,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{impl core::default::Default for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::default",
@@ -4886,8 +4886,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -4896,7 +4896,7 @@
       "reducible": false
     },
     {
-      "def_id": 1044,
+      "def_id": 1048,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.direction",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::direction",
@@ -4913,7 +4913,7 @@
       "reducible": false
     },
     {
-      "def_id": 1045,
+      "def_id": 1049,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_direction",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::set_direction",
@@ -4947,7 +4947,7 @@
       "reducible": false
     },
     {
-      "def_id": 1046,
+      "def_id": 1050,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.impl.min_version",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::min_version",
@@ -4964,7 +4964,7 @@
       "reducible": false
     },
     {
-      "def_id": 1047,
+      "def_id": 1051,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_min_version",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::set_min_version",
@@ -4981,7 +4981,7 @@
       "reducible": false
     },
     {
-      "def_id": 1497,
+      "def_id": 1501,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{closure}<'_0, T0>}::call_once",
@@ -4998,7 +4998,7 @@
       "reducible": false
     },
     {
-      "def_id": 1052,
+      "def_id": 1056,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.Inner.encode",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encode",
@@ -5032,7 +5032,7 @@
       "reducible": false
     },
     {
-      "def_id": 1053,
+      "def_id": 1057,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.Inner.merge",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge",
@@ -5049,7 +5049,7 @@
       "reducible": false
     },
     {
-      "def_id": 1054,
+      "def_id": 1058,
       "lean_name": "spqr.proto.pq_ratchet.pq_ratchet_state.Inner.encoded_len",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encoded_len",
@@ -5134,7 +5134,7 @@
       "reducible": false
     },
     {
-      "def_id": 1058,
+      "def_id": 1062,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_msg::InnerMsg}::clone",
@@ -5168,7 +5168,7 @@
       "reducible": false
     },
     {
-      "def_id": 1059,
+      "def_id": 1063,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.Insts.CoreCmpPartialEqInnerMsg.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_msg::InnerMsg> for spqr::proto::pq_ratchet::v1_msg::InnerMsg}::eq",
@@ -5236,7 +5236,7 @@
       "reducible": false
     },
     {
-      "def_id": 1503,
+      "def_id": 1507,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure}<'_0, T0>}::call_once",
@@ -5253,7 +5253,7 @@
       "reducible": false
     },
     {
-      "def_id": 1504,
+      "def_id": 1508,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#1}<'_0, T0>}::call_once",
@@ -5270,7 +5270,7 @@
       "reducible": false
     },
     {
-      "def_id": 1505,
+      "def_id": 1509,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#2}<'_0, T0>}::call_once",
@@ -5287,7 +5287,7 @@
       "reducible": false
     },
     {
-      "def_id": 1506,
+      "def_id": 1510,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#3}<'_0, '_1, T0>}::call_once",
@@ -5304,7 +5304,7 @@
       "reducible": false
     },
     {
-      "def_id": 1507,
+      "def_id": 1511,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#4}<'_0, T0>}::call_once",
@@ -5321,7 +5321,7 @@
       "reducible": false
     },
     {
-      "def_id": 1508,
+      "def_id": 1512,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#5}<'_0, T0>}::call_once",
@@ -5338,7 +5338,7 @@
       "reducible": false
     },
     {
-      "def_id": 1062,
+      "def_id": 1066,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.encode",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::encode",
@@ -5355,7 +5355,7 @@
       "reducible": false
     },
     {
-      "def_id": 1063,
+      "def_id": 1067,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.merge",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge",
@@ -5372,7 +5372,7 @@
       "reducible": false
     },
     {
-      "def_id": 1064,
+      "def_id": 1068,
       "lean_name": "spqr.proto.pq_ratchet.v1_msg.InnerMsg.encoded_len",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::encoded_len",
@@ -5440,7 +5440,7 @@
       "reducible": false
     },
     {
-      "def_id": 1066,
+      "def_id": 1070,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::Unchunked}::clone",
@@ -5457,7 +5457,7 @@
       "reducible": false
     },
     {
-      "def_id": 1067,
+      "def_id": 1071,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::Unchunked> for spqr::proto::pq_ratchet::v1_state::Unchunked}::eq",
@@ -5474,7 +5474,7 @@
       "reducible": false
     },
     {
-      "def_id": 1074,
+      "def_id": 1078,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.Unchunked.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::Unchunked}::default",
@@ -5491,7 +5491,7 @@
       "reducible": false
     },
     {
-      "def_id": 1251,
+      "def_id": 1255,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::default",
@@ -5508,7 +5508,7 @@
       "reducible": false
     },
     {
-      "def_id": 1261,
+      "def_id": 1265,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::default",
@@ -5525,7 +5525,7 @@
       "reducible": false
     },
     {
-      "def_id": 1271,
+      "def_id": 1275,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::default",
@@ -5542,7 +5542,7 @@
       "reducible": false
     },
     {
-      "def_id": 1281,
+      "def_id": 1285,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::default",
@@ -5559,7 +5559,7 @@
       "reducible": false
     },
     {
-      "def_id": 1291,
+      "def_id": 1295,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::default",
@@ -5576,7 +5576,7 @@
       "reducible": false
     },
     {
-      "def_id": 1301,
+      "def_id": 1305,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::default",
@@ -5593,7 +5593,7 @@
       "reducible": false
     },
     {
-      "def_id": 1303,
+      "def_id": 1307,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::clone",
@@ -5610,7 +5610,7 @@
       "reducible": false
     },
     {
-      "def_id": 1304,
+      "def_id": 1308,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpPartialEqEkReceived.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived> for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::eq",
@@ -5627,7 +5627,7 @@
       "reducible": false
     },
     {
-      "def_id": 1311,
+      "def_id": 1315,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::default",
@@ -5644,7 +5644,7 @@
       "reducible": false
     },
     {
-      "def_id": 1321,
+      "def_id": 1325,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::default",
@@ -5661,7 +5661,7 @@
       "reducible": false
     },
     {
-      "def_id": 1331,
+      "def_id": 1335,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::default",
@@ -5678,7 +5678,7 @@
       "reducible": false
     },
     {
-      "def_id": 1341,
+      "def_id": 1345,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::default",
@@ -5695,7 +5695,7 @@
       "reducible": false
     },
     {
-      "def_id": 1076,
+      "def_id": 1080,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.Chunked.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::clone::Clone for spqr::proto::pq_ratchet::v1_state::Chunked}::clone",
@@ -5712,7 +5712,7 @@
       "reducible": false
     },
     {
-      "def_id": 1077,
+      "def_id": 1081,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked.eq",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::v1_state::Chunked> for spqr::proto::pq_ratchet::v1_state::Chunked}::eq",
@@ -5729,7 +5729,7 @@
       "reducible": false
     },
     {
-      "def_id": 1084,
+      "def_id": 1088,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.Chunked.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::Chunked}::default",
@@ -5746,7 +5746,7 @@
       "reducible": false
     },
     {
-      "def_id": 1351,
+      "def_id": 1355,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::default",
@@ -5763,7 +5763,7 @@
       "reducible": false
     },
     {
-      "def_id": 1361,
+      "def_id": 1365,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::default",
@@ -5780,7 +5780,7 @@
       "reducible": false
     },
     {
-      "def_id": 1371,
+      "def_id": 1375,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::default",
@@ -5797,7 +5797,7 @@
       "reducible": false
     },
     {
-      "def_id": 1381,
+      "def_id": 1385,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::default",
@@ -5814,7 +5814,7 @@
       "reducible": false
     },
     {
-      "def_id": 1391,
+      "def_id": 1395,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::default",
@@ -5831,7 +5831,7 @@
       "reducible": false
     },
     {
-      "def_id": 1401,
+      "def_id": 1405,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::default",
@@ -5848,7 +5848,7 @@
       "reducible": false
     },
     {
-      "def_id": 1411,
+      "def_id": 1415,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::default",
@@ -5865,7 +5865,7 @@
       "reducible": false
     },
     {
-      "def_id": 1421,
+      "def_id": 1425,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::default",
@@ -5882,7 +5882,7 @@
       "reducible": false
     },
     {
-      "def_id": 1431,
+      "def_id": 1435,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::default",
@@ -5899,7 +5899,7 @@
       "reducible": false
     },
     {
-      "def_id": 1441,
+      "def_id": 1445,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::default",
@@ -5916,7 +5916,7 @@
       "reducible": false
     },
     {
-      "def_id": 1451,
+      "def_id": 1455,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::default",
@@ -5933,7 +5933,7 @@
       "reducible": false
     },
     {
-      "def_id": 1514,
+      "def_id": 1518,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure}<'_0, T0>}::call_once",
@@ -5950,7 +5950,7 @@
       "reducible": false
     },
     {
-      "def_id": 1515,
+      "def_id": 1519,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#1}<'_0, T0>}::call_once",
@@ -5967,7 +5967,7 @@
       "reducible": false
     },
     {
-      "def_id": 1516,
+      "def_id": 1520,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#2}<'_0, T0>}::call_once",
@@ -5984,7 +5984,7 @@
       "reducible": false
     },
     {
-      "def_id": 1517,
+      "def_id": 1521,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#3}<'_0, T0>}::call_once",
@@ -6001,7 +6001,7 @@
       "reducible": false
     },
     {
-      "def_id": 1518,
+      "def_id": 1522,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#4}<'_0, T0>}::call_once",
@@ -6018,7 +6018,7 @@
       "reducible": false
     },
     {
-      "def_id": 1519,
+      "def_id": 1523,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#5}<'_0, T0>}::call_once",
@@ -6035,7 +6035,7 @@
       "reducible": false
     },
     {
-      "def_id": 1520,
+      "def_id": 1524,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_6.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#6}<'_0, T0>}::call_once",
@@ -6052,7 +6052,7 @@
       "reducible": false
     },
     {
-      "def_id": 1521,
+      "def_id": 1525,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_7.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#7}<'_0, T0>}::call_once",
@@ -6069,7 +6069,7 @@
       "reducible": false
     },
     {
-      "def_id": 1522,
+      "def_id": 1526,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_8.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#8}<'_0, T0>}::call_once",
@@ -6086,7 +6086,7 @@
       "reducible": false
     },
     {
-      "def_id": 1523,
+      "def_id": 1527,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_9.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#9}<'_0, T0>}::call_once",
@@ -6103,7 +6103,7 @@
       "reducible": false
     },
     {
-      "def_id": 1524,
+      "def_id": 1528,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge.closure_10.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#10}<'_0, T0>}::call_once",
@@ -6120,7 +6120,7 @@
       "reducible": false
     },
     {
-      "def_id": 1090,
+      "def_id": 1094,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.encode",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::encode",
@@ -6137,7 +6137,7 @@
       "reducible": false
     },
     {
-      "def_id": 1091,
+      "def_id": 1095,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.merge",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge",
@@ -6154,7 +6154,7 @@
       "reducible": false
     },
     {
-      "def_id": 1092,
+      "def_id": 1096,
       "lean_name": "spqr.proto.pq_ratchet.v1_state.InnerState.encoded_len",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::encoded_len",
@@ -6222,7 +6222,7 @@
       "reducible": false
     },
     {
-      "def_id": 1104,
+      "def_id": 1108,
       "lean_name": "spqr.proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::{impl core::default::Default for spqr::proto::pq_ratchet::chain::Epoch}::default",
@@ -6239,7 +6239,7 @@
       "reducible": false
     },
     {
-      "def_id": 1461,
+      "def_id": 1465,
       "lean_name": "spqr.proto.pq_ratchet.chain.epoch.EpochDirection.Insts.CoreDefaultDefault.default",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::chain::epoch::{impl core::default::Default for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::default",
@@ -6409,49 +6409,15 @@
       "reducible": false
     },
     {
-      "def_id": 732,
+      "def_id": 734,
       "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreCloneClone.clone",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::Direction}::clone",
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
-      },
-      "is_opaque": false,
-      "can_fail": true,
-      "can_diverge": false,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 734,
-      "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection.eq",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::proto::pq_ratchet::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::eq",
-      "is_local": true,
-      "source": {
-        "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
-      },
-      "is_opaque": false,
-      "can_fail": true,
-      "can_diverge": false,
-      "is_rec": false,
-      "reducible": false
-    },
-    {
-      "def_id": 737,
-      "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp",
-      "lean_file": "SrcTranslated/Funs.lean",
-      "rust_name": "spqr::proto::pq_ratchet::{impl core::cmp::Ord for spqr::proto::pq_ratchet::Direction}::cmp",
-      "is_local": true,
-      "source": {
-        "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -6461,14 +6427,48 @@
     },
     {
       "def_id": 736,
+      "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreCmpPartialEqDirection.eq",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::proto::pq_ratchet::{impl core::cmp::PartialEq<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::eq",
+      "is_local": true,
+      "source": {
+        "file": "generated/signal.proto.pq_ratchet.rs",
+        "begin_line": 400,
+        "end_line": 400
+      },
+      "is_opaque": false,
+      "can_fail": true,
+      "can_diverge": false,
+      "is_rec": false,
+      "reducible": false
+    },
+    {
+      "def_id": 739,
+      "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreCmpOrd.cmp",
+      "lean_file": "SrcTranslated/Funs.lean",
+      "rust_name": "spqr::proto::pq_ratchet::{impl core::cmp::Ord for spqr::proto::pq_ratchet::Direction}::cmp",
+      "is_local": true,
+      "source": {
+        "file": "generated/signal.proto.pq_ratchet.rs",
+        "begin_line": 400,
+        "end_line": 400
+      },
+      "is_opaque": false,
+      "can_fail": true,
+      "can_diverge": false,
+      "is_rec": false,
+      "reducible": false
+    },
+    {
+      "def_id": 738,
       "lean_name": "spqr.proto.pq_ratchet.Direction.Insts.CoreCmpPartialOrdDirection.partial_cmp",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::{impl core::cmp::PartialOrd<spqr::proto::pq_ratchet::Direction> for spqr::proto::pq_ratchet::Direction}::partial_cmp",
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -6484,8 +6484,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -6494,15 +6494,15 @@
       "reducible": false
     },
     {
-      "def_id": 738,
+      "def_id": 740,
       "lean_name": "spqr.proto.pq_ratchet.Direction.is_valid",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::is_valid",
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -6511,15 +6511,15 @@
       "reducible": false
     },
     {
-      "def_id": 739,
+      "def_id": 741,
       "lean_name": "spqr.proto.pq_ratchet.Direction.from_i32",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::proto::pq_ratchet::{spqr::proto::pq_ratchet::Direction}::from_i32",
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7384,7 +7384,7 @@
       "reducible": false
     },
     {
-      "def_id": 868,
+      "def_id": 872,
       "lean_name": "spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain::{spqr::chain::Chain}::into_pb::{impl core::ops::function::FnMut<(spqr::chain::ChainEpoch,), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::{closure}}::call_mut",
@@ -7401,7 +7401,7 @@
       "reducible": false
     },
     {
-      "def_id": 867,
+      "def_id": 871,
       "lean_name": "spqr.chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain::{spqr::chain::Chain}::into_pb::{impl core::ops::function::FnOnce<(spqr::chain::ChainEpoch,), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::{closure}}::call_once",
@@ -7435,7 +7435,7 @@
       "reducible": false
     },
     {
-      "def_id": 844,
+      "def_id": 848,
       "lean_name": "spqr.chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch,), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}}::call_mut",
@@ -7452,7 +7452,7 @@
       "reducible": false
     },
     {
-      "def_id": 843,
+      "def_id": 847,
       "lean_name": "spqr.chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch,), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}}::call_once",
@@ -7469,7 +7469,7 @@
       "reducible": false
     },
     {
-      "def_id": 842,
+      "def_id": 846,
       "lean_name": "spqr.chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure}}::call_once",
@@ -7714,8 +7714,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 506,
-        "end_line": 514
+        "begin_line": 490,
+        "end_line": 498
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7733,8 +7733,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 506,
-        "end_line": 514
+        "begin_line": 490,
+        "end_line": 498
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7752,8 +7752,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 503,
-        "end_line": 516
+        "begin_line": 487,
+        "end_line": 500
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7769,8 +7769,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 523,
-        "end_line": 534
+        "begin_line": 507,
+        "end_line": 518
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7788,8 +7788,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 523,
-        "end_line": 534
+        "begin_line": 507,
+        "end_line": 518
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7807,8 +7807,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 520,
-        "end_line": 536
+        "begin_line": 504,
+        "end_line": 520
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7824,8 +7824,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 490,
-        "end_line": 499
+        "begin_line": 474,
+        "end_line": 483
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7841,8 +7841,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 395,
-        "end_line": 426
+        "begin_line": 379,
+        "end_line": 410
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7860,8 +7860,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 395,
-        "end_line": 426
+        "begin_line": 379,
+        "end_line": 410
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7879,8 +7879,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 382,
-        "end_line": 428
+        "begin_line": 366,
+        "end_line": 412
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7896,8 +7896,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 445,
-        "end_line": 447
+        "begin_line": 429,
+        "end_line": 431
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7914,7 +7914,7 @@
       "source": {
         "file": "src/encoding/gf.rs",
         "begin_line": 127,
-        "end_line": 137
+        "end_line": 129
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7930,8 +7930,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 142,
-        "end_line": 144
+        "begin_line": 134,
+        "end_line": 136
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7947,8 +7947,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 150,
-        "end_line": 154
+        "begin_line": 142,
+        "end_line": 146
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7964,8 +7964,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 160,
-        "end_line": 164
+        "begin_line": 152,
+        "end_line": 156
       },
       "is_opaque": false,
       "can_fail": true,
@@ -7981,8 +7981,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 554,
-        "end_line": 557
+        "begin_line": 538,
+        "end_line": 541
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8000,8 +8000,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 554,
-        "end_line": 557
+        "begin_line": 538,
+        "end_line": 541
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8019,8 +8019,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 549,
-        "end_line": 559
+        "begin_line": 533,
+        "end_line": 543
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8036,8 +8036,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 170,
-        "end_line": 172
+        "begin_line": 162,
+        "end_line": 164
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8053,8 +8053,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 177,
-        "end_line": 179
+        "begin_line": 169,
+        "end_line": 171
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8070,8 +8070,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 185,
-        "end_line": 187
+        "begin_line": 177,
+        "end_line": 179
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8087,8 +8087,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 193,
-        "end_line": 195
+        "begin_line": 185,
+        "end_line": 187
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8104,8 +8104,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 216,
-        "end_line": 226
+        "begin_line": 208,
+        "end_line": 210
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8121,8 +8121,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 205,
-        "end_line": 210
+        "begin_line": 197,
+        "end_line": 202
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8140,8 +8140,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 205,
-        "end_line": 210
+        "begin_line": 197,
+        "end_line": 202
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8159,8 +8159,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 201,
-        "end_line": 214
+        "begin_line": 193,
+        "end_line": 206
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8176,8 +8176,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 437,
-        "end_line": 439
+        "begin_line": 421,
+        "end_line": 423
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8193,8 +8193,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 545,
-        "end_line": 547
+        "begin_line": 529,
+        "end_line": 531
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8210,8 +8210,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 561,
-        "end_line": 565
+        "begin_line": 545,
+        "end_line": 549
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8227,8 +8227,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 567,
-        "end_line": 571
+        "begin_line": 551,
+        "end_line": 555
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8244,8 +8244,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 581,
-        "end_line": 587
+        "begin_line": 565,
+        "end_line": 571
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8263,8 +8263,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 581,
-        "end_line": 587
+        "begin_line": 565,
+        "end_line": 571
       },
       "is_opaque": false,
       "can_fail": true,
@@ -8282,8 +8282,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 573,
-        "end_line": 590
+        "begin_line": 557,
+        "end_line": 574
       },
       "is_opaque": false,
       "can_fail": true,
@@ -9080,7 +9080,7 @@
       "reducible": false
     },
     {
-      "def_id": 964,
+      "def_id": 968,
       "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnMutTupleShared0PolyConstPoly.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_mut",
@@ -9097,7 +9097,7 @@
       "reducible": false
     },
     {
-      "def_id": 963,
+      "def_id": 967,
       "lean_name": "spqr.encoding.polynomial.const_polys_to_polys.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PolyConstPoly.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::const_polys_to_polys::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::PolyConst<N>,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::const_polys_to_polys::{closure}<N>}::call_once",
@@ -9905,7 +9905,7 @@
       "reducible": false
     },
     {
-      "def_id": 1215,
+      "def_id": 1219,
       "lean_name": "spqr.encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnMut<((usize, &'_0 spqr::encoding::gf::GF16),), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}}::call_mut",
@@ -9922,7 +9922,7 @@
       "reducible": false
     },
     {
-      "def_id": 1214,
+      "def_id": 1218,
       "lean_name": "spqr.encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnOnce<((usize, &'_0 spqr::encoding::gf::GF16),), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}}::call_once",
@@ -9939,7 +9939,7 @@
       "reducible": false
     },
     {
-      "def_id": 1213,
+      "def_id": 1217,
       "lean_name": "spqr.encoding.polynomial.PolyEncoder.point_at.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoly.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnMut<(usize,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure}}::call_mut",
@@ -9956,7 +9956,7 @@
       "reducible": false
     },
     {
-      "def_id": 1212,
+      "def_id": 1216,
       "lean_name": "spqr.encoding.polynomial.PolyEncoder.point_at.closure.Insts.CoreOpsFunctionFnOnceTupleUsizePoly.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnOnce<(usize,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure}}::call_once",
@@ -10045,7 +10045,7 @@
       "reducible": false
     },
     {
-      "def_id": 1218,
+      "def_id": 1222,
       "lean_name": "spqr.encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoint.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{impl core::ops::function::FnMut<(usize,), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}<'_0>}::call_mut",
@@ -10062,7 +10062,7 @@
       "reducible": false
     },
     {
-      "def_id": 1217,
+      "def_id": 1221,
       "lean_name": "spqr.encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnOnceTupleUsizePoint.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{impl core::ops::function::FnOnce<(usize,), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}<'_0>}::call_once",
@@ -10274,7 +10274,7 @@
       "reducible": false
     },
     {
-      "def_id": 1228,
+      "def_id": 1232,
       "lean_name": "spqr.encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{impl core::ops::function::FnMut<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}}::call_mut",
@@ -10291,7 +10291,7 @@
       "reducible": false
     },
     {
-      "def_id": 1227,
+      "def_id": 1231,
       "lean_name": "spqr.encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeSortedSetPt.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{impl core::ops::function::FnOnce<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}}::call_once",
@@ -11037,7 +11037,7 @@
       "reducible": false
     },
     {
-      "def_id": 750,
+      "def_id": 754,
       "lean_name": "spqr.v1.unchunked.send_ct.NoHeaderReceived.new",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::new",
@@ -11088,7 +11088,7 @@
       "reducible": false
     },
     {
-      "def_id": 752,
+      "def_id": 756,
       "lean_name": "spqr.v1.unchunked.send_ek.KeysUnsampled.new",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::new",
@@ -11139,7 +11139,7 @@
       "reducible": false
     },
     {
-      "def_id": 758,
+      "def_id": 762,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::into_pb",
@@ -11190,7 +11190,7 @@
       "reducible": false
     },
     {
-      "def_id": 757,
+      "def_id": 761,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.EkSent.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::into_pb",
@@ -11224,7 +11224,7 @@
       "reducible": false
     },
     {
-      "def_id": 756,
+      "def_id": 760,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.HeaderSent.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::into_pb",
@@ -11258,7 +11258,7 @@
       "reducible": false
     },
     {
-      "def_id": 755,
+      "def_id": 759,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::into_pb",
@@ -11292,7 +11292,7 @@
       "reducible": false
     },
     {
-      "def_id": 754,
+      "def_id": 758,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::into_pb",
@@ -11326,7 +11326,7 @@
       "reducible": false
     },
     {
-      "def_id": 761,
+      "def_id": 765,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.Ct1Sent.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::into_pb",
@@ -11360,7 +11360,7 @@
       "reducible": false
     },
     {
-      "def_id": 762,
+      "def_id": 766,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::into_pb",
@@ -11411,7 +11411,7 @@
       "reducible": false
     },
     {
-      "def_id": 760,
+      "def_id": 764,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.HeaderReceived.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::into_pb",
@@ -11445,7 +11445,7 @@
       "reducible": false
     },
     {
-      "def_id": 759,
+      "def_id": 763,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.NoHeaderReceived.into_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::into_pb",
@@ -11514,7 +11514,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::initial_state",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 212, "end_line": 236 },
+      "source": { "file": "src/lib.rs", "begin_line": 212, "end_line": 230 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": true,
@@ -11527,7 +11527,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::decode_state::{impl core::ops::function::FnOnce<(prost::error::DecodeError,), spqr::Error> for spqr::decode_state::{closure}}::call_once",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 480, "end_line": 480 },
+      "source": { "file": "src/lib.rs", "begin_line": 472, "end_line": 472 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -11540,7 +11540,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::decode_state",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 472, "end_line": 482 },
+      "source": { "file": "src/lib.rs", "begin_line": 464, "end_line": 474 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -11553,7 +11553,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::current_version::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::current_version::{closure}}::call_once",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 259, "end_line": 259 },
+      "source": { "file": "src/lib.rs", "begin_line": 253, "end_line": 253 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -11566,7 +11566,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::current_version",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 249, "end_line": 262 },
+      "source": { "file": "src/lib.rs", "begin_line": 243, "end_line": 256 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -11710,7 +11710,7 @@
       "reducible": false
     },
     {
-      "def_id": 839,
+      "def_id": 843,
       "lean_name": "spqr.v1.unchunked.send_ek.KeysUnsampled.send_header",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::KeysUnsampled}::send_header",
@@ -11880,7 +11880,7 @@
       "reducible": false
     },
     {
-      "def_id": 841,
+      "def_id": 845,
       "lean_name": "spqr.v1.unchunked.send_ct.HeaderReceived.send_ct1",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::HeaderReceived}::send_ct1",
@@ -12037,7 +12037,7 @@
       "reducible": false
     },
     {
-      "def_id": 866,
+      "def_id": 870,
       "lean_name": "spqr.U8.Insts.CoreConvertFromMessageType.from",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::states::serialize::{impl core::convert::From<spqr::v1::chunked::states::serialize::MessageType> for u8}::from",
@@ -12071,7 +12071,7 @@
       "reducible": false
     },
     {
-      "def_id": 833,
+      "def_id": 837,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::from_pb",
@@ -12088,7 +12088,7 @@
       "reducible": false
     },
     {
-      "def_id": 1137,
+      "def_id": 1141,
       "lean_name": "spqr.v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{closure}}::call_once",
@@ -12122,7 +12122,7 @@
       "reducible": false
     },
     {
-      "def_id": 1136,
+      "def_id": 1140,
       "lean_name": "spqr.v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{closure}}::call_once",
@@ -12156,7 +12156,7 @@
       "reducible": false
     },
     {
-      "def_id": 832,
+      "def_id": 836,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.EkSent.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::EkSent}::from_pb",
@@ -12173,7 +12173,7 @@
       "reducible": false
     },
     {
-      "def_id": 1135,
+      "def_id": 1139,
       "lean_name": "spqr.v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure#1}}::call_once",
@@ -12190,7 +12190,7 @@
       "reducible": false
     },
     {
-      "def_id": 1134,
+      "def_id": 1138,
       "lean_name": "spqr.v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure}}::call_once",
@@ -12224,7 +12224,7 @@
       "reducible": false
     },
     {
-      "def_id": 831,
+      "def_id": 835,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.HeaderSent.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::from_pb",
@@ -12241,7 +12241,7 @@
       "reducible": false
     },
     {
-      "def_id": 1133,
+      "def_id": 1137,
       "lean_name": "spqr.v1.chunked.send_ek.serialize.KeysSampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::KeysSampled}::from_pb::{closure}}::call_once",
@@ -12275,7 +12275,7 @@
       "reducible": false
     },
     {
-      "def_id": 830,
+      "def_id": 834,
       "lean_name": "spqr.v1.unchunked.send_ek.serialize.KeysUnsampled.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::KeysUnsampled}::from_pb",
@@ -12309,7 +12309,7 @@
       "reducible": false
     },
     {
-      "def_id": 838,
+      "def_id": 842,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.Ct2Sent.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct2Sent}::from_pb",
@@ -12326,7 +12326,7 @@
       "reducible": false
     },
     {
-      "def_id": 1144,
+      "def_id": 1148,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{closure}}::call_once",
@@ -12360,7 +12360,7 @@
       "reducible": false
     },
     {
-      "def_id": 836,
+      "def_id": 840,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.Ct1Sent.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1Sent}::from_pb",
@@ -12377,7 +12377,7 @@
       "reducible": false
     },
     {
-      "def_id": 1143,
+      "def_id": 1147,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{closure}}::call_once",
@@ -12411,7 +12411,7 @@
       "reducible": false
     },
     {
-      "def_id": 837,
+      "def_id": 841,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::from_pb",
@@ -12428,7 +12428,7 @@
       "reducible": false
     },
     {
-      "def_id": 1142,
+      "def_id": 1146,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{closure}}::call_once",
@@ -12462,7 +12462,7 @@
       "reducible": false
     },
     {
-      "def_id": 1141,
+      "def_id": 1145,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure#1}}::call_once",
@@ -12479,7 +12479,7 @@
       "reducible": false
     },
     {
-      "def_id": 1140,
+      "def_id": 1144,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure}}::call_once",
@@ -12513,7 +12513,7 @@
       "reducible": false
     },
     {
-      "def_id": 835,
+      "def_id": 839,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.HeaderReceived.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::from_pb",
@@ -12530,7 +12530,7 @@
       "reducible": false
     },
     {
-      "def_id": 1139,
+      "def_id": 1143,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{closure}}::call_once",
@@ -12564,7 +12564,7 @@
       "reducible": false
     },
     {
-      "def_id": 834,
+      "def_id": 838,
       "lean_name": "spqr.v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::from_pb",
@@ -12581,7 +12581,7 @@
       "reducible": false
     },
     {
-      "def_id": 1138,
+      "def_id": 1142,
       "lean_name": "spqr.v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::NoHeaderReceived}::from_pb::{closure}}::call_once",
@@ -12637,7 +12637,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain_from_version_negotiation::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain_from_version_negotiation::{closure}}::call_once",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 338, "end_line": 338 },
+      "source": { "file": "src/lib.rs", "begin_line": 332, "end_line": 332 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -12650,7 +12650,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain_from_version_negotiation",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 333, "end_line": 341 },
+      "source": { "file": "src/lib.rs", "begin_line": 327, "end_line": 335 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -12663,7 +12663,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::send",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 265, "end_line": 326 },
+      "source": { "file": "src/lib.rs", "begin_line": 259, "end_line": 320 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": true,
@@ -12676,7 +12676,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain_from",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 343, "end_line": 354 },
+      "source": { "file": "src/lib.rs", "begin_line": 337, "end_line": 348 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -12684,7 +12684,7 @@
       "reducible": false
     },
     {
-      "def_id": 900,
+      "def_id": 904,
       "lean_name": "spqr.v1.unchunked.send_ek.EkSentCt1Received.recv_ct2",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSentCt1Received}::recv_ct2",
@@ -12735,7 +12735,7 @@
       "reducible": false
     },
     {
-      "def_id": 898,
+      "def_id": 902,
       "lean_name": "spqr.v1.unchunked.send_ek.EkSent.recv_ct1",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::EkSent}::recv_ct1",
@@ -12769,7 +12769,7 @@
       "reducible": false
     },
     {
-      "def_id": 897,
+      "def_id": 901,
       "lean_name": "spqr.v1.unchunked.send_ek.HeaderSent.send_ek",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ek::{spqr::v1::unchunked::send_ek::HeaderSent}::send_ek",
@@ -12803,7 +12803,7 @@
       "reducible": false
     },
     {
-      "def_id": 903,
+      "def_id": 907,
       "lean_name": "spqr.v1.unchunked.send_ct.Ct2Sent.recv_next_epoch",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct2Sent}::recv_next_epoch",
@@ -12837,7 +12837,7 @@
       "reducible": false
     },
     {
-      "def_id": 902,
+      "def_id": 906,
       "lean_name": "spqr.v1.unchunked.send_ct.Ct1SentEkReceived.send_ct2",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::send_ct2",
@@ -12854,7 +12854,7 @@
       "reducible": false
     },
     {
-      "def_id": 904,
+      "def_id": 908,
       "lean_name": "spqr.v1.unchunked.send_ct.Ct1Sent.recv_ek",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::Ct1Sent}::recv_ek",
@@ -12939,7 +12939,7 @@
       "reducible": false
     },
     {
-      "def_id": 901,
+      "def_id": 905,
       "lean_name": "spqr.v1.unchunked.send_ct.NoHeaderReceived.recv_header",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::unchunked::send_ct::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::recv_header",
@@ -12990,7 +12990,7 @@
       "reducible": false
     },
     {
-      "def_id": 891,
+      "def_id": 895,
       "lean_name": "spqr.v1.chunked.states.serialize.Message.deserialize.closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{impl core::ops::function::FnOnce<(alloc::string::String,), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{closure#1}}::call_once",
@@ -13007,7 +13007,7 @@
       "reducible": false
     },
     {
-      "def_id": 890,
+      "def_id": 894,
       "lean_name": "spqr.v1.chunked.states.serialize.Message.deserialize.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once",
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{impl core::ops::function::FnOnce<(core::num::error::TryFromIntError,), spqr::Error> for spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize::{closure}}::call_once",
@@ -13135,7 +13135,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::msg_version",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 464, "end_line": 470 },
+      "source": { "file": "src/lib.rs", "begin_line": 456, "end_line": 462 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -13148,7 +13148,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::state_version",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 457, "end_line": 462 },
+      "source": { "file": "src/lib.rs", "begin_line": 449, "end_line": 454 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -13161,7 +13161,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::recv::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::recv::{closure}}::call_once",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 395, "end_line": 395 },
+      "source": { "file": "src/lib.rs", "begin_line": 387, "end_line": 387 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": false,
@@ -13174,7 +13174,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::recv",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 356, "end_line": 455 },
+      "source": { "file": "src/lib.rs", "begin_line": 350, "end_line": 447 },
       "is_opaque": false,
       "can_fail": true,
       "can_diverge": true,
@@ -13852,8 +13852,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 404,
-        "end_line": 407
+        "begin_line": 402,
+        "end_line": 405
       }
     },
     {
@@ -14766,7 +14766,7 @@
       "lean_file": "SrcTranslated/Types.lean",
       "rust_name": "spqr::Send",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 243, "end_line": 247 }
+      "source": { "file": "src/lib.rs", "begin_line": 237, "end_line": 241 }
     },
     {
       "def_id": 70,
@@ -14774,7 +14774,7 @@
       "lean_file": "SrcTranslated/Types.lean",
       "rust_name": "spqr::decode_state::{closure}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 480, "end_line": 480 }
+      "source": { "file": "src/lib.rs", "begin_line": 472, "end_line": 472 }
     },
     {
       "def_id": 60,
@@ -14782,7 +14782,7 @@
       "lean_file": "SrcTranslated/Types.lean",
       "rust_name": "spqr::current_version::{closure}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 259, "end_line": 259 }
+      "source": { "file": "src/lib.rs", "begin_line": 253, "end_line": 253 }
     },
     {
       "def_id": 128,
@@ -14982,7 +14982,7 @@
       "lean_file": "SrcTranslated/Types.lean",
       "rust_name": "spqr::chain_from_version_negotiation::{closure}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 338, "end_line": 338 }
+      "source": { "file": "src/lib.rs", "begin_line": 332, "end_line": 332 }
     },
     {
       "def_id": 16,
@@ -14990,7 +14990,7 @@
       "lean_file": "SrcTranslated/Types.lean",
       "rust_name": "spqr::Recv",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 328, "end_line": 331 }
+      "source": { "file": "src/lib.rs", "begin_line": 322, "end_line": 325 }
     },
     {
       "def_id": 68,
@@ -15094,7 +15094,7 @@
       "lean_file": "SrcTranslated/Types.lean",
       "rust_name": "spqr::recv::{closure}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 395, "end_line": 395 }
+      "source": { "file": "src/lib.rs", "begin_line": 387, "end_line": 387 }
     }
   ],
   "globals": [
@@ -15119,8 +15119,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 543,
-        "end_line": 543
+        "begin_line": 527,
+        "end_line": 527
       },
       "can_fail": false
     },
@@ -15132,8 +15132,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 542,
-        "end_line": 542
+        "begin_line": 526,
+        "end_line": 526
       },
       "can_fail": false
     },
@@ -15206,8 +15206,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 538,
-        "end_line": 538
+        "begin_line": 522,
+        "end_line": 522
       },
       "can_fail": true
     },
@@ -15412,7 +15412,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::{spqr::proto::pq_ratchet::Version}::DISABLED",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 239, "end_line": 239 },
+      "source": { "file": "src/lib.rs", "begin_line": 233, "end_line": 233 },
       "can_fail": false
     },
     {
@@ -15421,7 +15421,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::{spqr::proto::pq_ratchet::Version}::MAX",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 240, "end_line": 240 },
+      "source": { "file": "src/lib.rs", "begin_line": 234, "end_line": 234 },
       "can_fail": false
     },
     {
@@ -18767,8 +18767,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 0,
       "impl_trait_rust_name": "core::clone::Clone",
@@ -18782,8 +18782,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 21,
       "impl_trait_rust_name": "core::marker::Copy",
@@ -18797,8 +18797,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 7,
       "impl_trait_rust_name": "core::marker::StructuralPartialEq",
@@ -18812,8 +18812,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 8,
       "impl_trait_rust_name": "core::cmp::PartialEq",
@@ -18827,8 +18827,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 41,
       "impl_trait_rust_name": "core::cmp::Eq",
@@ -18842,8 +18842,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 42,
       "impl_trait_rust_name": "core::cmp::PartialOrd",
@@ -18857,8 +18857,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 40,
       "impl_trait_rust_name": "core::cmp::Ord",
@@ -18872,8 +18872,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 12,
       "impl_trait_rust_name": "core::convert::From",
@@ -18887,8 +18887,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 13,
       "impl_trait_rust_name": "core::convert::TryFrom",
@@ -18902,8 +18902,8 @@
       "is_local": true,
       "source": {
         "file": "generated/signal.proto.pq_ratchet.rs",
-        "begin_line": 402,
-        "end_line": 402
+        "begin_line": 400,
+        "end_line": 400
       },
       "impl_trait_def_id": 18,
       "impl_trait_rust_name": "core::default::Default",
@@ -19281,7 +19281,7 @@
       "source": {
         "file": "src/encoding/gf.rs",
         "begin_line": 126,
-        "end_line": 138
+        "end_line": 130
       },
       "impl_trait_def_id": 51,
       "impl_trait_rust_name": "core::ops::arith::MulAssign",
@@ -19295,8 +19295,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 141,
-        "end_line": 145
+        "begin_line": 133,
+        "end_line": 137
       },
       "impl_trait_def_id": 51,
       "impl_trait_rust_name": "core::ops::arith::MulAssign",
@@ -19310,8 +19310,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 148,
-        "end_line": 155
+        "begin_line": 140,
+        "end_line": 147
       },
       "impl_trait_def_id": 52,
       "impl_trait_rust_name": "core::ops::arith::Mul",
@@ -19325,8 +19325,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 158,
-        "end_line": 165
+        "begin_line": 150,
+        "end_line": 157
       },
       "impl_trait_def_id": 52,
       "impl_trait_rust_name": "core::ops::arith::Mul",
@@ -19340,8 +19340,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 168,
-        "end_line": 173
+        "begin_line": 160,
+        "end_line": 165
       },
       "impl_trait_def_id": 53,
       "impl_trait_rust_name": "core::ops::arith::DivAssign",
@@ -19355,8 +19355,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 176,
-        "end_line": 180
+        "begin_line": 168,
+        "end_line": 172
       },
       "impl_trait_def_id": 53,
       "impl_trait_rust_name": "core::ops::arith::DivAssign",
@@ -19370,8 +19370,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 183,
-        "end_line": 188
+        "begin_line": 175,
+        "end_line": 180
       },
       "impl_trait_def_id": 54,
       "impl_trait_rust_name": "core::ops::arith::Div",
@@ -19385,8 +19385,8 @@
       "is_local": true,
       "source": {
         "file": "src/encoding/gf.rs",
-        "begin_line": 191,
-        "end_line": 196
+        "begin_line": 183,
+        "end_line": 188
       },
       "impl_trait_def_id": 54,
       "impl_trait_rust_name": "core::ops::arith::Div",
@@ -20122,7 +20122,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::decode_state::{impl core::ops::function::FnOnce<(prost::error::DecodeError,), spqr::Error> for spqr::decode_state::{closure}}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 480, "end_line": 480 },
+      "source": { "file": "src/lib.rs", "begin_line": 472, "end_line": 472 },
       "impl_trait_def_id": 15,
       "impl_trait_rust_name": "core::ops::function::FnOnce",
       "impl_trait_is_builtin": true
@@ -20133,7 +20133,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::current_version::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::current_version::{closure}}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 259, "end_line": 259 },
+      "source": { "file": "src/lib.rs", "begin_line": 253, "end_line": 253 },
       "impl_trait_def_id": 15,
       "impl_trait_rust_name": "core::ops::function::FnOnce",
       "impl_trait_is_builtin": true
@@ -20339,7 +20339,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::chain_from_version_negotiation::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain_from_version_negotiation::{closure}}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 338, "end_line": 338 },
+      "source": { "file": "src/lib.rs", "begin_line": 332, "end_line": 332 },
       "impl_trait_def_id": 15,
       "impl_trait_rust_name": "core::ops::function::FnOnce",
       "impl_trait_is_builtin": true
@@ -20380,7 +20380,7 @@
       "lean_file": "SrcTranslated/Funs.lean",
       "rust_name": "spqr::recv::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::recv::{closure}}",
       "is_local": true,
-      "source": { "file": "src/lib.rs", "begin_line": 395, "end_line": 395 },
+      "source": { "file": "src/lib.rs", "begin_line": 387, "end_line": 387 },
       "impl_trait_def_id": 15,
       "impl_trait_rust_name": "core::ops::function::FnOnce",
       "impl_trait_is_builtin": true

@@ -265,9 +265,8 @@ impl Poly {
         }
         // Multiply and sum
         let mut out = GF16::ZERO;
-        #[allow(clippy::needless_range_loop)]
-        for i in 0..self.coefficients.len() {
-            out += self.coefficients[i] * xs[i];
+        for (a, b) in self.coefficients.iter().zip(xs.iter()) {
+            out += *a * *b;
         }
         out
     }
@@ -276,9 +275,9 @@ impl Poly {
     #[hax_lib::opaque] // zip
     fn lagrange_sum(pts: &[Pt], polys: &[Poly]) -> Poly {
         let mut out = Poly::zero(pts.len());
-        for i in 0..pts.len() {
-            let mut p = polys[i].clone();
-            p.mult_assign(pts[i].y);
+        for (pt, poly) in pts.iter().zip(polys.iter()) {
+            let mut p = poly.clone();
+            p.mult_assign(pt.y);
             out.add_assign(&p);
         }
         out
@@ -308,19 +307,17 @@ impl Poly {
             36 => const_polys_to_polys(&COMPLETE_POINTS_POLYS_36),
             _ => {
                 debug_assert!(false, "missing precomputed poly of size {}", pts.len());
-                let mut ones = Vec::with_capacity(pts.len());
-                #[allow(clippy::needless_range_loop)]
-                for i in 0..pts.len() {
-                    ones.push(Pt {
-                        x: pts[i].x,
+                let ones = pts
+                    .iter()
+                    .map(|pt| Pt {
+                        x: pt.x,
                         y: GF16::ONE,
-                    });
-                }
-                let mut polys = Vec::with_capacity(pts.len());
-                for i in 0..pts.len() {
-                    polys.push(Self::lagrange_interpolate_pt(&ones, i));
-                }
-                polys
+                    })
+                    .collect::<Vec<_>>();
+                pts.iter()
+                    .enumerate()
+                    .map(|(i, _pt)| Self::lagrange_interpolate_pt(&ones, i))
+                    .collect::<Vec<_>>()
             }
         };
         Ok(Self::lagrange_sum(pts, &polys))
@@ -344,9 +341,8 @@ impl Poly {
             return Err(PolynomialError::SerializationInvalid);
         }
         let mut coefficients = Vec::<GF16>::with_capacity(serialized.len() / 2);
-        for i in 0..(serialized.len() / 2) {
-            let j = i * 2;
-            coefficients.push(GF16::new(u16::from_be_bytes([serialized[j], serialized[j + 1]])));
+        for coeff in serialized.chunks_exact(2) {
+            coefficients.push(GF16::new(u16::from_be_bytes(coeff.try_into().unwrap())));
         }
         hax_lib::assume!(coefficients.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1 + 1);
         Ok(Self { coefficients })
@@ -354,10 +350,6 @@ impl Poly {
 }
 
 // For Protocol V1 with MLKEM-768: N <= MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1
-//
-// TEMPORARY WORKAROUND — remove this `#[derive(Copy, Clone)]` once
-// https://github.com/AeneasVerif/charon/issues/1504 is resolved.
-#[derive(Copy, Clone)]
 struct PolyConst<const N: usize> {
     coefficients: [GF16; N],
 }
@@ -577,21 +569,16 @@ impl PolyEncoder {
     pub(crate) fn from_pb(
         pb: proto::pq_ratchet::PolynomialEncoder,
     ) -> Result<Self, PolynomialError> {
-        if !pb.pts.is_empty() {
+        let s = if !pb.pts.is_empty() {
             if !pb.polys.is_empty() {
                 return Err(PolynomialError::SerializationInvalid);
             }
             if pb.pts.len() != NUM_POLYS {
                 return Err(PolynomialError::SerializationInvalid);
             }
-            let mut out = [Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() },
-                          Point { value: Vec::<GF16>::new() }, Point { value: Vec::<GF16>::new() }];
+            let mut out = core::array::from_fn(|_| Point {
+                value: Vec::<GF16>::new(),
+            });
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..NUM_POLYS {
@@ -599,28 +586,24 @@ impl PolyEncoder {
                 if pts.len() % 2 != 0 {
                     return Err(PolynomialError::SerializationInvalid);
                 }
-                let mut v = Vec::<GF16>::with_capacity(pts.len() / 2);
-                for k in 0..(pts.len() / 2) {
-                    let j = k * 2;
-                    v.push(GF16::new(u16::from_be_bytes([pts[j], pts[j + 1]])));
+                let mut v = Vec::<GF16>::with_capacity(pts.len());
+                for pt in pts.chunks_exact(2) {
+                    v.push(GF16::new(u16::from_be_bytes(pt.try_into().unwrap())));
                 }
                 hax_lib::assume!(v.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1);
                 out[i] = Point { value: v };
             }
-            return Ok(Self { idx: pb.idx, s: EncoderState::Points(out) });
-        }
-        if pb.polys.len() == NUM_POLYS {
-            let mut out = [Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
-                          Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
-                          Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1),
-                          Poly::zero(1), Poly::zero(1), Poly::zero(1), Poly::zero(1)];
-            #[allow(clippy::needless_range_loop)]
-            for i in 0..NUM_POLYS {
-                out[i] = Poly::deserialize(&pb.polys[i])?;
+            EncoderState::Points(out)
+        } else if pb.polys.len() == NUM_POLYS {
+            let mut out: [Poly; NUM_POLYS] = core::array::from_fn(|_| Poly::zero(1));
+            for (i, poly) in pb.polys.iter().enumerate() {
+                out[i] = Poly::deserialize(poly)?;
             }
-            return Ok(Self { idx: pb.idx, s: EncoderState::Polys(out) });
-        }
-        Err(PolynomialError::SerializationInvalid)
+            EncoderState::Polys(out)
+        } else {
+            return Err(PolynomialError::SerializationInvalid);
+        };
+        Ok(Self { idx: pb.idx, s })
     }
 
     #[requires(poly < 16)]
@@ -822,31 +805,16 @@ impl PolyDecoder {
         if pb.pts.len() != 16 {
             return Err(PolynomialError::SerializationInvalid);
         }
-        // Validate all lengths up front (Aeneas cannot handle early return inside loops)
-        if pb.pts[0].len() % 4 != 0 || pb.pts[1].len() % 4 != 0
-            || pb.pts[2].len() % 4 != 0 || pb.pts[3].len() % 4 != 0
-            || pb.pts[4].len() % 4 != 0 || pb.pts[5].len() % 4 != 0
-            || pb.pts[6].len() % 4 != 0 || pb.pts[7].len() % 4 != 0
-            || pb.pts[8].len() % 4 != 0 || pb.pts[9].len() % 4 != 0
-            || pb.pts[10].len() % 4 != 0 || pb.pts[11].len() % 4 != 0
-            || pb.pts[12].len() % 4 != 0 || pb.pts[13].len() % 4 != 0
-            || pb.pts[14].len() % 4 != 0 || pb.pts[15].len() % 4 != 0
-        {
-            return Err(PolynomialError::SerializationInvalid);
-        }
-        let mut out_pts = [SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new(),
-                          SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new(),
-                          SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new(),
-                          SortedSet::new(), SortedSet::new(), SortedSet::new(), SortedSet::new()];
+        let mut out_pts = core::array::from_fn(|_| SortedSet::new());
         #[allow(clippy::needless_range_loop)]
         for i in 0..16 {
             let pts = &pb.pts[i];
+            if pts.len() % 4 != 0 {
+                return Err(PolynomialError::SerializationInvalid);
+            }
             let mut v = SortedSet::with_capacity(pts.len() / 4);
-            let mut j = 0;
-            while j + 4 <= pts.len() {
-                let chunk: [u8; 4] = [pts[j], pts[j + 1], pts[j + 2], pts[j + 3]];
-                v.push(Pt::deserialize(chunk));
-                j += 4;
+            for pt in pts.chunks_exact(4) {
+                v.push(Pt::deserialize(pt.try_into().unwrap()));
             }
             out_pts[i] = v;
         }
