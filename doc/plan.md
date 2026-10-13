@@ -253,19 +253,82 @@ tail bound on the centred-binomial noise, FIPS 203 § 3.3 / Table 2.
 
 | Step | File | Description |
 |------|------|-------------|
-| 5.1 | `KEM/KeyGen.lean` | Wrap `kpkeKeyGen`, append `H(ek)` and `z`. |
-| 5.2 | `KEM/Encaps.lean` | Derive `(K,r) = G(m‖H(ek))`, call `kpkeEncrypt`. |
-| 5.3 | `KEM/Decaps.lean` | Decrypt, re-derive, re-encrypt, implicit rejection. |
-| 5.4 | — | Round-trip: `decaps(dk, encaps(ek,m).ct) = encaps(ek,m).ss`. |
+| 5.1 | `KEM/KeyGen.lean` | Wrap `kpkeKeyGen`, append `H(ek)` and `z`. **Done.** |
+| 5.2 | `KEM/Encaps.lean` | Derive `(K,r) = G(m‖H(ek))`, call `kpkeEncrypt`. **Done.** |
+| 5.3 | `KEM/Decaps.lean` | Decrypt, re-derive, re-encrypt, implicit rejection. **Done.** |
+| 5.4 | `KEM/RoundTrip.lean` | Round-trip: `decaps(dk, encaps(ek,m).ct) = encaps(ek,m).ss`. **Done — no axioms, no `sorry`.** |
+
+#### 5.x — Notes
+
+* The `_internal` variants (Alg 16–18) are the top-level definitions: randomness
+  (`d`, `z`, `m`) is an explicit parameter, so Alg 19–21 are just these applied
+  to fresh bytes; the Alg 21 input-validation step is enforced by the dependent
+  byte-array types.
+* `mlkemKeyGen d z p : MlkemKeyPair p` with `dk : Fin p.dkSize → UInt8` laid out
+  as `dkPKE ‖ ek ‖ H(ek) ‖ z` via `encodeMlkemDk`; the four projections
+  `decodeDk{Pke,Ek,H,Z}` are proved to invert it (`decodeDk*_encodeMlkemDk`)
+  and specialised to generated keys (`decodeDk*_mlkemKeyGen`).
+* New oracles: `hashH` (SHA3-256) and `hashJ` (SHAKE-256), `opaque` like `hashG`.
+* `mlkem_roundTrip p d z m h_noise` takes only the K-PKE noise bound at the
+  derived randomness `honestR d m p = G(m ‖ H(ek))[32:64]`; the proof rewrites
+  the `dk` projections, applies `kpke_roundTrip` to get `m' = m`, and then the
+  re-encryption check `c = c'` holds by `rfl`, so the implicit-rejection branch
+  is never taken.  `#print axioms`: only `propext`, `Classical.choice`,
+  `Quot.sound`.  The whole `KEM/` directory compiles in ≈ 2 s.
 
 ### Phase 6 — Bridge to Aeneas Translation
 
 | Step | File | Theorem statement |
 |------|------|-------------------|
-| 6.1 | `Bridge/LibcruxKeygen.lean` | `aeneas_from_seed seed = mlkemKeyGen seed` |
-| 6.2 | `Bridge/LibcruxEncaps1.lean` | `aeneas_encapsulate1 hdr rand = mlkemEncaps_phase1 …` |
+| 6.1 | `Bridge/KeyPairBytes.lean`, `Bridge/LibcruxKeygen.lean` | `from_seed seed = ok {value := keyPairArray seed}` where `keyPairArray seed = (mlkemKeyGen seed[0:32] seed[32:64] mlkem768).dk`. **Done — no axioms, no `sorry`.** |
+| 6.2 | `KEM/EncapsIncremental.lean`, `Bridge/EncapsBytes.lean`, `Bridge/LibcruxEncaps1.lean` | `encapsulate1 pk1 rand state ss = ok (.Ok c₁, state', ss')` with `c₁ = (mlkemEncapsPhase1 (ρ,h) m).ct1`, `state'[0:2080] = stateBytes (ŷ,e₂,m)`, `ss'[0:32] = K`. **Done — no axioms, no `sorry`.** |
 | 6.3 | `Bridge/LibcruxEncaps2.lean` | `aeneas_encapsulate2 ek state = mlkemEncaps_phase2 …` |
 | 6.4 | `Bridge/LibcruxDecaps.lean` | `aeneas_decaps dk ct1 ct2 = mlkemDecaps dk (ct1,ct2)` |
+
+#### 6.1 — Notes
+
+* libcrux is opaque to Aeneas, so the keygen bridge is realised by giving the external
+  `KeyPairCompressedBytes.from_seed` in `SrcTranslated/FunsExternal.lean` a *faithful FIPS 203
+  model* instead of the previous `ok default` stub.  The former **axiom** `from_seed_spec`
+  (length-only) is now a **proved theorem** that additionally states
+  `kp.value.val = Fips203.Bridge.keyPairList (seedOfArray seed)`; consequently
+  `spqr.incremental_mlkem768.generate_spec` no longer depends on any custom axiom.
+* Layout checked against libcrux-ml-kem 0.0.7 (`ind_cca/incremental/types.rs`,
+  `KeyPair::to_bytes_compressed`; `ind_cca.rs`, `generate_keypair`):
+  `value = ByteEncode₁₂(ŝ) ‖ ByteEncode₁₂(t̂) ‖ ρ ‖ H(ek) ‖ z`, `d = seed[0:32]`,
+  `z = seed[32:64]` — exactly `encodeMlkemDk dkPKE ek H(ek) z` of Alg 16.
+* `KeyPairBytes.lean` (imports only `Fips203.KEM.KeyGen` + Aeneas, so `FunsExternal` can
+  import it) defines `seedD/seedZ`, `toU8List`, `keyPairBytes/List/Array`, `pk2Bytes`
+  (`ek[0:1152]`) and `pk1Bytes` (`ρ ‖ H(ek)`), the per-field lemmas `keyPairBytes_{dkPke,ek,
+  hash,z}` and the slice facts `value.slice 1152 2304 = pk2`, `value.slice 2304 2368 = pk1`.
+* `LibcruxKeygen.lean` states the bridge: `from_seed_eq_mlkemKeyGen`, `from_seed_value`,
+  `sk/pk1/pk2_from_seed`, `bind_from_seed_pk{1,2}` and the `decodeDk*` projections.
+* Proof note: `congr 1` on goals containing `mlkemKeyGen …` hits `maxRecDepth`; use
+  `exact congrArg _ (Fin.ext …)` instead.
+
+#### 6.2 — Notes
+
+* **Incremental split (Risk 2).**  `KEM/EncapsIncremental.lean` defines Algorithm 17 as two
+  rounds mirroring libcrux: `mlkemEncapsPhase1 p (ρ, h) m = (K, c₁, (ŷ, e₂, m))` and
+  `mlkemEncapsPhase2 p (ŷ, e₂, m) t̂ = c₂`, with `mlkemEncaps_ct_eq_phases` proving
+  `(mlkemEncaps ek m).ct = c₁ ‖ c₂` and `mlkemEncapsPhase1_ss` proving the shared secret agrees.
+* **Byte model** (`Bridge/EncapsBytes.lean`, imported by `FunsExternal`): `headerOfList`
+  (`PublicKey1::try_from`), `polyBytes`/`polyOfBytes` (little-endian `i16` per coefficient,
+  `PolynomialRingElement::to_bytes`), `stateBytes`/`decodeEncapsState` for the 2080-byte
+  `ŷ[0] ‖ ŷ[1] ‖ ŷ[2] ‖ e₂ ‖ m` layout with round trip `decodeEncapsState_stateBytes`, and
+  `overwritePrefix` for the `&mut [u8]` outputs.  Coefficient representatives: the model stores
+  the canonical `[0, q)` value; libcrux may store other `i16` representatives (and, on AVX2,
+  byte-swapped ones — issue 1275), but every downstream reader is modulo `q`, so all observable
+  behaviour agrees.
+* **Externals** (`SrcTranslated/FunsExternal.lean`): `encapsulate1` is now a `def` (was an
+  axiom) with libcrux's error behaviour (`InvalidInputLength` if `pk1.len() < 64`,
+  `InvalidOutputLength` if `shared_secret.len() < 32` or `state.len() < 2080`) and a `@[step]`
+  spec `encapsulate1_spec`; `SHARED_SECRET_SIZE = 32` and `encaps_state_len = 2080` are also
+  `def`s with specs.
+* **Bridge** (`Bridge/LibcruxEncaps1.lean`): `encapsulate1_eq_mlkemEncapsPhase1`,
+  `encapsulate1_{ct1,state_take,ss_take}`, `decodeEncapsState_stateOut`,
+  `encapsulate1_short_header`, and the composition with 6.1: `ssOut_pk1Bytes`
+  (`= (mlkemEncaps ek m).ss`) and `ct1Bytes_pk1Bytes` (`= (mlkemEncaps ek m).ct[0:960]`).
 
 **Bridge proof strategy:** Unfold Aeneas definition layer by layer →
 apply `@[step]` spec theorems for externals → show each computational

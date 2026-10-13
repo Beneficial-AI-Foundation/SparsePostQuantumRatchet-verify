@@ -6,6 +6,10 @@ import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
+import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
 import Spqr.Crypto.Fips203.Conversion.BitsToBytes
 import Spqr.Crypto.Fips203.Conversion.ByteDecode
 import Spqr.Crypto.Fips203.Conversion.ByteEncode
@@ -13,6 +17,11 @@ import Spqr.Crypto.Fips203.Conversion.BytesToBits
 import Spqr.Crypto.Fips203.Conversion.Compress
 import Spqr.Crypto.Fips203.Conversion.Decompress
 import Spqr.Crypto.Fips203.Conversion.RoundTrip
+import Spqr.Crypto.Fips203.KEM.Decaps
+import Spqr.Crypto.Fips203.KEM.Encaps
+import Spqr.Crypto.Fips203.KEM.EncapsIncremental
+import Spqr.Crypto.Fips203.KEM.KeyGen
+import Spqr.Crypto.Fips203.KEM.RoundTrip
 import Spqr.Crypto.Fips203.NTT.BaseCaseMultiply
 import Spqr.Crypto.Fips203.NTT.InvKernel0
 import Spqr.Crypto.Fips203.NTT.InvKernel1
