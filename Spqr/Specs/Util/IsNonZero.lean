@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Util.Inz
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Util.Inz
 
 /-!
 # Spec theorem for `spqr::util::is_non_zero`
@@ -18,6 +20,8 @@ byte is non-zero, and `0` when it is zero.
 
 **Source:** "spqr/src/util.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 namespace spqr.util

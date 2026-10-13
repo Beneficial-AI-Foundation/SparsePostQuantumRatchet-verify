@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
 
 /-! # Spec theorem for `spqr::encoding::gf::unaccelerated::poly_mul`
 
@@ -28,6 +30,8 @@ them rather than re-proving them.
 
 **Source**: spqr/src/encoding/gf.rs (lines 381:4-427:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 open Polynomial

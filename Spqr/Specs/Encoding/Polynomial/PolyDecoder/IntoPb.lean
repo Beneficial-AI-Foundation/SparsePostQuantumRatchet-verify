@@ -3,11 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.ModByMonic
-import Spqr.Specs.Aeneas.SliceIteratorNext
-import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
-import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Specs.Aeneas.VecExtendFromSlice
+module
+
+public import Spqr.Math.Poly.ModByMonic
+public import Spqr.Specs.Aeneas.SliceIteratorNext
+public import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Specs.Aeneas.VecExtendFromSlice
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 
 /-! # Spec theorem for `PolyDecoder::into_pb`: loop body 1
 
@@ -17,12 +20,11 @@ One step of the inner point-serialization loop. Given `pts : SortedSet<Pt>`, a r
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
-private instance instInhabitedSortedSetPt : Inhabited (sorted_vec.SortedSet Pt) :=
-  ⟨alloc.vec.Vec.new _⟩
-
-private instance : Inhabited Pt := ⟨{ x := ⟨0#u16⟩, y := ⟨0#u16⟩ }⟩
+instance instInhabitedPt : Inhabited Pt := ⟨{ x := ⟨0#u16⟩, y := ⟨0#u16⟩ }⟩
 
 namespace spqr.encoding.polynomial.PolyDecoder.into_pb_loop0_loop0
 

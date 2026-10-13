@@ -3,17 +3,19 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Crypto.Hkdf
-import Spqr.Specs.Kdf.HkdfToSlice
-import Spqr.Specs.Aeneas.CopyFromSlice
-import Spqr.Specs.Aeneas.ArrayIndexRangeTo
-import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
-import Spqr.Specs.Aeneas.TryFromSliceToArray
-import Spqr.Specs.Aeneas.ResultExpect
-import Spqr.Specs.Aeneas.SliceConcatListAux
-import Spqr.Specs.Aeneas.SliceListToVec
-import Spqr.Specs.Aeneas.SliceConcat
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Crypto.Hkdf
+public import Spqr.Specs.Kdf.HkdfToSlice
+public import Spqr.Specs.Aeneas.CopyFromSlice
+public import Spqr.Specs.Aeneas.ArrayIndexRangeTo
+public import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
+public import Spqr.Specs.Aeneas.TryFromSliceToArray
+public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Specs.Aeneas.SliceConcatListAux
+public import Spqr.Specs.Aeneas.SliceListToVec
+public import Spqr.Specs.Aeneas.SliceConcat
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key_internal`
 
@@ -24,6 +26,8 @@ the derived key. Returns `(ctr+1, derived_key)`.
 
 **Source**: spqr/src/chain.rs (lines 228:4-245:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 

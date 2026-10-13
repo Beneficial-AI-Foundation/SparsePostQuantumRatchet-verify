@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
-import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
+public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::serialize::Ct2Sent::from_pb`
@@ -20,6 +22,8 @@ conversion. The reverse direction is `into_pb`.
 
 **Source**: spqr/src/v1/unchunked/send_ct/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 namespace spqr.v1.unchunked.send_ct.serialize.Ct2Sent

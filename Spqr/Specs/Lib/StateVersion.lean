@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Lib.CurrentVersion
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Lib.CurrentVersion
 /-!
 # Spec theorem for `spqr::state_version`
 
@@ -12,6 +14,8 @@ Maps `PqRatchetState.inner` to a protocol version (`None` → `V0`, `Some _` →
 Always succeeds; result equals `innerVersion`.
 
 **Source**: spqr/src/lib.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

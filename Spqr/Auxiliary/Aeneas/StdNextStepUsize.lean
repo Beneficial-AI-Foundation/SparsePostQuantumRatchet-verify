@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `core.iter.range.IteratorRange.next core.iter.range.StepUsize`**:
 
@@ -15,6 +17,8 @@ level: on a `range : Range Usize`, `next` returns `(opt, range')` where:
 * if `range.start.val < range.end.val` (the range still has an element), then `opt = some
   range.start`, `range'.start.val = range.start.val + 1`, and `range'.end = range.end` (the upper
   bound is preserved). -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result core.ops.range core.iter.range
 

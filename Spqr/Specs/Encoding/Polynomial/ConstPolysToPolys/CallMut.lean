@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 
 /-! # Spec theorem for `spqr::encoding::polynomial::const_polys_to_polys::{FnMut}::call_mut`
 
@@ -13,6 +15,8 @@ and a `PolyConst N`, delegates to `PolyConst.to_poly`, and returns the resulting
 with the unchanged state. Postconditions (coefficient preservation, polynomial identity in
 `GF216[X]`, closure unchanged) are inherited directly from `to_poly_spec`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

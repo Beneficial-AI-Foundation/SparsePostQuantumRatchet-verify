@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Aeneas.GF16New
-import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
-import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
+module
+
+public import Spqr.Specs.Aeneas.GF16New
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
+public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 
 /-! # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 
@@ -22,6 +24,8 @@ This enables compositional reasoning over sequences of `add_chunk` calls.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 879:4–904:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 

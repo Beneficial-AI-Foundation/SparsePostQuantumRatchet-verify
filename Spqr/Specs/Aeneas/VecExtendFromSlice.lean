@@ -3,13 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorems for `alloc::vec::Vec::extend_from_slice`
 
 Specs for `extend_from_slice` when `Clone` is the identity (e.g. `U8`, `GF16`),
 showing the result is `v ++ s`. Used in serialization proofs in `Spqr.Specs.Encoding.Polynomial`.-/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

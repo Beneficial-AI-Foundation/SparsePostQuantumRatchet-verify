@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Gf2Poly.Basic
-import Mathlib.Algebra.Polynomial.Div
+module
+
+public import Spqr.Math.Gf2Poly.Basic
+public import Mathlib.Algebra.Polynomial.Div
 
 /-!
 # Generic monic-polynomial utilities
@@ -12,6 +14,8 @@ import Mathlib.Algebra.Polynomial.Div
 A generic lemma `ringHom_modByMonic` that says any ring homomorphism vanishing on a monic polynomial
 `P` commutes with reduction modulo `P`.
 -/
+
+@[expose] public section
 
 open Polynomial
 

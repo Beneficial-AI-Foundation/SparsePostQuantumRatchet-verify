@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
-import Spqr.Crypto.Hkdf
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Crypto.Hkdf
 
 /-!
 # Spec axiom for `spqr::kdf::hkdf_to_slice`
@@ -13,6 +15,8 @@ import Spqr.Crypto.Hkdf
 
 Source: "spqr/src/kdf.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.kdf

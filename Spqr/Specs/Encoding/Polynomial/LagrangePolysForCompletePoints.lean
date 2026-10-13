@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Gf.GF16.New
-import Spqr.Math.Poly.Basic.Defs
-import Spqr.Math.Poly.Lagrange.CompletePoints
-import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Gf.GF16.New
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+public import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
 /-! # Spec theorem for `lagrange_polys_for_complete_points`: loop body 0
 
 Specifies one iteration of the initialisation loop in `lagrange_polys_for_complete_points`.
@@ -21,6 +23,8 @@ The loop sets `ones[i].x.value = i as u16` and keeps
 After all `N` iterations, `ones[j].x.toGF216 = Nat.toGF216 j` and `ones[j].y = GF16::ONE`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop

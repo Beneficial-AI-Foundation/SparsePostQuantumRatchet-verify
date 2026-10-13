@@ -3,12 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Mathlib.Algebra.Field.ZMod
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
-import Mathlib.Data.Nat.BitIndices
-import Mathlib.RingTheory.Polynomial.Basic
+module
+
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Data.Nat.BitIndices
+public import Mathlib.RingTheory.Polynomial.Basic
+
 
 /-!
 # The binary polynomial ring `(ZMod 2)[X]`
@@ -48,6 +51,8 @@ projects working with the same Galois field.
 * Shift-left (`<<< n`) corresponds to multiplication by `X ^ n`.
 * `Nat.testBit n` corresponds to checking whether the `n`-th coefficient is non-zero.
 -/
+
+@[expose] public section
 
 open Polynomial
 

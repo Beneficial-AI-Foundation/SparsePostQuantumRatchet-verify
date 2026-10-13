@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Util.IsNonZero
-import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Util.IsNonZero
+public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 
 /-!
 # Spec theorem for `spqr::util::compare`
@@ -15,6 +17,8 @@ Constant-time byte-by-byte equality test for two equal-length byte slices. The f
 
 **Source:** "spqr/src/util.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 namespace spqr.util

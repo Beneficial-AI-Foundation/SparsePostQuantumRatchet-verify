@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Authenticator.Update
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Authenticator.Update
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::new`
@@ -13,6 +15,8 @@ import Spqr.Specs.Authenticator.Authenticator.Update
 
 Source: "spqr/src/authenticator.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_varint`
 
@@ -18,6 +20,8 @@ terminator (high bit clear) and all earlier bytes are continuation bytes (high b
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 151-182)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result ControlFlow Error
 

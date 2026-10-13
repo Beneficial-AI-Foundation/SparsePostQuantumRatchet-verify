@@ -3,15 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Poly.ModByMonic
-import Spqr.Math.Poly.Identities.Basic
-import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
-import Spqr.Specs.Aeneas.SliceIteratorNext
-import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
-import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Specs.Aeneas.VecExtendFromSlice
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Poly.ModByMonic
+public import Spqr.Math.Poly.Identities.Basic
+public import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
+public import Spqr.Specs.Aeneas.SliceIteratorNext
+public import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Specs.Aeneas.VecExtendFromSlice
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 
 /-! # Spec theorem for `PolyEncoder::into_pb`: loop body 1
 
@@ -20,6 +22,8 @@ and either returns `v` unchanged (done) or appends the 2-byte big-endian encodin
 `v` (continue). Invariant: `v.len() == 2 * i` with `v[2*k]*256 + v[2*k+1] = pts[k].value.val`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 

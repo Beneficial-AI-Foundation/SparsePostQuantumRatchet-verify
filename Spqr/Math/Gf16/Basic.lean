@@ -3,11 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Mathlib.Algebra.Polynomial.Div
-import Mathlib.Data.Nat.Bitwise
-import Mathlib.Tactic.ComputeDegree
-import Mathlib.Tactic.IntervalCases
-import Spqr.Math.Gf2Poly.Basic
+module
+
+public import Mathlib.Algebra.Polynomial.Div
+public import Mathlib.Data.Nat.Bitwise
+public import Mathlib.Tactic.ComputeDegree
+public import Mathlib.Tactic.IntervalCases
+public import Spqr.Math.Gf2Poly.Basic
+
 
 /-!
 # The SPQR irreducible polynomial polyGF2
@@ -15,6 +18,8 @@ import Spqr.Math.Gf2Poly.Basic
 Definition of `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` in `(ZMod 2)[X]`, its basic properties
 (monic, degree 16, ≠ 1), and the bridge lemma `natToBinaryPoly 0x1100b = polyGF2`.
 -/
+
+@[expose] public section
 
 open Polynomial
 

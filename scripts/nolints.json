@@ -59,4 +59,6 @@
  ["defsWithUnderscore",
   "spqr.v1.unchunked.send_ek.serialize.EkSentCt1Received.FunctionalModels.fromPb"],
  ["defsWithUnderscore",
-  "spqr.v1.unchunked.send_ek.serialize.EkSentCt1Received.FunctionalModels.WellFormed"]]
+  "spqr.v1.unchunked.send_ek.serialize.EkSentCt1Received.FunctionalModels.WellFormed"],
+ ["defsWithUnderscore",
+  "spqr.encoding.polynomial.Poly.from_complete_points_loop.bodyPost"]]

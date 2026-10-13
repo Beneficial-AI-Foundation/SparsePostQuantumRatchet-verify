@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
 
 /-!
 # Lagrange denominator product
@@ -20,6 +22,8 @@ import Spqr.Math.Poly.Basic.Defs
 * `lagrangeDenomProd_eq_one_of_le` — out-of-range index gives `1`.
 * `lagrangeDenomProd_skip`, `lagrangeDenomProd_accum` — one-step unfoldings.
 -/
+
+@[expose] public section
 
 namespace spqr.encoding.polynomial
 

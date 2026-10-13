@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
 
 /-!
 # Spec theorem for `spqr::encoding::gf::reduce::REDUCE_BYTES`
@@ -28,6 +30,8 @@ The constant is unconditional and pure — its evaluation never fails and never 
 
 **Source**: spqr/src/encoding/gf.rs (lines 435:4-435:52)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std  Polynomial  spqr.math.gf
 

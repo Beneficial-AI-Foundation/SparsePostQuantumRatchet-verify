@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 /-!
 # Spec theorem for `spqr::chain::DEFAULT_CHAIN_PARAMS`
 
@@ -11,6 +13,8 @@ Default `ChainParams` constant: `max_jump = 25 000` (max tolerated epoch jump)
 and `max_ooo_keys = 2 000` (max retained out-of-order message keys).
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 

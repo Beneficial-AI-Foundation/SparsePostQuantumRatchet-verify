@@ -3,12 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 /-! # Spec theorem for `spqr::{impl TryFrom<u8, String> for Version}::try_from`
 
 Converts `u8` to `Version`: `0 → V0`, `1 → V1`, else `Err("Expected 0 or 1")`.
 
 **Source**: spqr/src/lib.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
