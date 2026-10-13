@@ -377,5 +377,3 @@ theorem invNtt_zero :
   exact h
 
 end Fips203
-
-end

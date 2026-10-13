@@ -96,11 +96,18 @@ Spqr/Crypto/Fips203/
 │   ├── NTT.lean               -- Alg 7
 │   ├── InvNTT.lean            -- Alg 8
 │   ├── MultiplyNTTs.lean      -- Alg 9
-│   └── BaseCaseMultiply.lean  -- Alg 10
+│   ├── BaseCaseMultiply.lean  -- Alg 10
+│   ├── Spec.lean              -- algebraic spec: CRT projection R_q ≅ ∏ ℤ_q[X]/(X²−γᵢ)
+│   ├── Packed.lean            -- base-4096 packed-ℕ clones of Alg 7 / Alg 8 layers
+│   ├── Kernel{0,1,2,3}.lean   -- `decide +kernel` shards: nttP δⱼ = formulaP j  (64 j each)
+│   ├── InvKernel{0,1,2,3}.lean-- `decide +kernel` shards: invNttP (formulaP j) = 128·δⱼ
+│   ├── KernelCheck.lean       -- glues shards into the two 256-vector statements
+│   └── RoundTrip.lean         -- simulation proofs + round trip + homomorphism
 ├── PKE/
 │   ├── KeyGen.lean            -- Alg 13
 │   ├── Encrypt.lean           -- Alg 14
-│   └── Decrypt.lean           -- Alg 15
+│   ├── Decrypt.lean           -- Alg 15
+│   └── RoundTrip.lean         -- decrypt ∘ encrypt = id under the noise bound
 ├── KEM/
 │   ├── KeyGen.lean            -- Alg 16
 │   ├── Encaps.lean            -- Alg 17
@@ -159,7 +166,43 @@ as opaque oracles following `Spqr/Crypto/Hkdf.lean` patterns.
 | 3.3 | `InvNTT.lean` | Gentleman-Sande inverse butterfly. |
 | 3.4 | `BaseCaseMultiply.lean` | Degree-1 poly mult mod (X²−γ). |
 | 3.5 | `MultiplyNTTs.lean` | 128 calls to `baseCaseMultiply`. |
-| 3.6 | — | Prove `invNTT ∘ ntt = id`, `ntt(f*g) = multiplyNTTs(ntt f)(ntt g)`. |
+| 3.6 | `Spec.lean`, `Packed.lean`, `Kernel*.lean`, `KernelCheck.lean`, `RoundTrip.lean` | Prove `invNTT ∘ ntt = id`, `ntt ∘ invNTT = id`, `ntt(f*g) = multiplyNTTs(ntt f)(ntt g)`. **Done — no axioms, no `sorry`.** |
+
+#### 3.6 — Verified-computation strategy for NTT correctness
+
+The butterfly network of Alg 7/8 is hard to reason about symbolically, so the
+correctness proof reduces everything to the **256 standard basis vectors `δⱼ`**
+(linearity of `ntt`/`invNtt`/`nttSpec` is proved structurally) and settles the
+basis cases by *kernel computation*:
+
+1. **Packed encoding** (`Packed.lean`).  A coefficient vector is a single `ℕ`
+   whose base-4096 digits are canonical `ℤ_q` representatives.  `nttP` and
+   `invNttP` are literal clones of the Alg 7 / Alg 8 loops on that `ℕ`
+   (`getP`/`setP` digit access, `17 ^ brN k % 3329` twiddles).  The Lean kernel
+   evaluates them through GMP, so one full 7-layer NTT costs ≈ 0.2 s.
+2. **Simulation** (`RoundTrip.lean`: `simR_outerP`, `simR_iouterP`).  A
+   relation `simR l f` ("digit `i` of `l` is `< 3329` and casts to `f i`") is
+   shown to be preserved butterfly-by-butterfly, so the packed clone computes
+   exactly `ntt`/`invNtt`'s butterfly layers.
+3. **Closed form** (`nttSpec_delta`, `simR_formulaP`).  `nttSpec δⱼ` at index
+   `idx` is `γ_{idx/2}^{j/2}` on matching parity, else `0`; `formulaP j` packs it.
+4. **Kernel checks**, sharded so **every file compiles in < 30 s** and `lake`
+   runs them in parallel:
+   * `Kernel0–3.lean`: `∀ j < 64, nttP (δ_{j+64s}) = formulaP (j+64s)`   (~15 s each)
+   * `InvKernel0–3.lean`: `∀ j < 64, invNttP (formulaP (j+64s)) = 128 · δ_{j+64s}` (~13 s each)
+   * `KernelCheck.lean`: case-splits `j < 256` into the four shards.
+5. **Bridge**.  `ntt_delta_eq_nttSpec_delta` and `invNtt_ntt_delta` transport
+   the kernel facts across the simulation; the `128⁻¹` scaling of Alg 8 is
+   discharged by `nInv_mul_n : 3303 · 128 = 1`.  `ntt_eq_nttSpec`,
+   `invNtt_ntt`, `ntt_invNtt`, `ntt_polyMul`, … follow by linearity.
+
+`#print axioms` on `invNtt_comp_ntt`, `ntt_comp_invNtt`, `ntt_bijective` and
+`ntt_pipeline_eq_polyMul` reports only `propext`, `Classical.choice`,
+`Quot.sound`.  Compile times: `RoundTrip.lean` ≈ 3 s, each kernel shard ≤ 16 s
+(previously one monolithic `decide +kernel` of ≈ 60 s plus an axiom for Alg 8).
+
+**Rule for this directory:** keep each file under 30 s.  If a kernel check
+grows, split it into more shards rather than raising `maxHeartbeats`.
 
 ### Phase 4 — Internal PKE (Alg 13–15)
 
@@ -168,7 +211,43 @@ as opaque oracles following `Spqr/Crypto/Hkdf.lean` patterns.
 | 4.1 | `PKE/KeyGen.lean` | Expand seed via G, generate Â via `sampleNTT`, secret via `samplePolyCBD`, compute `t̂ = Â◦ŝ + ê`. |
 | 4.2 | `PKE/Encrypt.lean` | Re-derive Â, sample r/e₁/e₂, compute `u`, `v`. |
 | 4.3 | `PKE/Decrypt.lean` | Decompress, recover message, compress to bits. |
-| 4.4 | — | Correctness: `decrypt(dk, encrypt(ek, m, r)) = m` under noise bound. |
+| 4.4 | `PKE/RoundTrip.lean` | Correctness: `decrypt(dk, encrypt(ek, m, r)) = m` under noise bound. **Done — no axioms, no `sorry`.** |
+
+#### 4.4 — Round-trip proof structure
+
+`kpke_roundTrip p d m r h_noise` states, for `(ek, dk) = kpkeKeyGen d p`,
+`kpkeDecrypt p dk (kpkeEncrypt p ek m r).ct = m` under the **single**
+hypothesis `∀ idx, |honestW d m r p idx − Decompress₁(m) idx| < ⌊q/4⌋ = 832`,
+where `honestW` is the explicitly named polynomial `v' − NTT⁻¹(ŝᵀ∘NTT(u'))`
+that decryption computes on an honest ciphertext.  The earlier formulation,
+which took the key round-trips as extra hypotheses and inlined a 15-line
+`let`-block in the statement, timed out at elaboration; everything is now a
+chain of small rewriting lemmas:
+
+1. **Key round-trips** (theorems, not hypotheses):
+   `decodeDkSHat_encodeDk`, `decodeEkTHat_encodeEk`, `decodeEkRho_encodeEk`
+   from `byteDecodeZq_byteEncodeZq_12` plus `384·i + j` index arithmetic;
+   specialised to `kpkeKeyGen` as `decode*_kpkeKeyGen`.
+2. **Ciphertext round-trips**: `decodeCiphertextU/V_encodeCiphertext` from
+   `byteDecode_byteEncode` and `compress_lt_two_pow`.
+3. **Named honest values** `honestU`, `honestV`, `honestW`;
+   `kpkeEncrypt_kpkeKeyGen_ct` and `kpkeDecrypt_kpkeKeyGen` rewrite the two
+   algorithms to `encodeCiphertext honestU honestV` and `recoverMsg honestW`.
+4. **Algebra**: `decrypt_encrypt_noise_identity` (signal cancellation via
+   `ntt_invNtt`, `ntt_polyMul`, `multiplyNTTs` associativity from Phase 3)
+   shows `w = Decompress₁(m) + e₂ + ⟨ê, ŷ⟩ − ⟨ŝ, NTT e₁⟩` without compression.
+5. **Bit recovery**: `compress1_decompress1_stable` + `msgBit_lt_two` +
+   `byteEncode1_msgBit` finish `recoverMsg honestW = m`.
+
+Variants: `kpke_roundTrip_of_consistent` (any `kp = kpkeKeyGen d p`) and
+`kpke_roundTrip_768`.  `#print axioms` on all of them: only `propext`,
+`Classical.choice`, `Quot.sound`.  The hash oracles `hashG`, `prf`, `xof` are
+`opaque` constants (not axioms) and the theorems hold for any instantiation.
+Compile time of `PKE/RoundTrip.lean`: ≈ 3 s; the whole `PKE/` directory ≈ 8 s.
+
+Remaining (future work, not needed for the SPQR bridge): discharging `h_noise`
+probabilistically for ML-KEM-768 (`η₁ = η₂ = 2`, `d_u = 10`, `d_v = 4`) — a
+tail bound on the centred-binomial noise, FIPS 203 § 3.3 / Table 2.
 
 ### Phase 5 — Full KEM (Alg 16–18)
 

@@ -30,13 +30,19 @@ randomness `r`, the ciphertext carries:
 
 Decryption computes `w = v' − NTT⁻¹(ŝᵀ ◦ NTT(u'))` which simplifies to
 `Decompress₁(m) + noise`.  The message is recovered by `Compress₁(w)`, which
-succeeds when the total noise is small relative to `⌊q/2⌋ = 1664`.
+succeeds when every coefficient of the noise has centred absolute value
+`< ⌊q/4⌋ = 832`.
+
+The main theorem `kpke_roundTrip` is proved **without axioms or `sorry`** for
+every parameter set: the key and ciphertext encode/decode round-trips are
+theorems (`decode*_encode*`), the honest ciphertext and decryption polynomial
+are named (`honestU`, `honestV`, `honestW`), and the only hypothesis is the
+noise bound `noiseBoundedAt (honestW − Decompress₁ m)`.
 
 **Source**: NIST FIPS 203, §§ 5.1–5.3 (Algorithms 13–15)
 -/
 noncomputable section
 
-set_option maxHeartbeats 1600000
 
 namespace Fips203
 
@@ -447,147 +453,214 @@ lemma recoverMsg_of_compress_eq (w : Fin n → Zq) (m : Fin 32 → UInt8)
   have h_eq : compressPoly 1 w = msgBit m := funext h
   rw [h_eq]; exact byteEncode1_msgBit m
 
-/-! ## Encryption key ρ round-trip -/
+/-! ## Key encoding round-trips
 
-/-- The public seed `ρ` is recoverable from the encryption key. -/
-lemma decodeEkRho_kpkeKeyGen (d : Fin 32 → UInt8) (p : ParamSet) :
-    decodeEkRho (kpkeKeyGen d p).ek = rho d p := by
-  funext i; simp only [decodeEkRho, kpkeKeyGen, encodeEk]
+The `ByteEncode₁₂ / ByteDecode₁₂` pair is the identity on `ℤ_q` (since
+`q < 2¹²`), so every component of a generated key pair is recoverable. -/
+
+/-- Byte `384·i + j` of `encodeDk s_hat` is byte `j` of `encodePoly12 (s_hat i)`. -/
+private lemma encodeDk_byte {p : ParamSet} (s_hat : Fin p.k → (Fin n → Zq))
+    (i : Fin p.k) (j : Fin (32 * 12)) :
+    encodeDk s_hat ⟨384 * i.val + j.val, by
+      have hi := i.isLt; have hj := j.isLt; omega⟩ = encodePoly12 (s_hat i) j := by
+  have hj := j.isLt
+  simp only [encodeDk]
+  have h_div : (384 * i.val + j.val) / 384 = i.val := by omega
+  have h_mod : (384 * i.val + j.val) % 384 = j.val := by omega
+  have h1 : (⟨(384 * i.val + j.val) / 384, by omega⟩ : Fin p.k) = i := Fin.ext h_div
+  have h2 : (⟨(384 * i.val + j.val) % 384, by omega⟩ : Fin 384).cast encode12_size.symm
+      = j := Fin.ext h_mod
+  rw [h1, h2]
+
+/-- Byte `384·i + j` of `encodeEk t_hat ρ` is byte `j` of `encodePoly12 (t_hat i)`. -/
+private lemma encodeEk_byte {p : ParamSet} (t_hat : Fin p.k → (Fin n → Zq))
+    (ρ : Fin 32 → UInt8) (i : Fin p.k) (j : Fin (32 * 12)) :
+    encodeEk t_hat ρ ⟨384 * i.val + j.val, by
+      have hi := i.isLt; have hj := j.isLt; omega⟩ = encodePoly12 (t_hat i) j := by
+  have hj := j.isLt
   have hi := i.isLt
-  have : ¬ (384 * p.k + i.val < 384 * p.k) := by omega
-  simp only [this, dite_false]
+  have h_lt : 384 * i.val + j.val < 384 * p.k := by
+    calc 384 * i.val + j.val < 384 * i.val + 384 := by omega
+      _ = 384 * (i.val + 1) := by ring
+      _ ≤ 384 * p.k := Nat.mul_le_mul_left _ (by omega)
+  simp only [encodeEk, h_lt, dite_true]
+  have h_div : (384 * i.val + j.val) / 384 = i.val := by omega
+  have h_mod : (384 * i.val + j.val) % 384 = j.val := by omega
+  have h1 : (⟨(384 * i.val + j.val) / 384, by omega⟩ : Fin p.k) = i := Fin.ext h_div
+  have h2 : (⟨(384 * i.val + j.val) % 384, by omega⟩ : Fin 384).cast encode12_size.symm
+      = j := Fin.ext h_mod
+  rw [h1, h2]
+
+/-- **Decryption key round-trip**: `decodeDkSHat (encodeDk ŝ) = ŝ`. -/
+lemma decodeDkSHat_encodeDk {p : ParamSet} (s_hat : Fin p.k → (Fin n → Zq)) :
+    decodeDkSHat (encodeDk s_hat) = s_hat := by
+  funext i idx
+  simp only [decodeDkSHat, decodeDkPoly]
+  have h_bytes : (fun j : Fin (32 * 12) => encodeDk s_hat ⟨384 * i.val + j.val, by
+      have hi := i.isLt; have hj := j.isLt; omega⟩) = byteEncodeZq 12 (s_hat i) :=
+    funext fun j => encodeDk_byte s_hat i j
+  rw [h_bytes]
+  exact byteDecodeZq_byteEncodeZq_12 (s_hat i) idx
+
+/-- **Encryption key round-trip (t̂ part)**: `decodeEkTHat (encodeEk t̂ ρ) = t̂`. -/
+lemma decodeEkTHat_encodeEk {p : ParamSet} (t_hat : Fin p.k → (Fin n → Zq))
+    (ρ : Fin 32 → UInt8) :
+    decodeEkTHat (encodeEk t_hat ρ) = t_hat := by
+  funext i idx
+  simp only [decodeEkTHat, decodeEkPoly]
+  have h_bytes : (fun j : Fin (32 * 12) => encodeEk t_hat ρ ⟨384 * i.val + j.val, by
+      have hi := i.isLt; have hj := j.isLt; omega⟩) = byteEncodeZq 12 (t_hat i) :=
+    funext fun j => encodeEk_byte t_hat ρ i j
+  rw [h_bytes]
+  exact byteDecodeZq_byteEncodeZq_12 (t_hat i) idx
+
+/-- **Encryption key round-trip (ρ part)**: `decodeEkRho (encodeEk t̂ ρ) = ρ`. -/
+lemma decodeEkRho_encodeEk {p : ParamSet} (t_hat : Fin p.k → (Fin n → Zq))
+    (ρ : Fin 32 → UInt8) :
+    decodeEkRho (encodeEk t_hat ρ) = ρ := by
+  funext i
+  have hi := i.isLt
+  have h_not : ¬ (384 * p.k + i.val < 384 * p.k) := by omega
+  simp only [decodeEkRho, encodeEk, h_not, dite_false]
+  congr 1
+  exact Fin.ext (by simp)
+
+/-- The NTT-domain secret `ŝ` is recoverable from the generated decryption key. -/
+lemma decodeDkSHat_kpkeKeyGen (d : Fin 32 → UInt8) (p : ParamSet) :
+    decodeDkSHat (kpkeKeyGen d p).dk = nttVec (genSecret (sigma d p) p) :=
+  decodeDkSHat_encodeDk _
+
+/-- The NTT-domain public value `t̂ = Â∘ŝ + ê` is recoverable from the
+generated encryption key. -/
+lemma decodeEkTHat_kpkeKeyGen (d : Fin 32 → UInt8) (p : ParamSet) :
+    decodeEkTHat (kpkeKeyGen d p).ek =
+      computeTHat (genMatrixA (rho d p) p)
+        (nttVec (genSecret (sigma d p) p)) (nttVec (genError (sigma d p) p)) :=
+  decodeEkTHat_encodeEk _ _
+
+/-- The public seed `ρ` is recoverable from the generated encryption key. -/
+lemma decodeEkRho_kpkeKeyGen (d : Fin 32 → UInt8) (p : ParamSet) :
+    decodeEkRho (kpkeKeyGen d p).ek = rho d p :=
+  decodeEkRho_encodeEk _ _
+
+/-! ## The decryption polynomial `w` as an explicit function of the seeds
+
+To keep elaboration cheap, the honest ciphertext and the polynomial `w`
+recovered by `kpkeDecrypt` are named once, and every unfolding step is a
+separate rewriting lemma. -/
+
+/-- The ciphertext polynomial `u` (before compression) for seeds `(d, r)`. -/
+def honestU (d r : Fin 32 → UInt8) (p : ParamSet) : Fin p.k → (Fin n → Zq) :=
+  computeU (genMatrixAT (rho d p) p) (nttVec (genEncSecret r p)) (genEncError1 r p)
+
+/-- The ciphertext polynomial `v` (before compression) for seeds `(d, m, r)`. -/
+def honestV (d m r : Fin 32 → UInt8) (p : ParamSet) : Fin n → Zq :=
+  computeV
+    (computeTHat (genMatrixA (rho d p) p)
+      (nttVec (genSecret (sigma d p) p)) (nttVec (genError (sigma d p) p)))
+    (nttVec (genEncSecret r p)) (genEncError2 r p) (decompressMsg m)
+
+/-- The polynomial `w = v' − NTT⁻¹(ŝᵀ ∘ NTT(u'))` computed by `kpkeDecrypt` on an
+honestly generated ciphertext, with `u', v'` the compress/decompress images. -/
+def honestW (d m r : Fin 32 → UInt8) (p : ParamSet) : Fin n → Zq :=
+  computeW
+    (decompressPoly p.d_v (compressPoly p.d_v (honestV d m r p)))
+    (nttVec (genSecret (sigma d p) p))
+    (fun i => decompressPoly p.d_u (compressPoly p.d_u (honestU d r p i)))
+
+/-- `kpkeEncrypt` on a generated key produces `encodeCiphertext honestU honestV`. -/
+lemma kpkeEncrypt_kpkeKeyGen_ct (d m r : Fin 32 → UInt8) (p : ParamSet) :
+    (kpkeEncrypt p (kpkeKeyGen d p).ek m r).ct =
+      encodeCiphertext (honestU d r p) (honestV d m r p) := by
+  simp only [kpkeEncrypt, honestU, honestV]
+  rw [decodeEkTHat_kpkeKeyGen, decodeEkRho_kpkeKeyGen]
+
+/-- `kpkeDecrypt` on a generated key and an honest ciphertext is
+`recoverMsg honestW`. -/
+lemma kpkeDecrypt_kpkeKeyGen (d m r : Fin 32 → UInt8) (p : ParamSet) :
+    kpkeDecrypt p (kpkeKeyGen d p).dk (kpkeEncrypt p (kpkeKeyGen d p).ek m r).ct =
+      recoverMsg (honestW d m r p) := by
+  rw [kpkeEncrypt_kpkeKeyGen_ct]
+  have hv : decodeCiphertextV (encodeCiphertext (honestU d r p) (honestV d m r p)) =
+      decompressPoly p.d_v (compressPoly p.d_v (honestV d m r p)) :=
+    funext (decodeCiphertextV_encodeCiphertext _ _)
+  have hu : (fun i => decodeCiphertextU
+      (encodeCiphertext (honestU d r p) (honestV d m r p)) i) =
+      fun i => decompressPoly p.d_u (compressPoly p.d_u (honestU d r p i)) :=
+    funext fun i => funext (decodeCiphertextU_encodeCiphertext _ _ i)
+  change recoverMsg (computeW
+      (decodeCiphertextV (encodeCiphertext (honestU d r p) (honestV d m r p)))
+      (decodeDkSHat (kpkeKeyGen d p).dk)
+      (fun i => decodeCiphertextU
+        (encodeCiphertext (honestU d r p) (honestV d m r p)) i)) = _
+  rw [hv, hu, decodeDkSHat_kpkeKeyGen]
+  rfl
+
+/-- Each message bit is `0` or `1`. -/
+lemma msgBit_lt_two (m : Fin 32 → UInt8) (i : Fin n) : msgBit m i < 2 := by
+  unfold msgBit
+  have := Nat.and_le_right (n := (m ⟨i.val / 8, by
+    have := i.isLt; unfold n at *; omega⟩).toNat >>> (i.val % 8)) (m := 1)
+  omega
 
 /-! ## Main round-trip theorem -/
 
 /-- **K-PKE round-trip correctness** (FIPS 203, §§ 5.1–5.3):
 
-  `kpkeDecrypt(dk, kpkeEncrypt(ek, m, r).ct) = m`
+  `kpkeDecrypt(dk, kpkeEncrypt(ek, m, r).ct) = m`   for `(ek, dk) = kpkeKeyGen d`
 
-under the hypothesis that the total noise (algebraic + compression) is bounded
-at every coefficient.
+under the single hypothesis that the total noise (algebraic + compression) is
+bounded by `⌊q/4⌋` at every coefficient, i.e. `|honestW − Decompress₁(m)| < 832`.
 
-The proof proceeds by:
-1. Unfolding `kpkeDecrypt` and `kpkeEncrypt` to expose `computeW`.
-2. Applying `decrypt_encrypt_noise_identity` to rewrite `w` as
-   `Decompress₁(m) + noise`.
-3. Showing that `recoverMsg w = m` by applying `compress1_decompress1_stable`
-   at each coefficient.
+The key round-trips (`decodeDkSHat_kpkeKeyGen`, `decodeEkTHat_kpkeKeyGen`,
+`decodeEkRho_kpkeKeyGen`) and the ciphertext round-trips are theorems, not
+hypotheses.  The proof:
+1. `kpkeDecrypt_kpkeKeyGen` rewrites the left-hand side to `recoverMsg honestW`;
+2. `recoverMsg_of_compress_eq` reduces to `compress 1 (w idx) = msgBit m idx`;
+3. writing `w idx = decompress 1 (msgBit m idx) + noise`,
+   `compress1_decompress1_stable` closes the goal.
 
 **Source**: NIST FIPS 203, §§ 5.1–5.3 -/
-theorem kpke_roundTrip (p : ParamSet)
-    (d : Fin 32 → UInt8) (m r : Fin 32 → UInt8)
-    (kp : KpkeKeyPair p)
-    (h_kp : kp = kpkeKeyGen d p)
-    -- Encoding round-trip hypotheses
-    (h_dk_rt : ∀ i idx,
-      decodeDkSHat kp.dk i idx =
-        nttVec (genSecret (sigma d p) p) i idx)
-    (h_ek_rt : ∀ i idx,
-      decodeEkTHat kp.ek i idx =
-        computeTHat (genMatrixA (rho d p) p)
-          (nttVec (genSecret (sigma d p) p))
-          (nttVec (genError (sigma d p) p)) i idx)
-    -- Message bit bound
-    (h_msg : ∀ i : Fin n, msgBit m i < 2)
-    -- Noise bound
+theorem kpke_roundTrip (p : ParamSet) (d m r : Fin 32 → UInt8)
     (h_noise : ∀ idx : Fin n,
-      absZq (
-        let s_hat := nttVec (genSecret (sigma d p) p)
-        let e_hat := nttVec (genError (sigma d p) p)
-        let y     := genEncSecret r p
-        let e1    := genEncError1 r p
-        let e2    := genEncError2 r p
-        let y_hat := nttVec y
-        let aHat  := genMatrixA (rho d p) p
-        let t_hat := computeTHat aHat s_hat e_hat
-        let u     := computeU (genMatrixAT (rho d p) p) y_hat e1
-        let v     := computeV t_hat y_hat e2 (decompressMsg m)
-        -- algebraic noise + compression noise
-        (computeW
-          (decompressPoly p.d_v (compressPoly p.d_v v))
-          s_hat
-          (fun i => decompressPoly p.d_u (compressPoly p.d_u (u i)))
-          idx -
-         decompressMsg m idx)) < q / 4) :
-    kpkeDecrypt p kp.dk (kpkeEncrypt p kp.ek m r).ct = m := by
-  -- Step 1: Rewrite key/seed round-trips before unfolding
-  have h_s_hat : decodeDkSHat kp.dk = nttVec (genSecret (sigma d p) p) :=
-    funext fun i => funext fun idx => h_dk_rt i idx
-  have h_t_hat : decodeEkTHat kp.ek = computeTHat (genMatrixA (rho d p) p)
-      (nttVec (genSecret (sigma d p) p))
-      (nttVec (genError (sigma d p) p)) :=
-    funext fun i => funext fun idx => h_ek_rt i idx
-  have h_rho : decodeEkRho kp.ek = rho d p := by
-    subst h_kp; exact decodeEkRho_kpkeKeyGen d p
-  -- Step 2: Unfold decrypt to expose recoverMsg ∘ computeW
-  unfold kpkeDecrypt
-  -- Goal: recoverMsg (computeW (decodeCiphertextV ct) (decodeDkSHat dk) (decodeCiphertextU ct)) = m
-  -- where ct = (kpkeEncrypt p kp.ek m r).ct
+      absZq (honestW d m r p idx - decompressMsg m idx) < q / 4) :
+    kpkeDecrypt p (kpkeKeyGen d p).dk (kpkeEncrypt p (kpkeKeyGen d p).ek m r).ct = m := by
+  rw [kpkeDecrypt_kpkeKeyGen]
   apply recoverMsg_of_compress_eq
   intro idx
-  -- Step 3: Unfold encrypt to expose encodeCiphertext, then apply round-trips
-  simp only [kpkeEncrypt, h_t_hat, h_rho,
-    decodeCiphertextU_encodeCiphertext, h_s_hat]
-  -- Step 4: Rewrite v round-trip (function-level)
-  have h_v_fn : decodeCiphertextV
-      (encodeCiphertext
-        (computeU (genMatrixAT (rho d p) p) (nttVec (genEncSecret r p)) (genEncError1 r p))
-        (computeV (computeTHat (genMatrixA (rho d p) p)
-          (nttVec (genSecret (sigma d p) p)) (nttVec (genError (sigma d p) p)))
-          (nttVec (genEncSecret r p)) (genEncError2 r p) (decompressMsg m))) =
-      decompressPoly p.d_v (compressPoly p.d_v
-        (computeV (computeTHat (genMatrixA (rho d p) p)
-          (nttVec (genSecret (sigma d p) p)) (nttVec (genError (sigma d p) p)))
-          (nttVec (genEncSecret r p)) (genEncError2 r p) (decompressMsg m))) :=
-    funext (decodeCiphertextV_encodeCiphertext _ _)
-  rw [h_v_fn]
-  -- Goal: compress 1 (computeW v' s_hat u' idx) = msgBit m idx
-  -- Rewrite w as decompress 1 (msgBit m idx) + noise
-  set w := computeW _ _ _ idx
-  have hw : w = decompress 1 (msgBit m idx) + (w - decompressMsg m idx) := by
+  have hw : honestW d m r p idx =
+      decompress 1 (msgBit m idx) + (honestW d m r p idx - decompressMsg m idx) := by
     simp [decompressMsg]
   rw [hw]
-  exact compress1_decompress1_stable (msgBit m idx) _ (h_msg idx) (h_noise idx)
+  exact compress1_decompress1_stable (msgBit m idx) _ (msgBit_lt_two m idx) (h_noise idx)
+
+/-- **K-PKE round-trip for an arbitrary consistent key pair**: the same
+statement for any `kp` with `kp = kpkeKeyGen d p`. -/
+theorem kpke_roundTrip_of_consistent (p : ParamSet) (d m r : Fin 32 → UInt8)
+    (kp : KpkeKeyPair p) (h_kp : kp = kpkeKeyGen d p)
+    (h_noise : ∀ idx : Fin n,
+      absZq (honestW d m r p idx - decompressMsg m idx) < q / 4) :
+    kpkeDecrypt p kp.dk (kpkeEncrypt p kp.ek m r).ct = m := by
+  subst h_kp; exact kpke_roundTrip p d m r h_noise
+
+/-- **K-PKE round-trip, `ConsistentKeyPair` / `noiseBoundedAt` form.** -/
+theorem kpke_roundTrip' {p : ParamSet} (ckp : ConsistentKeyPair p)
+    (m r : Fin 32 → UInt8)
+    (h_noise : noiseBoundedAt
+      (fun idx => honestW ckp.d m r p idx - decompressMsg m idx)) :
+    kpkeDecrypt p ckp.kp.dk (kpkeEncrypt p ckp.kp.ek m r).ct = m :=
+  kpke_roundTrip_of_consistent p ckp.d m r ckp.kp ckp.hkp h_noise
 
 /-! ## Corollary: ML-KEM-768 instantiation -/
 
 /-- **ML-KEM-768 round-trip correctness**: specialisation of `kpke_roundTrip`
 to the ML-KEM-768 parameter set used by SPQR. -/
-theorem kpke_roundTrip_768
-    (d : Fin 32 → UInt8) (m r : Fin 32 → UInt8)
-    (kp : KpkeKeyPair mlkem768)
-    (h_kp : kp = kpkeKeyGen d mlkem768)
-    (h_dk_rt : ∀ i idx,
-      decodeDkSHat kp.dk i idx =
-        nttVec (genSecret (sigma d mlkem768) mlkem768) i idx)
-    (h_ek_rt : ∀ i idx,
-      decodeEkTHat kp.ek i idx =
-        computeTHat (genMatrixA (rho d mlkem768) mlkem768)
-          (nttVec (genSecret (sigma d mlkem768) mlkem768))
-          (nttVec (genError (sigma d mlkem768) mlkem768)) i idx)
-    (h_msg : ∀ i : Fin n, msgBit m i < 2)
+theorem kpke_roundTrip_768 (d m r : Fin 32 → UInt8)
     (h_noise : ∀ idx : Fin n,
-      absZq (
-        let s_hat := nttVec (genSecret (sigma d mlkem768) mlkem768)
-        let e_hat := nttVec (genError (sigma d mlkem768) mlkem768)
-        let y     := genEncSecret r mlkem768
-        let e1    := genEncError1 r mlkem768
-        let e2    := genEncError2 r mlkem768
-        let y_hat := nttVec y
-        let aHat  := genMatrixA (rho d mlkem768) mlkem768
-        let t_hat := computeTHat aHat s_hat e_hat
-        let u     := computeU (genMatrixAT (rho d mlkem768) mlkem768) y_hat e1
-        let v     := computeV t_hat y_hat e2 (decompressMsg m)
-        (computeW
-          (decompressPoly mlkem768.d_v (compressPoly mlkem768.d_v v))
-          s_hat
-          (fun i => decompressPoly mlkem768.d_u
-            (compressPoly mlkem768.d_u (u i)))
-          idx -
-         decompressMsg m idx)) < q / 4) :
-    kpkeDecrypt mlkem768 kp.dk
-      (kpkeEncrypt mlkem768 kp.ek m r).ct = m :=
-  kpke_roundTrip mlkem768 d m r kp h_kp h_dk_rt h_ek_rt h_msg h_noise
+      absZq (honestW d m r mlkem768 idx - decompressMsg m idx) < q / 4) :
+    kpkeDecrypt mlkem768 (kpkeKeyGen d mlkem768).dk
+      (kpkeEncrypt mlkem768 (kpkeKeyGen d mlkem768).ek m r).ct = m :=
+  kpke_roundTrip mlkem768 d m r h_noise
 
 /-! ## Noise bound constants for ML-KEM-768 -/
 

@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
 import Spqr.Crypto.Fips203.NTT.InvNTT
 import Spqr.Crypto.Fips203.NTT.Spec
+import Spqr.Crypto.Fips203.NTT.KernelCheck
 /-!
 # FIPS 203 NTT Round-Trip and Multiplicative Homomorphism
 
@@ -17,12 +18,14 @@ and inverse NTT (Algorithm 8) as mutually inverse maps on `ℤ_q^{256}`.  Togeth
 2. **Multiplicative homomorphism**: For polynomials `f, g ∈ R_q`,
    `NTT(f · g) = MultiplyNTTs(NTT(f), NTT(g))`.
 
-The round-trip property is axiomatised only on the 256 standard basis vectors
-(`invNtt_ntt_delta`, a finite set of concrete `ℤ_q` computations justified by
-FIPS 203 correctness) and extended to all of `ℤ_q^{256}` by linearity of both
-transforms; the reverse direction follows by finiteness and injectivity.
-The multiplicative homomorphism encapsulates the CRT
-isomorphism `R_q ≅ ∏ᵢ ℤ_q[X]/(X² − γᵢ)`.
+Both identities are proved **without axioms or `sorry`**.  They are reduced to
+the 256 standard basis vectors `δⱼ` by linearity of the transforms, and the
+basis cases are settled by *verified computation*: packed-natural clones of the
+Algorithm 7/8 butterfly loops (`Packed.lean`) are evaluated by the Lean kernel
+(`Kernel*.lean`, `InvKernel*.lean`, glued in `KernelCheck.lean`) and the results
+are transported back to `ntt`/`invNtt` through the simulation relation `simR`
+proved in this file.  The multiplicative homomorphism then encapsulates the CRT
+isomorphism `R_q ≅ ∏ᵢ ℤ_q[X]/(X² − γᵢ)` of `Spec.lean`.
 
 **Source**: NIST FIPS 203, § 4.3 (Algorithms 7–10)
 -/
@@ -69,45 +72,6 @@ lemma invNtt_sum (s : Finset (Fin n)) (g : Fin n → Fin n → Zq) :
     rw [h1, invNtt_add, ih]
     funext i
     simp [Finset.sum_insert ha]
-
-/-! ## Round-trip lemmas -/
-
-/-- **Round trip on basis vectors** (axiomatised).  For each of the 256
-standard basis vectors `δⱼ`, Algorithm 8 applied after Algorithm 7 returns
-`δⱼ`.  This is a finite set of concrete `ℤ_q` computations guaranteed by
-FIPS 203 § 4.3 correctness of the Cooley–Tukey / Gentleman–Sande butterfly
-pair together with the final `128⁻¹ = 3303` scaling. -/
-axiom invNtt_ntt_delta (j : Fin n) : invNtt (ntt (delta j)) = delta j
-
-/-- **`NTT⁻¹(NTT(f)) = f`** — Algorithm 8 undoes Algorithm 7.  Proved by
-decomposing `f = ∑ⱼ f(j) · δⱼ` and using linearity of both transforms
-together with the basis-vector round trip `invNtt_ntt_delta`. -/
-lemma invNtt_ntt (f : Fin n → Zq) : invNtt (ntt f) = f := by
-  have h1 : ntt f = fun i => ∑ j : Fin n, f j * ntt (delta j) i := by
-    conv_lhs => rw [eq_sum_delta f]
-    rw [ntt_sum]
-    funext i
-    exact Finset.sum_congr rfl fun j _ =>
-      congrFun (ntt_smul (f j) (delta j)) i
-  have h2 : invNtt (ntt f) = fun i => ∑ j : Fin n, f j * invNtt (ntt (delta j)) i := by
-    rw [h1, invNtt_sum]
-    funext i
-    exact Finset.sum_congr rfl fun j _ =>
-      congrFun (invNtt_smul (f j) (ntt (delta j))) i
-  rw [h2]
-  simp only [invNtt_ntt_delta]
-  exact (eq_sum_delta f).symm
-
-/-- **`NTT(NTT⁻¹(f̂)) = f̂`** — Algorithm 7 undoes Algorithm 8.  Derived from
-`invNtt_ntt`: a left-inverse on a finite type is a two-sided inverse. -/
-lemma ntt_invNtt (f : Fin n → Zq) : ntt (invNtt f) = f := by
-  have hinj : Function.Injective (ntt : (Fin n → Zq) → Fin n → Zq) := by
-    intro a b hab
-    have h := congrArg invNtt hab
-    rwa [invNtt_ntt, invNtt_ntt] at h
-  obtain ⟨g, hg⟩ := Finite.surjective_of_injective hinj f
-  rw [← hg, invNtt_ntt]
-
 
 /-! ## Multiplicative homomorphism -/
 
@@ -336,193 +300,6 @@ lemma nttSpec_sum (s : Finset (Fin n)) (g : Fin n → Fin n → Zq) :
     rw [h1, nttSpec_add, ih]
     funext i
     simp [Finset.sum_insert ha]
-
-/-! ## Butterfly correctness on basis vectors
-
-The bridge `ntt (delta j) = nttSpec (delta j)` is proved by a *verified
-computation*:
-
-1. a **packed-natural clone** of Algorithm 7 (`nttP`) operating on a single
-   `ℕ` whose base-4096 digits are the canonical coefficient representatives,
-   which the Lean kernel evaluates fast via GMP arithmetic;
-2. a **simulation proof** (`simR_outerP`) showing step by step that the clone
-   computes exactly the butterflies of `ntt`;
-3. a **closed form** for `nttSpec (delta j)` (`nttSpec_delta`):
-   `γ_{idx/2}^{j/2}` on matching parity, `0` otherwise;
-4. a single kernel `decide` (`nttP_deltaP_eq_formulaP`) checking all 256
-   basis vectors against the packed closed form. -/
-
-/-! ### Packed-natural encoding: base-4096 digit vectors as a single `ℕ` -/
-
-/-- Digit `j` of a base-4096 packed natural. -/
-def getP (l j : ℕ) : ℕ := l / 4096 ^ j % 4096
-
-/-- Replace digit `j` of a base-4096 packed natural by `v`. -/
-def setP (l j v : ℕ) : ℕ := l - getP l j * 4096 ^ j + v * 4096 ^ j
-
-lemma getP_zero (l : ℕ) : getP l 0 = l % 4096 := by simp [getP]
-
-lemma getP_succ (l j : ℕ) : getP l (j + 1) = getP (l / 4096) j := by
-  simp [getP, pow_succ, Nat.div_div_eq_div_mul, mul_comm]
-
-lemma setP_zero (l v : ℕ) : setP l 0 v = l / 4096 * 4096 + v := by
-  have h := Nat.div_add_mod l 4096
-  have h2 : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
-  simp only [setP, getP_zero, pow_zero, mul_one]
-  omega
-
-lemma setP_succ (l j v : ℕ) :
-    setP l (j + 1) v = setP (l / 4096) j v * 4096 + l % 4096 := by
-  have hA := Nat.div_add_mod l 4096
-  have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
-  have hg : getP (l / 4096) j * 4096 ^ j ≤ l / 4096 := by
-    calc getP (l / 4096) j * 4096 ^ j
-        ≤ (l / 4096) / 4096 ^ j * 4096 ^ j :=
-          Nat.mul_le_mul_right _ (Nat.mod_le _ _)
-      _ ≤ l / 4096 := Nat.div_mul_le_self _ _
-  simp only [setP, getP_succ, pow_succ]
-  set A := l / 4096
-  set g := getP A j
-  set X := (4096 : ℕ) ^ j
-  set gX := g * X with hgX
-  set vX := v * X with hvX
-  have e1 : g * (X * 4096) = gX * 4096 := by rw [hgX]; ring
-  have e2 : v * (X * 4096) = vX * 4096 := by rw [hvX]; ring
-  rw [e1, e2]
-  omega
-
-lemma getP_setP_self (l j v : ℕ) (hv : v < 4096) :
-    getP (setP l j v) j = v := by
-  induction j generalizing l with
-  | zero =>
-    rw [setP_zero, getP_zero]
-    omega
-  | succ j ih =>
-    rw [setP_succ, getP_succ]
-    have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
-    have hdiv : (setP (l / 4096) j v * 4096 + l % 4096) / 4096
-        = setP (l / 4096) j v := by omega
-    rw [hdiv]
-    exact ih _
-
-lemma getP_setP_ne (l j v i : ℕ) (hv : v < 4096) (h : i ≠ j) :
-    getP (setP l j v) i = getP l i := by
-  induction j generalizing l i with
-  | zero =>
-    cases i with
-    | zero => exact absurd rfl h
-    | succ s =>
-      rw [setP_zero, getP_succ, getP_succ]
-      have : (l / 4096 * 4096 + v) / 4096 = l / 4096 := by omega
-      rw [this]
-  | succ j ih =>
-    cases i with
-    | zero =>
-      rw [setP_succ, getP_zero, getP_zero]
-      have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
-      omega
-    | succ s =>
-      rw [setP_succ, getP_succ, getP_succ]
-      have hr : l % 4096 < 4096 := Nat.mod_lt _ (by norm_num)
-      have hdiv : (setP (l / 4096) j v * 4096 + l % 4096) / 4096
-          = setP (l / 4096) j v := by omega
-      rw [hdiv]
-      exact ih _ _ (fun hc => h (by omega))
-
-/-- Pack a little-endian list of base-4096 digits into one natural number. -/
-def packList : List ℕ → ℕ
-  | [] => 0
-  | x :: xs => packList xs * 4096 + x
-
-lemma getP_packList (L : List ℕ) (hb : ∀ x ∈ L, x < 4096) (i : ℕ)
-    (hi : i < L.length) : getP (packList L) i = L.getD i 0 := by
-  induction L generalizing i with
-  | nil => simp at hi
-  | cons x xs ih =>
-    have hx : x < 4096 := hb x List.mem_cons_self
-    cases i with
-    | zero =>
-      simp only [packList, getP_zero, List.getD_cons_zero]
-      omega
-    | succ s =>
-      simp only [packList, List.getD_cons_succ]
-      rw [getP_succ]
-      have hdiv : (packList xs * 4096 + x) / 4096 = packList xs := by omega
-      rw [hdiv]
-      exact ih (fun y hy => hb y (List.mem_cons_of_mem _ hy)) s
-        (by simpa using hi)
-
-lemma getD_map_range (g : ℕ → ℕ) (m i : ℕ) (h : i < m) :
-    ((List.range m).map g).getD i 0 = g i := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range h]
-  rfl
-
-/-! ### The 7-bit reversal as a plain `ℕ → ℕ` table -/
-
-/-- `bitRev7Table` as a plain `ℕ → ℕ` function (0 outside `[0,128)`),
-suitable for fast kernel evaluation. -/
-def brN (i : ℕ) : ℕ :=
-  [ 0,  64,  32,  96,  16,  80,  48, 112,
-    8,  72,  40, 104,  24,  88,  56, 120,
-    4,  68,  36, 100,  20,  84,  52, 116,
-   12,  76,  44, 108,  28,  92,  60, 124,
-    2,  66,  34,  98,  18,  82,  50, 114,
-   10,  74,  42, 106,  26,  90,  58, 122,
-    6,  70,  38, 102,  22,  86,  54, 118,
-   14,  78,  46, 110,  30,  94,  62, 126,
-    1,  65,  33,  97,  17,  81,  49, 113,
-    9,  73,  41, 105,  25,  89,  57, 121,
-    5,  69,  37, 101,  21,  85,  53, 117,
-   13,  77,  45, 109,  29,  93,  61, 125,
-    3,  67,  35,  99,  19,  83,  51, 115,
-   11,  75,  43, 107,  27,  91,  59, 123,
-    7,  71,  39, 103,  23,  87,  55, 119,
-   15,  79,  47, 111,  31,  95,  63, 127 ].getD i 0
-
-set_option maxRecDepth 4000 in
-lemma brN_eq_bitRev7 (i : Fin 128) : brN i.val = (bitRev7Table i).val := by
-  fin_cases i <;> rfl
-
-/-! ### Packed-natural clone of Algorithm 7 -/
-
-/-- Packed-natural butterfly at positions `j` and `j + len`, twiddle `z`. -/
-def bfP (z l j len : ℕ) : ℕ :=
-  let a := getP l j
-  let b := getP l (j + len)
-  let t := z * b % 3329
-  setP (setP l (j + len) ((a + 3329 - t) % 3329)) j ((a + t) % 3329)
-
-/-- Packed-natural inner loop (`count` butterflies from `start`). -/
-def innerP (z l start len : ℕ) : ℕ → ℕ
-  | 0 => l
-  | c + 1 => innerP z (bfP z l start len) (start + 1) len c
-
-/-- Packed-natural middle loop (`numBlocks` blocks, zeta index `k`). -/
-def middleP (l len startOff k : ℕ) : ℕ → ℕ × ℕ
-  | 0 => (l, k)
-  | nb + 1 =>
-    let z := 17 ^ brN k % 3329
-    middleP (innerP z l startOff len len) len (startOff + 2 * len) (k + 1) nb
-
-/-- Packed-natural outer loop over the layer list. -/
-def outerP (l k : ℕ) : List ℕ → ℕ × ℕ
-  | [] => (l, k)
-  | len :: rest =>
-    let r := middleP l len 0 k (256 / (2 * len))
-    outerP r.1 r.2 rest
-
-/-- Packed-natural clone of `ntt` (Algorithm 7). -/
-def nttP (l : ℕ) : ℕ := (outerP l 1 nttLens).1
-
-/-- Packed standard basis vector `δⱼ`: digit `j` is `1`, all others `0`. -/
-def deltaP (j : ℕ) : ℕ := 4096 ^ j
-
-/-- Closed-form value of `NTT(δⱼ)` at index `idx` (a `ℕ` in `[0, 3329)`). -/
-def formulaCell (j idx : ℕ) : ℕ :=
-  if idx % 2 = j % 2 then 17 ^ ((2 * brN (idx / 2) + 1) * (j / 2)) % 3329 else 0
-
-/-- The packed closed form of `NTT(δⱼ)`. -/
-def formulaP (j : ℕ) : ℕ := packList ((List.range 256).map (formulaCell j))
 
 /-! ### Closed form of `nttSpec` on basis vectors -/
 
@@ -778,16 +555,6 @@ lemma simR_formulaP (j : Fin n) : simR (formulaP j.val) (nttSpec (delta j)) := b
 
 /-! ### The kernel verification and the basis-vector bridge -/
 
-set_option maxHeartbeats 1600000 in
--- `decide +kernel` evaluates the full 7-layer butterfly network on all 256
--- packed basis vectors inside the kernel; this exceeds the default budget.
-/-- **Kernel verification**: the packed-natural clone of Algorithm 7 maps each
-packed basis vector to the packed closed form — 256 concrete GMP computations
-checked by the Lean kernel (`decide +kernel`). -/
-lemma nttP_deltaP_eq_formulaP :
-    ∀ j ∈ List.range 256, nttP (deltaP j) = formulaP j := by
-  decide +kernel
-
 /-- **Butterfly correctness on basis vectors**.  For each of the 256 standard
 basis vectors `δⱼ`, the imperative Cooley–Tukey butterfly network of
 Algorithm 7 (`ntt`) agrees with the algebraically defined CRT projection
@@ -799,12 +566,194 @@ lemma ntt_delta_eq_nttSpec_delta (j : Fin n) : ntt (delta j) = nttSpec (delta j)
     unfold nttP ntt
     exact simR_outerP nttLens _ _ 1 _ _ (simR_deltaP j)
   have hkey : nttP (deltaP j.val) = formulaP j.val :=
-    nttP_deltaP_eq_formulaP j.val (List.mem_range.mpr (by have h : j.val < 256 := j.isLt; omega))
+    nttP_deltaP_eq_formulaP j.val (by have h : j.val < 256 := j.isLt; omega)
   have hsim' : simR (formulaP j.val) (ntt (delta j)) := hkey ▸ hsim
   funext i
   obtain ⟨_, h1⟩ := hsim' i
   obtain ⟨_, h2⟩ := simR_formulaP j i
   rw [← h1, h2]
+
+/-! ### Simulation of the inverse butterfly layers (Algorithm 8) -/
+
+/-- Single inverse butterfly simulation. -/
+lemma simR_ibfP {l : ℕ} {f : Fin n → Zq} (hs : simR l f)
+    (z : ℕ) {start len : ℕ} (hlen : 0 < len)
+    (h1 : start < n) (h2 : start + len < n) :
+    simR (ibfP z l start len)
+      (invNttButterfly f (z : Zq) ⟨start, h1⟩ ⟨start + len, h2⟩) := by
+  intro i
+  obtain ⟨hbj, hcj⟩ := hs ⟨start, h1⟩
+  obtain ⟨hbl, hcl⟩ := hs ⟨start + len, h2⟩
+  set a := getP l start with ha
+  set b := getP l (start + len) with hb
+  have hv1 : (a + b) % 3329 < 3329 := Nat.mod_lt _ (by norm_num)
+  have hv2 : z * ((b + 3329 - a) % 3329) % 3329 < 3329 := Nat.mod_lt _ (by norm_num)
+  have hcast1 : (((a + b) % 3329 : ℕ) : Zq) = f ⟨start, h1⟩ + f ⟨start + len, h2⟩ := by
+    rw [cast_mod_3329]; push_cast; rw [hcj, hcl]
+  have hcast2 : ((z * ((b + 3329 - a) % 3329) % 3329 : ℕ) : Zq) =
+      (z : Zq) * (f ⟨start + len, h2⟩ - f ⟨start, h1⟩) := by
+    rw [cast_mod_3329, Nat.cast_mul, cast_mod_3329, Nat.cast_sub (by omega), Nat.cast_add,
+      cast_3329_eq_zero, add_zero, hcj, hcl]
+  simp only [ibfP, invNttButterfly]
+  by_cases hil : i.val = start + len
+  · have hieq : i = ⟨start + len, h2⟩ := Fin.ext hil
+    rw [hil, getP_setP_ne _ _ _ _ (by omega) (by omega), getP_setP_self _ _ _ (by omega),
+      hieq, Function.update_self]
+    exact ⟨hv2, hcast2⟩
+  · have hine : i ≠ (⟨start + len, h2⟩ : Fin n) := fun hc => hil (by rw [hc])
+    rw [Function.update_of_ne hine]
+    by_cases hij : i.val = start
+    · have hieq : i = ⟨start, h1⟩ := Fin.ext hij
+      rw [hij, getP_setP_self _ _ _ (by omega), hieq, Function.update_self]
+      exact ⟨hv1, hcast1⟩
+    · have hine' : i ≠ (⟨start, h1⟩ : Fin n) := fun hc => hij (by rw [hc])
+      rw [getP_setP_ne _ _ _ _ (by omega) hij, getP_setP_ne _ _ _ _ (by omega) hil,
+        Function.update_of_ne hine']
+      exact hs i
+
+/-- Inverse inner-loop simulation. -/
+lemma simR_iinnerP (z : ℕ) :
+    ∀ (count l : ℕ) (f : Fin n → Zq) (start len : ℕ) (_hlen : 0 < len)
+      (h1 : ∀ r, r < count → start + r < n)
+      (h2 : ∀ r, r < count → start + r + len < n),
+      simR l f →
+      simR (iinnerP z l start len count)
+        (invNttInnerLoop f (z : Zq) start len count h1 h2)
+  | 0, _, _, _, _, _, _, _, hs => hs
+  | c + 1, l, f, start, len, hlen, h1, h2, hs => by
+    simp only [iinnerP, invNttInnerLoop]
+    exact simR_iinnerP z c _ _ (start + 1) len hlen _ _
+      (simR_ibfP hs z hlen (h1 0 (by omega))
+        (by have := h2 0 (by omega); omega))
+
+/-- Zeta-index bookkeeping of the packed inverse middle loop. -/
+lemma imiddleP_snd : ∀ (nb l len startOff k : ℕ),
+    (imiddleP l len startOff k nb).2 = k - nb
+  | 0, _, _, _, _ => rfl
+  | nb + 1, l, len, startOff, k => by
+    simp only [imiddleP]
+    rw [imiddleP_snd nb]
+    omega
+
+/-- Inverse middle-loop simulation. -/
+lemma simR_imiddleP :
+    ∀ (nb l : ℕ) (f : Fin n → Zq) (len startOff k : ℕ)
+      (h_pos : 0 < len)
+      (h_fit : ∀ b, b < nb → startOff + b * (2 * len) + 2 * len ≤ n)
+      (h_k : ∀ b, b < nb → k - b < 128)
+      (h_nb : nb ≤ k + 1),
+      simR l f →
+      simR (imiddleP l len startOff k nb).1
+        (invNttMiddleLoop f len startOff k nb h_pos h_fit h_k h_nb).1
+  | 0, _, _, _, _, _, _, _, _, _, hs => hs
+  | nb + 1, l, f, len, startOff, k, h_pos, h_fit, h_k, h_nb, hs => by
+    simp only [imiddleP, invNttMiddleLoop]
+    have hk0 : k < 128 := by have := h_k 0 (by omega); omega
+    have hz : zetaTable ⟨k, by omega⟩ = ((17 ^ brN k % 3329 : ℕ) : Zq) :=
+      (cast_zeta k hk0).symm
+    rw [hz]
+    exact simR_imiddleP nb _ _ len (startOff + 2 * len) (k - 1) h_pos _ _ _
+      (simR_iinnerP _ len _ _ startOff len h_pos _ _ hs)
+
+/-- Inverse outer-loop simulation. -/
+lemma simR_iouterP :
+    ∀ (layers : List ℕ) (l : ℕ) (f : Fin n → Zq) (k : ℕ)
+      (h_layers : ∀ x ∈ layers, 0 < x ∧ 2 * x ∣ n)
+      (h_k : k + 1 ≥ (layers.map (fun x => n / (2 * x))).sum)
+      (h_k128 : k < 128),
+      simR l f →
+      simR (iouterP l k layers).1
+        (invNttOuterLoop f k layers h_layers h_k h_k128).1
+  | [], _, _, _, _, _, _, hs => hs
+  | len :: rest, l, f, k, h_layers, h_k, h_k128, hs => by
+    simp only [iouterP, invNttOuterLoop]
+    simp only [invNttMiddleLoop_snd, imiddleP_snd]
+    exact simR_iouterP rest _ _ _ _ _ _
+      (simR_imiddleP _ _ _ _ _ _ _ _ _ _ hs)
+
+/-- `128 · deltaP j` simulates `128 · δⱼ` (digit `j` is `128`, others `0`). -/
+lemma simR_128_deltaP (j : Fin n) :
+    simR (128 * deltaP j.val) (fun i => (128 : Zq) * delta j i) := by
+  intro i
+  change getP (128 * deltaP j.val) i.val < 3329 ∧
+    ((getP (128 * deltaP j.val) i.val : ℕ) : Zq) = 128 * (if i = j then 1 else 0)
+  unfold deltaP getP
+  rcases lt_trichotomy i.val j.val with h | h | h
+  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+    set d := j.val - i.val - 1 with hd
+    have h1 : j.val = d + 1 + i.val := by omega
+    have hdvd : 128 * (4096 : ℕ) ^ j.val / 4096 ^ i.val = 128 * 4096 ^ d * 4096 := by
+      rw [h1, pow_add, pow_succ, ← mul_assoc, ← mul_assoc]
+      exact Nat.mul_div_cancel _ (Nat.pow_pos (by norm_num))
+    rw [hdvd, Nat.mul_mod_left]
+    exact ⟨by norm_num, by simp⟩
+  · have hij : i = j := Fin.ext h
+    have hdiv : 128 * (4096 : ℕ) ^ j.val / 4096 ^ i.val = 128 := by
+      rw [h]; exact Nat.mul_div_cancel _ (Nat.pow_pos (by norm_num))
+    rw [if_pos hij, hdiv]
+    exact ⟨by norm_num, by norm_num⟩
+  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+    have hlt : 128 * (4096 : ℕ) ^ j.val < 4096 ^ i.val := by
+      calc 128 * (4096 : ℕ) ^ j.val < 4096 * 4096 ^ j.val :=
+            Nat.mul_lt_mul_of_pos_right (by norm_num) (Nat.pow_pos (by norm_num))
+        _ = 4096 ^ (j.val + 1) := by rw [pow_succ, mul_comm]
+        _ ≤ 4096 ^ i.val := Nat.pow_le_pow_right (by norm_num) (by omega)
+    rw [Nat.div_eq_of_lt hlt]
+    exact ⟨by norm_num, by simp⟩
+
+/-- **Round trip on basis vectors**.  For each of the 256 standard basis
+vectors `δⱼ`, Algorithm 8 applied after Algorithm 7 returns `δⱼ`.  Proved (no
+axioms, no `sorry`): the forward direction is `ntt_delta_eq_nttSpec_delta`
+together with `simR_formulaP`; the inverse butterfly layers are transported
+from the kernel verification `invNttP_formulaP_eq` across `simR_iouterP`, and
+the final scaling `3303 · 128 = 1` is `nInv_mul_n`. -/
+lemma invNtt_ntt_delta (j : Fin n) : invNtt (ntt (delta j)) = delta j := by
+  have hfwd : ntt (delta j) = nttSpec (delta j) := ntt_delta_eq_nttSpec_delta j
+  have hsim : simR (invNttP (formulaP j.val))
+      (invNttOuterLoop (nttSpec (delta j)) 127 invNttLens
+        (by simp [invNttLens, n]) (by simp [invNttLens, n]) (by omega)).1 := by
+    unfold invNttP
+    exact simR_iouterP invNttLens _ _ 127 _ _ _ (simR_formulaP j)
+  have hkey : invNttP (formulaP j.val) = 128 * deltaP j.val :=
+    invNttP_formulaP_eq j.val (by have h : j.val < 256 := j.isLt; omega)
+  rw [hkey] at hsim
+  funext i
+  obtain ⟨_, h1⟩ := hsim i
+  obtain ⟨_, h2⟩ := simR_128_deltaP j i
+  have hmul : nInv * (128 : Zq) = 1 := nInv_mul_n
+  simp only [invNtt, invNttScale, hfwd]
+  rw [← h1, h2, ← mul_assoc, hmul, one_mul]
+
+/-! ## Round-trip lemmas -/
+
+/-- **`NTT⁻¹(NTT(f)) = f`** — Algorithm 8 undoes Algorithm 7.  Proved by
+decomposing `f = ∑ⱼ f(j) · δⱼ` and using linearity of both transforms
+together with the basis-vector round trip `invNtt_ntt_delta`. -/
+lemma invNtt_ntt (f : Fin n → Zq) : invNtt (ntt f) = f := by
+  have h1 : ntt f = fun i => ∑ j : Fin n, f j * ntt (delta j) i := by
+    conv_lhs => rw [eq_sum_delta f]
+    rw [ntt_sum]
+    funext i
+    exact Finset.sum_congr rfl fun j _ =>
+      congrFun (ntt_smul (f j) (delta j)) i
+  have h2 : invNtt (ntt f) = fun i => ∑ j : Fin n, f j * invNtt (ntt (delta j)) i := by
+    rw [h1, invNtt_sum]
+    funext i
+    exact Finset.sum_congr rfl fun j _ =>
+      congrFun (invNtt_smul (f j) (ntt (delta j))) i
+  rw [h2]
+  simp only [invNtt_ntt_delta]
+  exact (eq_sum_delta f).symm
+
+/-- **`NTT(NTT⁻¹(f̂)) = f̂`** — Algorithm 7 undoes Algorithm 8.  Derived from
+`invNtt_ntt`: a left-inverse on a finite type is a two-sided inverse. -/
+lemma ntt_invNtt (f : Fin n → Zq) : ntt (invNtt f) = f := by
+  have hinj : Function.Injective (ntt : (Fin n → Zq) → Fin n → Zq) := by
+    intro a b hab
+    have h := congrArg invNtt hab
+    rwa [invNtt_ntt, invNtt_ntt] at h
+  obtain ⟨g, hg⟩ := Finite.surjective_of_injective hinj f
+  rw [← hg, invNtt_ntt]
 
 /-- **Butterfly correctness**.  The imperative Cooley–Tukey
 butterfly network of Algorithm 7 (`ntt`) computes the algebraically defined
@@ -1009,5 +958,3 @@ theorem ntt_pipeline_eq_polyMul (f g : Fin n → Zq) :
   (polyMulCoeffs_eq f g).symm
 
 end Fips203
-
-end

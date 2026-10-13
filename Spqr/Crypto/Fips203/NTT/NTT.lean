@@ -342,5 +342,3 @@ theorem ntt_smul (c : Zq) (f : Fin n → Zq) :
   exact nttOuterLoop_smul _ _ _ _ _ _
 
 end Fips203
-
-end

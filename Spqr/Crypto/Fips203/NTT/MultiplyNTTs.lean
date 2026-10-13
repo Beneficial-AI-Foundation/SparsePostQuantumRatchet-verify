@@ -159,5 +159,3 @@ theorem multiplyNTTs_one_right (fh : Fin n → Zq) :
   exact multiplyNTTs_one_left fh
 
 end Fips203
-
-end

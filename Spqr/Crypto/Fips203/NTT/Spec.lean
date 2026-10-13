@@ -304,5 +304,3 @@ theorem nttSpec_toCoeffs_mul (r s : Rq) :
       nttSpec_odd _ i, hrs, quadCoeff1_mul]
 
 end Fips203
-
-end
