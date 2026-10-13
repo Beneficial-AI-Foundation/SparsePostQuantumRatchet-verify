@@ -1,8 +1,13 @@
-import Lean
-import Utils.Config
+module
+
+public import Lean
+public import Utils.Config
+
 /-! Translation: parse `translation.json` (Aeneas `emit-json`) into the `TransFun` model. It links
 each extracted Lean function to its Rust source directly, so no separate charon summary (and no
 join) is needed. -/
+
+public section
 
 open Lean
 

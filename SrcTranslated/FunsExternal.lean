@@ -850,27 +850,6 @@ theorem core.result.Result.map_err_Err
     core.result.Result.map_err (T := T) inst (.Err e) op =
       (do let f ← inst.call_once op e; ok (.Err f)) := rfl
 
-/-- [core::result::{core::result::Result<T, E>}::unwrap_or]:
-    Source: '/rustc/library/core/src/result.rs', lines 1590:4-1593:28
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::unwrap_or] -/
-@[rust_fun "core::result::{core::result::Result<@T, @E>}::unwrap_or"]
-def core.result.Result.unwrap_or
-  {T : Type} {E : Type} : core.result.Result T E → T → Result T :=
-  fun r default =>
-    match r with
-    | .Ok v => ok v
-    | .Err _ => ok default
-
-/-- **Spec theorem for `Result::unwrap_or`**: returns the `Ok` payload, or the
-supplied default on `Err`. -/
-@[step]
-theorem core.result.Result.unwrap_or_spec {T E : Type}
-    (r : core.result.Result T E) (default : T) :
-    core.result.Result.unwrap_or r default ⦃ x =>
-      x = match r with | .Ok v => v | .Err _ => default ⦄ := by
-  rcases r with v | e <;> simp [core.result.Result.unwrap_or]
-
-
 /-- Implementation helper for `Slice.Insts.CoreCmpOrd.cmp`
 (`[core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]`,
 Source: '/rustc/library/core/src/slice/cmp.rs', lines 37:4-37:42).
