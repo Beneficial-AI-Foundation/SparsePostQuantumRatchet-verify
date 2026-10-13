@@ -57,36 +57,6 @@ def Usize.Insts.CoreFmtDisplay : core.fmt.Display Std.Usize := {
   fmt := core.fmt.num.imp.DisplayUsize.fmt
 }
 
-/-- Trait implementation: [core::fmt::num::imp::{impl core::fmt::Display for u32}]
-    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39
-    Name pattern: [core::fmt::Display<u32>] -/
-@[reducible, rust_trait_impl "core::fmt::Display<u32>"]
-def U32.Insts.CoreFmtDisplay : core.fmt.Display Std.U32 := {
-  fmt := core.fmt.num.imp.DisplayU32.fmt
-}
-
-/-- Trait implementation: [core::iter::adapters::map::{impl core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}]
-    Source: '/rustc/library/core/src/iter/adapters/map.rs', lines 99:0-101:27
-    Name pattern: [core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>] -/
-@[reducible, rust_trait_impl
-  "core::iter::traits::iterator::Iterator<core::iter::adapters::map::Map<@I, @F>, @B>"]
-impl_def core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator {B :
-  Type} {I : Type} {F : Type} {Clause0_Item : Type} (traitsiteratorIteratorInst
-  : core.iter.traits.iterator.Iterator I Clause0_Item)
-  (opsfunctionFnMutFTupleClause0_ItemBInst : core.ops.function.FnMut F
-  Clause0_Item B) : core.iter.traits.iterator.Iterator
-  (core.iter.adapters.map.Map I F) B := {
-  next := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1043
-  step_by := core.iter.traits.iterator.Iterator.step_by.trait_default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-  -- See https://github.com/AeneasVerif/aeneas/issues/1043
-  enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-  -- See https://github.com/AeneasVerif/aeneas/issues/1043
-}
-
 /-- Trait implementation: [core::ops::range::{impl core::ops::range::RangeBounds<T> for core::ops::range::RangeFrom<T>}]
     Source: '/rustc/library/core/src/ops/range.rs', lines 1085:0-1085:45
     Name pattern: [core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>] -/
@@ -97,61 +67,6 @@ def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type) :
   start_bound :=
     core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
   end_bound := core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.end_bound
-}
-
-/-- Trait implementation: [core::result::{impl core::iter::traits::collect::FromIterator<core::result::Result<T, E>> for core::result::Result<V, E>}]
-    Source: '/rustc/library/core/src/result.rs', lines 2114:0-2114:74
-    Name pattern: [core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@T, @E>>] -/
-@[reducible, rust_trait_impl
-  "core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@T, @E>>"]
-def core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult {T : Type}
-  (E : Type) {V : Type} (itertraitscollectFromIteratorInst :
-  core.iter.traits.collect.FromIterator V T) :
-  core.iter.traits.collect.FromIterator (core.result.Result V E)
-  (core.result.Result T E) := {
-  from_iter := fun {I : Type} {Clause0_IntoIter : Type}
-    (itertraitscollectIntoIteratorPResultPInst :
-    core.iter.traits.collect.IntoIterator I (core.result.Result T E)
-    Clause0_IntoIter) =>
-    core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult.from_iter
-    itertraitscollectFromIteratorInst itertraitscollectIntoIteratorPResultPInst
-}
-
-/-- Trait implementation: [alloc::collections::vec_deque::into_iter::{impl core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}]
-    Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 44:0-44:49
-    Name pattern: [core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>] -/
-@[reducible, rust_trait_impl
-  "core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>"]
-impl_def
-  alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
-  (T : Type) (A : Type) : core.iter.traits.iterator.Iterator
-  (alloc.collections.vec_deque.into_iter.IntoIter T A) T := {
-  next :=
-    alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
-  step_by := core.iter.traits.iterator.Iterator.step_by.trait_default
-    (alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T A)
-  -- See https://github.com/AeneasVerif/aeneas/issues/1043
-  enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
-    (alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T A)
-  -- See https://github.com/AeneasVerif/aeneas/issues/1043
-}
-
-/-- Trait implementation: [alloc::collections::vec_deque::{impl core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}]
-    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3958:0-3958:39
-    Name pattern: [core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>] -/
-@[reducible, rust_trait_impl
-  "core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>"]
-def
-  alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator
-  (T : Type) : core.iter.traits.collect.FromIterator
-  (alloc.collections.vec_deque.VecDeque T Global) T := {
-  from_iter := fun {I : Type} {Clause0_IntoIter : Type}
-    (coreitertraitscollectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator I T Clause0_IntoIter) =>
-    alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator.from_iter
-    coreitertraitscollectIntoIteratorInst
 }
 
 /-- Trait implementation: [alloc::slice::{impl alloc::slice::Concat<T, alloc::vec::Vec<T>> for [V]}]
@@ -172,17 +87,6 @@ def Slice.Insts.AllocSliceConcatTVec {T : Type} {V : Type} (corecloneCloneInst
 @[reducible, rust_trait_impl "core::fmt::Debug<alloc::string::String>"]
 def alloc.string.String.Insts.CoreFmtDebug : core.fmt.Debug String := {
   fmt := alloc.string.String.Insts.CoreFmtDebug.fmt
-}
-
-/-- Trait implementation: [bytes::buf::buf_impl::{impl bytes::buf::buf_impl::Buf for &'_0 [u8]}]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2889:0-2889:18
-    Name pattern: [bytes::buf::buf_impl::Buf<&'0 [u8]>] -/
-@[reducible, rust_trait_impl "bytes::buf::buf_impl::Buf<&'0 [u8]>"]
-def Shared0SliceU8.Insts.BytesBufBuf_implBuf : bytes.buf.buf_impl.Buf (Slice
-  Std.U8) := {
-  remaining := Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
-  chunk := Shared0SliceU8.Insts.BytesBufBuf_implBuf.chunk
-  advance := Shared0SliceU8.Insts.BytesBufBuf_implBuf.advance
 }
 
 /-- Trait implementation: [libcrux_ml_kem::ind_cca::incremental::types::{impl core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}]
@@ -298,12 +202,6 @@ def proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpEq : core.cmp.Eq
     proto.pq_ratchet.PolynomialEncoder.Insts.CoreCmpEq.assert_fields_are_eq
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::PolynomialEncoder}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 2:37-2:53 -/
-@[reducible]
-def proto.pq_ratchet.PolynomialEncoder.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.PolynomialEncoder := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::PolynomialEncoder}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 2:37-2:53
     Visibility: public -/
@@ -403,12 +301,6 @@ def proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpEq : core.cmp.Eq
   assert_fields_are_eq :=
     proto.pq_ratchet.PolynomialDecoder.Insts.CoreCmpEq.assert_fields_are_eq
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::PolynomialDecoder}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 14:37-14:53 -/
-@[reducible]
-def proto.pq_ratchet.PolynomialDecoder.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.PolynomialDecoder := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::PolynomialDecoder}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 14:37-14:53
@@ -2227,12 +2119,6 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreCmpPartialEqPqRatchetState :
   eq := proto.pq_ratchet.PqRatchetState.Insts.CoreCmpPartialEqPqRatchetState.eq
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 25:27-25:43 -/
-@[reducible]
-def proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.PqRatchetState := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::PqRatchetState}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 25:27-25:43
     Visibility: public -/
@@ -2255,14 +2141,6 @@ def proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.PqRatchetState := {
   default := proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{impl prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 38:41-38:57 -/
-@[reducible]
-def
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.pq_ratchet_state.VersionNegotiation
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Direction}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 400:67-400:87
@@ -2385,77 +2263,6 @@ def proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.set_min_version
   let i ← lift (IScalar.cast .I32 value1)
   ok { self with min_version := i }
 
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{closure}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
-def
-  proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure T0) (_ : Unit) :
-  Result (proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure T0)
-  := do
-  let (_, vs) := c
-  ok (some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), vs)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge::{closure}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.pq_ratchet_state.Inner.merge.closure T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::V1State}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
-@[reducible]
-def proto.pq_ratchet.V1State.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.V1State := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encode]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55
-    Visibility: public -/
-def proto.pq_ratchet.pq_ratchet_state.Inner.encode
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0)
-  (self : proto.pq_ratchet.pq_ratchet_state.Inner) (buf : T0) :
-  Result T0
-  := do
-  let ⟨ value ⟩ := self
-  prost.encoding.message.encode
-    proto.pq_ratchet.V1State.Insts.ProstMessageMessage
-    bytesbufbuf_mutBufMutInst 3#u32 value buf
-
-/-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::V1State}::default]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 98:37-98:53
-    Visibility: public -/
-def proto.pq_ratchet.V1State.Insts.CoreDefaultDefault.default
-  : Result proto.pq_ratchet.V1State := do
-  let o ←
-    core.option.Option.Insts.CoreDefaultDefault.default
-      proto.pq_ratchet.v1_state.InnerState
-  ok { inner_state := o }
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::merge]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55
-    Visibility: public -/
-def proto.pq_ratchet.pq_ratchet_state.Inner.merge
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (field : Option proto.pq_ratchet.pq_ratchet_state.Inner) (tag : Std.U32)
-  (wire_type : prost.encoding.wire_type.WireType) (buf : T0)
-  (ctx : prost.encoding.DecodeContext) :
-  Result ((core.result.Result Unit prost.error.DecodeError) × (Option
-    proto.pq_ratchet.pq_ratchet_state.Inner) × T0)
-  := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{spqr::proto::pq_ratchet::pq_ratchet_state::Inner}::encoded_len]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 49:41-49:55
-    Visibility: public -/
-def proto.pq_ratchet.pq_ratchet_state.Inner.encoded_len
-  (self : proto.pq_ratchet.pq_ratchet_state.Inner) : Result Std.Usize := do
-  let ⟨ value ⟩ := self
-  prost.encoding.message.encoded_len
-    proto.pq_ratchet.V1State.Insts.ProstMessageMessage 3#u32 value
-
 /-- [spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::Chunk}::clone]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 55:9-55:14
     Visibility: public -/
@@ -2517,12 +2324,6 @@ def proto.pq_ratchet.Chunk.Insts.CoreCmpEq : core.cmp.Eq proto.pq_ratchet.Chunk
   assert_fields_are_eq :=
     proto.pq_ratchet.Chunk.Insts.CoreCmpEq.assert_fields_are_eq
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::Chunk}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 55:37-55:53 -/
-@[reducible]
-def proto.pq_ratchet.Chunk.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.Chunk := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Chunk}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 55:37-55:53
@@ -2722,12 +2523,6 @@ def proto.pq_ratchet.V1Msg.Insts.CoreCmpEq : core.cmp.Eq proto.pq_ratchet.V1Msg
     proto.pq_ratchet.V1Msg.Insts.CoreCmpEq.assert_fields_are_eq
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::V1Msg}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 62:37-62:53 -/
-@[reducible]
-def proto.pq_ratchet.V1Msg.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.V1Msg := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::V1Msg}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 62:37-62:53
     Visibility: public -/
@@ -2745,205 +2540,6 @@ def proto.pq_ratchet.V1Msg.Insts.CoreDefaultDefault : core.default.Default
   proto.pq_ratchet.V1Msg := {
   default := proto.pq_ratchet.V1Msg.Insts.CoreDefaultDefault.default
 }
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_msg.InnerMsg.merge.closure T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure T0)
-  := do
-  let (_, c1) := c
-  ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Hdr c1), c1)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure T0)
-  Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#1}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1 T0)
-  := do
-  let (_, c1) := c
-  ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ek c1), c1)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#1}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_1
-  T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#2}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2 T0)
-  := do
-  let (_, c1) := c
-  ok (some (proto.pq_ratchet.v1_msg.InnerMsg.EkCt1Ack c1), c1)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#2}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_2
-  T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#3}<'_0, '_1, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3 T0)
-  := do
-  let (_, b) := c
-  ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ct1Ack b), b)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#3}<'_0, '_1, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_3
-  T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#4}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4 T0)
-  := do
-  let (_, c1) := c
-  ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ct1 c1), c1)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#4}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_4
-  T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#5}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5 T0)
-  := do
-  let (_, c1) := c
-  ok (some (proto.pq_ratchet.v1_msg.InnerMsg.Ct2 c1), c1)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge::{closure#5}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_msg.InnerMsg.merge.closure_5
-  T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::encode]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55
-    Visibility: public -/
-def proto.pq_ratchet.v1_msg.InnerMsg.encode
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0)
-  (self : proto.pq_ratchet.v1_msg.InnerMsg) (buf : T0) :
-  Result T0
-  := do
-  match self with
-  | proto.pq_ratchet.v1_msg.InnerMsg.Hdr value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 3#u32 value buf
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ek value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 4#u32 value buf
-  | proto.pq_ratchet.v1_msg.InnerMsg.EkCt1Ack value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 5#u32 value buf
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ct1Ack value =>
-    prost.encoding.bool.encode bytesbufbuf_mutBufMutInst 6#u32 value buf
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ct1 value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 7#u32 value buf
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ct2 value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 8#u32 value buf
-
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::merge]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55
-    Visibility: public -/
-def proto.pq_ratchet.v1_msg.InnerMsg.merge
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (field : Option proto.pq_ratchet.v1_msg.InnerMsg) (tag : Std.U32)
-  (wire_type : prost.encoding.wire_type.WireType) (buf : T0)
-  (ctx : prost.encoding.DecodeContext) :
-  Result ((core.result.Result Unit prost.error.DecodeError) × (Option
-    proto.pq_ratchet.v1_msg.InnerMsg) × T0)
-  := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-/-- [spqr::proto::pq_ratchet::v1_msg::{spqr::proto::pq_ratchet::v1_msg::InnerMsg}::encoded_len]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 73:41-73:55
-    Visibility: public -/
-def proto.pq_ratchet.v1_msg.InnerMsg.encoded_len
-  (self : proto.pq_ratchet.v1_msg.InnerMsg) : Result Std.Usize := do
-  match self with
-  | proto.pq_ratchet.v1_msg.InnerMsg.Hdr value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage 3#u32 value
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ek value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage 4#u32 value
-  | proto.pq_ratchet.v1_msg.InnerMsg.EkCt1Ack value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage 5#u32 value
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ct1Ack value =>
-    prost.encoding.bool.encoded_len 6#u32 value
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ct1 value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage 7#u32 value
-  | proto.pq_ratchet.v1_msg.InnerMsg.Ct2 value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.Chunk.Insts.ProstMessageMessage 8#u32 value
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Authenticator}]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 91:16-91:25 -/
@@ -2969,12 +2565,6 @@ def proto.pq_ratchet.Authenticator.Insts.CoreCmpEq : core.cmp.Eq
   assert_fields_are_eq :=
     proto.pq_ratchet.Authenticator.Insts.CoreCmpEq.assert_fields_are_eq
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::Authenticator}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 91:37-91:53 -/
-@[reducible]
-def proto.pq_ratchet.Authenticator.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.Authenticator := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Authenticator}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 91:37-91:53
@@ -3023,6 +2613,16 @@ def proto.pq_ratchet.V1State.Insts.CoreCmpEq : core.cmp.Eq
   assert_fields_are_eq :=
     proto.pq_ratchet.V1State.Insts.CoreCmpEq.assert_fields_are_eq
 }
+
+/-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::V1State}::default]:
+    Source: 'generated/signal.proto.pq_ratchet.rs', lines 98:37-98:53
+    Visibility: public -/
+def proto.pq_ratchet.V1State.Insts.CoreDefaultDefault.default
+  : Result proto.pq_ratchet.V1State := do
+  let o ←
+    core.option.Option.Insts.CoreDefaultDefault.default
+      proto.pq_ratchet.v1_state.InnerState
+  ok { inner_state := o }
 
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::V1State}]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 98:37-98:53 -/
@@ -3076,12 +2676,6 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked :
   eq := proto.pq_ratchet.v1_state.Unchunked.Insts.CoreCmpPartialEqUnchunked.eq
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Unchunked}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 105:47-105:63 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.Unchunked.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.Unchunked := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::Unchunked}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 105:47-105:63
     Visibility: public -/
@@ -3097,13 +2691,6 @@ def proto.pq_ratchet.v1_state.Unchunked.Insts.CoreDefaultDefault :
   default :=
     proto.pq_ratchet.v1_state.Unchunked.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 110:45-110:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.unchunked.KeysUnsampled := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 110:45-110:61
@@ -3124,13 +2711,6 @@ def proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreDefaultDefault
   default :=
     proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 117:45-117:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.unchunked.HeaderSent := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 117:45-117:61
@@ -3153,12 +2733,6 @@ def proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreDefaultDefault :
     proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.CoreDefaultDefault.default
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 128:45-128:61 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.unchunked.EkSent := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 128:45-128:61
     Visibility: public -/
@@ -3178,14 +2752,6 @@ def proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault :
   default :=
     proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 137:45-137:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 137:45-137:61
@@ -3210,14 +2776,6 @@ def
     proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.CoreDefaultDefault.default
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 149:45-149:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 149:45-149:61
     Visibility: public -/
@@ -3239,14 +2797,6 @@ def
   default :=
     proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 156:45-156:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.unchunked.HeaderReceived
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 156:45-156:61
@@ -3333,13 +2883,6 @@ def
     proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreCmpPartialEqEkReceived.eq
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 165:45-165:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.unchunked.EkReceived := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 165:45-165:61
     Visibility: public -/
@@ -3361,12 +2904,6 @@ def proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreDefaultDefault :
     proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.CoreDefaultDefault.default
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 176:45-176:61 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.unchunked.Ct1Sent := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 176:45-176:61
     Visibility: public -/
@@ -3387,14 +2924,6 @@ def proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreDefaultDefault :
   default :=
     proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 189:45-189:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 189:45-189:61
@@ -3418,12 +2947,6 @@ def
   default :=
     proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::unchunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 202:45-202:61 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.unchunked.Ct2Sent := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::unchunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 202:45-202:61
@@ -3489,12 +3012,6 @@ def proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked :
   eq := proto.pq_ratchet.v1_state.Chunked.Insts.CoreCmpPartialEqChunked.eq
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::Chunked}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 210:47-210:63 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.Chunked.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.Chunked := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::Chunked}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 210:47-210:63
     Visibility: public -/
@@ -3518,13 +3035,6 @@ def proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone :
   clone :=
     proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.CoreCloneClone.clone
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 215:45-215:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysUnsampled := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 215:45-215:61
@@ -3554,13 +3064,6 @@ def proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone :
   clone :=
     proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.CoreCloneClone.clone
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 220:45-220:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.KeysSampled := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 220:45-220:61
@@ -3593,12 +3096,6 @@ def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone :
   clone :=
     proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.CoreCloneClone.clone
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 227:45-227:61 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderSent := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 227:45-227:61
@@ -3635,13 +3132,6 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone :
     proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.CoreCloneClone.clone
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 236:45-236:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Received := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 236:45-236:61
     Visibility: public -/
@@ -3673,14 +3163,6 @@ def proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCloneClone :
   clone :=
     proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.CoreCloneClone.clone
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 243:45-243:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 243:45-243:61
@@ -3716,14 +3198,6 @@ def proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCloneClone :
     proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.CoreCloneClone.clone
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 251:45-251:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
-  := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 251:45-251:61
     Visibility: public -/
@@ -3757,13 +3231,6 @@ def proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone :
     proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.CoreCloneClone.clone
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 258:45-258:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.HeaderReceived := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 258:45-258:61
     Visibility: public -/
@@ -3795,12 +3262,6 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone :
   clone :=
     proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.CoreCloneClone.clone
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 265:45-265:61 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Sampled := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 265:45-265:61
@@ -3838,14 +3299,6 @@ def proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCloneClone
     proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.CoreCloneClone.clone
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 274:45-274:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage
-  : prost.message.Message
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 274:45-274:61
     Visibility: public -/
@@ -3880,13 +3333,6 @@ def proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCloneClone :
     proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.CoreCloneClone.clone
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 281:45-281:61 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 281:45-281:61
     Visibility: public -/
@@ -3919,12 +3365,6 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone :
     proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreCloneClone.clone
 }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::chunked::{impl prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 288:45-288:61 -/
-@[reducible]
-def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.v1_state.chunked.Ct2Sampled := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::v1_state::chunked::{impl core::default::Default for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 288:45-288:61
     Visibility: public -/
@@ -3948,377 +3388,12 @@ def proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreDefaultDefault :
     proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.CoreDefaultDefault.default
 }
 
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure T0)
-  := do
-  let (_, ku) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku), ku)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce (proto.pq_ratchet.v1_state.InnerState.merge.closure
-  T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#1}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_1 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_1 T0)
-  := do
-  let (_, ks) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.KeysSampled ks), ks)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#1}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_1.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_1 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#2}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_2 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_2 T0)
-  := do
-  let (_, hs) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.HeaderSent hs), hs)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#2}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_2.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_2 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#3}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_3 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_3 T0)
-  := do
-  let (_, cr) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.Ct1Received cr), cr)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#3}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_3.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_3 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#4}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_4 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_4 T0)
-  := do
-  let (_, escr) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received escr), escr)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#4}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_4.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_4 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#5}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_5 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_5 T0)
-  := do
-  let (_, nhr) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr), nhr)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#5}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_5.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_5 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#6}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_6.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_6 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_6 T0)
-  := do
-  let (_, hr) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.HeaderReceived hr), hr)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#6}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_6.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_6 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#7}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_7.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_7 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_7 T0)
-  := do
-  let (_, cs) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.Ct1Sampled cs), cs)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#7}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_7.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_7 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#8}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_8.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_8 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_8 T0)
-  := do
-  let (_, ercs) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled ercs),
-    ercs)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#8}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_8.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_8 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#9}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_9.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_9 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_9 T0)
-  := do
-  let (_, ca) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged ca), ca)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#9}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_9.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_9 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#10}<'_0, T0>}::call_once]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_10.Insts.CoreOpsFunctionFnOnceTupleTupleTuple.call_once
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (c : proto.pq_ratchet.v1_state.InnerState.merge.closure_10 T0) (_ : Unit) :
-  Result (proto.pq_ratchet.v1_state.InnerState.merge.closure_10 T0)
-  := do
-  let (_, cs) := c
-  ok (some (proto.pq_ratchet.v1_state.InnerState.Ct2Sampled cs), cs)
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{impl core::ops::function::FnOnce<((),), ()> for spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge::{closure#10}<'_0, T0>}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55 -/
-@[reducible]
-def
-  proto.pq_ratchet.v1_state.InnerState.merge.closure_10.Insts.CoreOpsFunctionFnOnceTupleTupleTuple
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  core.ops.function.FnOnce
-  (proto.pq_ratchet.v1_state.InnerState.merge.closure_10 T0) Unit Unit := {
-  call_once := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-}
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::encode]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55
-    Visibility: public -/
-def proto.pq_ratchet.v1_state.InnerState.encode
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0)
-  (self : proto.pq_ratchet.v1_state.InnerState) (buf : T0) :
-  Result T0
-  := do
-  match self with
-  | proto.pq_ratchet.v1_state.InnerState.KeysUnsampled value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 1#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.KeysSampled value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 2#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.HeaderSent value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 3#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.Ct1Received value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 4#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 5#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 6#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.HeaderReceived value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 7#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.Ct1Sampled value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 8#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 9#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 10#u32 value buf
-  | proto.pq_ratchet.v1_state.InnerState.Ct2Sampled value =>
-    prost.encoding.message.encode
-      proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage
-      bytesbufbuf_mutBufMutInst 11#u32 value buf
-
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::merge]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55
-    Visibility: public -/
-def proto.pq_ratchet.v1_state.InnerState.merge
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0)
-  (field : Option proto.pq_ratchet.v1_state.InnerState) (tag : Std.U32)
-  (wire_type : prost.encoding.wire_type.WireType) (buf : T0)
-  (ctx : prost.encoding.DecodeContext) :
-  Result ((core.result.Result Unit prost.error.DecodeError) × (Option
-    proto.pq_ratchet.v1_state.InnerState) × T0)
-  := sorry -- See https://github.com/AeneasVerif/aeneas/issues/1046
-/-- [spqr::proto::pq_ratchet::v1_state::{spqr::proto::pq_ratchet::v1_state::InnerState}::encoded_len]:
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 296:41-296:55
-    Visibility: public -/
-def proto.pq_ratchet.v1_state.InnerState.encoded_len
-  (self : proto.pq_ratchet.v1_state.InnerState) : Result Std.Usize := do
-  match self with
-  | proto.pq_ratchet.v1_state.InnerState.KeysUnsampled value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage
-      1#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.KeysSampled value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage
-      2#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.HeaderSent value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage
-      3#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.Ct1Received value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage
-      4#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.EkSentCt1Received value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage
-      5#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage
-      6#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.HeaderReceived value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage
-      7#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.Ct1Sampled value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage
-      8#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.EkReceivedCt1Sampled value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage
-      9#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.Ct1Acknowledged value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage
-      10#u32 value
-  | proto.pq_ratchet.v1_state.InnerState.Ct2Sampled value =>
-    prost.encoding.message.encoded_len
-      proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage
-      11#u32 value
-
 /-- Trait implementation: [spqr::proto::pq_ratchet::{impl core::marker::StructuralPartialEq for spqr::proto::pq_ratchet::Chain}]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 324:16-324:25 -/
 @[reducible]
 def proto.pq_ratchet.Chain.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq proto.pq_ratchet.Chain := {
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::Chain}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 324:27-324:43 -/
-@[reducible]
-def proto.pq_ratchet.Chain.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.Chain := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::Chain}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 324:27-324:43
@@ -4374,12 +3449,6 @@ def proto.pq_ratchet.Chain.set_direction
   let i ← lift (IScalar.cast .I32 value1)
   ok { self with direction := i }
 
-/-- Trait implementation: [spqr::proto::pq_ratchet::chain::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::Epoch}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 341:41-341:57 -/
-@[reducible]
-def proto.pq_ratchet.chain.Epoch.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.chain.Epoch := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
-
 /-- [spqr::proto::pq_ratchet::chain::{impl core::default::Default for spqr::proto::pq_ratchet::chain::Epoch}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 341:41-341:57
     Visibility: public -/
@@ -4397,12 +3466,6 @@ def proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault :
   core.default.Default proto.pq_ratchet.chain.Epoch := {
   default := proto.pq_ratchet.chain.Epoch.Insts.CoreDefaultDefault.default
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::chain::epoch::{impl prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 350:45-350:61 -/
-@[reducible]
-def proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage
-  : prost.message.Message proto.pq_ratchet.chain.epoch.EpochDirection := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::chain::epoch::{impl core::default::Default for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 350:45-350:61
@@ -4454,12 +3517,6 @@ def proto.pq_ratchet.ChainParams.Insts.CoreCmpEq : core.cmp.Eq
   assert_fields_are_eq :=
     proto.pq_ratchet.ChainParams.Insts.CoreCmpEq.assert_fields_are_eq
 }
-
-/-- Trait implementation: [spqr::proto::pq_ratchet::{impl prost::message::Message for spqr::proto::pq_ratchet::ChainParams}]
-    Source: 'generated/signal.proto.pq_ratchet.rs', lines 361:43-361:59 -/
-@[reducible]
-def proto.pq_ratchet.ChainParams.Insts.ProstMessageMessage :
-  prost.message.Message proto.pq_ratchet.ChainParams := sorry -- See https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/102
 
 /-- [spqr::proto::pq_ratchet::{impl core::default::Default for spqr::proto::pq_ratchet::ChainParams}::default]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 361:43-361:59
@@ -5579,7 +4636,7 @@ def chain.Chain.ced_for_direction
   chain.ChainEpochDirection.new s
 
 /-- [spqr::{spqr::proto::pq_ratchet::Direction}::switch]:
-    Source: 'src/lib.rs', lines 64:4-69:5
+    Source: 'src/lib.rs', lines 72:4-77:5
     Visibility: public -/
 def Direction.switch
   (self : proto.pq_ratchet.Direction) : Result proto.pq_ratchet.Direction := do
@@ -5853,168 +4910,62 @@ def chain.Chain.recv_key
           (alloc.vec.Vec Std.U8) (core.convert.FromSame Error) residual
       ok (r1, self1)
 
-/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{impl core::ops::function::FnMut<(spqr::chain::ChainEpoch,), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::{closure}}::call_mut]:
-    Source: 'src/chain.rs', lines 433:21-436:17 -/
-def
-  chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
-  (c : chain.Chain.into_pb.closure) (tupled_args : chain.ChainEpoch) :
-  Result (proto.pq_ratchet.chain.Epoch × chain.Chain.into_pb.closure)
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb]: loop body 0:
+    Source: 'src/chain.rs', lines 428:8-433:9 -/
+@[rust_loop_body]
+def chain.Chain.into_pb_loop.body
+  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+  (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
+  Result (ControlFlow ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    Global) × (alloc.vec.Vec proto.pq_ratchet.chain.Epoch)) (alloc.vec.Vec
+    proto.pq_ratchet.chain.Epoch))
   := do
-  let ed ← chain.ChainEpochDirection.into_pb tupled_args.send
-  let ed1 ← chain.ChainEpochDirection.into_pb tupled_args.recv
-  ok ({ send := (some ed), recv := (some ed1) }, c)
+  let (o, chain_links1) ←
+    alloc.collections.vec_deque.VecDeque.pop_front chain_links
+  match o with
+  | none => ok (done links)
+  | some link =>
+    let ed ← chain.ChainEpochDirection.into_pb link.send
+    let ed1 ← chain.ChainEpochDirection.into_pb link.recv
+    let links1 ←
+      alloc.vec.Vec.push links ({ send := (some ed), recv := (some ed1) } :
+        proto.pq_ratchet.chain.Epoch)
+    ok (cont (chain_links1, links1))
 
-/-- [spqr::chain::{spqr::chain::Chain}::into_pb::{impl core::ops::function::FnOnce<(spqr::chain::ChainEpoch,), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::{closure}}::call_once]:
-    Source: 'src/chain.rs', lines 433:21-436:17 -/
-def
-  chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once
-  (c : chain.Chain.into_pb.closure) (ce : chain.ChainEpoch) :
-  Result proto.pq_ratchet.chain.Epoch
+/-- [spqr::chain::{spqr::chain::Chain}::into_pb]: loop 0:
+    Source: 'src/chain.rs', lines 428:8-433:9 -/
+@[rust_loop]
+def chain.Chain.into_pb_loop
+  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+  (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
+  Result (alloc.vec.Vec proto.pq_ratchet.chain.Epoch)
   := do
-  let (e, _) ←
-    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
-      c ce
-  ok e
-
-/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::into_pb::{impl core::ops::function::FnOnce<(spqr::chain::ChainEpoch,), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::{closure}}]
-    Source: 'src/chain.rs', lines 433:21-436:17 -/
-@[reducible]
-def chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
-  : core.ops.function.FnOnce chain.Chain.into_pb.closure chain.ChainEpoch
-  proto.pq_ratchet.chain.Epoch := {
-  call_once :=
-    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch.call_once
-}
-
-/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::into_pb::{impl core::ops::function::FnMut<(spqr::chain::ChainEpoch,), spqr::proto::pq_ratchet::chain::Epoch> for spqr::chain::{spqr::chain::Chain}::into_pb::{closure}}]
-    Source: 'src/chain.rs', lines 433:21-436:17 -/
-@[reducible]
-def chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
-  : core.ops.function.FnMut chain.Chain.into_pb.closure chain.ChainEpoch
-  proto.pq_ratchet.chain.Epoch := {
-  FnOnceInst :=
-    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnOnceTupleChainEpochEpoch
-  call_mut :=
-    chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch.call_mut
-}
+  loop
+    (fun (chain_links1, links1) => chain.Chain.into_pb_loop.body chain_links1
+      links1)
+    (chain_links, links)
 
 /-- [spqr::chain::{spqr::chain::Chain}::into_pb]:
-    Source: 'src/chain.rs', lines 425:4-441:5 -/
+    Source: 'src/chain.rs', lines 425:4-442:5 -/
 def chain.Chain.into_pb
   (self : chain.Chain) : Result proto.pq_ratchet.Chain := do
-  let i ←
+  let i ← alloc.collections.vec_deque.VecDeque.len self.links
+  let links := alloc.vec.Vec.with_capacity proto.pq_ratchet.chain.Epoch i
+  let links1 ← chain.Chain.into_pb_loop self.links links
+  let i1 ←
     core.convert.IntoFrom.into I32.Insts.CoreConvertFromDirection self.dir
-  let ii ←
-    alloc.collections.vec_deque.VecDeque.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter
-      self.links
-  let m ←
-    core.iter.traits.iterator.Iterator.map.default
-      (alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
-      chain.ChainEpoch Global)
-      chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch
-      ii ()
-  let v ←
-    core.iter.traits.iterator.Iterator.collect.default
-      (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-      (alloc.collections.vec_deque.into_iter.IntoIter.Insts.CoreIterTraitsIteratorIterator
-      chain.ChainEpoch Global)
-      chain.Chain.into_pb.closure.Insts.CoreOpsFunctionFnMutTupleChainEpochEpoch)
-      (core.iter.traits.collect.FromIteratorVec proto.pq_ratchet.chain.Epoch) m
   ok
     {
-      direction := i,
+      direction := i1,
       current_epoch := self.current_epoch,
-      links := v,
+      links := links1,
       next_root := self.next_root,
       send_epoch := self.send_epoch,
       params := (some self.params)
     }
 
-/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch,), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}}::call_mut]:
-    Source: 'src/chain.rs', lines 453:21-458:17 -/
-def
-  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
-  (c : chain.Chain.from_pb.closure_1)
-  (tupled_args : proto.pq_ratchet.chain.Epoch) :
-  Result ((core.result.Result chain.ChainEpoch Error) ×
-    chain.Chain.from_pb.closure_1)
-  := do
-  let r ← core.option.Option.ok_or tupled_args.send Error.StateDecode
-  let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue val =>
-    let r1 ← chain.ChainEpochDirection.from_pb val
-    let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-    match cf1 with
-    | core.ops.control_flow.ControlFlow.Continue val1 =>
-      let r2 ← core.option.Option.ok_or tupled_args.recv Error.StateDecode
-      let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-      match cf2 with
-      | core.ops.control_flow.ControlFlow.Continue val2 =>
-        let r3 ← chain.ChainEpochDirection.from_pb val2
-        let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r3
-        match cf3 with
-        | core.ops.control_flow.ControlFlow.Continue val3 =>
-          ok (core.result.Result.Ok { send := val1, recv := val3 }, c)
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          let r4 ←
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              chain.ChainEpoch (core.convert.FromSame Error) residual
-          ok (r4, c)
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        let r3 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            chain.ChainEpoch (core.convert.FromSame Error) residual
-        ok (r3, c)
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r2 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          chain.ChainEpoch (core.convert.FromSame Error) residual
-      ok (r2, c)
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    let r1 ←
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-        chain.ChainEpoch (core.convert.FromSame Error) residual
-    ok (r1, c)
-
-/-- [spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch,), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}}::call_once]:
-    Source: 'src/chain.rs', lines 453:21-458:17 -/
-def
-  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once
-  (c : chain.Chain.from_pb.closure_1) (e : proto.pq_ratchet.chain.Epoch) :
-  Result (core.result.Result chain.ChainEpoch Error)
-  := do
-  let (r, _) ←
-    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
-      c e
-  ok r
-
-/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnOnce<(spqr::proto::pq_ratchet::chain::Epoch,), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}}]
-    Source: 'src/chain.rs', lines 453:21-458:17 -/
-@[reducible]
-def
-  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
-  : core.ops.function.FnOnce chain.Chain.from_pb.closure_1
-  proto.pq_ratchet.chain.Epoch (core.result.Result chain.ChainEpoch Error) := {
-  call_once :=
-    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError.call_once
-}
-
-/-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnMut<(spqr::proto::pq_ratchet::chain::Epoch,), core::result::Result<spqr::chain::ChainEpoch, spqr::Error>> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure#1}}]
-    Source: 'src/chain.rs', lines 453:21-458:17 -/
-@[reducible]
-def
-  chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
-  : core.ops.function.FnMut chain.Chain.from_pb.closure_1
-  proto.pq_ratchet.chain.Epoch (core.result.Result chain.ChainEpoch Error) := {
-  FnOnceInst :=
-    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTupleEpochResultChainEpochError
-  call_mut :=
-    chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError.call_mut
-}
-
 /-- [spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure}}::call_once]:
-    Source: 'src/chain.rs', lines 446:49-446:71 -/
+    Source: 'src/chain.rs', lines 452:50-452:72 -/
 def
   chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : chain.Chain.from_pb.closure)
@@ -6024,7 +4975,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::chain::{spqr::chain::Chain}::from_pb::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain::{spqr::chain::Chain}::from_pb::{closure}}]
-    Source: 'src/chain.rs', lines 446:49-446:71 -/
+    Source: 'src/chain.rs', lines 452:50-452:72 -/
 @[reducible]
 def
   chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
@@ -6034,8 +4985,79 @@ def
     chain.Chain.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
 }
 
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb::link_from_pb]:
+    Source: 'src/chain.rs', lines 446:8-451:9 -/
+def chain.Chain.from_pb.link_from_pb
+  (link : proto.pq_ratchet.chain.Epoch) :
+  Result (core.result.Result chain.ChainEpoch Error)
+  := do
+  let r ← core.option.Option.ok_or link.send Error.StateDecode
+  let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+  match cf with
+  | core.ops.control_flow.ControlFlow.Continue val =>
+    let r1 ← chain.ChainEpochDirection.from_pb val
+    let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
+    match cf1 with
+    | core.ops.control_flow.ControlFlow.Continue val1 =>
+      let r2 ← core.option.Option.ok_or link.recv Error.StateDecode
+      let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
+      match cf2 with
+      | core.ops.control_flow.ControlFlow.Continue val2 =>
+        let r3 ← chain.ChainEpochDirection.from_pb val2
+        let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r3
+        match cf3 with
+        | core.ops.control_flow.ControlFlow.Continue val3 =>
+          ok (core.result.Result.Ok { send := val1, recv := val3 })
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+            chain.ChainEpoch (core.convert.FromSame Error) residual
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          chain.ChainEpoch (core.convert.FromSame Error) residual
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        chain.ChainEpoch (core.convert.FromSame Error) residual
+  | core.ops.control_flow.ControlFlow.Break residual =>
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+      chain.ChainEpoch (core.convert.FromSame Error) residual
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb]: loop body 0:
+    Source: 'src/chain.rs', lines 455:8-463:9 -/
+@[rust_loop_body]
+def chain.Chain.from_pb_loop.body
+  (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
+  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
+  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
+    proto.pq_ratchet.chain.Epoch) × (alloc.collections.vec_deque.VecDeque
+    chain.ChainEpoch Global)) ((alloc.collections.vec_deque.VecDeque
+    chain.ChainEpoch Global) × (Option Error)))
+  := do
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok (done (links, none))
+  | some link =>
+    let r ← chain.Chain.from_pb.link_from_pb link
+    match r with
+    | core.result.Result.Ok epoch =>
+      let links1 ← alloc.collections.vec_deque.VecDeque.push_back links epoch
+      ok (cont (iter1, links1))
+    | core.result.Result.Err e => ok (done (links, some e))
+
+/-- [spqr::chain::{spqr::chain::Chain}::from_pb]: loop 0:
+    Source: 'src/chain.rs', lines 455:8-463:9 -/
+@[rust_loop]
+def chain.Chain.from_pb_loop
+  (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
+  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
+  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) ×
+    (Option Error))
+  := do
+  loop
+    (fun (iter1, links1) => chain.Chain.from_pb_loop.body iter1 links1)
+    (iter, links)
+
 /-- [spqr::chain::{spqr::chain::Chain}::from_pb]:
-    Source: 'src/chain.rs', lines 444:4-462:5 -/
+    Source: 'src/chain.rs', lines 445:4-475:5 -/
 def chain.Chain.from_pb
   (pb : proto.pq_ratchet.Chain) :
   Result (core.result.Result chain.Chain Error)
@@ -6050,44 +5072,29 @@ def chain.Chain.from_pb
   let cf ← core.result.Result.Insts.CoreOpsTry.branch r1
   match cf with
   | core.ops.control_flow.ControlFlow.Continue val =>
-    let ii ← alloc.vec.IntoIteratorVec.into_iter pb.links
-    let m ←
-      core.iter.traits.iterator.Iterator.map.default
-        (core.iter.traits.iterator.IteratorVecIntoIter
-        proto.pq_ratchet.chain.Epoch)
-        chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError
-        ii ()
-    let r2 ←
-      core.iter.traits.iterator.Iterator.collect.default
-        (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-        (core.iter.traits.iterator.IteratorVecIntoIter
-        proto.pq_ratchet.chain.Epoch)
-        chain.Chain.from_pb.closure_1.Insts.CoreOpsFunctionFnMutTupleEpochResultChainEpochError)
-        (core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult Error
-        (alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator
-        chain.ChainEpoch)) m
-    let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r2
-    match cf1 with
-    | core.ops.control_flow.ControlFlow.Continue val1 =>
-      let r3 ← core.option.Option.ok_or pb.params Error.StateDecode
-      let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r3
-      match cf2 with
-      | core.ops.control_flow.ControlFlow.Continue val2 =>
+    let links ←
+      alloc.collections.vec_deque.VecDequeTGlobal.new chain.ChainEpoch
+    let iter ← alloc.vec.IntoIteratorVec.into_iter pb.links
+    let (links1, error) ← chain.Chain.from_pb_loop iter links
+    match error with
+    | none =>
+      let r2 ← core.option.Option.ok_or pb.params Error.StateDecode
+      let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r2
+      match cf1 with
+      | core.ops.control_flow.ControlFlow.Continue val1 =>
         ok (core.result.Result.Ok
           {
             dir := val,
             current_epoch := pb.current_epoch,
             send_epoch := pb.send_epoch,
-            links := val1,
+            links := links1,
             next_root := pb.next_root,
-            params := val2
+            params := val1
           })
       | core.ops.control_flow.ControlFlow.Break residual =>
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
           chain.Chain (core.convert.FromSame Error) residual
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-        chain.Chain (core.convert.FromSame Error) residual
+    | some e => ok (core.result.Result.Err e)
   | core.ops.control_flow.ControlFlow.Break residual =>
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
       chain.Chain (core.convert.FromSame Error) residual
@@ -7732,56 +6739,6 @@ def encoding.polynomial.const_polys_to_polys
   let polys := alloc.vec.Vec.with_capacity encoding.polynomial.Poly N
   encoding.polynomial.const_polys_to_polys_loop cps polys 0#usize
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::Pt,), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{closure}}::call_mut]:
-    Source: 'src/encoding/polynomial.rs', lines 319:25-322:21 -/
-def
-  encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnMutTupleShared0PtPt.call_mut
-  (c : encoding.polynomial.Poly.from_complete_points.closure)
-  (tupled_args : encoding.polynomial.Pt) :
-  Result (encoding.polynomial.Pt ×
-    encoding.polynomial.Poly.from_complete_points.closure)
-  := do
-  ok ({ tupled_args with y := encoding.gf.GF16.ONE }, c)
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::Pt,), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{closure}}::call_once]:
-    Source: 'src/encoding/polynomial.rs', lines 319:25-322:21 -/
-def
-  encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PtPt.call_once
-  (c : encoding.polynomial.Poly.from_complete_points.closure)
-  (p : encoding.polynomial.Pt) :
-  Result encoding.polynomial.Pt
-  := do
-  let (p1, _) ←
-    encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnMutTupleShared0PtPt.call_mut
-      c p
-  ok p1
-
-/-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{impl core::ops::function::FnOnce<(&'_0 spqr::encoding::polynomial::Pt,), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{closure}}]
-    Source: 'src/encoding/polynomial.rs', lines 319:25-322:21 -/
-@[reducible]
-def
-  encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PtPt
-  : core.ops.function.FnOnce
-  encoding.polynomial.Poly.from_complete_points.closure encoding.polynomial.Pt
-  encoding.polynomial.Pt := {
-  call_once :=
-    encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PtPt.call_once
-}
-
-/-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{impl core::ops::function::FnMut<(&'_0 spqr::encoding::polynomial::Pt,), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::from_complete_points::{closure}}]
-    Source: 'src/encoding/polynomial.rs', lines 319:25-322:21 -/
-@[reducible]
-def
-  encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnMutTupleShared0PtPt
-  : core.ops.function.FnMut
-  encoding.polynomial.Poly.from_complete_points.closure encoding.polynomial.Pt
-  encoding.polynomial.Pt := {
-  FnOnceInst :=
-    encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PtPt
-  call_mut :=
-    encoding.polynomial.Poly.from_complete_points.closure.Insts.CoreOpsFunctionFnMutTupleShared0PtPt.call_mut
-}
-
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::mult_xdiff]: loop body 0:
     Source: 'src/encoding/polynomial.rs', lines 446:12-456:13 -/
 @[rust_loop_body]
@@ -8807,57 +7764,6 @@ def encoding.polynomial.PolyEncoder.from_pb
       ok (core.result.Result.Err
         encoding.polynomial.PolynomialError.SerializationInvalid)
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnMut<((usize, &'_0 spqr::encoding::gf::GF16),), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}}::call_mut]:
-    Source: 'src/encoding/polynomial.rs', lines 665:25-668:21 -/
-def
-  encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt.call_mut
-  (c : encoding.polynomial.PolyEncoder.point_at.closure_1)
-  (tupled_args : (Std.Usize × encoding.gf.GF16)) :
-  Result (encoding.polynomial.Pt ×
-    encoding.polynomial.PolyEncoder.point_at.closure_1)
-  := do
-  let (x, y) := tupled_args
-  let i ← lift (UScalar.cast .U16 x)
-  let g ← encoding.gf.GF16.new i
-  ok ({ x := g, y }, c)
-
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnOnce<((usize, &'_0 spqr::encoding::gf::GF16),), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}}::call_once]:
-    Source: 'src/encoding/polynomial.rs', lines 665:25-668:21 -/
-def
-  encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt.call_once
-  (c : encoding.polynomial.PolyEncoder.point_at.closure_1)
-  (p : (Std.Usize × encoding.gf.GF16)) :
-  Result encoding.polynomial.Pt
-  := do
-  let (p1, _) ←
-    encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt.call_mut
-      c p
-  ok p1
-
-/-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnOnce<((usize, &'_0 spqr::encoding::gf::GF16),), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}}]
-    Source: 'src/encoding/polynomial.rs', lines 665:25-668:21 -/
-@[reducible]
-def
-  encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt
-  : core.ops.function.FnOnce encoding.polynomial.PolyEncoder.point_at.closure_1
-  (Std.Usize × encoding.gf.GF16) encoding.polynomial.Pt := {
-  call_once :=
-    encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt.call_once
-}
-
-/-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnMut<((usize, &'_0 spqr::encoding::gf::GF16),), spqr::encoding::polynomial::Pt> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure#1}}]
-    Source: 'src/encoding/polynomial.rs', lines 665:25-668:21 -/
-@[reducible]
-def
-  encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt
-  : core.ops.function.FnMut encoding.polynomial.PolyEncoder.point_at.closure_1
-  (Std.Usize × encoding.gf.GF16) encoding.polynomial.Pt := {
-  FnOnceInst :=
-    encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0GF16Pt
-  call_mut :=
-    encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt.call_mut
-}
-
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{impl core::ops::function::FnMut<(usize,), spqr::encoding::polynomial::Poly> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at::{closure}}::call_mut]:
     Source: 'src/encoding/polynomial.rs', lines 659:68-659:85 -/
 def
@@ -8906,10 +7812,46 @@ def
     encoding.polynomial.PolyEncoder.point_at.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoly.call_mut
 }
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at]: loop body 0:
-    Source: 'src/encoding/polynomial.rs', lines 660:12-682:13 -/
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at]: loop body 1:
+    Source: 'src/encoding/polynomial.rs', lines 662:16-667:17 -/
 @[rust_loop_body]
-def encoding.polynomial.PolyEncoder.point_at_loop.body
+def encoding.polynomial.PolyEncoder.point_at_loop0_loop0.body
+  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
+  encoding.gf.GF16)) (pt_vec : alloc.vec.Vec encoding.polynomial.Pt) :
+  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
+    (core.slice.iter.Iter encoding.gf.GF16)) × (alloc.vec.Vec
+    encoding.polynomial.Pt)) (alloc.vec.Vec encoding.polynomial.Pt))
+  := do
+  let (o, iter1) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16) iter
+  match o with
+  | none => ok (done pt_vec)
+  | some p =>
+    let (x, y) := p
+    let i ← lift (UScalar.cast .U16 x)
+    let g ← encoding.gf.GF16.new i
+    let pt_vec1 ←
+      alloc.vec.Vec.push pt_vec ({ x := g, y } : encoding.polynomial.Pt)
+    ok (cont (iter1, pt_vec1))
+
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at]: loop 1:
+    Source: 'src/encoding/polynomial.rs', lines 662:16-667:17 -/
+@[rust_loop]
+def encoding.polynomial.PolyEncoder.point_at_loop0_loop0
+  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
+  encoding.gf.GF16)) (pt_vec : alloc.vec.Vec encoding.polynomial.Pt) :
+  Result (alloc.vec.Vec encoding.polynomial.Pt)
+  := do
+  loop
+    (fun (iter1, pt_vec1) =>
+      encoding.polynomial.PolyEncoder.point_at_loop0_loop0.body iter1 pt_vec1)
+    (iter, pt_vec)
+
+/-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at]: loop body 0:
+    Source: 'src/encoding/polynomial.rs', lines 660:12-680:13 -/
+@[rust_loop_body]
+def encoding.polynomial.PolyEncoder.point_at_loop0.body
   (pts : Array encoding.polynomial.Point 16#usize)
   (iter : core.ops.range.Range Std.Usize)
   (polys : Array encoding.polynomial.Poly 16#usize) :
@@ -8923,25 +7865,16 @@ def encoding.polynomial.PolyEncoder.point_at_loop.body
   | none => ok (done polys)
   | some i =>
     let p ← Array.index_usize pts i
+    let i1 := alloc.vec.Vec.len p.value
+    let pt_vec := alloc.vec.Vec.with_capacity encoding.polynomial.Pt i1
     let s := alloc.vec.Vec.deref p.value
-    let i1 ← core.slice.Slice.iter s
-    let e ←
+    let i2 ← core.slice.Slice.iter s
+    let iter2 ←
       core.iter.traits.iterator.Iterator.enumerate.trait_default
-        (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16) i1
-    let m ←
-      core.iter.traits.iterator.Iterator.map.default
-        (core.iter.traits.iterator.IteratorEnumerate
-        (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16))
-        encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt
-        e ()
-    let pt_vec ←
-      core.iter.traits.iterator.Iterator.collect.default
-        (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-        (core.iter.traits.iterator.IteratorEnumerate
-        (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16))
-        encoding.polynomial.PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0GF16Pt)
-        (core.iter.traits.collect.FromIteratorVec encoding.polynomial.Pt) m
-    let s1 := alloc.vec.Vec.deref pt_vec
+        (core.iter.traits.iterator.IteratorSliceIter encoding.gf.GF16) i2
+    let pt_vec1 ←
+      encoding.polynomial.PolyEncoder.point_at_loop0_loop0 iter2 pt_vec
+    let s1 := alloc.vec.Vec.deref pt_vec1
     let res ← encoding.polynomial.Poly.from_complete_points s1
     let p1 ←
       core.result.Result.expect core.fmt.DebugUnit res (toStr
@@ -8953,21 +7886,21 @@ def encoding.polynomial.PolyEncoder.point_at_loop.body
     ok (cont (iter1, a))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at]: loop 0:
-    Source: 'src/encoding/polynomial.rs', lines 660:12-682:13 -/
+    Source: 'src/encoding/polynomial.rs', lines 660:12-680:13 -/
 @[rust_loop]
-def encoding.polynomial.PolyEncoder.point_at_loop
+def encoding.polynomial.PolyEncoder.point_at_loop0
   (iter : core.ops.range.Range Std.Usize)
   (pts : Array encoding.polynomial.Point 16#usize)
   (polys : Array encoding.polynomial.Poly 16#usize) :
   Result (Array encoding.polynomial.Poly 16#usize)
   := do
   loop
-    (fun (iter1, polys1) => encoding.polynomial.PolyEncoder.point_at_loop.body
+    (fun (iter1, polys1) => encoding.polynomial.PolyEncoder.point_at_loop0.body
       pts iter1 polys1)
     (iter, polys)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::point_at]:
-    Source: 'src/encoding/polynomial.rs', lines 648:4-691:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 648:4-689:5 -/
 def encoding.polynomial.PolyEncoder.point_at
   (self : encoding.polynomial.PolyEncoder) (poly : Std.Usize) (idx : Std.Usize)
   :
@@ -8990,7 +7923,7 @@ def encoding.polynomial.PolyEncoder.point_at
           ()
       let i1 ← encoding.polynomial.NUM_POLYS
       let polys1 ←
-        encoding.polynomial.PolyEncoder.point_at_loop
+        encoding.polynomial.PolyEncoder.point_at_loop0
           { start := 0#usize, «end» := i1 } pts polys
       let p1 ← Array.index_usize polys1 poly
       let i2 ← lift (UScalar.cast .U16 idx)
@@ -9024,7 +7957,7 @@ def encoding.EncodingError.Insts.CoreConvertFromPolynomialError :
 }
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{impl core::ops::function::FnMut<(usize,), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}<'_0>}::call_mut]:
-    Source: 'src/encoding/polynomial.rs', lines 700:63-702:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 698:63-700:9 -/
 def
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoint.call_mut
   (c : encoding.polynomial.PolyEncoder.encode_bytes_base.closure)
@@ -9038,7 +7971,7 @@ def
   ok ({ value := v }, c)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{impl core::ops::function::FnOnce<(usize,), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}<'_0>}::call_once]:
-    Source: 'src/encoding/polynomial.rs', lines 700:63-702:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 698:63-700:9 -/
 def
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnOnceTupleUsizePoint.call_once
   (c : encoding.polynomial.PolyEncoder.encode_bytes_base.closure)
@@ -9051,7 +7984,7 @@ def
   ok p
 
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{impl core::ops::function::FnOnce<(usize,), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}<'_0>}]
-    Source: 'src/encoding/polynomial.rs', lines 700:63-702:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 698:63-700:9 -/
 @[reducible]
 def
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnOnceTupleUsizePoint
@@ -9063,7 +7996,7 @@ def
 }
 
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{impl core::ops::function::FnMut<(usize,), spqr::encoding::polynomial::Point> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base::{closure}<'_0>}]
-    Source: 'src/encoding/polynomial.rs', lines 700:63-702:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 698:63-700:9 -/
 @[reducible]
 def
   encoding.polynomial.PolyEncoder.encode_bytes_base.closure.Insts.CoreOpsFunctionFnMutTupleUsizePoint
@@ -9077,7 +8010,7 @@ def
 }
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base]: loop body 0:
-    Source: 'src/encoding/polynomial.rs', lines 703:8-710:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 701:8-708:9 -/
 @[rust_loop_body]
 def encoding.polynomial.PolyEncoder.encode_bytes_base_loop.body
   (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact
@@ -9109,7 +8042,7 @@ def encoding.polynomial.PolyEncoder.encode_bytes_base_loop.body
     ok (cont (iter1, a))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base]: loop 0:
-    Source: 'src/encoding/polynomial.rs', lines 703:8-710:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 701:8-708:9 -/
 @[rust_loop]
 def encoding.polynomial.PolyEncoder.encode_bytes_base_loop
   (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact
@@ -9122,7 +8055,7 @@ def encoding.polynomial.PolyEncoder.encode_bytes_base_loop
     (iter, pts)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::encode_bytes_base]:
-    Source: 'src/encoding/polynomial.rs', lines 694:4-715:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 692:4-713:5 -/
 def encoding.polynomial.PolyEncoder.encode_bytes_base
   (msg : Slice Std.U8) :
   Result (core.result.Result encoding.polynomial.PolyEncoder
@@ -9164,7 +8097,7 @@ def encoding.polynomial.PolyEncoder.encode_bytes_base
         { idx := 0#u32, s := (encoding.polynomial.EncoderState.Points pts1) })
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::chunk_at]: loop body 0:
-    Source: 'src/encoding/polynomial.rs', lines 721:8-729:9
+    Source: 'src/encoding/polynomial.rs', lines 719:8-727:9
     Visibility: public -/
 @[rust_loop_body]
 def encoding.polynomial.PolyEncoder.chunk_at_loop.body
@@ -9194,7 +8127,7 @@ def encoding.polynomial.PolyEncoder.chunk_at_loop.body
     ok (cont (iter1, self1, out2))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::chunk_at]: loop 0:
-    Source: 'src/encoding/polynomial.rs', lines 721:8-729:9
+    Source: 'src/encoding/polynomial.rs', lines 719:8-727:9
     Visibility: public -/
 @[rust_loop]
 def encoding.polynomial.PolyEncoder.chunk_at_loop
@@ -9209,7 +8142,7 @@ def encoding.polynomial.PolyEncoder.chunk_at_loop
     (iter, self, out)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyEncoder}::chunk_at]:
-    Source: 'src/encoding/polynomial.rs', lines 718:4-737:5
+    Source: 'src/encoding/polynomial.rs', lines 716:4-735:5
     Visibility: public -/
 def encoding.polynomial.PolyEncoder.chunk_at
   (self : encoding.polynomial.PolyEncoder) (idx : Std.U16) :
@@ -9228,7 +8161,7 @@ def encoding.polynomial.PolyEncoder.chunk_at
   ok ({ index := idx, data := a }, self1)
 
 /-- [spqr::encoding::polynomial::{impl spqr::encoding::Encoder for spqr::encoding::polynomial::PolyEncoder}::next_chunk]:
-    Source: 'src/encoding/polynomial.rs', lines 761:4-765:5
+    Source: 'src/encoding/polynomial.rs', lines 759:4-763:5
     Visibility: public -/
 def encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
   (self : encoding.polynomial.PolyEncoder) :
@@ -9240,7 +8173,7 @@ def encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk
   ok (out, { self1 with idx := i1 })
 
 /-- [spqr::encoding::polynomial::{impl spqr::encoding::Encoder for spqr::encoding::polynomial::PolyEncoder}::encode_bytes]:
-    Source: 'src/encoding/polynomial.rs', lines 757:4-759:5
+    Source: 'src/encoding/polynomial.rs', lines 755:4-757:5
     Visibility: public -/
 def encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes
   (msg : Slice Std.U8) :
@@ -9250,7 +8183,7 @@ def encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes
   encoding.polynomial.PolyEncoder.encode_bytes_base msg
 
 /-- Trait implementation: [spqr::encoding::polynomial::{impl spqr::encoding::Encoder for spqr::encoding::polynomial::PolyEncoder}]
-    Source: 'src/encoding/polynomial.rs', lines 755:0-766:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 753:0-764:1 -/
 @[reducible]
 def encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder :
   encoding.Encoder encoding.polynomial.PolyEncoder := {
@@ -9261,7 +8194,7 @@ def encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder :
 }
 
 /-- [spqr::encoding::polynomial::{impl core::clone::Clone for spqr::encoding::polynomial::PolyDecoder}::clone]:
-    Source: 'src/encoding/polynomial.rs', lines 768:9-768:14
+    Source: 'src/encoding/polynomial.rs', lines 766:9-766:14
     Visibility: public -/
 def encoding.polynomial.PolyDecoder.Insts.CoreCloneClone.clone
   (self : encoding.polynomial.PolyDecoder) :
@@ -9276,7 +8209,7 @@ def encoding.polynomial.PolyDecoder.Insts.CoreCloneClone.clone
   ok { pts_needed := i, pts := a, is_complete := b }
 
 /-- Trait implementation: [spqr::encoding::polynomial::{impl core::clone::Clone for spqr::encoding::polynomial::PolyDecoder}]
-    Source: 'src/encoding/polynomial.rs', lines 768:9-768:14 -/
+    Source: 'src/encoding/polynomial.rs', lines 766:9-766:14 -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.Insts.CoreCloneClone : core.clone.Clone
   encoding.polynomial.PolyDecoder := {
@@ -9284,14 +8217,14 @@ def encoding.polynomial.PolyDecoder.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::get_pts_needed]:
-    Source: 'src/encoding/polynomial.rs', lines 794:4-796:5
+    Source: 'src/encoding/polynomial.rs', lines 792:4-794:5
     Visibility: public -/
 def encoding.polynomial.PolyDecoder.get_pts_needed
   (self : encoding.polynomial.PolyDecoder) : Result Std.Usize := do
   ok self.pts_needed
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::necessary_points]:
-    Source: 'src/encoding/polynomial.rs', lines 798:4-806:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 796:4-804:5 -/
 def encoding.polynomial.PolyDecoder.necessary_points
   (self : encoding.polynomial.PolyDecoder) (poly : Std.Usize) :
   Result Std.Usize
@@ -9303,7 +8236,7 @@ def encoding.polynomial.PolyDecoder.necessary_points
   else ok points_per_poly
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{impl core::ops::function::FnMut<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}}::call_mut]:
-    Source: 'src/encoding/polynomial.rs', lines 815:38-815:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 813:38-813:58 -/
 def
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut
   (c : encoding.polynomial.PolyDecoder.new_with_poly_count.closure)
@@ -9315,7 +8248,7 @@ def
   ok (ss, c)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{impl core::ops::function::FnOnce<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}}::call_once]:
-    Source: 'src/encoding/polynomial.rs', lines 815:38-815:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 813:38-813:58 -/
 def
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeSortedSetPt.call_once
   (c : encoding.polynomial.PolyDecoder.new_with_poly_count.closure)
@@ -9328,7 +8261,7 @@ def
   ok ss
 
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{impl core::ops::function::FnOnce<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}}]
-    Source: 'src/encoding/polynomial.rs', lines 815:38-815:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 813:38-813:58 -/
 @[reducible]
 def
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeSortedSetPt
@@ -9340,7 +8273,7 @@ def
 }
 
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{impl core::ops::function::FnMut<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count::{closure}}]
-    Source: 'src/encoding/polynomial.rs', lines 815:38-815:58 -/
+    Source: 'src/encoding/polynomial.rs', lines 813:38-813:58 -/
 @[reducible]
 def
   encoding.polynomial.PolyDecoder.new_with_poly_count.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt
@@ -9354,7 +8287,7 @@ def
 }
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::new_with_poly_count]:
-    Source: 'src/encoding/polynomial.rs', lines 809:4-818:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 807:4-816:5 -/
 def encoding.polynomial.PolyDecoder.new_with_poly_count
   (len_bytes : Std.Usize) (_polys : Std.Usize) :
   Result (core.result.Result encoding.polynomial.PolyDecoder
@@ -9378,7 +8311,7 @@ def encoding.polynomial.PolyDecoder.new_with_poly_count
       { pts_needed := i1, pts := a, is_complete := false })
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::into_pb]: loop body 1:
-    Source: 'src/encoding/polynomial.rs', lines 833:12-837:13 -/
+    Source: 'src/encoding/polynomial.rs', lines 831:12-835:13 -/
 @[rust_loop_body]
 def encoding.polynomial.PolyDecoder.into_pb_loop0_loop0.body
   (pts : sorted_vec.SortedSet encoding.polynomial.Pt)
@@ -9408,7 +8341,7 @@ def encoding.polynomial.PolyDecoder.into_pb_loop0_loop0.body
     ok (cont (iter1, v2))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::into_pb]: loop 1:
-    Source: 'src/encoding/polynomial.rs', lines 833:12-837:13 -/
+    Source: 'src/encoding/polynomial.rs', lines 831:12-835:13 -/
 @[rust_loop]
 def encoding.polynomial.PolyDecoder.into_pb_loop0_loop0
   (iter : core.ops.range.Range Std.Usize)
@@ -9422,7 +8355,7 @@ def encoding.polynomial.PolyDecoder.into_pb_loop0_loop0
     (iter, v)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::into_pb]: loop body 0:
-    Source: 'src/encoding/polynomial.rs', lines 828:8-839:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 826:8-837:9 -/
 @[rust_loop_body]
 def encoding.polynomial.PolyDecoder.into_pb_loop0.body
   (a : Array (sorted_vec.SortedSet encoding.polynomial.Pt) 16#usize)
@@ -9457,7 +8390,7 @@ def encoding.polynomial.PolyDecoder.into_pb_loop0.body
     ok (cont (iter1, v5))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::into_pb]: loop 0:
-    Source: 'src/encoding/polynomial.rs', lines 828:8-839:9 -/
+    Source: 'src/encoding/polynomial.rs', lines 826:8-837:9 -/
 @[rust_loop]
 def encoding.polynomial.PolyDecoder.into_pb_loop0
   (iter : core.ops.range.Range Std.Usize)
@@ -9471,7 +8404,7 @@ def encoding.polynomial.PolyDecoder.into_pb_loop0
     (iter, v)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::into_pb]:
-    Source: 'src/encoding/polynomial.rs', lines 820:4-841:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 818:4-839:5 -/
 def encoding.polynomial.PolyDecoder.into_pb
   (self : encoding.polynomial.PolyDecoder) :
   Result proto.pq_ratchet.PolynomialDecoder
@@ -9494,7 +8427,7 @@ def encoding.polynomial.PolyDecoder.into_pb
     }
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{impl core::ops::function::FnMut<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{closure}}::call_mut]:
-    Source: 'src/encoding/polynomial.rs', lines 851:47-851:67 -/
+    Source: 'src/encoding/polynomial.rs', lines 849:47-849:67 -/
 def
   encoding.polynomial.PolyDecoder.from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut
   (c : encoding.polynomial.PolyDecoder.from_pb.closure)
@@ -9506,7 +8439,7 @@ def
   ok (ss, c)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{impl core::ops::function::FnOnce<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{closure}}::call_once]:
-    Source: 'src/encoding/polynomial.rs', lines 851:47-851:67 -/
+    Source: 'src/encoding/polynomial.rs', lines 849:47-849:67 -/
 def
   encoding.polynomial.PolyDecoder.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeSortedSetPt.call_once
   (c : encoding.polynomial.PolyDecoder.from_pb.closure) (i : Std.Usize) :
@@ -9518,7 +8451,7 @@ def
   ok ss
 
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{impl core::ops::function::FnOnce<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{closure}}]
-    Source: 'src/encoding/polynomial.rs', lines 851:47-851:67 -/
+    Source: 'src/encoding/polynomial.rs', lines 849:47-849:67 -/
 @[reducible]
 def
   encoding.polynomial.PolyDecoder.from_pb.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeSortedSetPt
@@ -9529,7 +8462,7 @@ def
 }
 
 /-- Trait implementation: [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{impl core::ops::function::FnMut<(usize,), sorted_vec::SortedSet<spqr::encoding::polynomial::Pt>> for spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb::{closure}}]
-    Source: 'src/encoding/polynomial.rs', lines 851:47-851:67 -/
+    Source: 'src/encoding/polynomial.rs', lines 849:47-849:67 -/
 @[reducible]
 def
   encoding.polynomial.PolyDecoder.from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt
@@ -9542,7 +8475,7 @@ def
 }
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb]: loop body 1:
-    Source: 'src/encoding/polynomial.rs', lines 859:12-861:13 -/
+    Source: 'src/encoding/polynomial.rs', lines 857:12-859:13 -/
 @[rust_loop_body]
 def encoding.polynomial.PolyDecoder.from_pb_loop0_loop0.body
   (iter : core.slice.iter.ChunksExact Std.U8)
@@ -9564,7 +8497,7 @@ def encoding.polynomial.PolyDecoder.from_pb_loop0_loop0.body
     ok (cont (iter1, v1))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb]: loop 1:
-    Source: 'src/encoding/polynomial.rs', lines 859:12-861:13 -/
+    Source: 'src/encoding/polynomial.rs', lines 857:12-859:13 -/
 @[rust_loop]
 def encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
   (iter : core.slice.iter.ChunksExact Std.U8)
@@ -9577,7 +8510,7 @@ def encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
     (iter, v)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb]: loop body 0:
-    Source: 'src/encoding/polynomial.rs', lines 853:8-869:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 851:8-867:5 -/
 @[rust_loop_body]
 def encoding.polynomial.PolyDecoder.from_pb_loop0.body
   (i : Std.U32) (v : alloc.vec.Vec (alloc.vec.Vec Std.U8)) (b : Bool)
@@ -9621,7 +8554,7 @@ def encoding.polynomial.PolyDecoder.from_pb_loop0.body
       ok (cont (iter1, a))
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb]: loop 0:
-    Source: 'src/encoding/polynomial.rs', lines 853:8-869:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 851:8-867:5 -/
 @[rust_loop]
 def encoding.polynomial.PolyDecoder.from_pb_loop0
   (iter : core.ops.range.Range Std.Usize) (i : Std.U32)
@@ -9636,7 +8569,7 @@ def encoding.polynomial.PolyDecoder.from_pb_loop0
     (iter, out_pts)
 
 /-- [spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyDecoder}::from_pb]:
-    Source: 'src/encoding/polynomial.rs', lines 845:4-869:5 -/
+    Source: 'src/encoding/polynomial.rs', lines 843:4-867:5 -/
 def encoding.polynomial.PolyDecoder.from_pb
   (pb : proto.pq_ratchet.PolynomialDecoder) :
   Result (core.result.Result encoding.polynomial.PolyDecoder
@@ -9656,8 +8589,248 @@ def encoding.polynomial.PolyDecoder.from_pb
       { start := 0#usize, «end» := 16#usize } pb.pts_needed pb.pts
       pb.is_complete out_pts
 
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{impl core::ops::function::FnMut<(usize,), core::option::Option<spqr::encoding::polynomial::Poly>> for spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{closure}}::call_mut]:
+    Source: 'src/encoding/polynomial.rs', lines 942:65-942:73 -/
+def
+  encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnMutTupleUsizeOptionPoly.call_mut
+  (c : encoding.polynomial.DecoderPolyDecoder.decoded_message.closure)
+  (tupled_args : Std.Usize) :
+  Result ((Option encoding.polynomial.Poly) ×
+    encoding.polynomial.DecoderPolyDecoder.decoded_message.closure)
+  := do
+  ok (none, c)
+
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{impl core::ops::function::FnOnce<(usize,), core::option::Option<spqr::encoding::polynomial::Poly>> for spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{closure}}::call_once]:
+    Source: 'src/encoding/polynomial.rs', lines 942:65-942:73 -/
+def
+  encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeOptionPoly.call_once
+  (c : encoding.polynomial.DecoderPolyDecoder.decoded_message.closure)
+  (i : Std.Usize) :
+  Result (Option encoding.polynomial.Poly)
+  := do
+  let (o, _) ←
+    encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnMutTupleUsizeOptionPoly.call_mut
+      c i
+  ok o
+
+/-- Trait implementation: [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{impl core::ops::function::FnOnce<(usize,), core::option::Option<spqr::encoding::polynomial::Poly>> for spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{closure}}]
+    Source: 'src/encoding/polynomial.rs', lines 942:65-942:73 -/
+@[reducible]
+def
+  encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeOptionPoly
+  : core.ops.function.FnOnce
+  encoding.polynomial.DecoderPolyDecoder.decoded_message.closure Std.Usize
+  (Option encoding.polynomial.Poly) := {
+  call_once :=
+    encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeOptionPoly.call_once
+}
+
+/-- Trait implementation: [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{impl core::ops::function::FnMut<(usize,), core::option::Option<spqr::encoding::polynomial::Poly>> for spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message::{closure}}]
+    Source: 'src/encoding/polynomial.rs', lines 942:65-942:73 -/
+@[reducible]
+def
+  encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnMutTupleUsizeOptionPoly
+  : core.ops.function.FnMut
+  encoding.polynomial.DecoderPolyDecoder.decoded_message.closure Std.Usize
+  (Option encoding.polynomial.Poly) := {
+  FnOnceInst :=
+    encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeOptionPoly
+  call_mut :=
+    encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnMutTupleUsizeOptionPoly.call_mut
+}
+
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]: loop body 0:
+    Source: 'src/encoding/polynomial.rs', lines 929:8-934:9
+    Visibility: public -/
+@[rust_loop_body]
+def
+  encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop0.body
+  (i : Std.Usize)
+  (a : Array (sorted_vec.SortedSet encoding.polynomial.Pt) 16#usize) 
+  (b : Bool) (iter : core.ops.range.Range Std.Usize) (ret_none : Bool) :
+  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Bool) Bool)
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok (done ret_none)
+  | some i1 =>
+    let pts ← Array.index_usize a i1
+    let sv ←
+      sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+        encoding.polynomial.Pt.Insts.CoreCmpOrd pts
+    let v ←
+      sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+        encoding.polynomial.Pt.Insts.CoreCmpOrd sv
+    let i2 := alloc.vec.Vec.len v
+    let i3 ←
+      encoding.polynomial.PolyDecoder.necessary_points
+        { pts_needed := i, pts := a, is_complete := b } i1
+    if i2 < i3
+    then ok (cont (iter1, true))
+    else ok (cont (iter1, ret_none))
+
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]: loop 0:
+    Source: 'src/encoding/polynomial.rs', lines 929:8-934:9
+    Visibility: public -/
+@[rust_loop]
+def
+  encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop0
+  (iter : core.ops.range.Range Std.Usize) (i : Std.Usize)
+  (a : Array (sorted_vec.SortedSet encoding.polynomial.Pt) 16#usize) 
+  (b : Bool) (ret_none : Bool) :
+  Result Bool
+  := do
+  loop
+    (fun (iter1, ret_none1) =>
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop0.body
+      i a b iter1 ret_none1)
+    (iter, ret_none)
+
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]: loop body 1:
+    Source: 'src/encoding/polynomial.rs', lines 944:8-969:9
+    Visibility: public -/
+@[rust_loop_body]
+def
+  encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop1.body
+  (i : Std.Usize)
+  (a : Array (sorted_vec.SortedSet encoding.polynomial.Pt) 16#usize) 
+  (b : Bool) (iter : core.ops.range.Range Std.Usize)
+  (polys : Array (Option encoding.polynomial.Poly) 16#usize)
+  (out : alloc.vec.Vec Std.U8) :
+  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array (Option
+    encoding.polynomial.Poly) 16#usize) × (alloc.vec.Vec Std.U8))
+    (alloc.vec.Vec Std.U8))
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok (done out)
+  | some i1 =>
+    let poly ← i1 % 16#usize
+    let poly_idx ← i1 / 16#usize
+    let i2 ← lift (UScalar.cast .U16 poly_idx)
+    let g ← encoding.gf.GF16.new i2
+    let ss ← Array.index_usize a poly
+    let sv ←
+      sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+        encoding.polynomial.Pt.Insts.CoreCmpOrd ss
+    let v ←
+      sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+        encoding.polynomial.Pt.Insts.CoreCmpOrd sv
+    let s := alloc.vec.Vec.deref v
+    let r ←
+      core.slice.Slice.binary_search encoding.polynomial.Pt.Insts.CoreCmpOrd s
+        { x := g, y := encoding.gf.GF16.ZERO }
+    let (polys1, y) ←
+      match r with
+      | core.result.Result.Ok i3 =>
+        do
+        let sv1 ←
+          sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+            encoding.polynomial.Pt.Insts.CoreCmpOrd ss
+        let v1 ←
+          sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+            encoding.polynomial.Pt.Insts.CoreCmpOrd sv1
+        let p ←
+          alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
+            encoding.polynomial.Pt) v1 i3
+        ok (polys, p.y)
+      | core.result.Result.Err _ =>
+        do
+        let o1 ← Array.index_usize polys poly
+        let b1 := core.option.Option.is_none o1
+        if b1
+        then
+          let sv1 ←
+            sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+              encoding.polynomial.Pt.Insts.CoreCmpOrd ss
+          let v1 ←
+            sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+              encoding.polynomial.Pt.Insts.CoreCmpOrd sv1
+          let s1 ← alloc.vec.Vec.as_slice Global v1
+          let i3 ←
+            encoding.polynomial.PolyDecoder.necessary_points
+              { pts_needed := i, pts := a, is_complete := b } poly
+          let points ←
+            core.slice.index.Slice.index
+              (core.slice.index.SliceIndexRangeToUsizeSlice
+              encoding.polynomial.Pt) s1 { «end» := i3 }
+          let p ← encoding.polynomial.Poly.lagrange_interpolate points
+          massert (poly < 16#usize)
+          let (o2, index_mut_back) ← Array.index_mut_usize polys poly
+          let polys2 := index_mut_back o2
+          let polys3 ← Array.update polys2 poly (some p)
+          let o3 ← Array.index_usize polys3 poly
+          let o4 ← core.option.Option.as_ref o3
+          let p1 ←
+            core.option.Option.expect o4 (toStr "already computed lazily")
+          let y1 ← encoding.polynomial.Poly.compute_at p1 g
+          ok (polys3, y1)
+        else
+          let o2 ← core.option.Option.as_ref o1
+          let p ←
+            core.option.Option.expect o2 (toStr "already computed lazily")
+          let y1 ← encoding.polynomial.Poly.compute_at p g
+          ok (polys, y1)
+    let i3 ← y.value >>> 8#i32
+    let i4 ← lift (UScalar.cast .U8 i3)
+    let out1 ← alloc.vec.Vec.push out i4
+    let i5 ← lift (UScalar.cast .U8 y.value)
+    let out2 ← alloc.vec.Vec.push out1 i5
+    ok (cont (iter1, polys1, out2))
+
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]: loop 1:
+    Source: 'src/encoding/polynomial.rs', lines 944:8-969:9
+    Visibility: public -/
+@[rust_loop]
+def
+  encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop1
+  (iter : core.ops.range.Range Std.Usize) (i : Std.Usize)
+  (a : Array (sorted_vec.SortedSet encoding.polynomial.Pt) 16#usize) 
+  (b : Bool) (polys : Array (Option encoding.polynomial.Poly) 16#usize)
+  (out : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  loop
+    (fun (iter1, polys1, out1) =>
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop1.body
+      i a b iter1 polys1 out1)
+    (iter, polys, out)
+
+/-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]:
+    Source: 'src/encoding/polynomial.rs', lines 924:4-971:5
+    Visibility: public -/
+def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
+  (self : encoding.polynomial.PolyDecoder) :
+  Result (Option (alloc.vec.Vec Std.U8))
+  := do
+  if self.is_complete
+  then ok none
+  else
+    let s ← lift (Array.to_slice self.pts)
+    let i := Slice.len s
+    let ret_none ←
+      encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop0
+        { start := 0#usize, «end» := i } self.pts_needed self.pts
+        self.is_complete false
+    if ret_none
+    then ok none
+    else
+      let polys ←
+        core.array.from_fn 16#usize
+          encoding.polynomial.DecoderPolyDecoder.decoded_message.closure.Insts.CoreOpsFunctionFnMutTupleUsizeOptionPoly
+          ()
+      let i1 ← self.pts_needed * 2#usize
+      let out := alloc.vec.Vec.with_capacity Std.U8 i1
+      let out1 ←
+        encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop1
+          { start := 0#usize, «end» := self.pts_needed } self.pts_needed
+          self.pts self.is_complete polys out
+      ok (some out1)
+
 /-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::add_chunk]: loop body 0:
-    Source: 'src/encoding/polynomial.rs', lines 897:8-918:9
+    Source: 'src/encoding/polynomial.rs', lines 895:8-916:9
     Visibility: public -/
 @[rust_loop_body]
 def
@@ -9718,7 +8891,7 @@ def
       else ok (cont (iter1, self))
 
 /-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::add_chunk]: loop 0:
-    Source: 'src/encoding/polynomial.rs', lines 897:8-918:9
+    Source: 'src/encoding/polynomial.rs', lines 895:8-916:9
     Visibility: public -/
 @[rust_loop]
 def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
@@ -9733,7 +8906,7 @@ def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
     (iter, self)
 
 /-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::add_chunk]:
-    Source: 'src/encoding/polynomial.rs', lines 894:4-919:5
+    Source: 'src/encoding/polynomial.rs', lines 892:4-917:5
     Visibility: public -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
@@ -9744,7 +8917,7 @@ def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk
     { start := 0#usize, «end» := 16#usize } self chunk
 
 /-- [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::new]:
-    Source: 'src/encoding/polynomial.rs', lines 889:4-891:5
+    Source: 'src/encoding/polynomial.rs', lines 887:4-889:5
     Visibility: public -/
 def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new
   (len_bytes : Std.Usize) :
@@ -9754,7 +8927,7 @@ def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new
   encoding.polynomial.PolyDecoder.new_with_poly_count len_bytes 16#usize
 
 /-- Trait implementation: [spqr::encoding::polynomial::{impl spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}]
-    Source: 'src/encoding/polynomial.rs', lines 887:0-980:1 -/
+    Source: 'src/encoding/polynomial.rs', lines 885:0-972:1 -/
 @[reducible]
 def encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder :
   encoding.Decoder encoding.polynomial.PolyDecoder := {
@@ -10256,14 +9429,14 @@ def empty_state : Result (alloc.vec.Vec Std.U8) := do
   ok (alloc.vec.Vec.new Std.U8)
 
 /-- Trait implementation: [spqr::{impl core::marker::StructuralPartialEq for spqr::SecretOutput}]
-    Source: 'src/lib.rs', lines 72:9-72:18 -/
+    Source: 'src/lib.rs', lines 80:9-80:18 -/
 @[reducible]
 def SecretOutput.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq SecretOutput := {
 }
 
 /-- [spqr::{impl core::cmp::PartialEq<spqr::SecretOutput> for spqr::SecretOutput}::eq]:
-    Source: 'src/lib.rs', lines 72:9-72:18
+    Source: 'src/lib.rs', lines 80:9-80:18
     Visibility: public -/
 def SecretOutput.Insts.CoreCmpPartialEqSecretOutput.eq
   (self : SecretOutput) (other : SecretOutput) : Result Bool := do
@@ -10290,7 +9463,7 @@ def SecretOutput.Insts.CoreCmpPartialEqSecretOutput.eq
   else ok false
 
 /-- Trait implementation: [spqr::{impl core::cmp::PartialEq<spqr::SecretOutput> for spqr::SecretOutput}]
-    Source: 'src/lib.rs', lines 72:9-72:18 -/
+    Source: 'src/lib.rs', lines 80:9-80:18 -/
 @[reducible]
 def SecretOutput.Insts.CoreCmpPartialEqSecretOutput : core.cmp.PartialEq
   SecretOutput SecretOutput := {
@@ -10298,7 +9471,7 @@ def SecretOutput.Insts.CoreCmpPartialEqSecretOutput : core.cmp.PartialEq
 }
 
 /-- [spqr::{impl core::fmt::Debug for spqr::SecretOutput}::fmt]:
-    Source: 'src/lib.rs', lines 72:20-72:25
+    Source: 'src/lib.rs', lines 80:20-80:25
     Visibility: public -/
 def SecretOutput.Insts.CoreFmtDebug.fmt
   (self : SecretOutput) (f : core.fmt.Formatter) :
@@ -10318,21 +9491,21 @@ def SecretOutput.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.debug_tuple_field1_finish f (toStr "Recv") __self_01
 
 /-- Trait implementation: [spqr::{impl core::fmt::Debug for spqr::SecretOutput}]
-    Source: 'src/lib.rs', lines 72:20-72:25 -/
+    Source: 'src/lib.rs', lines 80:20-80:25 -/
 @[reducible]
 def SecretOutput.Insts.CoreFmtDebug : core.fmt.Debug SecretOutput := {
   fmt := SecretOutput.Insts.CoreFmtDebug.fmt
 }
 
 /-- [spqr::{impl core::convert::From<spqr::encoding::EncodingError> for spqr::Error}::from]:
-    Source: 'src/lib.rs', lines 133:4-135:5
+    Source: 'src/lib.rs', lines 141:4-143:5
     Visibility: public -/
 def Error.Insts.CoreConvertFromEncodingError.from
   (e : encoding.EncodingError) : Result Error := do
   ok (Error.EncodingDecoding e)
 
 /-- Trait implementation: [spqr::{impl core::convert::From<spqr::encoding::EncodingError> for spqr::Error}]
-    Source: 'src/lib.rs', lines 132:0-136:1 -/
+    Source: 'src/lib.rs', lines 140:0-144:1 -/
 @[reducible]
 def Error.Insts.CoreConvertFromEncodingError : core.convert.From Error
   encoding.EncodingError := {
@@ -10340,14 +9513,14 @@ def Error.Insts.CoreConvertFromEncodingError : core.convert.From Error
 }
 
 /-- [spqr::{impl core::convert::From<spqr::authenticator::Error> for spqr::Error}::from]:
-    Source: 'src/lib.rs', lines 145:4-147:5
+    Source: 'src/lib.rs', lines 153:4-155:5
     Visibility: public -/
 def Error.Insts.CoreConvertFromError.from
   (_v : authenticator.Error) : Result Error := do
   ok Error.MacVerifyFailed
 
 /-- Trait implementation: [spqr::{impl core::convert::From<spqr::authenticator::Error> for spqr::Error}]
-    Source: 'src/lib.rs', lines 144:0-148:1 -/
+    Source: 'src/lib.rs', lines 152:0-156:1 -/
 @[reducible]
 def Error.Insts.CoreConvertFromError : core.convert.From Error
   authenticator.Error := {
@@ -10355,7 +9528,7 @@ def Error.Insts.CoreConvertFromError : core.convert.From Error
 }
 
 /-- [spqr::{spqr::SecretOutput}::send_secret]:
-    Source: 'src/lib.rs', lines 151:4-157:5
+    Source: 'src/lib.rs', lines 159:4-165:5
     Visibility: public -/
 def SecretOutput.send_secret
   (self : SecretOutput) : Result (Option (alloc.vec.Vec Std.U8)) := do
@@ -10365,7 +9538,7 @@ def SecretOutput.send_secret
   | SecretOutput.Recv _ => ok none
 
 /-- [spqr::{spqr::SecretOutput}::recv_secret]:
-    Source: 'src/lib.rs', lines 158:4-164:5
+    Source: 'src/lib.rs', lines 166:4-172:5
     Visibility: public -/
 def SecretOutput.recv_secret
   (self : SecretOutput) : Result (Option (alloc.vec.Vec Std.U8)) := do
@@ -10375,7 +9548,7 @@ def SecretOutput.recv_secret
   | SecretOutput.Recv s => ok (some s)
 
 /-- [spqr::{spqr::SecretOutput}::secret]:
-    Source: 'src/lib.rs', lines 166:4-171:5
+    Source: 'src/lib.rs', lines 174:4-179:5
     Visibility: public -/
 def SecretOutput.secret
   (self : SecretOutput) : Result (Option (alloc.vec.Vec Std.U8)) := do
@@ -10385,7 +9558,7 @@ def SecretOutput.secret
   | SecretOutput.Recv s => ok (some s)
 
 /-- [spqr::{spqr::SecretOutput}::has_secret]:
-    Source: 'src/lib.rs', lines 172:4-174:5
+    Source: 'src/lib.rs', lines 180:4-182:5
     Visibility: public -/
 def SecretOutput.has_secret (self : SecretOutput) : Result Bool := do
   let b ←
@@ -10396,7 +9569,7 @@ def SecretOutput.has_secret (self : SecretOutput) : Result Bool := do
   ok (¬ b)
 
 /-- [spqr::{impl core::convert::TryFrom<u8, alloc::string::String> for spqr::proto::pq_ratchet::Version}::try_from]:
-    Source: 'src/lib.rs', lines 179:4-185:5
+    Source: 'src/lib.rs', lines 187:4-193:5
     Visibility: public -/
 def proto.pq_ratchet.Version.Insts.CoreConvertTryFromU8String.try_from
   (value : Std.U8) :
@@ -10419,7 +9592,7 @@ def proto.pq_ratchet.Version.Insts.CoreConvertTryFromU8String.try_from
     ok (core.result.Result.Err s1)
 
 /-- Trait implementation: [spqr::{impl core::convert::TryFrom<u8, alloc::string::String> for spqr::proto::pq_ratchet::Version}]
-    Source: 'src/lib.rs', lines 177:0-186:1 -/
+    Source: 'src/lib.rs', lines 185:0-194:1 -/
 @[reducible]
 def proto.pq_ratchet.Version.Insts.CoreConvertTryFromU8String :
   core.convert.TryFrom proto.pq_ratchet.Version Std.U8 String := {
@@ -10428,7 +9601,7 @@ def proto.pq_ratchet.Version.Insts.CoreConvertTryFromU8String :
 }
 
 /-- [spqr::{impl core::convert::From<spqr::proto::pq_ratchet::Version> for u8}::from]:
-    Source: 'src/lib.rs', lines 189:4-194:5
+    Source: 'src/lib.rs', lines 197:4-202:5
     Visibility: public -/
 def U8.Insts.CoreConvertFromVersion.from
   (v : proto.pq_ratchet.Version) : Result Std.U8 := do
@@ -10437,7 +9610,7 @@ def U8.Insts.CoreConvertFromVersion.from
   | proto.pq_ratchet.Version.V1 => ok 1#u8
 
 /-- Trait implementation: [spqr::{impl core::convert::From<spqr::proto::pq_ratchet::Version> for u8}]
-    Source: 'src/lib.rs', lines 188:0-195:1 -/
+    Source: 'src/lib.rs', lines 196:0-203:1 -/
 @[reducible]
 def U8.Insts.CoreConvertFromVersion : core.convert.From Std.U8
   proto.pq_ratchet.Version := {
@@ -10512,7 +9685,7 @@ def v1.unchunked.send_ek.serialize.EkSentCt1Received.into_pb
   ok { epoch := self.epoch, auth := (some a), dk := self.dk, ct1 := self.ct1 }
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 88:4-93:5
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 89:4-94:5
     Visibility: public -/
 def v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb
   (self : v1.chunked.send_ek.EkSentCt1Received) :
@@ -10523,7 +9696,7 @@ def v1.chunked.send_ek.serialize.EkSentCt1Received.into_pb
   ok { uc := (some escr), receiving_ct2 := (some pd) }
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::into_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 71:4-76:5
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 72:4-77:5
     Visibility: public -/
 def v1.chunked.send_ek.serialize.Ct1Received.into_pb
   (self : v1.chunked.send_ek.Ct1Received) :
@@ -10607,7 +9780,7 @@ def v1.unchunked.send_ct.serialize.Ct2Sent.into_pb
   ok { epoch := self.epoch, auth := (some a) }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:4-140:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 141:4-146:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.Ct2Sampled.into_pb
   (self : v1.chunked.send_ct.Ct2Sampled) :
@@ -10637,7 +9810,7 @@ def v1.unchunked.send_ct.serialize.Ct1Sent.into_pb
     }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 111:4-116:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 115:4-120:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.Ct1Acknowledged.into_pb
   (self : v1.chunked.send_ct.Ct1Acknowledged) :
@@ -10667,7 +9840,7 @@ def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.into_pb
     }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 92:4-97:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 96:4-101:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb
   (self : v1.chunked.send_ct.EkReceivedCt1Sampled) :
@@ -10678,7 +9851,7 @@ def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.into_pb
   ok { uc := (some cser), sending_ct1 := (some pe) }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::into_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 63:4-69:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 65:4-71:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.Ct1Sampled.into_pb
   (self : v1.chunked.send_ct.Ct1Sampled) :
@@ -10819,7 +9992,7 @@ def v1.chunked.states.serialize.States.into_pb
       }
 
 /-- [spqr::init_inner]:
-    Source: 'src/lib.rs', lines 197:0-209:1 -/
+    Source: 'src/lib.rs', lines 205:0-217:1 -/
 def init_inner
   (v : proto.pq_ratchet.Version) (d : proto.pq_ratchet.Direction)
   (auth_key : Slice Std.U8) :
@@ -10839,7 +10012,7 @@ def init_inner
       ok (some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs))
 
 /-- [spqr::initial_state]:
-    Source: 'src/lib.rs', lines 211:0-235:1
+    Source: 'src/lib.rs', lines 219:0-242:1
     Visibility: public -/
 def initial_state
   (params : Params) :
@@ -10861,8 +10034,7 @@ def initial_state
     let o ←
       init_inner proto.pq_ratchet.Version.V1 params.direction params.auth_key
     let v1 ←
-      prost.message.Message.encode_to_vec.default
-        proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+      encode_state_pb
         {
           version_negotiation :=
             (some
@@ -10878,19 +10050,19 @@ def initial_state
     ok (core.result.Result.Ok v1)
 
 /-- [spqr::{spqr::proto::pq_ratchet::Version}::DISABLED]
-    Source: 'src/lib.rs', lines 238:4-238:43
+    Source: 'src/lib.rs', lines 245:4-245:43
     Visibility: public -/
 @[global_simps, irreducible]
 def Version.DISABLED : proto.pq_ratchet.Version := proto.pq_ratchet.Version.V0
 
 /-- [spqr::{spqr::proto::pq_ratchet::Version}::MAX]
-    Source: 'src/lib.rs', lines 239:4-239:38
+    Source: 'src/lib.rs', lines 246:4-246:38
     Visibility: public -/
 @[global_simps, irreducible]
 def Version.MAX : proto.pq_ratchet.Version := proto.pq_ratchet.Version.V1
 
 /-- [spqr::decode_state::{impl core::ops::function::FnOnce<(prost::error::DecodeError,), spqr::Error> for spqr::decode_state::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 503:72-503:94 -/
+    Source: 'src/lib.rs', lines 507:46-507:68 -/
 def
   decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError.call_once
   (c : decode_state.closure) (tupled_args : prost.error.DecodeError) :
@@ -10899,7 +10071,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::decode_state::{impl core::ops::function::FnOnce<(prost::error::DecodeError,), spqr::Error> for spqr::decode_state::{closure}}]
-    Source: 'src/lib.rs', lines 503:72-503:94 -/
+    Source: 'src/lib.rs', lines 507:46-507:68 -/
 @[reducible]
 def decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError :
   core.ops.function.FnOnce decode_state.closure prost.error.DecodeError Error
@@ -10909,7 +10081,7 @@ def decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError :
 }
 
 /-- [spqr::decode_state]:
-    Source: 'src/lib.rs', lines 495:0-505:1 -/
+    Source: 'src/lib.rs', lines 499:0-509:1 -/
 def decode_state
   (s : alloc.vec.Vec Std.U8) :
   Result (core.result.Result proto.pq_ratchet.PqRatchetState Error)
@@ -10921,17 +10093,13 @@ def decode_state
       { version_negotiation := none, chain := none, inner := none })
   else
     let s1 ← alloc.vec.Vec.as_slice Global s
-    let r ←
-      prost.message.Message.decode.default
-        proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
-        proto.pq_ratchet.PqRatchetState.Insts.CoreDefaultDefault
-        Shared0SliceU8.Insts.BytesBufBuf_implBuf s1
+    let r ← decode_state_pb s1
     core.result.Result.map_err
       decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError r
       ()
 
 /-- [spqr::current_version::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::current_version::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 258:59-258:81 -/
+    Source: 'src/lib.rs', lines 265:59-265:81 -/
 def
   current_version.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : current_version.closure) (tupled_args : prost.error.UnknownEnumValue) :
@@ -10940,7 +10108,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::current_version::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::current_version::{closure}}]
-    Source: 'src/lib.rs', lines 258:59-258:81 -/
+    Source: 'src/lib.rs', lines 265:59-265:81 -/
 @[reducible]
 def
   current_version.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
@@ -10951,7 +10119,7 @@ def
 }
 
 /-- [spqr::current_version]:
-    Source: 'src/lib.rs', lines 248:0-261:1
+    Source: 'src/lib.rs', lines 255:0-268:1
     Visibility: public -/
 def current_version
   (state : alloc.vec.Vec Std.U8) :
@@ -11363,11 +10531,11 @@ def v1.chunked.states.States.send
       }, rng)
 
 /-- [spqr::MAX_VARINT_BYTES_LEN]
-    Source: 'src/lib.rs', lines 507:0-507:39 -/
+    Source: 'src/lib.rs', lines 511:0-511:39 -/
 @[global_simps, irreducible] def MAX_VARINT_BYTES_LEN : Std.Usize := 10#usize
 
 /-- [spqr::encode_varint]: loop body 0:
-    Source: 'src/lib.rs', lines 510:4-521:1 -/
+    Source: 'src/lib.rs', lines 514:4-525:1 -/
 @[rust_loop_body]
 def encode_varint_loop.body
   (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
@@ -11392,7 +10560,7 @@ def encode_varint_loop.body
       ok (cont (iter1, a1, into1))
 
 /-- [spqr::encode_varint]: loop 0:
-    Source: 'src/lib.rs', lines 510:4-521:1 -/
+    Source: 'src/lib.rs', lines 514:4-525:1 -/
 @[rust_loop]
 def encode_varint_loop
   (iter : core.ops.range.Range Std.Usize) (a : Std.U64)
@@ -11404,7 +10572,7 @@ def encode_varint_loop
     (iter, a, into)
 
 /-- [spqr::encode_varint]:
-    Source: 'src/lib.rs', lines 509:0-521:1 -/
+    Source: 'src/lib.rs', lines 513:0-525:1 -/
 @[reducible]
 def encode_varint
   (a : Std.U64) (into : alloc.vec.Vec Std.U8) :
@@ -11525,7 +10693,7 @@ def v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb
   else ok (core.result.Result.Err Error.StateDecode)
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 110:21-110:43 -/
 def
   v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure)
@@ -11535,7 +10703,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 109:21-109:43 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 110:21-110:43 -/
 @[reducible]
 def
   v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -11547,14 +10715,28 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::EkSentCt1Received}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 95:4-111:5
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 96:4-112:5
     Visibility: public -/
 def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) :
   Result (core.result.Result v1.chunked.send_ek.EkSentCt1Received Error)
   := do
-  match pb.receiving_ct2 with
-  | none =>
+  let (o, b) ←
+    match pb.receiving_ct2 with
+    | none => ok (none, false)
+    | some d =>
+      do
+      let i ← lift (UScalar.cast .Usize d.pts_needed)
+      let i1 ← incremental_mlkem768.CIPHERTEXT2_SIZE
+      let i2 ← i1 + authenticator.Authenticator.MACSIZE
+      let i3 ← i2 / 2#usize
+      let b1 ← if i != i3
+                 then ok true
+                 else ok false
+      ok (pb.receiving_ct2, b1)
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -11563,10 +10745,10 @@ def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
       let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
       match cf1 with
       | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let r2 ← core.option.Option.ok_or o Error.StateDecode
         let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
         match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
           let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
           let r4 ←
             core.result.Result.map_err
@@ -11592,55 +10774,9 @@ def v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
         v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
         residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.CIPHERTEXT2_SIZE
-    let i2 ← i1 + authenticator.Authenticator.MACSIZE
-    let i3 ← i2 / 2#usize
-    if i != i3
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ek.serialize.EkSentCt1Received.from_pb val
-        let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ←
-            core.option.Option.ok_or pb.receiving_ct2 Error.StateDecode
-          let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ek.serialize.EkSentCt1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_ct2 := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
-                Error) residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame
-              Error) residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          v1.chunked.send_ek.EkSentCt1Received (core.convert.FromSame Error)
-          residual
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 83:25-83:47 -/
 def
   v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure)
@@ -11650,7 +10786,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 82:25-82:47 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 83:25-83:47 -/
 @[reducible]
 def
   v1.chunked.send_ek.serialize.Ct1Received.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -11662,7 +10798,7 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::Ct1Received}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 78:4-84:5
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 79:4-85:5
     Visibility: public -/
 def v1.chunked.send_ek.serialize.Ct1Received.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.Ct1Received) :
@@ -11726,7 +10862,7 @@ def v1.unchunked.send_ek.serialize.EkSent.from_pb
   else ok (core.result.Result.Err Error.StateDecode)
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure#1}}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 66:21-66:43 -/
 def
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1)
@@ -11736,7 +10872,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure#1}}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 65:21-65:43 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 66:21-66:43 -/
 @[reducible]
 def
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -11748,7 +10884,7 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 62:25-62:47 -/
 def
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure)
@@ -11758,7 +10894,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 61:25-61:47 -/
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 62:25-62:47 -/
 @[reducible]
 def
   v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -11770,14 +10906,27 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ek::serialize::{spqr::v1::chunked::send_ek::HeaderSent}::from_pb]:
-    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 52:4-67:5
+    Source: 'src/v1/chunked/send_ek/serialize.rs', lines 52:4-68:5
     Visibility: public -/
 def v1.chunked.send_ek.serialize.HeaderSent.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.HeaderSent) :
   Result (core.result.Result v1.chunked.send_ek.HeaderSent Error)
   := do
-  match pb.receiving_ct1 with
-  | none =>
+  let (o, b) ←
+    match pb.receiving_ct1 with
+    | none => ok (none, false)
+    | some d =>
+      do
+      let i ← lift (UScalar.cast .Usize d.pts_needed)
+      let i1 ← incremental_mlkem768.CIPHERTEXT1_SIZE
+      let i2 ← i1 / 2#usize
+      let b1 ← if i != i2
+                 then ok true
+                 else ok false
+      ok (pb.receiving_ct1, b1)
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -11798,10 +10947,10 @@ def v1.chunked.send_ek.serialize.HeaderSent.from_pb
           let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
           match cf3 with
           | core.ops.control_flow.ControlFlow.Continue val3 =>
-            let r5 ← core.option.Option.ok_or none Error.StateDecode
+            let r5 ← core.option.Option.ok_or o Error.StateDecode
             let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r5
             match cf4 with
-            | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
+            | core.ops.control_flow.ControlFlow.Continue val4 =>
               let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
               let r7 ←
                 core.result.Result.map_err
@@ -11834,71 +10983,6 @@ def v1.chunked.send_ek.serialize.HeaderSent.from_pb
     | core.ops.control_flow.ControlFlow.Break residual =>
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
         v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error) residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.CIPHERTEXT1_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ek.serialize.EkSent.from_pb val
-        let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.sending_ek Error.StateDecode
-          let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue val2 =>
-            let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              let r5 ←
-                core.option.Option.ok_or pb.receiving_ct1 Error.StateDecode
-              let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r5
-              match cf4 with
-              | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
-                let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
-                let r7 ←
-                  core.result.Result.map_err
-                    v1.chunked.send_ek.serialize.HeaderSent.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                    r6 ()
-                let cf5 ← core.result.Result.Insts.CoreOpsTry.branch r7
-                match cf5 with
-                | core.ops.control_flow.ControlFlow.Continue val5 =>
-                  ok (core.result.Result.Ok
-                    { uc := val1, sending_ek := val3, receiving_ct1 := val5 })
-                | core.ops.control_flow.ControlFlow.Break residual =>
-                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                    v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
-                    residual
-              | core.ops.control_flow.ControlFlow.Break residual =>
-                core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                  v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
-                  residual
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
-                residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          v1.chunked.send_ek.HeaderSent (core.convert.FromSame Error) residual
 
 /-- [spqr::v1::unchunked::send_ek::serialize::{spqr::v1::unchunked::send_ek::HeaderSent}::from_pb]:
     Source: 'src/v1/unchunked/send_ek/serialize.rs', lines 35:4-46:5
@@ -12052,7 +11136,7 @@ def v1.unchunked.send_ct.serialize.Ct2Sent.from_pb
       v1.unchunked.send_ct.Ct2Sent (core.convert.FromSame Error) residual
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 154:21-154:43 -/
 def
   v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure)
@@ -12062,7 +11146,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:21-148:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 154:21-154:43 -/
 @[reducible]
 def
   v1.chunked.send_ct.serialize.Ct2Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -12074,7 +11158,7 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct2Sampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 142:4-150:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 148:4-156:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.Ct2Sampled.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.Ct2Sampled) :
@@ -12153,7 +11237,7 @@ def v1.unchunked.send_ct.serialize.Ct1Sent.from_pb
   else ok (core.result.Result.Err Error.StateDecode)
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:21-135:43 -/
 def
   v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure)
@@ -12163,7 +11247,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 129:21-129:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 135:21-135:43 -/
 @[reducible]
 def
   v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -12175,14 +11259,27 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Acknowledged}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 118:4-131:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 122:4-137:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) :
   Result (core.result.Result v1.chunked.send_ct.Ct1Acknowledged Error)
   := do
-  match pb.receiving_ek with
-  | none =>
+  let (o, b) ←
+    match pb.receiving_ek with
+    | none => ok (none, false)
+    | some d =>
+      do
+      let i ← lift (UScalar.cast .Usize d.pts_needed)
+      let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+      let i2 ← i1 / 2#usize
+      let b1 ← if i != i2
+                 then ok true
+                 else ok false
+      ok (pb.receiving_ek, b1)
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -12191,10 +11288,10 @@ def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb
       let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
       match cf1 with
       | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let r2 ← core.option.Option.ok_or o Error.StateDecode
         let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
         match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
           let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
           let r4 ←
             core.result.Result.map_err
@@ -12220,50 +11317,6 @@ def v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
         v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
         residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
-        let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
-          let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.Ct1Acknowledged.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame
-                Error) residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          v1.chunked.send_ct.Ct1Acknowledged (core.convert.FromSame Error)
-          residual
 
 /-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::Ct1SentEkReceived}::from_pb]:
     Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 84:4-96:5
@@ -12304,7 +11357,7 @@ def v1.unchunked.send_ct.serialize.Ct1SentEkReceived.from_pb
   else ok (core.result.Result.Err Error.StateDecode)
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 109:21-109:43 -/
 def
   v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure)
@@ -12314,7 +11367,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 105:21-105:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 109:21-109:43 -/
 @[reducible]
 def
   v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -12326,7 +11379,7 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::EkReceivedCt1Sampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 99:4-107:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 103:4-111:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled) :
@@ -12371,7 +11424,7 @@ def v1.chunked.send_ct.serialize.EkReceivedCt1Sampled.from_pb
       residual
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure#1}}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 90:21-90:43 -/
 def
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1)
@@ -12381,7 +11434,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure#1}}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 90:21-90:43 -/
 @[reducible]
 def
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -12393,7 +11446,7 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
 def
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure)
@@ -12403,7 +11456,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 82:21-82:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 86:21-86:43 -/
 @[reducible]
 def
   v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -12415,14 +11468,27 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::Ct1Sampled}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 71:4-88:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 73:4-92:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.Ct1Sampled) :
   Result (core.result.Result v1.chunked.send_ct.Ct1Sampled Error)
   := do
-  match pb.receiving_ek with
-  | none =>
+  let (o, b) ←
+    match pb.receiving_ek with
+    | none => ok (none, false)
+    | some d =>
+      do
+      let i ← lift (UScalar.cast .Usize d.pts_needed)
+      let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+      let i2 ← i1 / 2#usize
+      let b1 ← if i != i2
+                 then ok true
+                 else ok false
+      ok (pb.receiving_ek, b1)
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -12443,10 +11509,10 @@ def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb
           let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
           match cf3 with
           | core.ops.control_flow.ControlFlow.Continue val3 =>
-            let r5 ← core.option.Option.ok_or none Error.StateDecode
+            let r5 ← core.option.Option.ok_or o Error.StateDecode
             let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r5
             match cf4 with
-            | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
+            | core.ops.control_flow.ControlFlow.Continue val4 =>
               let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
               let r7 ←
                 core.result.Result.map_err
@@ -12479,71 +11545,6 @@ def v1.chunked.send_ct.serialize.Ct1Sampled.from_pb
     | core.ops.control_flow.ControlFlow.Break residual =>
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
         v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.Ct1Sent.from_pb val
-        let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.sending_ct1 Error.StateDecode
-          let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue val2 =>
-            let r3 ← encoding.polynomial.PolyEncoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              let r5 ←
-                core.option.Option.ok_or pb.receiving_ek Error.StateDecode
-              let cf4 ← core.result.Result.Insts.CoreOpsTry.branch r5
-              match cf4 with
-              | core.ops.control_flow.ControlFlow.Continue (val4 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
-                let r6 ← encoding.polynomial.PolyDecoder.from_pb val4
-                let r7 ←
-                  core.result.Result.map_err
-                    v1.chunked.send_ct.serialize.Ct1Sampled.from_pb.closure_1.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                    r6 ()
-                let cf5 ← core.result.Result.Insts.CoreOpsTry.branch r7
-                match cf5 with
-                | core.ops.control_flow.ControlFlow.Continue val5 =>
-                  ok (core.result.Result.Ok
-                    { uc := val1, sending_ct1 := val3, receiving_ek := val5 })
-                | core.ops.control_flow.ControlFlow.Break residual =>
-                  core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                    v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                    residual
-              | core.ops.control_flow.ControlFlow.Break residual =>
-                core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                  v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                  residual
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-                residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          v1.chunked.send_ct.Ct1Sampled (core.convert.FromSame Error) residual
 
 /-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::HeaderReceived}::from_pb]:
     Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 34:4-44:5
@@ -12570,7 +11571,7 @@ def v1.unchunked.send_ct.serialize.HeaderReceived.from_pb
   else ok (core.result.Result.Err Error.StateDecode)
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{closure}}::call_once]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 59:21-59:43 -/
 def
   v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once
   (c : v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure)
@@ -12580,7 +11581,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{impl core::ops::function::FnOnce<(spqr::encoding::polynomial::PolynomialError,), spqr::Error> for spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb::{closure}}]
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 57:21-57:43 -/
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 59:21-59:43 -/
 @[reducible]
 def
   v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
@@ -12592,14 +11593,27 @@ def
 }
 
 /-- [spqr::v1::chunked::send_ct::serialize::{spqr::v1::chunked::send_ct::HeaderReceived}::from_pb]:
-    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 46:4-59:5
+    Source: 'src/v1/chunked/send_ct/serialize.rs', lines 46:4-61:5
     Visibility: public -/
 def v1.chunked.send_ct.serialize.HeaderReceived.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.HeaderReceived) :
   Result (core.result.Result v1.chunked.send_ct.HeaderReceived Error)
   := do
-  match pb.receiving_ek with
-  | none =>
+  let (o, b) ←
+    match pb.receiving_ek with
+    | none => ok (none, false)
+    | some d =>
+      do
+      let i ← lift (UScalar.cast .Usize d.pts_needed)
+      let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
+      let i2 ← i1 / 2#usize
+      let b1 ← if i != i2
+                 then ok true
+                 else ok false
+      ok (pb.receiving_ek, b1)
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -12608,10 +11622,10 @@ def v1.chunked.send_ct.serialize.HeaderReceived.from_pb
       let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
       match cf1 with
       | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let r2 ← core.option.Option.ok_or o Error.StateDecode
         let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
         match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
           let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
           let r4 ←
             core.result.Result.map_err
@@ -12637,50 +11651,6 @@ def v1.chunked.send_ct.serialize.HeaderReceived.from_pb
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
         v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
         residual
-  | some d =>
-    let i ← lift (UScalar.cast .Usize d.pts_needed)
-    let i1 ← incremental_mlkem768.ENCAPSULATION_KEY_SIZE
-    let i2 ← i1 / 2#usize
-    if i != i2
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.HeaderReceived.from_pb val
-        let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ← core.option.Option.ok_or pb.receiving_ek Error.StateDecode
-          let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.HeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_ek := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-                residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          v1.chunked.send_ct.HeaderReceived (core.convert.FromSame Error)
-          residual
 
 /-- [spqr::v1::unchunked::send_ct::serialize::{spqr::v1::unchunked::send_ct::NoHeaderReceived}::from_pb]:
     Source: 'src/v1/unchunked/send_ct/serialize.rs', lines 17:4-22:5
@@ -12730,8 +11700,22 @@ def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb
   (pb : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) :
   Result (core.result.Result v1.chunked.send_ct.NoHeaderReceived Error)
   := do
-  match pb.receiving_hdr with
-  | none =>
+  let (o, b) ←
+    match pb.receiving_hdr with
+    | none => ok (none, false)
+    | some rhdr =>
+      do
+      let i ← incremental_mlkem768.HEADER_SIZE
+      let i1 ← i + authenticator.Authenticator.MACSIZE
+      let i2 ← i1 / 2#usize
+      let i3 ← lift (UScalar.cast .U32 i2)
+      let b1 ← if rhdr.pts_needed != i3
+                 then ok true
+                 else ok false
+      ok (pb.receiving_hdr, b1)
+  if b
+  then ok (core.result.Result.Err Error.MsgDecode)
+  else
     let r ← core.option.Option.ok_or pb.uc Error.StateDecode
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
@@ -12740,10 +11724,10 @@ def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb
       let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
       match cf1 with
       | core.ops.control_flow.ControlFlow.Continue val1 =>
-        let r2 ← core.option.Option.ok_or none Error.StateDecode
+        let r2 ← core.option.Option.ok_or o Error.StateDecode
         let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
         match cf2 with
-        | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
+        | core.ops.control_flow.ControlFlow.Continue val2 =>
           let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
           let r4 ←
             core.result.Result.map_err
@@ -12769,52 +11753,6 @@ def v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
         v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
         residual
-  | some rhdr =>
-    let i ← incremental_mlkem768.HEADER_SIZE
-    let i1 ← i + authenticator.Authenticator.MACSIZE
-    let i2 ← i1 / 2#usize
-    let i3 ← lift (UScalar.cast .U32 i2)
-    if rhdr.pts_needed != i3
-    then ok (core.result.Result.Err Error.MsgDecode)
-    else
-      let r ← core.option.Option.ok_or pb.uc Error.StateDecode
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let r1 ← v1.unchunked.send_ct.serialize.NoHeaderReceived.from_pb val
-        let cf1 ← core.result.Result.Insts.CoreOpsTry.branch r1
-        match cf1 with
-        | core.ops.control_flow.ControlFlow.Continue val1 =>
-          let r2 ←
-            core.option.Option.ok_or pb.receiving_hdr Error.StateDecode
-          let cf2 ← core.result.Result.Insts.CoreOpsTry.branch r2
-          match cf2 with
-          | core.ops.control_flow.ControlFlow.Continue (val2 : proto.pq_ratchet.PolynomialDecoder) /- See https://github.com/AeneasVerif/aeneas/issues/1018 -/ =>
-            let r3 ← encoding.polynomial.PolyDecoder.from_pb val2
-            let r4 ←
-              core.result.Result.map_err
-                v1.chunked.send_ct.serialize.NoHeaderReceived.from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError
-                r3 ()
-            let cf3 ← core.result.Result.Insts.CoreOpsTry.branch r4
-            match cf3 with
-            | core.ops.control_flow.ControlFlow.Continue val3 =>
-              ok (core.result.Result.Ok { uc := val1, receiving_hdr := val3 })
-            | core.ops.control_flow.ControlFlow.Break residual =>
-              core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-                v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame
-                Error) residual
-          | core.ops.control_flow.ControlFlow.Break residual =>
-            core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-              v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-              residual
-        | core.ops.control_flow.ControlFlow.Break residual =>
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-            residual
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          v1.chunked.send_ct.NoHeaderReceived (core.convert.FromSame Error)
-          residual
 
 /-- [spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::States}::from_pb]:
     Source: 'src/v1/chunked/states/serialize.rs', lines 47:4-90:5
@@ -12933,7 +11871,7 @@ def v1.chunked.states.serialize.States.from_pb
           v1.chunked.states.States (core.convert.FromSame Error) residual
 
 /-- [spqr::chain_from_version_negotiation::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain_from_version_negotiation::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 337:40-337:62 -/
+    Source: 'src/lib.rs', lines 343:40-343:62 -/
 def
   chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : chain_from_version_negotiation.closure)
@@ -12943,7 +11881,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::chain_from_version_negotiation::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::chain_from_version_negotiation::{closure}}]
-    Source: 'src/lib.rs', lines 337:40-337:62 -/
+    Source: 'src/lib.rs', lines 343:40-343:62 -/
 @[reducible]
 def
   chain_from_version_negotiation.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError
@@ -12954,7 +11892,7 @@ def
 }
 
 /-- [spqr::chain_from_version_negotiation]:
-    Source: 'src/lib.rs', lines 332:0-340:1 -/
+    Source: 'src/lib.rs', lines 338:0-346:1 -/
 def chain_from_version_negotiation
   (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
   Result (core.result.Result chain.Chain Error)
@@ -12983,7 +11921,7 @@ def chain_from_version_negotiation
       chain.Chain (core.convert.FromSame Error) residual
 
 /-- [spqr::send]:
-    Source: 'src/lib.rs', lines 264:0-325:1
+    Source: 'src/lib.rs', lines 271:0-331:1
     Visibility: public -/
 def send
   {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
@@ -13060,8 +11998,7 @@ def send
                     let vs ←
                       v1.chunked.states.serialize.States.into_pb val2.state
                     let v ←
-                      prost.message.Message.encode_to_vec.default
-                        proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                      encode_state_pb
                         {
                           val
                             with
@@ -13104,8 +12041,7 @@ def send
                 let vs ←
                   v1.chunked.states.serialize.States.into_pb val2.state
                 let v ←
-                  prost.message.Message.encode_to_vec.default
-                    proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                  encode_state_pb
                     {
                       val
                         with
@@ -13155,8 +12091,7 @@ def send
                 let vs ←
                   v1.chunked.states.serialize.States.into_pb val2.state
                 let v ←
-                  prost.message.Message.encode_to_vec.default
-                    proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                  encode_state_pb
                     {
                       val
                         with
@@ -13201,7 +12136,7 @@ def send
     ok (r1, rng)
 
 /-- [spqr::chain_from]:
-    Source: 'src/lib.rs', lines 342:0-353:1 -/
+    Source: 'src/lib.rs', lines 348:0-359:1 -/
 def chain_from
   (pb : Option proto.pq_ratchet.Chain)
   (vn : Option proto.pq_ratchet.pq_ratchet_state.VersionNegotiation) :
@@ -14036,7 +12971,7 @@ def
 }
 
 /-- [spqr::decode_varint]: loop body 0:
-    Source: 'src/lib.rs', lines 1:0-546:5 -/
+    Source: 'src/lib.rs', lines 1:0-550:5 -/
 @[rust_loop_body]
 def decode_varint_loop.body
   («from» : Slice Std.U8) (start_at : Std.Usize) (max_i : Std.Usize)
@@ -14063,7 +12998,7 @@ def decode_varint_loop.body
   else ok (done (out, i, done1))
 
 /-- [spqr::decode_varint]: loop 0:
-    Source: 'src/lib.rs', lines 1:0-546:5 -/
+    Source: 'src/lib.rs', lines 1:0-550:5 -/
 @[rust_loop]
 def decode_varint_loop
   («from» : Slice Std.U8) (out : Std.U64) (i : Std.Usize) (done1 : Bool)
@@ -14076,7 +13011,7 @@ def decode_varint_loop
     (out, i, done1)
 
 /-- [spqr::decode_varint]:
-    Source: 'src/lib.rs', lines 524:0-554:1 -/
+    Source: 'src/lib.rs', lines 528:0-558:1 -/
 def decode_varint
   («from» : Slice Std.U8) («at» : Std.Usize) :
   Result ((core.result.Result Std.U64 Error) × Std.Usize)
@@ -14261,7 +13196,7 @@ def v1.chunked.states.serialize.Message.deserialize
         v1.chunked.states.Message (core.convert.FromSame Error) residual
 
 /-- [spqr::msg_preamble::{impl core::ops::function::FnOnce<(core::num::error::TryFromIntError,), spqr::Error> for spqr::msg_preamble::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 580:17-580:37 -/
+    Source: 'src/lib.rs', lines 584:17-584:37 -/
 def
   msg_preamble.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once
   (c : msg_preamble.closure) (tupled_args : core.num.error.TryFromIntError) :
@@ -14270,7 +13205,7 @@ def
   ok Error.MsgDecode
 
 /-- Trait implementation: [spqr::msg_preamble::{impl core::ops::function::FnOnce<(core::num::error::TryFromIntError,), spqr::Error> for spqr::msg_preamble::{closure}}]
-    Source: 'src/lib.rs', lines 580:17-580:37 -/
+    Source: 'src/lib.rs', lines 584:17-584:37 -/
 @[reducible]
 def msg_preamble.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError :
   core.ops.function.FnOnce msg_preamble.closure core.num.error.TryFromIntError
@@ -14280,7 +13215,7 @@ def msg_preamble.closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError :
 }
 
 /-- [spqr::msg_preamble]:
-    Source: 'src/lib.rs', lines 563:0-590:1 -/
+    Source: 'src/lib.rs', lines 567:0-594:1 -/
 def msg_preamble
   (msg : alloc.vec.Vec Std.U8) :
   Result (core.result.Result MsgPreamble Error)
@@ -14340,7 +13275,7 @@ def msg_preamble
         MsgPreamble (core.convert.FromSame Error) residual
 
 /-- [spqr::state_version]:
-    Source: 'src/lib.rs', lines 488:0-493:1 -/
+    Source: 'src/lib.rs', lines 492:0-497:1 -/
 def state_version
   (state : proto.pq_ratchet.PqRatchetState) :
   Result proto.pq_ratchet.Version
@@ -14350,7 +13285,7 @@ def state_version
   | some _ => ok proto.pq_ratchet.Version.V1
 
 /-- [spqr::recv::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::recv::{closure}}::call_once]:
-    Source: 'src/lib.rs', lines 438:52-438:74 -/
+    Source: 'src/lib.rs', lines 443:52-443:74 -/
 def
   recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once
   (c : recv.closure) (tupled_args : prost.error.UnknownEnumValue) :
@@ -14359,7 +13294,7 @@ def
   ok Error.StateDecode
 
 /-- Trait implementation: [spqr::recv::{impl core::ops::function::FnOnce<(prost::error::UnknownEnumValue,), spqr::Error> for spqr::recv::{closure}}]
-    Source: 'src/lib.rs', lines 438:52-438:74 -/
+    Source: 'src/lib.rs', lines 443:52-443:74 -/
 @[reducible]
 def recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError :
   core.ops.function.FnOnce recv.closure prost.error.UnknownEnumValue Error := {
@@ -14368,11 +13303,11 @@ def recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError :
 }
 
 /-- [spqr::recv::ZERO_EPOCH]
-    Source: 'src/lib.rs', lines 401:12-401:40 -/
+    Source: 'src/lib.rs', lines 407:12-407:40 -/
 @[global_simps, irreducible] def recv.ZERO_EPOCH : Std.U64 := 0#u64
 
 /-- [spqr::recv]:
-    Source: 'src/lib.rs', lines 355:0-486:1
+    Source: 'src/lib.rs', lines 361:0-490:1
     Visibility: public -/
 def recv
   (state : alloc.vec.Vec Std.U8) (msg : alloc.vec.Vec Std.U8) :
@@ -14495,8 +13430,7 @@ def recv
                                     val5.state
                                 let c1 ← chain.Chain.into_pb ratchet_chain1
                                 let v1 ←
-                                  prost.message.Message.encode_to_vec.default
-                                    proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                                  encode_state_pb
                                     {
                                       version_negotiation := none,
                                       chain := (some c1),
@@ -14581,8 +13515,7 @@ def recv
                                 val3.state
                             let c ← chain.Chain.into_pb ratchet_chain1
                             let v1 ←
-                              prost.message.Message.encode_to_vec.default
-                                proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                              encode_state_pb
                                 {
                                   version_negotiation := none,
                                   chain := (some c),
@@ -14627,8 +13560,7 @@ def recv
                   | core.ops.control_flow.ControlFlow.Continue val3 =>
                     let c ← chain.Chain.into_pb val2
                     let v1 ←
-                      prost.message.Message.encode_to_vec.default
-                        proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                      encode_state_pb
                         { val with version_negotiation := o, chain := (some c)
                         }
                     ok (core.result.Result.Ok
@@ -14724,8 +13656,7 @@ def recv
                                   val5.state
                               let c1 ← chain.Chain.into_pb ratchet_chain1
                               let v1 ←
-                                prost.message.Message.encode_to_vec.default
-                                  proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                                encode_state_pb
                                   {
                                     version_negotiation := none,
                                     chain := (some c1),
@@ -14808,8 +13739,7 @@ def recv
                               val3.state
                           let c ← chain.Chain.into_pb ratchet_chain1
                           let v1 ←
-                            prost.message.Message.encode_to_vec.default
-                              proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                            encode_state_pb
                               {
                                 version_negotiation := none,
                                 chain := (some c),
@@ -14854,8 +13784,7 @@ def recv
                 | core.ops.control_flow.ControlFlow.Continue val3 =>
                   let c ← chain.Chain.into_pb val2
                   let v1 ←
-                    prost.message.Message.encode_to_vec.default
-                      proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage
+                    encode_state_pb
                       { val with version_negotiation := o, chain := (some c) }
                   ok (core.result.Result.Ok
                     { state := v1, key := (some val3) })

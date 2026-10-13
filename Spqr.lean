@@ -50,7 +50,6 @@ public import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 public import Spqr.Specs.Aeneas.GF16New
 public import Spqr.Specs.Aeneas.IndexRangeFull
 public import Spqr.Specs.Aeneas.IntoIteratorSlice
-public import Spqr.Specs.Aeneas.MapCollectBridge
 public import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Specs.Aeneas.ResultExpect
@@ -77,11 +76,7 @@ public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
-public import Spqr.Specs.Chain.Chain.ChainEpoch.CallMut
-public import Spqr.Specs.Chain.Chain.ChainEpoch.CallOnce
 public import Spqr.Specs.Chain.Chain.Defs
-public import Spqr.Specs.Chain.Chain.Epoch.CallMut
-public import Spqr.Specs.Chain.Chain.Epoch.CallOnce
 public import Spqr.Specs.Chain.Chain.EpochIdx
 public import Spqr.Specs.Chain.Chain.FromPb
 public import Spqr.Specs.Chain.Chain.FunctionalModels
@@ -156,7 +151,6 @@ public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
-public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys.MapCollect
 public import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 public import Spqr.Specs.Encoding.Polynomial.MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
 public import Spqr.Specs.Encoding.Polynomial.MAX_STORED_POLYNOMIAL_DEGREE_V1
@@ -198,9 +192,6 @@ public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
-public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallMut
-public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallOnce
-public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.SliceIterEnumMapCollect
 public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 public import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.Pt.Eq
@@ -227,6 +218,7 @@ public import Spqr.Specs.Lib.SecretOutput.HasSecret
 public import Spqr.Specs.Lib.SecretOutput.RecvSecret
 public import Spqr.Specs.Lib.SecretOutput.Secret
 public import Spqr.Specs.Lib.SecretOutput.SendSecret
+public import Spqr.Specs.Lib.StatePb
 public import Spqr.Specs.Lib.StateVersion
 public import Spqr.Specs.Lib.Version.DISABLED
 public import Spqr.Specs.Lib.Version.MAX

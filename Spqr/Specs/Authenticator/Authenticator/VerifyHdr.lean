@@ -23,7 +23,7 @@ Source: "spqr/src/authenticator.rs"
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
-open core.result.Result (Ok)
+open Aeneas.Std.core.result.Result (Ok)
 
 /-- `mac_hdr_spec`, strengthened with the defining `… = ok r` equation. Registered as a
 file-local `step` lemma. -/
