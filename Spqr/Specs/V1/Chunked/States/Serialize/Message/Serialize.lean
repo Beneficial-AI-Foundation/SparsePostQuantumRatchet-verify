@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
-import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
-import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
+public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
+public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize`
@@ -30,6 +32,8 @@ byte `1`.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 221-245)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -77,13 +81,11 @@ theorem Message.serialize_spec (self : v1.chunked.states.Message) (index : U32) 
       out.val.map UScalar.val = messageBytes self index.val ⦄ := by
   unfold Message.serialize
   simp only [core.convert.IntoFrom.into, U8.Insts.CoreConvertFromVersion.from,
-    alloc.vec.Vec.with_capacity, bind_tc_ok]
+    alloc.vec.Vec.with_capacity]
   step*
-  -- The overflow side-goals (the buffer holds ≤ 22 bytes, far below `usize::MAX`) close
-  -- numerically; the per-variant postcondition goals close by unfolding the pure model.
+  -- The per-variant postcondition goals close by unfolding the pure model.
   -- The `simp_all` is terminal and stays flexible: the seven payload branches each need a
   -- different closing simp set, so explicit `simp_all only` lists would be impractically long.
-  all_goals try scalar_tac
   all_goals
     simp_all [messageBytes, payloadTag, payloadChunkBytes, chunkBytes, List.map_append]
 

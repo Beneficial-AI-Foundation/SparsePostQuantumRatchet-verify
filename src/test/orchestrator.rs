@@ -378,7 +378,9 @@ pub fn stats_from_histogram(hist: &Vec<HealingHistogramEntry>) -> [HealingStats;
 }
 
 pub fn print_histogram(hist: &Vec<HealingHistogramEntry>) {
-    println!("num exposed,msgs exposed by a comp,msgs exposed by b comp,freq a exposed by full,freq b exposed by full,tot exposed by full");
+    println!(
+        "num exposed,msgs exposed by a comp,msgs exposed by b comp,freq a exposed by full,freq b exposed by full,tot exposed by full"
+    );
     for entry in hist {
         println!("{},{},{}", entry.num_msgs, entry.tot_by_a, entry.tot_by_b,);
     }

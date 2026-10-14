@@ -3,16 +3,19 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Crypto.Hkdf
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Crypto.Hkdf
 import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Aeneas.CopyFromSlice
-import Spqr.Specs.Aeneas.ArrayIndexRangeTo
-import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
+public import Spqr.Specs.Aeneas.ArrayIndexRangeTo
+public import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
 import Spqr.Specs.Aeneas.TryFromSliceToArray
 import Spqr.Specs.Aeneas.ResultExpect
-import Spqr.Specs.Aeneas.SliceConcatListAux
-import Spqr.Specs.Aeneas.SliceListToVec
+public import Spqr.Specs.Aeneas.SliceConcatListAux
+public import Spqr.Specs.Aeneas.SliceListToVec
+import Spqr.Specs.Aeneas.SliceConcat
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key_internal`
 
@@ -23,6 +26,8 @@ the derived key. Returns `(ctr+1, derived_key)`.
 
 **Source**: spqr/src/chain.rs (lines 228:4-245:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -50,69 +55,16 @@ theorem next_key_internal_spec (next : Slice U8) (ctr : U32)
       result.2.1 = okm.take 32 ∧
       result.1.2 = okm.drop 32 ⦄ := by
   unfold chain.ChainEpochDirection.next_key_internal
-  simp only [Slice.length] at h_next_len
-  simp only [core.array.Array.as_slice, alloc.vec.Vec.as_slice, bind_tc_ok] at *
   step*
-  simp only [alloc.slice.Slice.concat_eq, Slice.Insts.AllocSliceConcatTVec.concat_eq, liftFun1,
-    core.clone.impls.CloneU8.clone, implies_true, Slice.concatListAux_shared_id_spec, bind_tc_ok,
-    Subtype.coe_eta, Slice.length, UScalarTy.U32_numBits_eq, Nat.reducePow]
+  case hlen =>
+    have : 35 ≤ Usize.max := by scalar_tac
+    simp_all
+  simp only [‹r = _›]
   step*
-  · simp
-    subst s3_post
-    simp only [Array.to_slice, Array.make, List.map,
-      Function.comp, List.sum_cons, List.sum_nil]
-    simp only [a1_post, s2_post]
-    simp only [Array.to_slice, Array.make, List.length_map, List.length_cons,
-      List.length_nil]
-    grind
-  · simp only [Slice.length] at *
-    scalar_tac
-  · simp_all only
-    step*
-    constructor
-    · grind
-    · constructor
-      · grind
-      · constructor
-        · grind
-        · simp only [Slice.length] at *
-          constructor
-          · simp only [nextKeyHkdfOutput, nextKeyInfo, chainNextLabel, zeroSalt32]
-            subst s5_post2
-            simp only [s7_post1, s6_post, s5_post1, Nat.sub_zero, List.drop_zero, List.slice,
-              Array.from_slice, Array.to_slice, Array.repeat, List.length_replicate]
-            split
-            · congr 1
-              simp only [Array.make, List.map, List.flatten]
-              congr 1
-              · simp only [List.append_nil, List.append_eq]
-                congr 1
-                congr 1
-                congr 1
-                have h1 : ctr1.bv.toNat = ↑ctr + 1 := ctr1_post
-                apply BitVec.eq_of_toNat_eq
-                simp [BitVec.toNat_ofFin, h1]
-            · next h =>
-              exfalso
-              apply h
-              simp
-          · simp only [nextKeyHkdfOutput, nextKeyInfo, chainNextLabel, zeroSalt32]
-            subst s5_post2
-            simp only [a2_post, r_post2, s6_post, s5_post1,
-              Array.from_slice, Array.to_slice, Array.repeat,  List.length_replicate]
-            split
-            · congr 1
-              simp only [Array.make, List.map, List.flatten]
-              congr 1
-              · congr 1
-                congr 1
-                congr 1
-                have h1 : ctr1.bv.toNat = ↑ctr + 1 := ctr1_post
-                apply BitVec.eq_of_toNat_eq
-                simp [BitVec.toNat_ofFin, h1]
-            · next h =>
-              exfalso
-              apply h
-              simp
+  simp only [nextKeyHkdfOutput, nextKeyInfo, chainNextLabel, zeroSalt32]
+  simp_all [List.slice]
+  have hbv : ctr1.bv = ⟨⟨ctr.val + 1, by scalar_tac⟩⟩ :=
+    BitVec.eq_of_toNat_eq (by simpa using ‹ctr1.val = _›)
+  simp [hbv, U8.ofUInt8]
 
 end spqr.chain.ChainEpochDirection

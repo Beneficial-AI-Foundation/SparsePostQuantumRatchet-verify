@@ -3,8 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import Lean
-import Mathlib.Tactic.Linter
+module
+
+public meta import Lean
+public meta import Mathlib.Tactic.Linter
+
 
 /-!
 # Linter: `specIndent` — spec theorem indentation style
@@ -23,6 +26,8 @@ rule applies to every theorem so that the project's 2-space proof style is unifo
 linter is controlled by a single option `linter.spqr.specIndent` so that a justified
 deviation can be suppressed uniformly.
 -/
+
+public meta section
 
 namespace Spqr.Lint
 

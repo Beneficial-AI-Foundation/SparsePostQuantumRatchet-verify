@@ -1,0 +1,63 @@
+Translation patch: <spqr::chain::Chain>::from_pb
+
+Change: `pb.links.into_iter().map(..).collect::<Result<VecDeque<_>, _>>()?` becomes a `for` loop
+over `pb.links` that converts each link with a nested `link_from_pb` (the former closure body) and
+pushes it into a `VecDeque`, stopping (`break`) at the first error, which is returned after the
+loop; the `direction` conversion is done before the loop.
+Why: `map`/`collect` are not modelled by the Aeneas Lean library (aeneas#1043); a `?` inside the
+loop is rejected ("Early returns inside of loops are not supported yet").
+Behaviour: identical (same result; the same first error is returned, in the same order of
+checks: direction, then the links in order (send before recv), then params).
+
+diff --git a/src/chain.rs b/src/chain.rs
+index 44c3681..5a21a0f 100644
+--- a/src/chain.rs
++++ b/src/chain.rs
+@@ -442,24 +442,36 @@ pub(crate) fn into_pb(self) -> pqrpb::Chain {
+ 
+     #[hax_lib::opaque] // into_iter and map
+     pub(crate) fn from_pb(pb: pqrpb::Chain) -> Result<Self, Error> {
++        fn link_from_pb(link: pqrpb::chain::Epoch) -> Result<ChainEpoch, Error> {
++            Ok(ChainEpoch {
++                send: ChainEpochDirection::from_pb(link.send.ok_or(Error::StateDecode)?)?,
++                recv: ChainEpochDirection::from_pb(link.recv.ok_or(Error::StateDecode)?)?,
++            })
++        }
++        let dir = pb.direction.try_into().map_err(|_| Error::StateDecode)?;
++        let mut links = VecDeque::new();
++        let mut error = None;
++        for link in pb.links {
++            match link_from_pb(link) {
++                Ok(epoch) => links.push_back(epoch),
++                Err(e) => {
++                    error = Some(e);
++                    break;
++                }
++            }
++        }
++        if let Some(e) = error {
++            return Err(e);
++        }
+         Ok(Self {
+-            dir: pb.direction.try_into().map_err(|_| Error::StateDecode)?,
++            dir,
+             current_epoch: pb.current_epoch,
+             send_epoch: pb.send_epoch,
+             next_root: pb.next_root,
+-            links: pb
+-                .links
+-                .into_iter()
+-                .map(|link| {
+-                    Ok::<ChainEpoch, Error>(ChainEpoch {
+-                        send: ChainEpochDirection::from_pb(link.send.ok_or(Error::StateDecode)?)?,
+-                        recv: ChainEpochDirection::from_pb(link.recv.ok_or(Error::StateDecode)?)?,
+-                    })
+-                })
+-                .collect::<Result<VecDeque<_>, _>>()?,
++            links,
+             params: pb.params.ok_or(Error::StateDecode)?,
+         })
+     }
+ }
+ 
+ #[cfg(test)]

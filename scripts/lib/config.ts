@@ -9,10 +9,6 @@ export interface Substitution {
 }
 
 export interface AeneasConfig {
-  aeneas: {
-    tag: string;
-    repo: string;
-  };
   upstream: {
     repo: string;
     commit: string;
@@ -24,18 +20,19 @@ export interface AeneasConfig {
     cargo_args: string[];
     start_from: string[];
     start_from_pub?: boolean;
-    exclude: string[];
-    opaque: string[];
   };
   aeneas_args: {
     options: string[];
     dest: string;
     subdir?: string;
+    use_lean_modules?: boolean;
   };
   crate: {
     dir: string;
     name: string;
   };
+  /** Folder of Rust translation patches (one function per patch), applied only while extracting. */
+  patches_dir: string;
   llbc_tweaks: {
     substitutions: Substitution[];
   };
@@ -81,8 +78,6 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   const config = raw as unknown as AeneasConfig;
 
   // Validate required fields
-  if (!config.aeneas?.tag) throw new Error("Missing required field: aeneas.tag");
-  if (!config.aeneas?.repo) throw new Error("Missing required field: aeneas.repo");
   if (!config.crate?.dir) throw new Error("Missing required field: crate.dir");
 
   // Apply defaults
@@ -94,8 +89,6 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   config.charon.cargo_args = config.charon.cargo_args ?? [];
   config.charon.start_from = config.charon.start_from ?? [];
   config.charon.start_from_pub = config.charon.start_from_pub ?? false;
-  config.charon.exclude = config.charon.exclude ?? [];
-  config.charon.opaque = config.charon.opaque ?? [];
   config.aeneas_args = config.aeneas_args ?? {} as AeneasConfig["aeneas_args"];
   config.aeneas_args.options = config.aeneas_args.options ?? [];
   config.aeneas_args.dest = config.aeneas_args.dest ?? "output";
@@ -105,6 +98,24 @@ export function loadConfig(root?: string): { config: AeneasConfig; root: string 
   config.tweaks = config.tweaks ?? { files: [], substitutions: [] };
   config.tweaks.files = config.tweaks.files ?? [];
   config.tweaks.substitutions = config.tweaks.substitutions ?? [];
+  config.patches_dir = config.patches_dir ?? "translation-patches";
 
   return { config, root: projectRoot };
+}
+
+/**
+ * The Aeneas release tag: the `rev` of the `[[require]]` entry named `aeneas` in `lakefile.toml`.
+ * This is the single source of truth for both the Lean library and the downloaded binaries.
+ */
+export function readLakefileAeneasTag(root: string): string {
+  const lakefile = path.join(root, "lakefile.toml");
+  let name = "";
+  for (const line of fs.readFileSync(lakefile, "utf-8").split("\n")) {
+    if (/^\s*\[/.test(line)) name = "";
+    const n = line.match(/^\s*name\s*=\s*"([^"]*)"/);
+    if (n) name = n[1];
+    const r = line.match(/^\s*rev\s*=\s*"([^"]*)"/);
+    if (r && name === "aeneas") return r[1];
+  }
+  throw new Error("Could not find the aeneas `rev` in lakefile.toml");
 }

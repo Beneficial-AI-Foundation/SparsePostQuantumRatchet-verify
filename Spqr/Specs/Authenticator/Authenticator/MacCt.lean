@@ -3,12 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Authenticator.MACSIZE
-import Spqr.Auxiliary.Aeneas.Slice
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Auxiliary.Aeneas.Vec
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.ArraySlice
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Specs.Aeneas.SliceConcat
 
@@ -31,6 +30,8 @@ The output is a 32-byte tag.
 **Source:** "spqr/src/authenticator.rs"
 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
 
@@ -45,6 +46,15 @@ def MAC_CT_LABEL : List U8 :=
 @[simp, grind =]
 theorem MAC_CT_LABEL_length : MAC_CT_LABEL.length = 35 := by rfl
 
+/-- `libcrux_hmac.hmac_sha256_tag32_spec`, strengthened with the defining `… = ok r`
+equation. Registered as a file-local `step` lemma. -/
+private theorem hmac_sha256_tag32_spec_refl :
+    type_of% (refl_of% libcrux_hmac.hmac_sha256_tag32_spec) :=
+  refl_of% libcrux_hmac.hmac_sha256_tag32_spec
+
+attribute [local step] hmac_sha256_tag32_spec_refl
+attribute [-step] libcrux_hmac.hmac_sha256_tag32_spec
+
 open List core.num.U64 in
 /-- **Spec theorem for `spqr::authenticator::Authenticator::mac_ct`**
 • Given the boundedness hypotheses on `self.mac_key` and `ct`, `mac_ct self ep ct` does not panic.
@@ -58,16 +68,14 @@ theorem mac_ct_spec (self : Authenticator) (ep : U64) (ct : Slice U8)
     (h_data : ct.length + 43 ≤ U32.max) :
     mac_ct self ep ct ⦃ (result : alloc.vec.Vec U8) =>
       result.length = MACSIZE.val ∧
-      let data : Slice U8 := Slice.make (MAC_CT_LABEL ++ to_be_bytes ep ++ ct);
-      libcrux_hmac.hmac .Sha256 self.mac_key data (some MACSIZE) = ok result ⦄ := by
+      let data : Slice U8 := Slice.from (MAC_CT_LABEL ++ to_be_bytes ep ++ ct) (by grind);
+      libcrux_hmac.hmac .Sha256 self.mac_key.deref data (some MACSIZE) = ok result ⦄ := by
   unfold mac_ct MACSIZE
-  have := refl_of% libcrux_hmac.hmac_sha256_tag32_spec
   step*
   · simp [*]; grind
   · simp [*]; grind
   · refine ⟨by simp [*], ?_⟩
     convert ‹libcrux_hmac.hmac .Sha256 _ _ _ = ok result›
-    · rfl
-    · apply Subtype.ext; simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL]
+    apply Slice.ext; simp [core.num.U64.to_be_bytes, *, MAC_CT_LABEL]
 
 end spqr.authenticator.Authenticator

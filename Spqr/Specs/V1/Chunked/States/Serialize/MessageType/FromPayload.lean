@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::serialize::MessageType}`
@@ -15,6 +17,8 @@ to the like-named `MessageType` variant.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 124:4-134:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

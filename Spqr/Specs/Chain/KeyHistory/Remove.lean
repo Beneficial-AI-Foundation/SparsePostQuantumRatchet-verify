@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::remove`
 
@@ -17,6 +19,8 @@ swap-remove:
 Both paths shrink vector by exactly 36 bytes.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 
@@ -68,12 +72,15 @@ theorem remove_spec (self : KeyHistory)
     · step*
       simp only [_root_.Slice.copyWithinStart, _root_.Slice.copyWithinEnd] at *
       simp only [alloc.vec.Vec.length] at *
+      have hv1 : v1.val = List.take v.val (self.data.val.setSlice! my_array_index.val
+          (List.take (self.data.val.length - v.val) (List.drop v.val self.data.val))) := by
+        rw [‹v1.val = _›]
+        exact congrArg _ (Slice.setSlice!_val _ _ _)
       refine ⟨?_, ?_, ?_, ?_⟩
       · grind
-      · grind [Slice.setSlice!_val]
+      · grind
       · intro h_swap
-        rw [v1_post]
-        simp only [Slice.setSlice!_val]
+        rw [hv1]
         have hv : v.val = self.data.val.length - 36 := by
           scalar_tac
         rw [hv]
@@ -85,7 +92,8 @@ theorem remove_spec (self : KeyHistory)
       rename_i h_neg
       simp only [_root_.Slice.copyWithinStart,
         _root_.Slice.copyWithinEnd, not_and_or, not_le] at h_neg
-      grind
+      have : self.data.slice.val.length = self.data.val.length := rfl
+      scalar_tac
   · rename_i h_nlt
     simp only [alloc.vec.Vec.len, UScalar.lt_equiv, not_lt] at h_nlt
     step*

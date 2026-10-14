@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorems for `spqr::encoding::{Decoder for Option<T>}::decoded_message`
@@ -14,11 +16,13 @@ Extracted body: `as_ref` → `unwrap` → `DecoderInst.decoded_message`.
 Theorem:
   • `decoded_message_spec_lift` — lifts a postcondition through the `Option<T>` wrapper.
 
-The `PolyDecoder` instantiation takes the inner postcondition as a hypothesis since
-`PolyDecoder.decoded_message` is an external axiom.
+The inner decoder's postcondition is taken as a hypothesis (`h_inner`), so the theorem applies to
+any `Decoder T`.
 
 **Source**: spqr/src/encoding.rs (lines 94:4-100:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial
 
@@ -40,7 +44,7 @@ The proof composes the functional steps of the extraction:
   3. `DecoderInst.decoded_message value` — delegation to the inner decoder, discharged
      by `h_inner`. -/
 @[step]
-theorem decoded_message_spec_lift
+theorem decoded_message_spec
     {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T)
     (h_some : self.isSome)
     (P : Option (alloc.vec.Vec Std.U8) → Prop)
@@ -49,7 +53,7 @@ theorem decoded_message_spec_lift
     decoded_message DecoderInst self ⦃ (result : Option (alloc.vec.Vec Std.U8)) =>
       P result ⦄ := by
   unfold decoded_message
-  simp only [core.option.Option.as_ref, bind_tc_ok]
+  simp only [core.option.Option.as_ref]
   step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨value, h_eq⟩
   exact h_inner value h_eq
 

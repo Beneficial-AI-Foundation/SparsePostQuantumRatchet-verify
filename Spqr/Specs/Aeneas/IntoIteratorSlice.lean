@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for `core::iter::traits::collect::{IntoIterator for &[T]}::into_iter`
@@ -20,6 +22,8 @@ cursor `i = 0`.
 
 **Source**: core/src/slice/iter.rs (IntoIterator impl for &[T])
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

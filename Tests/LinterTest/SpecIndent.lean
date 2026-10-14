@@ -3,6 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
+module
+
 import Aeneas
 import Spqr.Lint.Basic
 
@@ -19,6 +21,8 @@ registrations) never leak into the production library or its public namespace.  
 additionally wrapped in the `Spqr.Lint.Test` namespace as a second line of
 defence.
 -/
+
+set_option linter.privateModule false
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 

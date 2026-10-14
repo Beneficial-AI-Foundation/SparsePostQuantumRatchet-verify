@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Postcondition predicate for `gc_loop_spec`
 
@@ -23,6 +25,8 @@ returned `result`:
 9. Injective forward map (no duplication)
 10. Injective reverse map (distinct unexpired sources map to distinct results)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 
@@ -96,7 +100,7 @@ abbrev horizonBytes (horizon : U32) : List U8 :=
 
 /-- The `Slice U8` wrapper around `horizonBytes`. -/
 noncomputable abbrev horizonSlice (horizon : U32) : Slice U8 :=
-  ⟨horizonBytes horizon, by scalar_tac⟩
+  Slice.from (horizonBytes horizon) (by scalar_tac)
 
 /-- Postcondition predicate for `spqr.chain.KeyHistory.gc`.
 

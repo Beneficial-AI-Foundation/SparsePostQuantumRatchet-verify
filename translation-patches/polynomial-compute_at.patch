@@ -1,0 +1,38 @@
+Translation patch: <Poly>::compute_at
+
+Change: the `zip` over `coefficients` and `xs` becomes an index loop over `coefficients`.
+Why: Aeneas does not translate this `zip` ("Unimplemented").
+Behaviour: identical.
+Relies on: `xs` has `max(2, coefficients.len())` entries (built just above), so the indexing
+never panics and visits the same pairs as `zip`.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 65f33f8..6fd22dc 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -260,22 +260,23 @@ fn mult_assign(&mut self, m: GF16) {
+     #[hax_lib::opaque] // zip
+     fn compute_at(&self, x: GF16) -> GF16 {
+         // Compute x^0 .. x^N
+         let mut xs = Vec::with_capacity(self.coefficients.len());
+         xs.push(GF16::ONE);
+         xs.push(x);
+         for i in 2..self.coefficients.len() {
+             hax_lib::loop_invariant!(|i: usize| i == xs.len() && i / 2 < i && i >= 2);
+             let a = xs[i / 2];
+             let b = xs[(i / 2) + (i % 2)];
+             xs.push(a * b);
+         }
+         // Multiply and sum
+         let mut out = GF16::ZERO;
+-        for (a, b) in self.coefficients.iter().zip(xs.iter()) {
+-            out += *a * *b;
++        #[allow(clippy::needless_range_loop)]
++        for i in 0..self.coefficients.len() {
++            out += self.coefficients[i] * xs[i];
+         }
+         out
+     }
+ 
+     /// Internal function for lagrange_polynomial_from_complete_points.
+     #[hax_lib::opaque] // zip

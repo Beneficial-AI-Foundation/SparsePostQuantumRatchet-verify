@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 
 /-! # Spec theorem for `spqr::v1::unchunked::send_ct::serialize::Ct1Sent::into_pb`
@@ -19,6 +21,8 @@ exactly). The reverse direction is `from_pb`.
 
 **Source**: src/v1/unchunked/send_ct/serialize.rs (lines 48:4-56:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -42,6 +46,7 @@ theorem into_pb_spec (self : v1.unchunked.send_ct.Ct1Sent) :
                            mac_key := self.auth.mac_key } ⦄ := by
   unfold into_pb
   step*
-  simp_all [alloc.vec.Vec.deref, authenticator.serialize.Authenticator.FunctionalModels.intoPb]
+  simp_all [alloc.vec.Vec.deref, authenticator.serialize.Authenticator.FunctionalModels.intoPb,
+    alloc.vec.Vec.eq_iff, alloc.vec.Vec.val, Slice.eq_iff]
 
 end spqr.v1.unchunked.send_ct.serialize.Ct1Sent

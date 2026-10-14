@@ -3,9 +3,18 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Coeff.ListOps
-import Spqr.Math.Poly.Eval
+public import Spqr.Math.Poly.Eval
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::add_assign`
 
@@ -13,6 +22,8 @@ Computes `self + other` in `GF216[X]` by iterating over `other`'s coefficients v
 `deref → iter → enumerate → add_assign_loop`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 open Aeneas Aeneas.Std Result ControlFlow spqr.encoding.gf Polynomial spqr.encoding.polynomial
 open  core.iter.adapters.enumerate core.slice.iter
 
@@ -22,14 +33,8 @@ lemma usize_checked_add_one_val (x : Usize)
     (h : x.val + 1 ≤ Usize.max) :
     ∃ (y : Usize), (x + 1#usize : Result Usize) = ok y ∧ y.val = x.val + 1 := by
   have h_add : x.val + (1#usize : Usize).val ≤ Usize.max := by scalar_tac
-  have h_spec := Usize.add_spec h_add
-  revert h_spec
-  generalize (x + 1#usize : Result Usize) = res
-  intro h_spec
-  match res with
-  | .ok z => exact ⟨z, rfl, by simp_all [WP.spec_ok]⟩
-  | .fail e => simp_all
-  | .div => simp_all
+  obtain ⟨z, hz, hzv⟩ := WP.spec_imp_exists (Usize.add_spec h_add)
+  exact ⟨z, hz, by scalar_tac⟩
 
 lemma EnumerateSliceIter_next_post
     (iter : Enumerate (Iter GF16))
@@ -45,8 +50,8 @@ lemma EnumerateSliceIter_next_post
   · have h_add_bound : iter.count.val + 1 ≤ Usize.max := h_bound (by scalar_tac)
     obtain ⟨count', h_add_eq, _⟩ := usize_checked_add_one_val iter.count h_add_bound
     rw [h_add_eq]
-    exact ⟨_, _, rfl⟩
-  · exact ⟨_, _, rfl⟩
+    simp
+  · simp
 
 /-- **Spec theorem for `encoding.polynomial.Poly.add_assign_loop.body`**:
 
@@ -78,7 +83,7 @@ theorem body_spec
   unfold body
   obtain ⟨opt, iter1, hnext⟩ := EnumerateSliceIter_next_post iter h_count_bound
   rw [hnext]
-  simp only [bind_tc_ok, degree]
+  simp only [degree]
   cases opt with
   | none => simp [WP.spec_ok]
   | some p =>
@@ -164,7 +169,8 @@ lemma enumerate_sliceiter_next_some
     omega
   obtain ⟨count', h_add_eq, h_add_val⟩ := usize_checked_add_one_val iter.count h_add_bound
   rw [h_add_eq]
-  exact ⟨_, rfl, rfl, rfl, by rw [h_add_val, h_count]⟩
+  simp [h_add_val, h_count]
+  rfl
 
 private theorem body_cont_spec
     (iter' : Enumerate (Iter GF16)) (self' : Poly)
@@ -320,7 +326,7 @@ theorem add_assign_spec
   unfold add_assign
   simp only [alloc.vec.Vec.deref, core.slice.Slice.iter,
              core.iter.traits.iterator.Iterator.enumerate.trait_default,
-             core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
+             core.iter.traits.iterator.Iterator.enumerate.default, bind_ok]
   apply WP.spec_mono (add_assign_loop.loop_spec _ self other.coefficients
     (by simp) (by simp) rfl h_len)
   intro result h

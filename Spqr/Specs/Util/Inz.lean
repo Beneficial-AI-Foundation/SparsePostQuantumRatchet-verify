@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for `spqr::util::inz`
@@ -15,6 +17,8 @@ high bit lives at position 8 and can be isolated by `>> 8 & 1`.
 
 **Source:** "spqr/src/util.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 namespace spqr.util

@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Aeneas.IndexRangeFull
 import Spqr.Specs.Aeneas.VecExtendFromSlice
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::encode_chunk`
 
@@ -29,6 +31,8 @@ guard from `encode_varint_spec`'s generic 10-byte bound alone.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 184-188)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -63,13 +67,14 @@ theorem encode_chunk_spec
   step*
   -- `i` is the `u16` index widened to `u64`, so it has the same value.
   have hi : i.val = c.index.val := by scalar_tac
-  have h_tail3 : into1.length ≤ 3 := by
+  obtain ⟨tl, htl, hmap, h1⟩ : ∃ tl, into1.val = into.val ++ tl ∧
+      tl.map UScalar.val = varintBytes i.val ∧ 1 ≤ tl.length := ⟨_, ‹_›, ‹_›, ‹_›⟩
+  have h_tail3 : tl.length ≤ 3 := by
     have h3 := varintBytes_length_le_three (a := i.val) (by scalar_tac)
-    have hlen_eq := congrArg List.length into1_post2
+    have hlen_eq := congrArg List.length hmap
     simp only [List.length_map] at hlen_eq
     omega
-  refine ⟨into1, ?_, by rw [into1_post2, hi], into1_post3, h_tail3⟩
-  rw [out_post, into1_post1]
-  simp only [Array.val_to_slice, List.append_assoc]
+  refine ⟨tl, ?_, by rw [hmap, hi], h1, h_tail3⟩
+  simp only [‹out.val = _›, htl, Array.val_to_slice, List.append_assoc]
 
 end spqr.v1.chunked.states.serialize

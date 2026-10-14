@@ -3,10 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Horner.Defs
+module
+
+public import Spqr.Math.Poly.Horner.Defs
 import Spqr.Math.Poly.CharTwo.Basic
 import Spqr.Math.Poly.Coeff.Basic
 import Spqr.Math.Poly.Basic.Zero
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Horner-scheme evaluation bridge
@@ -16,6 +20,8 @@ import Spqr.Math.Poly.Basic.Zero
 * `hornerAccum_cancel` — characteristic-2 cancellation identity.
 * `hornerAccum_zero_eq_eval` — `hornerAccum g coeffs 0` equals `Polynomial.eval`.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

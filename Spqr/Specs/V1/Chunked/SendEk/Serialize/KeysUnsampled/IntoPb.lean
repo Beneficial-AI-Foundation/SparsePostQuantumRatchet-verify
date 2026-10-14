@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.IntoPb
-import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysUnsampled::into_pb`
@@ -19,8 +21,10 @@ field is optional. The result is pinned to the pure functional model `Functional
 which in turn calls the functional model of the unchunked conversion. The reverse direction is
 `from_pb`.
 
-**Source:** "src/v1/chunked/send_ek/serialize.rs"
+**Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 namespace spqr.v1.chunked.send_ek.serialize.KeysUnsampled

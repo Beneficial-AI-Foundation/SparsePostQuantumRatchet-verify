@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # Spec theorem for `incremental_mlkem768::generate`
 
@@ -28,6 +30,8 @@ public key.  In the serialized layout `dk` is the whole key pair, `ek` is the su
 what the spec theorem proves.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 34:0-43:1 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -57,10 +61,10 @@ TODO: the *cryptographic* content of `kp.value` is left to future work; the size
    hides `t̂`, safe to transmit); the secret complement `dk \ (ek‖hdr)` stays computationally
    hidden.  Note secrecy is not byte-disjointness (the bytes overlap) but that the complement
    slices stay hidden. -/
-theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
-    (cryptoInst : rand_core.CryptoRng R) (rng : R)
+theorem generate_spec {R : Type} (rngInst : rand_1.rng.Rng R)
+    (cryptoInst : rand_core_1.CryptoRng R) (rng : R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
-      rngInst.rand_coreRngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
+      rngInst.rand_core_1RngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
     generate rngInst cryptoInst rng ⦃ (result : Keys × R) =>
         result.1.ek.val  = result.1.dk.val.slice mlkem768Params.encapsulationKeyBytes
         (2 * mlkem768Params.encapsulationKeyBytes) ∧
@@ -71,8 +75,6 @@ theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
         result.1.dk.length = mlkem768Params.decapsulationKeyBytes ⦄ := by
   unfold generate
   step*
-  refine ⟨?_, ?_, ?_⟩ <;>
-  simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
-    a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice] ; grind
+  simp_all [alloc.vec.Vec.val]
 
 end spqr.incremental_mlkem768

@@ -3,7 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
+
 /-! # Spec theorem for
 `spqr::{impl core::cmp::PartialEq<spqr::SecretOutput> for spqr::SecretOutput}::eq`
 
@@ -11,6 +14,8 @@ Structural equality for `SecretOutput`: same variant and equal inner `Vec<u8>` p
 Compares discriminants first; delegates to `PartialEqVec.eq` for `Send`/`Recv` payloads.
 
 **Source**: spqr/src/lib.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -26,7 +31,7 @@ private lemma allM_zip_u8_post
   induction xs generalizing ys with
   | nil =>
     cases ys with
-    | nil => exact ⟨true, rfl, by simp⟩
+    | nil => exact ⟨true, by rw [List.zip_nil_left, List.allM_nil]; rfl, by simp⟩
     | cons _ _ => simp at h_len
   | cons x xs ih =>
     cases ys with
@@ -36,7 +41,7 @@ private lemma allM_zip_u8_post
         simpa [List.length_cons] using h_len
       obtain ⟨b_tail, hb_tail_eq, hb_tail_iff⟩ := ih ys h_len'
       change ∃ b, List.allM _ ((x, y) :: List.zip xs ys) = ok b ∧ _
-      simp only [List.allM, liftFun2, bind_tc_ok, core.cmp.impls.PartialEqU8.eq]
+      simp only [List.allM_cons, liftFun2, bind_tc_ok, core.cmp.impls.PartialEqU8.eq]
       by_cases hxy : x = y
       · subst hxy
         simp only
@@ -64,7 +69,7 @@ private theorem eq_vec_u8_spec
     exact ⟨b, hb_eq, by
       rw [hb_iff]
       constructor
-      · intro h; cases v1; cases v2; simp_all
+      · exact alloc.vec.Vec.ext _ _
       · intro h; subst h; rfl⟩
   · grind
 /--

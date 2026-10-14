@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_chunk`
 
@@ -38,8 +40,10 @@ not from the proof: Aeneas models `core::fmt::Formatter` as an opaque type (`axi
 `native_decide` axiom is shared through the first extraction site,
 `chain.ChainEpochDirection.next_key_internal._proof_6`.
 
-**Source**: src/v1/chunked/states/serialize.rs (lines 190-202)
+**Source**: src/v1/chunked/states/serialize.rs (lines 141-153)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Error
 
@@ -73,7 +77,7 @@ They are what pins `n` down to a single value for a given buffer, so a future ro
 theorem against `encode_chunk` can identify the varint block it produced. -/
 @[step]
 theorem decode_chunk_spec
-    (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize)
+    (from1 : Slice Std.U8) (at1 : Std.Usize)
     (hlen : from1.length + 32 ≤ Std.Usize.max) :
     decode_chunk from1 at1 ⦃ (p : (core.result.Result encoding.Chunk Error) × Std.Usize) =>
       at1.val ≤ p.2.val ∧
@@ -88,7 +92,9 @@ theorem decode_chunk_spec
     -- `?` propagates the error and returns the cursor as `decode_varint` left it.
     step*
   | .Ok v =>
-    obtain ⟨_hin, n, hat2, hn1, hn10, hnlen, hval, hterm, hcont⟩ := r_post2
+    obtain ⟨_hin, n, hat2, hn1, hn10, hnlen, hval, hterm, hcont⟩ :
+        _ < from1.length ∧ ∃ n, _ = _ + n ∧ varintBlockAt from1.val _ n v.val := by
+      assumption
     -- Reduce `?` on the `Ok` eagerly: this feeds the decoded value into the continuation
     -- directly, instead of leaving it behind a `ControlFlow` equation on a fresh variable.
     simp only [core.result.Result.Insts.CoreOpsTry.branch]
@@ -98,11 +104,12 @@ theorem decode_chunk_spec
     match r1 with
     | .Err () =>
       -- The subslice spans `[at2, at2 + 32)`, so `try_into` cannot have failed.
-      exact absurd (by scalar_tac : s.length = 32) r1_post
+      exact absurd (by scalar_tac : s.length = 32) ‹_›
     | .Ok a =>
-      obtain ⟨ha, _halen⟩ := r1_post
+      obtain ⟨ha, _halen⟩ : a.val = s.val ∧ a.length = 32 := by assumption
+      simp only [core.result.Result.expect, bind_ok, WP.spec_ok]
       refine ⟨by scalar_tac, n, by scalar_tac,
-        ⟨hn1, hn10, hnlen, by rw [i1_post, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
+        ⟨hn1, hn10, hnlen, by rw [‹i1.val = v.val›, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
       simp [*]
 
 end spqr.v1.chunked.states.serialize

@@ -8,10 +8,14 @@
 
   Run with:  lake exe status [output.json]
 -/
-import Lean
-import Utils.Config
-import Utils.Lib.Analysis
-import Utils.Lib.Translation
+module
+
+public import Lean
+public import Utils.Config
+public import Utils.Lib.Analysis
+public import Utils.Lib.Translation
+
+public section
 
 open Lean
 open Utils.Lib.Analysis Utils.Lib.Translation

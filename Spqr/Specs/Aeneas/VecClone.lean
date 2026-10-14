@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorems for `alloc::vec::{impl Clone for Vec<T>}::clone`
@@ -12,6 +14,8 @@ import SrcTranslated.Funs
 instance is the identity (e.g. `U8`), cloning a vector succeeds and returns the vector
 unchanged.  Lifts the Aeneas standard-library `Slice.clone_spec` to `Vec`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -25,9 +29,9 @@ theorem clone_spec {T : Type} (cloneInst : core.clone.Clone T) (v : alloc.vec.Ve
     (h : ∀ x ∈ v.val, cloneInst.clone x = ok x) :
     alloc.vec.CloneVec.clone cloneInst v ⦃ (r : alloc.vec.Vec T) => r = v ⦄ := by
   unfold alloc.vec.CloneVec.clone
-  apply WP.spec_mono (Slice.clone_spec h)
+  apply WP.spec_bind (Slice.clone_spec h)
   intro v' h'
-  exact h'.symm
+  simp [← h']
 
 /-- **Spec theorem for `alloc.vec.CloneVec.clone` specialised to `U8`**:
 

@@ -3,9 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::gf::GF16::mul_assign`
 
@@ -22,6 +26,8 @@ Concretely, `mul_assign self other` calls `unaccelerated.mul self.value other.va
      16-bit canonical representative in GF(2¹⁶).
 
 **Source**: spqr/src/encoding/gf.rs  -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 

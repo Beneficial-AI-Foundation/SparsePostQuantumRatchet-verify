@@ -3,9 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Gf16.Irreducible
-import SrcTranslated.Types
-import Mathlib.FieldTheory.Finite.GaloisField
+public import SrcTranslated.Types
+public import Mathlib.FieldTheory.Finite.GaloisField
+public import Spqr.Math.Gf16.Basic
 
 /-!
 # The construction of GF(2¹⁶)
@@ -24,6 +27,8 @@ The identifier names are chosen to follow Mathlib's conventions for similar obje
 Note: this development is intended to be upstream-friendly so that it can be reused by other
 projects working with the same Galois field.
 -/
+
+@[expose] public section
 
 open Polynomial
 

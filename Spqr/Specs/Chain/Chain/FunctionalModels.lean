@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Types
-import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
+module
+
+public import SrcTranslated.Types
+public import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
 
 /-!
 # Functional models of `spqr::chain::Chain::{into_pb, from_pb}`
@@ -14,6 +16,8 @@ translated data types only, together with the round-trip laws relating them.
 
 **Source:** "spqr/src/chain.rs"
 -/
+
+@[expose] public section
 
 open Aeneas.Std spqr.chain
 namespace spqr.chain.Chain.FunctionalModels
@@ -66,7 +70,7 @@ def traverseVec {α β : Type} (f : α → core.result.Result β Error) (v : all
     core.result.Result (alloc.vec.Vec β) Error :=
   match h : traverseResult f v.val with
   | .Err e => .Err e
-  | .Ok l  => .Ok ⟨l, traverseResult_length f v.val l h ▸ v.property⟩
+  | .Ok l  => .Ok (alloc.vec.Vec.from l (traverseResult_length f v.val l h ▸ v.property))
 
 /-- Extract the logical contents of a `VecDeque` as a plain list. -/
 def dequeContents {T A : Type} (d : alloc.collections.vec_deque.VecDeque T A) : List T :=
@@ -103,10 +107,10 @@ def intoPb (self : chain.Chain) : proto.pq_ratchet.Chain :=
   { direction := directionToI32 self.dir,
     current_epoch := self.current_epoch,
     send_epoch := self.send_epoch,
-    links := ⟨(dequeContents self.links).map epochIntoPb, by
+    links := alloc.vec.Vec.from ((dequeContents self.links).map epochIntoPb) (by
       simp only [List.length_map, dequeContents, List.length_take, List.length_drop]
       have := self.links.buf.property
-      omega⟩,
+      omega),
     next_root := self.next_root,
     params := some self.params }
 
@@ -127,11 +131,19 @@ def fromPb (pb : proto.pq_ratchet.Chain) : core.result.Result chain.Chain Error 
 
 /-! ## Epoch-level round-trip properties -/
 
+/-- Both directions of a `ChainEpoch` carry a `next` key that is empty or of length 32 — the
+only directions `ChainEpochDirection::from_pb` accepts. -/
+def epochNextOk (ce : ChainEpoch) : Prop :=
+  (ce.send.next.val.isEmpty ∨ ce.send.next.length = 32) ∧
+  (ce.recv.next.val.isEmpty ∨ ce.recv.next.length = 32)
+
 @[simp]
-theorem roundtrip_epochFromPb_epochIntoPb (ce : ChainEpoch) :
+theorem roundtrip_epochFromPb_epochIntoPb (ce : ChainEpoch) (h : epochNextOk ce) :
     epochFromPb (epochIntoPb ce) = .Ok ce := by
-  simp [epochFromPb, epochIntoPb, ChainEpochDirection.FunctionalModels.fromPb,
-    ChainEpochDirection.FunctionalModels.intoPb]
+  obtain ⟨hs, hr⟩ := h
+  simp only [epochFromPb, epochIntoPb, Option.map,
+    ChainEpochDirection.FunctionalModels.roundtrip_fromPb_intoPb _ hs,
+    ChainEpochDirection.FunctionalModels.roundtrip_fromPb_intoPb _ hr]
 
 theorem roundtrip_epochIntoPb_epochFromPb (epoch : proto.pq_ratchet.chain.Epoch)
     (ce : ChainEpoch) (h : epochFromPb epoch = .Ok ce) :
@@ -142,29 +154,30 @@ theorem roundtrip_epochIntoPb_epochFromPb (epoch : proto.pq_ratchet.chain.Epoch)
     match s, r with
     | some sv, some rv =>
       simp only [Option.map] at h
-      simp only [ChainEpochDirection.FunctionalModels.fromPb,
-        core.result.Result.Ok.injEq] at h
-      cases ce with
-      | mk cs cr =>
-        cases h
-        simp only [epochIntoPb, ChainEpochDirection.FunctionalModels.intoPb]
+      match hs : ChainEpochDirection.FunctionalModels.fromPb sv,
+            hr : ChainEpochDirection.FunctionalModels.fromPb rv with
+      | .Ok sd, .Ok rd =>
+        simp only [hs, hr, core.result.Result.Ok.injEq] at h
+        subst h
+        simp only [epochIntoPb,
+          ChainEpochDirection.FunctionalModels.roundtrip_intoPb_fromPb _ _ hs,
+          ChainEpochDirection.FunctionalModels.roundtrip_intoPb_fromPb _ _ hr]
+      | .Err _, _ => simp only [hs] at h; exact absurd h nofun
+      | .Ok _, .Err _ => simp only [hs, hr] at h; exact absurd h nofun
     | none, _ => exact absurd h nofun
-    | some _, none =>
-      simp only [Option.map] at h
-      exact absurd h (by
-        simp only [ChainEpochDirection.FunctionalModels.fromPb]
-        exact nofun)
+    | some _, none => simp at h
 
 /-! ## traverseResult round-trip properties -/
 
 theorem traverseResult_map_roundtrip {α₁ β₁ : Type}
     (f : α₁ → β₁) (g : β₁ → core.result.Result α₁ Error)
-    (hgf : ∀ a, g (f a) = .Ok a)
-    (l : List α₁) :
+    (l : List α₁) (hgf : ∀ a ∈ l, g (f a) = .Ok a) :
     traverseResult g (l.map f) = .Ok l := by
   induction l with
   | nil => simp [traverseResult]
-  | cons a tl ih => simp [traverseResult, List.map, hgf, ih]
+  | cons a tl ih =>
+    simp [traverseResult, List.map, hgf a List.mem_cons_self,
+      ih (fun b hb => hgf b (List.mem_cons_of_mem a hb))]
 
 /-! ## Chain-level round-trip properties -/
 
@@ -176,26 +189,28 @@ private theorem dequeContents_full {T A : Type}
   rw [hhead]; simp [UScalar.ofNatCore_val_eq, hlen]
 
 private theorem traverseVec_map_epochRoundtrip (l : List chain.ChainEpoch)
-    (hl : l.length ≤ Aeneas.Std.Usize.max) :
-    traverseVec epochFromPb ⟨l.map epochIntoPb, by simp only [List.length_map]; exact hl⟩ =
-    .Ok ⟨l, hl⟩ := by
+    (hl : l.length ≤ Aeneas.Std.Usize.max) (hwf : ∀ ce ∈ l, epochNextOk ce) :
+    traverseVec epochFromPb
+      (alloc.vec.Vec.from (l.map epochIntoPb) (by simp only [List.length_map]; exact hl)) =
+    .Ok (alloc.vec.Vec.from l hl) := by
   simp only [traverseVec]
-  have h := traverseResult_map_roundtrip epochIntoPb epochFromPb
-    roundtrip_epochFromPb_epochIntoPb l
+  have h := traverseResult_map_roundtrip epochIntoPb epochFromPb l
+    (fun ce hce => roundtrip_epochFromPb_epochIntoPb ce (hwf ce hce))
   split
   · rename_i e he; simp [h] at he
   · rename_i l' hl'
-    simp only [h, core.result.Result.Ok.injEq] at hl'
+    simp only [alloc.vec.Vec.from_val, h, core.result.Result.Ok.injEq] at hl'
     subst hl'
     rfl
 
 theorem roundtrip_fromPb_intoPb (self : chain.Chain)
     (hhead : self.links.head = 0#usize)
-    (hlen : self.links.length.val = self.links.buf.val.length) :
+    (hlen : self.links.length.val = self.links.buf.val.length)
+    (hwf : ∀ ce ∈ self.links.buf.val, epochNextOk ce) :
     fromPb (intoPb self) = .Ok self := by
   have hdc := dequeContents_full self.links hhead hlen
   simp only [fromPb, intoPb, directionFromI32_directionToI32, hdc,
-    traverseVec_map_epochRoundtrip _ self.links.buf.property]
+    traverseVec_map_epochRoundtrip _ self.links.buf.property hwf]
   congr 1
   cases self with
   | mk dir ce se links nr params =>
@@ -207,6 +222,7 @@ theorem roundtrip_fromPb_intoPb (self : chain.Chain)
         apply UScalar.eq_of_val_eq
         simp [hlen]
       congr 2
+      all_goals simp [this]
 
 private theorem traverseResult_reverse {α₁ β₁ : Type}
     (f : α₁ → β₁) (g : β₁ → core.result.Result α₁ Error)
@@ -238,6 +254,7 @@ private theorem traverseVec_reverse
   · exact absurd h nofun
   · rename_i l'' hl''
     cases h
+    simp only [alloc.vec.Vec.from_val]
     exact traverseResult_reverse epochIntoPb epochFromPb
       (fun b a ha => roundtrip_epochIntoPb_epochFromPb b a ha) l.val l'' hl''
 
@@ -255,12 +272,13 @@ theorem roundtrip_intoPb_fromPb (pb : proto.pq_ratchet.Chain) (c : chain.Chain)
       rw [hmap]; exact pb.links.property
     simp only [intoPb, directionToI32_of_directionFromI32 _ _ hdir]
     congr 1
-    · show ⟨_, _⟩ = pb.links
+    · show alloc.vec.Vec.from _ _ = pb.links
       have : (Usize.ofNatCore epochs.val.length
         (by have := epochs.property; scalar_tac)).val = epochs.val.length :=
         UScalar.ofNatCore_val_eq ..
       simp only [dequeContents, UScalar.ofNatCore_val_eq, List.drop_zero, this, List.take_length]
-      exact Subtype.ext hmap
+      apply alloc.vec.Vec.ext
+      simpa using hmap
     · exact hpar.symm
   | .Err _, _, _ => simp only [hdir] at h; exact absurd h nofun
   | _, .Err _, _ => simp only [hdir, hvec] at h; exact absurd h nofun

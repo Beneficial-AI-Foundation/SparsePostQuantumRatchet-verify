@@ -3,11 +3,23 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Gf.GF16.ZERO
-import Spqr.Math.List
+module
+
+public import Spqr.Specs.Encoding.Gf.GF16.ZERO
+public import Spqr.Math.List
 import Spqr.Math.Poly.Identities.MultXdiff
 import Spqr.Specs.Encoding.Gf.GF16.ConstSub
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop body 0
 
@@ -19,6 +31,8 @@ and `dp` (scaled) arrays for computing `(x − difference) · self` in GF(2¹⁶
   `dp[i1] := a[i1] · difference`, and advances `i1`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 
@@ -53,14 +67,13 @@ theorem body_spec
   unfold body
   by_cases h_lt : i1.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.Vector.length_val, List.get_eq_getElem, getElem!_pos, forall_true_left, ne_eq, not_lt,
-      true_and]
+      List.get_eq_getElem, ne_eq, not_lt, true_and]
     by_cases h_lt_i : i1 < i.val
-    · simp only [h_lt_i, ↓reduceIte, bind_assoc, forall_const, isEmpty_Prop, not_le,
+    · simp only [h_lt_i, ↓reduceIte, forall_const, isEmpty_Prop, not_le,
         IsEmpty.forall_iff, and_true]
       step*
       all_goals simp_all
-    · simp only [h_lt_i, ↓reduceIte, bind_tc_ok, IsEmpty.forall_iff, true_and]
+    · simp only [h_lt_i, ↓reduceIte, IsEmpty.forall_iff, true_and]
       step*
       all_goals simp_all
   · step*
@@ -170,7 +183,7 @@ theorem body_spec
   unfold body
   by_cases h_lt : i.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.Vector.length_val, List.get_eq_getElem, getElem!_pos, forall_true_left, ne_eq, true_and]
+      List.get_eq_getElem, ne_eq, true_and]
     step*
     all_goals simp_all
   · step*
@@ -251,7 +264,8 @@ theorem mult_xdiff_spec
   unfold mult_xdiff
   step*
   · grind
-  apply @mult_xdiff_result_eq N (self.coefficients) diff i xp1 dp1 xp2 h_N_pos i_post1
+  apply @mult_xdiff_result_eq N (self.coefficients) diff i xp1 dp1 xp2 h_N_pos
+    (by scalar_tac)
   all_goals simp_all
 
 end spqr.encoding.polynomial.PolyConst

@@ -3,13 +3,22 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
+import Spqr.Specs.Aeneas.CopyFromSlice
+import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.TryFromSliceToArray
+import Spqr.Specs.Kdf.HkdfToSlice
 /-!
 # Definitions for `ChainEpochDirection` key-loop helpers
 
 Reusable pure definitions used by the chain-key advancement loop and related specs.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -84,7 +93,7 @@ noncomputable def iterKeyHistory
     (params : proto.pq_ratchet.ChainParams) (kh : chain.KeyHistory) (n : Nat) :
     chain.KeyHistory :=
   let d := iterKeyHistoryData secret base target params kh.data.val n
-  if h : d.length ≤ Usize.max then { data := ⟨d, h⟩ }
+  if h : d.length ≤ Usize.max then { data := alloc.vec.Vec.from d h }
   else kh
 
 /-- Length bound for `iterKeyHistoryData`: each iteration adds at most 36 bytes
@@ -145,7 +154,7 @@ theorem iterKeyHistory_data_length_mod_36
     (iterKeyHistory secret base target params kh n).data.length % 36 = 0 := by
   simp only [iterKeyHistory, alloc.vec.Vec.length]
   split
-  · exact iterKeyHistoryData_length_mod_36 secret base target params kh.data.val n h_aligned
+  · simpa using iterKeyHistoryData_length_mod_36 secret base target params kh.data.val n h_aligned
   · exact h_aligned
 
 end spqr.chain.ChainEpochDirection
