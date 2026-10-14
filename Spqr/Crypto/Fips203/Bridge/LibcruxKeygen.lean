@@ -10,7 +10,7 @@ import all Aeneas.Std.Array.Array
 /-!
 # Bridge: FIPS 203 Algorithm 16 ↔ libcrux `KeyPairCompressedBytes::from_seed`
 
-Phase 6.1 of `doc/plan.md`.  The Aeneas external
+The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed` is modelled in
 `SrcTranslated/FunsExternal.lean` by the FIPS 203 definition `Fips203.Bridge.keyPairArray`,
 i.e. `ML-KEM.KeyGen_internal(seed[0:32], seed[32:64])` serialised as `dk ‖ ek ‖ H(ek) ‖ z`.

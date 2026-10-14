@@ -10,7 +10,7 @@ public import Spqr.Crypto.Fips203.KEM.RoundTrip
 /-!
 # Decryption-Failure Events and the Union-Bound Failure Count
 
-Step 8.5 of the probabilistic noise analysis (plan.md, Phase 8).  This file names the
+This file names the
 decryption-failure events of ML-KEM and assembles the counting-level union bound:
 
 * `noiseViolation` — the per-coefficient failure event

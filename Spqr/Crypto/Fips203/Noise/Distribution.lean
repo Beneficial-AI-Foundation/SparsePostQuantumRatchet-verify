@@ -14,7 +14,7 @@ polynomial coefficient from `2·η` pseudorandom bits `b` as `(∑_{j<η} b_j) �
 When the input bits are uniform, the resulting integer follows the **centered binomial
 distribution** `CBD_η` on `{−η, …, η}`.
 
-This file is the first step of the probabilistic noise analysis (plan.md, Phase 8): it models
+This file is the first step of the probabilistic noise analysis: it models
 `CBD_η` as a Mathlib `PMF ℤ`, the pushforward of the uniform distribution on bit tuples under
 the Algorithm 6 bit-sum map, and proves
 
@@ -26,7 +26,7 @@ the Algorithm 6 bit-sum map, and proves
   `Zq.ofInt ∘ cbdVal` applied to the relevant input bits, connecting the probabilistic model to
   the spec-layer definition used by `samplePolyCBD`.
 
-Future steps (plan.md, Phase 8) build on this to bound the total decryption-noise polynomial of
+Future steps build on this to bound the total decryption-noise polynomial of
 `PKE/RoundTrip.lean` (`noiseBoundedAt`) with high probability.
 
 **Source**: NIST FIPS 203, § 4.2.2 (Algorithm 6), § 3.3 (decryption failure)

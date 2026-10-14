@@ -8,7 +8,7 @@ public import Spqr.Crypto.Fips203.Noise.Distribution
 /-!
 # Moments of the Centered Binomial Distribution `CBD_η`
 
-Step 8.2 of the probabilistic noise analysis (plan.md, Phase 8).  For the `PMF` model
+For the `PMF` model
 `cbdPMF η` of `Noise/Distribution.lean` we establish:
 
 * **Symmetry** (`cbdPMF_neg`): `CBD_η(−x) = CBD_η(x)`, via the involution `swapHalves` that

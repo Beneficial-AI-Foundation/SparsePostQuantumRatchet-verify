@@ -9,7 +9,7 @@ public import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # Compression Rounding Error in Centred Form (FIPS 203, Algorithms 11–12)
 
-Step 8.3 of the probabilistic noise analysis (plan.md, Phase 8).  The deterministic round-trip
+The deterministic round-trip
 bound `decompress_compress_error'` of `Conversion/Decompress.lean` is stated as a minimum of two
 mod-`q` distances.  The noise accounting of `PKE/RoundTrip.lean`, however, measures every noise
 term with the **centred absolute value** `absZq`.  This file bridges the two:

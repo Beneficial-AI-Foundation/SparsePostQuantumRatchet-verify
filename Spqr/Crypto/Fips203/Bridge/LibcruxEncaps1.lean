@@ -10,7 +10,7 @@ public import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
 /-!
 # Bridge: FIPS 203 Algorithm 17 (round 1) ↔ libcrux `incremental::encapsulate1`
 
-Phase 6.2 of `doc/plan.md`.  The Aeneas external
+The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.encapsulate1` is modelled in `SrcTranslated/FunsExternal.lean`
 by round 1 of `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase1`, see
 `Spqr/Crypto/Fips203/KEM/EncapsIncremental.lean`) on the header `pk1 = ρ ‖ H(ek)` and the message

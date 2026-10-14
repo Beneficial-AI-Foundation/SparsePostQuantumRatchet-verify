@@ -8,7 +8,7 @@ public import Spqr.Crypto.Fips203.Noise.Moments
 /-!
 # Tail Bounds for the Centered Binomial Distribution (counting level)
 
-Step 8.4 of the probabilistic noise analysis (plan.md, Phase 8).  Following the counting-level
+Following the counting-level
 style of `Noise/Distribution.lean` and `Noise/Moments.lean` (probabilities are fiber
 cardinalities over the uniform bit tuples, divided by `2^(2η)`), this file provides the generic
 tail machinery needed to bound the total decryption noise:

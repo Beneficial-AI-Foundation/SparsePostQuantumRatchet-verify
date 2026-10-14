@@ -11,7 +11,7 @@ public import Spqr.Crypto.Fips203.KEM.RoundTrip
 /-!
 # Bridge: FIPS 203 Algorithm 18 ↔ libcrux `incremental::decapsulate_compressed_key`
 
-Phase 6.4 of `doc/plan.md`.  The Aeneas external
+The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key` is modelled in
 `SrcTranslated/FunsExternal.lean` by `ML-KEM.Decaps_internal` (`Fips203.mlkemDecaps`,
 Algorithm 18) on the decapsulation key read from the 2400-byte compressed key-pair buffer

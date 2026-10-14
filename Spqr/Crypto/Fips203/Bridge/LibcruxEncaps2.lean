@@ -10,7 +10,7 @@ public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
 /-!
 # Bridge: FIPS 203 Algorithm 17 (round 2) ↔ libcrux `incremental::encapsulate2`
 
-Phase 6.3 of `doc/plan.md`.  The Aeneas external
+The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.encapsulate2` is modelled in `SrcTranslated/FunsExternal.lean`
 by round 2 of `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase2`, see
 `Spqr/Crypto/Fips203/KEM/EncapsIncremental.lean`) on the state `(ŷ, e₂, m)` decoded from the
