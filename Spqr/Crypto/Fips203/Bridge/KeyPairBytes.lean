@@ -91,6 +91,11 @@ theorem keyPairList_length (seed : Fin 64 → UInt8) : (keyPairList seed).length
 def keyPairArray (seed : Fin 64 → UInt8) : Array U8 2400#usize :=
   Aeneas.Std.Array.make 2400#usize (keyPairList seed) (keyPairList_length seed)
 
+/-- The underlying list of `keyPairArray` is `keyPairList`. -/
+@[simp] theorem keyPairArray_val (seed : Fin 64 → UInt8) :
+    (keyPairArray seed).val = keyPairList seed :=
+  Aeneas.Std.Array.make_val _ _ _
+
 /-! ## The public projections
 
 libcrux `pk2 = value[1152 : 2304]` is `ByteEncode₁₂(t̂)`, the encapsulation key without `ρ`;
