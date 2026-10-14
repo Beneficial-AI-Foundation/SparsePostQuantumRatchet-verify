@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Conversion.Compress
+module
+public import Spqr.Crypto.Fips203.Conversion.Compress
 /-!
 # FIPS 203 Algorithm 12: `Decompress_d`
 
@@ -24,6 +25,8 @@ bias for rounding, then right-shift by `d` bits.
 
 **Source**: NIST FIPS 203, § 4.2.1, Algorithm 12
 -/
+
+@[expose] public section
 
 noncomputable section
 

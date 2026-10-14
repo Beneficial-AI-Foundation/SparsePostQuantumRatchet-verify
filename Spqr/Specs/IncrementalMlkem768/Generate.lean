@@ -3,9 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang, Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
+module
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
+import all SrcTranslated.Funs
+import all SrcTranslated.FunsExternal
 
 /-! # Spec theorem for `incremental_mlkem768::generate`
 
@@ -59,8 +62,8 @@ three outputs come, byte-for-byte, from `kp`'s one serialized buffer `kp.value`
 
 Remaining future work (not expressible at this layer): distributional faithfulness of the seed
 (uniformity of `fill_bytes`) and game-based IND-CCA2 security. -/
-theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
-    (cryptoInst : rand_core.CryptoRng R) (rng : R)
+theorem generate_spec {R : Type} (rngInst : rand_1.rng.Rng R)
+    (cryptoInst : rand_core_1.CryptoRng R) (rng : R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
       rngInst.rand_core_1RngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
     generate rngInst cryptoInst rng ⦃ (result : Keys × R) =>
@@ -77,19 +80,27 @@ theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
         result.1.dk.length = mlkem768Params.decapsulationKeyBytes ⦄ := by
   unfold generate
   step*
+  -- The three owned `Vec`s are byte-for-byte the arrays returned by `pk1`/`pk2`/`sk`.
+  have hv : v.val = a.val := by
+    rw [alloc.vec.Vec.val, ← s2_post, ‹s2 = a.to_slice›, Array.val_to_slice]
+  have hv1 : v1.val = a1.val := by
+    rw [alloc.vec.Vec.val, ← s3_post, ‹s3 = a1.to_slice›, Array.val_to_slice]
+  have hv2 : v2.val = a2.val := by
+    rw [alloc.vec.Vec.val, ← s4_post, ‹s4 = a2.to_slice›, Array.val_to_slice]
   have henc : mlkem768Params.encapsulationKeyBytes = 1152 := by decide
   have hhdr : headerBytes = 64 := by decide
-  refine ⟨⟨Fips203.Bridge.seedOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_⟩
-  · simp only [← v2_post, s4_post, Array.val_to_slice, a2_post2, k_post2]
-  · simp only [← v1_post, s3_post, Array.val_to_slice, a1_post2, k_post2, henc,
-      Nat.reduceMul]
+  refine ⟨⟨Fips203.Bridge.seedOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [hv2, a2_post1, k_post1]
+  · rw [hv1, a1_post1, k_post1]
+    simp only [henc, Nat.reduceMul]
     exact Fips203.Bridge.keyPairList_slice_pk2 _
-  · simp only [← v_post, s2_post, Array.val_to_slice, a_post2, k_post2, henc, hhdr,
-      Nat.reduceMul, Nat.reduceAdd]
+  · rw [hv, a_post, k_post1]
+    simp only [henc, hhdr, Nat.reduceMul, Nat.reduceAdd]
     exact Fips203.Bridge.keyPairList_slice_pk1 _
-  all_goals
-    simp only [← v_post, ← v1_post, ← v2_post, s2_post, s3_post, s4_post,
-      a_post2, a1_post2, a2_post2, Array.val_to_slice, Array.length_to_slice]
-  all_goals grind
+  · rw [hv1, hv2, a1_post1, a2_post1]
+  · rw [hv, hv2, a_post, a2_post1]
+  · rw [alloc.vec.Vec.length, hv]; exact ‹a.length = headerBytes›
+  · rw [alloc.vec.Vec.length, hv1]; exact a1_post
+  · rw [alloc.vec.Vec.length, hv2]; exact a2_post
 
 end spqr.incremental_mlkem768

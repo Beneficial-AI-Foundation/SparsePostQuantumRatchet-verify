@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+module
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+import all Aeneas.Std.Array.Array
 /-!
 # Bridge: FIPS 203 Algorithm 16 ↔ libcrux `KeyPairCompressedBytes::from_seed`
 
@@ -28,6 +30,8 @@ with `d = seed[0 : 32]`, `z = seed[32 : 64]`, `ek = (mlkemKeyGen d z mlkem768).e
 lines 240–285.
 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result
 
 namespace Fips203.Bridge
@@ -48,8 +52,7 @@ theorem from_seed_value (seed : Array U8 64#usize) (kp : KeyPairCompressedBytes)
     kp.value.val =
       toU8List (mlkemKeyGen (seedD (seedOfArray seed)) (seedZ (seedOfArray seed)) mlkem768).dk := by
   rw [from_seed_eq_mlkemKeyGen, ok.injEq] at h
-  rw [← h]
-  exact Array.val_make _ _ _
+  subst h; rfl
 
 /-! ## The accessors in FIPS 203 terms
 
@@ -63,20 +66,22 @@ theorem sk_from_seed (seed : Array U8 64#usize) :
   rw [from_seed_eq_mlkemKeyGen, bind_tc_ok]
   rfl
 
+set_option maxHeartbeats 800000 in
 /-- `pk2` of the generated key pair is `ek[0 : 1152]`, the serialised `t̂` of the FIPS 203 key. -/
 theorem pk2_from_seed (seed : Array U8 64#usize) (r : Array U8 1152#usize)
     (h : KeyPairCompressedBytes.pk2 { value := keyPairArray (seedOfArray seed) } = ok r) :
     r.val = toU8List (pk2Bytes (seedOfArray seed)) := by
   rw [KeyPairCompressedBytes.pk2, ok.injEq] at h
-  rw [← h, Array.val_make, keyPairArray, Array.val_make]
+  rw [← h, Aeneas.Std.Array.make_val]
   exact keyPairList_slice_pk2 _
 
+set_option maxHeartbeats 800000 in
 /-- `pk1` of the generated key pair is `ρ ‖ H(ek)` of the FIPS 203 key. -/
 theorem pk1_from_seed (seed : Array U8 64#usize) (r : Array U8 64#usize)
     (h : KeyPairCompressedBytes.pk1 { value := keyPairArray (seedOfArray seed) } = ok r) :
     r.val = toU8List (pk1Bytes (seedOfArray seed)) := by
   rw [KeyPairCompressedBytes.pk1, ok.injEq] at h
-  rw [← h, Array.val_make, keyPairArray, Array.val_make]
+  rw [← h, Aeneas.Std.Array.make_val]
   exact keyPairList_slice_pk1 _
 
 /-- Composite: `from_seed` then `pk2`, as a single `Result` computation. -/

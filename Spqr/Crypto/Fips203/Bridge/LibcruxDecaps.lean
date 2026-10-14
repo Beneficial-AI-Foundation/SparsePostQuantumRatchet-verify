@@ -3,10 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.DecapsBytes
-import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
-import Spqr.Crypto.Fips203.KEM.RoundTrip
+module
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.DecapsBytes
+public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
+public import Spqr.Crypto.Fips203.KEM.RoundTrip
 /-!
 # Bridge: FIPS 203 Algorithm 18 ↔ libcrux `incremental::decapsulate_compressed_key`
 
@@ -30,6 +31,8 @@ monolithic Algorithm 17 on that key's `ek`.
 **Sources**: NIST FIPS 203, § 6.3 (Algorithm 18); libcrux-ml-kem 0.0.7, `src/mlkem.rs` lines
 439–443 and `src/ind_cca/incremental.rs` (`decapsulate_compressed_key`).
 -/
+
+@[expose] public section
 
 noncomputable section
 
@@ -79,10 +82,10 @@ theorem ctOfParts_ct1Array_ct2Array (seed : Fin 64 → UInt8)
   unfold ctOfParts
   by_cases hlt : idx.val < ct1Size
   · rw [dif_pos hlt, dif_pos hlt]
-    simp only [ct1Array, Array.val_make, ct1List]
+    simp only [ct1Array, Aeneas.Std.Array.make_val, ct1List]
     rw [toU8List_getElem, U8.toUInt8_ofUInt8]
   · rw [dif_neg hlt, dif_neg hlt]
-    simp only [ct2Array, Array.val_make, ct2List]
+    simp only [ct2Array, Aeneas.Std.Array.make_val, ct2List]
     rw [toU8List_getElem, U8.toUInt8_ofUInt8]
 
 /-- **End-to-end KEM round trip across the four bridges.**  Decapsulating the ciphertext

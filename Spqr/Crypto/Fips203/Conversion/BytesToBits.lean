@@ -3,9 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Params
-import Spqr.Crypto.Fips203.Conversion.BitsToBytes
-import Mathlib.Tactic.Ring
+module
+public import Spqr.Crypto.Fips203.Params
+public import Spqr.Crypto.Fips203.Conversion.BitsToBytes
+public import Mathlib.Tactic.Ring
 /-!
 # FIPS 203 Algorithm 2: `BytesToBits`
 
@@ -20,6 +21,8 @@ built.  It is the inverse of `BitsToBytes` (Algorithm 1).
 
 **Source**: NIST FIPS 203, § 4.2.1, Algorithm 2
 -/
+
+@[expose] public section
 
 namespace Fips203
 

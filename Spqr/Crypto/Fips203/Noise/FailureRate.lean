@@ -3,9 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Noise.TailBound
-import Spqr.Crypto.Fips203.Noise.Compression
-import Spqr.Crypto.Fips203.KEM.RoundTrip
+module
+public import Spqr.Crypto.Fips203.Noise.TailBound
+public import Spqr.Crypto.Fips203.Noise.Compression
+public import Spqr.Crypto.Fips203.KEM.RoundTrip
 /-!
 # Decryption-Failure Events and the Union-Bound Failure Count
 
@@ -34,6 +35,8 @@ deliberately left as a hypothesis (`hc`) of `card_noiseFail_le_of_bound`.
 
 **Source**: NIST FIPS 203, § 3.3 (decryption failure rate)
 -/
+
+@[expose] public section
 
 noncomputable section
 

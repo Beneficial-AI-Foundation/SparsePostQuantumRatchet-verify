@@ -3,12 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Aeneas
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.Crypto.Fips203.KEM.EncapsIncremental
-import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
-import Spqr.Crypto.Fips203.PKE.RoundTrip
+module
+public import Aeneas
+public import Spqr.Auxiliary.Aeneas.Scalar
+public import Spqr.Crypto.Fips203.KEM.EncapsIncremental
+public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+public import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # FIPS 203 model of libcrux's incremental `encapsulate1`
 
@@ -47,6 +47,8 @@ This file deliberately does **not** import `SrcTranslated` (it is imported *by* 
 344–367, `src/ind_cca/incremental.rs` lines 181–276, `src/ind_cca/incremental/types.rs` lines
 76–90 and 186–244, `src/polynomial.rs` lines 100–135.
 -/
+
+@[expose] public section
 
 noncomputable section
 
@@ -252,7 +254,7 @@ theorem ct1List_length (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → U
 
 /-- The first ciphertext half as an Aeneas `Array U8 960`. -/
 def ct1Array (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) : Array U8 960#usize :=
-  Array.make 960#usize (ct1List pk1 h m) (ct1List_length pk1 h m)
+  Aeneas.Std.Array.make 960#usize (ct1List pk1 h m) (ct1List_length pk1 h m)
 
 /-- The serialised state `stateBytes (ŷ, e₂, m)` written by round 1. -/
 def stateOut (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) :
@@ -265,7 +267,7 @@ def ssOut (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) : Fin 3
 
 /-- Read a 32-byte Aeneas array as a `Fin 32 → UInt8` message. -/
 def msgOfArray (r : Array U8 32#usize) : Fin 32 → UInt8 :=
-  fun i => (r.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
+  fun i => (r.val[i.val]'(by rw [Aeneas.Std.Array.length_eq]; exact i.isLt)).toUInt8
 
 /-! ## The FIPS 203 model of `encapsulate2` (ML-KEM-768)
 
@@ -283,11 +285,11 @@ theorem ct2Size_eq : 32 * mlkem768.d_v = ct2Size := by
 
 /-- Read the 2080-byte Aeneas state array as a `Fin 2080 → UInt8` byte vector. -/
 def stateOfArray (st : Array U8 2080#usize) : Fin encapsStateSize → UInt8 :=
-  fun i => (st.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
+  fun i => (st.val[i.val]'(by rw [Aeneas.Std.Array.length_eq]; exact i.isLt)).toUInt8
 
 /-- Read the 1152-byte Aeneas `pk2` array as a `Fin 1152 → UInt8` byte vector. -/
 def pk2OfArray (pk2 : Array U8 1152#usize) : Fin 1152 → UInt8 :=
-  fun i => (pk2.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
+  fun i => (pk2.val[i.val]'(by rw [Aeneas.Std.Array.length_eq]; exact i.isLt)).toUInt8
 
 /-- Recover `t̂` from the serialised `pk2 = ByteEncode₁₂(t̂)` via `ByteDecode₁₂` (the first
 `1152` bytes of `ek`, cf. `decodeEkTHat`). -/
@@ -321,7 +323,7 @@ theorem ct2List_length (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) :
 
 /-- The second ciphertext half as an Aeneas `Array U8 128`. -/
 def ct2Array (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : Array U8 128#usize :=
-  Array.make 128#usize (ct2List st pk2) (ct2List_length st pk2)
+  Aeneas.Std.Array.make 128#usize (ct2List st pk2) (ct2List_length st pk2)
 
 /-! ## Public-key validation predicate -/
 

@@ -1,17 +1,15 @@
-<<<<<<< HEAD
-import Aeneas
-import SrcTranslated.Types
-import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
-import Spqr.Crypto.Fips203.Bridge.EncapsBytes
-import Spqr.Crypto.Fips203.Bridge.DecapsBytes
-=======
 module
 public import Aeneas
 public import SrcTranslated.Types
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
 -- Remove when https://github.com/AeneasVerif/aeneas/issues/1415 lands
 import all Aeneas.Std.String
->>>>>>> 5b474a9dc5bf32bcb4f8ed3b2f654a1a82d16ee8
+public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+public import Spqr.Crypto.Fips203.Bridge.DecapsBytes
+import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+import Spqr.Crypto.Fips203.Bridge.DecapsBytes
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
@@ -1993,12 +1991,12 @@ noncomputable def libcrux_ml_kem.mlkem768.incremental.encapsulate1
     else
       let m := Fips203.Bridge.msgOfArray randomness
       ok (.Ok { value := Fips203.Bridge.ct1Array pk1.val h m },
-        ⟨Fips203.Bridge.overwritePrefix state.val (Fips203.Bridge.stateOut pk1.val h m), by
+        Slice.from (Fips203.Bridge.overwritePrefix state.val (Fips203.Bridge.stateOut pk1.val h m)) (by
           rw [Fips203.Bridge.overwritePrefix_length _ _ (Nat.not_lt.mp h_st)]
-          exact state.length_ineq⟩,
-        ⟨Fips203.Bridge.overwritePrefix shared_secret.val (Fips203.Bridge.ssOut pk1.val h m), by
+          exact state.length_ineq),
+        Slice.from (Fips203.Bridge.overwritePrefix shared_secret.val (Fips203.Bridge.ssOut pk1.val h m)) (by
           rw [Fips203.Bridge.overwritePrefix_length _ _ (Nat.not_lt.mp h_ss)]
-          exact shared_secret.length_ineq⟩)
+          exact shared_secret.length_ineq))
   else ok (.Err .InvalidInputLength, state, shared_secret)
 
 /-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encapsulate1`**
@@ -2030,7 +2028,7 @@ theorem libcrux_ml_kem.mlkem768.incremental.encapsulate1_spec
         (Fips203.Bridge.ssOut pk1.val h_pk1 (Fips203.Bridge.msgOfArray randomness)) ∧
       r.2.1.length = state.length ∧
       r.2.2.length = shared_secret.length ⦄ := by
-  simp only [libcrux_ml_kem.mlkem768.incremental.encapsulate1, dif_pos h_pk1,
+  simp only [Slice.from_val, Slice.length, libcrux_ml_kem.mlkem768.incremental.encapsulate1, dif_pos h_pk1,
     dif_neg (Nat.not_lt.mpr h_ss), dif_neg (Nat.not_lt.mpr h_state), WP.spec_ok]
   refine ⟨trivial, trivial, trivial, ?_, ?_⟩
   · exact Fips203.Bridge.overwritePrefix_length _ _ h_state

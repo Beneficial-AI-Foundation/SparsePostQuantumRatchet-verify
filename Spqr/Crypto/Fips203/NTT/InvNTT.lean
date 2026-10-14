@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.NTT.NTT
+module
+public import Spqr.Crypto.Fips203.NTT.NTT
 /-!
 # FIPS 203 Algorithm 8 — Inverse Number-Theoretic Transform (NTT⁻¹)
 
@@ -33,6 +34,8 @@ NTT⁻¹(f̂):
 
 **Source**: NIST FIPS 203, § 4.3 (Algorithm 8)
 -/
+
+@[expose] public section
 
 noncomputable section
 

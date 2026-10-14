@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Mathlib.Probability.Distributions.Uniform
-import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD
+module
+public import Mathlib.Probability.Distributions.Uniform
+public import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD
 /-!
 # Centered Binomial Distribution `CBD_η` as a `PMF` (FIPS 203, § 4.2.2)
 
@@ -30,6 +31,8 @@ Future steps (plan.md, Phase 8) build on this to bound the total decryption-nois
 
 **Source**: NIST FIPS 203, § 4.2.2 (Algorithm 6), § 3.3 (decryption failure)
 -/
+
+@[expose] public section
 
 namespace Fips203
 

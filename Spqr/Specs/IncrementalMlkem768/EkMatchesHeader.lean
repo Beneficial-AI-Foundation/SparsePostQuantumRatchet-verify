@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
+module
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 /-!
 # Spec theorem for `spqr::incremental_mlkem768::ek_matches_header`
 
@@ -26,6 +27,8 @@ it dereferences both vectors, calls `validate_pk_bytes`, and then `Result.is_ok`
 inner `core.result.Result`.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 28:0-30:1 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

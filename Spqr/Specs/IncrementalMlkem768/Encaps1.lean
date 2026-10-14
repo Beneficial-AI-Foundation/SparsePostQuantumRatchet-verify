@@ -3,11 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
-import Spqr.Specs.Aeneas.ResultExpect
-
+module
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
+public import Spqr.Specs.Aeneas.ResultExpect
 /-! # Spec theorem for `incremental_mlkem768::encaps1`
 
 `encaps1` is round 1 of ML-KEM-768 encapsulation packaged for the SPQR ratchet: given the
@@ -40,6 +40,8 @@ Remaining future work (not expressible at this layer): distributional faithfulne
 (uniformity of `fill_bytes`) and game-based IND-CCA2 security.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 48:0-66:1 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -81,11 +83,11 @@ for the header `(ρ, h) = (hdr[0:32], hdr[32:64])` (round 1 of FIPS 203 Algorith
   (length `960`);
 * `es`  = `Fips203.Bridge.stateOut hdr m` — the serialised state `ŷ ‖ e₂ ‖ m` (length `2080`);
 * `ss`  = `Fips203.Bridge.ssOut hdr m` — the shared secret `K` (length `32`). -/
-theorem encaps1_spec {R : Type} (rngInst : rand.rng.Rng R)
-    (cryptoInst : rand_core.CryptoRng R) (hdr : alloc.vec.Vec Std.U8) (rng : R)
+theorem encaps1_spec {R : Type} (rngInst : rand_1.rng.Rng R)
+    (cryptoInst : rand_core_1.CryptoRng R) (hdr : alloc.vec.Vec Std.U8) (rng : R)
     (h_hdr : 64 ≤ hdr.val.length)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
-      rngInst.rand_coreRngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
+      rngInst.rand_core_1RngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
     encaps1 rngInst cryptoInst hdr rng ⦃ (result :
         ((alloc.vec.Vec Std.U8) × (alloc.vec.Vec Std.U8) × (alloc.vec.Vec Std.U8)) × R) =>
       (∃ m : Fin 32 → UInt8,
@@ -99,34 +101,40 @@ theorem encaps1_spec {R : Type} (rngInst : rand.rng.Rng R)
       result.1.2.2.length = Fips203.Bridge.sharedSecretSize ⦄ := by
   unfold encaps1
   step*
-  simp only [alloc.vec.Vec.deref_mut, lift, bind_tc_ok]
+  simp only [alloc.vec.Vec.deref_mut, lift]
   have h_s2 : 64 ≤ s2.length := by simp only [Slice.length, s2_post]; exact h_hdr
-  have h_state : Fips203.Bridge.encapsStateSize ≤
-      Slice.length (⟨state.val, state.property⟩ : Slice U8) := by
-    simp only [Slice.length]; scalar_tac
-  have h_ss : (32 : ℕ) ≤ Slice.length (⟨ss.val, ss.property⟩ : Slice U8) := by
-    simp only [Slice.length]; scalar_tac
+  have h_state : Fips203.Bridge.encapsStateSize ≤ state.slice.length := by
+    change Fips203.Bridge.encapsStateSize ≤ state.val.length; scalar_tac
+  have h_ss : (32 : ℕ) ≤ ss.slice.length := by
+    change (32 : ℕ) ≤ ss.val.length; scalar_tac
   step*
-  subst ct1_post1
+  subst ct1_post
   step*
-  have h_state_len : state.val.length = Fips203.Bridge.encapsStateSize := by
-    simp only [state_post1, List.length_replicate]; exact i_post
-  have h_ss_len : ss.val.length = (32 : ℕ) := by
-    simp only [ss_post1, List.length_replicate]; exact i1_post
+  have h_state_len : state.slice.val.length = Fips203.Bridge.encapsStateSize := by
+    change state.val.length = _
+    simp only [state_post, List.length_replicate, «Fips203.Bridge.encapsStateSize_post»]
+  have h_ss_len : ss.slice.val.length = (32 : ℕ) := by
+    change ss.val.length = _
+    simp only [ss_post, List.length_replicate, i1_post]
   have h_hdr' : (64 : ℕ) ≤ s2.val.length := h_s2
+  have h_v : v.val = Fips203.Bridge.ct1List s2.val h_s2
+      (Fips203.Bridge.msgOfArray (to_slice_mut_back s1)) := by
+    change v.slice.val = _
+    rw [← v_post, c_post, Array.val_to_slice, Fips203.Bridge.ct1Array, Array.make_val]
   refine ⟨⟨Fips203.Bridge.msgOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_⟩
-  · rw [← v_post, c_post, Array.val_to_slice, Fips203.Bridge.ct1Array, Array.val_make]
-    exact Fips203.Bridge.ct1List_congr s2_post h_hdr' h_hdr _
-  · rw [ct1_post2, Fips203.Bridge.overwritePrefix_of_length_eq _ _ h_state_len,
+  · rw [h_v]; exact Fips203.Bridge.ct1List_congr s2_post h_hdr' h_hdr _
+  · change s5.val = _
+    rw [ct1_post1, Fips203.Bridge.overwritePrefix_of_length_eq _ _ h_state_len,
       Fips203.Bridge.stateOut_congr s2_post h_hdr' h_hdr]
-  · rw [ct1_post3, Fips203.Bridge.overwritePrefix_of_length_eq _ _ h_ss_len,
+  · change s6.val = _
+    rw [ct1_post2, Fips203.Bridge.overwritePrefix_of_length_eq _ _ h_ss_len,
       Fips203.Bridge.ssOut_congr s2_post h_hdr' h_hdr]
-  · rw [alloc.vec.Vec.length, ← v_post, c_post, Array.val_to_slice, Fips203.Bridge.ct1Array,
-      Array.val_make, Fips203.Bridge.ct1List_length]
-  · rw [alloc.vec.Vec.length, ct1_post2,
-      Fips203.Bridge.overwritePrefix_length _ _ (le_of_eq h_state_len.symm), h_state_len]
-  · rw [alloc.vec.Vec.length, ct1_post3,
-      Fips203.Bridge.overwritePrefix_length _ _ (le_of_eq h_ss_len.symm), h_ss_len]
+  · rw [alloc.vec.Vec.length, h_v, Fips203.Bridge.ct1List_length]
+  · change s5.val.length = _
+    rw [ct1_post1, Fips203.Bridge.overwritePrefix_length _ _ (le_of_eq h_state_len.symm),
+      h_state_len]
+  · change s6.val.length = _
+    rw [ct1_post2, Fips203.Bridge.overwritePrefix_length _ _ (le_of_eq h_ss_len.symm), h_ss_len]
     rfl
 
 end spqr.incremental_mlkem768

@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Noise.Distribution
+module
+public import Spqr.Crypto.Fips203.Noise.Distribution
 /-!
 # Moments of the Centered Binomial Distribution `CBD_η`
 
@@ -20,6 +21,8 @@ Step 8.2 of the probabilistic noise analysis (plan.md, Phase 8).  For the `PMF` 
 
 **Source**: NIST FIPS 203, § 4.2.2; the variance of `CBD_η` is `η/2` (standard fact).
 -/
+
+@[expose] public section
 
 namespace Fips203
 

@@ -3,12 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.LibcruxDecaps
-import Spqr.Specs.Aeneas.ResultExpect
-import Spqr.Specs.IncrementalMlkem768.Encaps2
-
+module
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.LibcruxDecaps
+public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Specs.IncrementalMlkem768.Encaps2
 /-! # Spec theorem for `incremental_mlkem768::decaps`
 
 `decaps` is ML-KEM-768 decapsulation packaged for the SPQR ratchet: given the 2400-byte
@@ -35,6 +35,8 @@ the output with the shared secret of the monolithic `ML-KEM.Encaps_internal(ek, 
 K-PKE noise bound.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 156:0-169:1 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -78,16 +80,22 @@ theorem decaps_spec (dk ct1 ct2 : alloc.vec.Vec Std.U8)
   -- shared-reference variant, whose `@[step]` spec (`tryFromSharedArraySlice_ok_spec`, stated in
   -- `Encaps2.lean`) discharges the 2400-byte length side goal from `h_dk` via `scalar_tac`.
   step*
-  -- Unwrap the `expect` on the `Ok` key-pair array, run `decapsulate_compressed_key`
-  -- (Bridge 6.4) and copy the shared-secret bytes into an owned `Vec`.
-  simp only [r2_post1]
+  -- `step*` already destructured the `Ok` result into the key-pair array `a` with
+  -- `r2_post : r2 = .Ok a` and `r2_post1 : a.val = s2.val`. Unwrap the `expect` on it, run
+  -- `decapsulate_compressed_key` (Bridge 6.4) and copy the shared-secret bytes into an owned
+  -- `Vec`.
+  rw [r2_post]
   step*
-  refine ⟨⟨r2, ct1', ct2', ?_, ?_, ?_, ?_⟩, ?_⟩
-  · rw [r2_post2, s2_post]
+  -- `step*` leaves `s3 = a3.to_slice` (shadowed, so recover it with `rename_i`) and
+  -- `s3_post : s3 = result.slice`; `result.val` unfolds to `result.slice.val`.
+  rename_i h_s3_to_slice
+  have h_result : result.val = a3.val := by
+    simp only [alloc.vec.Vec.val, ← s3_post, h_s3_to_slice, Array.val_to_slice]
+  refine ⟨⟨a, ct1', ct2', ?_, ?_, ?_, ?_⟩, ?_⟩
+  · rw [r2_post1, s2_post]
   · rw [h_ct1_val, s_post]
   · rw [h_ct2_val, s1_post]
-  · simp only [← result_post, s3_post, Array.val_to_slice, a3_post2, a2_post, a_post, a1_post]
-  · simp only [alloc.vec.Vec.length, ← result_post, s3_post, Array.val_to_slice, a3_post2,
-      Fips203.Bridge.ssList_length]
+  · simp only [h_result, a3_post1, a2_post, a_post, a1_post]
+  · simp only [alloc.vec.Vec.length, h_result, a3_post1, Fips203.Bridge.ssList_length]
 
 end spqr.incremental_mlkem768

@@ -3,10 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Params
-import Spqr.Crypto.Fips203.Ring
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic.NormNum
+module
+public import Spqr.Crypto.Fips203.Params
+public import Spqr.Crypto.Fips203.Ring
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
 /-!
 # FIPS 203 Algorithms 11–12: `Compress_d` and `Decompress_d`
 
@@ -34,6 +35,8 @@ Decompress_d(y):                          ▷ y ∈ {0, …, 2^d − 1}
 
 **Source**: NIST FIPS 203, § 4.2.1, Algorithms 11–12
 -/
+
+@[expose] public section
 
 noncomputable section
 

@@ -3,10 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
-import Spqr.Crypto.Fips203.NTT.InvNTT
-import Spqr.Crypto.Fips203.NTT.Spec
-import Spqr.Crypto.Fips203.NTT.KernelCheck
+module
+public import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
+public import Spqr.Crypto.Fips203.NTT.InvNTT
+public import Spqr.Crypto.Fips203.NTT.Spec
+public import Spqr.Crypto.Fips203.NTT.KernelCheck
 /-!
 # FIPS 203 NTT Round-Trip and Multiplicative Homomorphism
 
@@ -29,6 +30,8 @@ isomorphism `R_q ≅ ∏ᵢ ℤ_q[X]/(X² − γᵢ)` of `Spec.lean`.
 
 **Source**: NIST FIPS 203, § 4.3 (Algorithms 7–10)
 -/
+
+@[expose] public section
 
 noncomputable section
 

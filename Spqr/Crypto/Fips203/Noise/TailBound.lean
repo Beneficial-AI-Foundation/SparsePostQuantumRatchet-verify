@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Noise.Moments
+module
+public import Spqr.Crypto.Fips203.Noise.Moments
 /-!
 # Tail Bounds for the Centered Binomial Distribution (counting level)
 
@@ -25,6 +26,8 @@ tail machinery needed to bound the total decryption noise:
 
 **Source**: NIST FIPS 203, § 3.3 (decryption failure rate)
 -/
+
+@[expose] public section
 
 namespace Fips203
 

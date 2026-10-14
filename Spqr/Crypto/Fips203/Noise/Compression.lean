@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Conversion.Decompress
-import Spqr.Crypto.Fips203.PKE.RoundTrip
+module
+public import Spqr.Crypto.Fips203.Conversion.Decompress
+public import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # Compression Rounding Error in Centred Form (FIPS 203, Algorithms 11–12)
 
@@ -26,6 +27,8 @@ These give the deterministic contribution of compression to the total noise poly
 
 **Source**: NIST FIPS 203, § 4.2.1 (Algorithms 11–12), § 3.3 (decryption failure)
 -/
+
+@[expose] public section
 
 noncomputable section
 

@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.KEM.Encaps
-import Spqr.Crypto.Fips203.PKE.Decrypt
+module
+public import Spqr.Crypto.Fips203.KEM.Encaps
+public import Spqr.Crypto.Fips203.PKE.Decrypt
 /-!
 # FIPS 203 Algorithm 18: `ML-KEM.Decaps_internal(dk, c)`
 
@@ -27,6 +28,8 @@ concerns only byte lengths, which are enforced here by the dependent types.
 
 **Source**: NIST FIPS 203, § 6.3 (Algorithm 18)
 -/
+
+@[expose] public section
 
 noncomputable section
 

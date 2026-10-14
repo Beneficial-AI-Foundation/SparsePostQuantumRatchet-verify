@@ -3,11 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.PKE.Encrypt
-import Spqr.Crypto.Fips203.PKE.Decrypt
-import Spqr.Crypto.Fips203.NTT.RoundTrip
-import Spqr.Crypto.Fips203.Conversion.Compress
-import Spqr.Crypto.Fips203.Conversion.Decompress
+module
+public import Spqr.Crypto.Fips203.PKE.Encrypt
+public import Spqr.Crypto.Fips203.PKE.Decrypt
+public import Spqr.Crypto.Fips203.NTT.RoundTrip
+public import Spqr.Crypto.Fips203.Conversion.Compress
+public import Spqr.Crypto.Fips203.Conversion.Decompress
 /-!
 # FIPS 203 K-PKE Round-Trip Correctness: `decrypt(dk, encrypt(ek, m, r)) = m`
 
@@ -41,6 +42,8 @@ noise bound `noiseBoundedAt (honestW − Decompress₁ m)`.
 
 **Source**: NIST FIPS 203, §§ 5.1–5.3 (Algorithms 13–15)
 -/
+
+@[expose] public section
 noncomputable section
 
 

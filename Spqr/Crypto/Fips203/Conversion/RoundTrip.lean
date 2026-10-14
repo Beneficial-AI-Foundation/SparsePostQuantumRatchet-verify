@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Conversion.BitsToBytes
-import Spqr.Crypto.Fips203.Conversion.BytesToBits
-import Mathlib.Tactic.Ring
+module
+public import Spqr.Crypto.Fips203.Conversion.BitsToBytes
+public import Spqr.Crypto.Fips203.Conversion.BytesToBits
+public import Mathlib.Tactic.Ring
+import all Batteries.Data.UInt
 /-!
 # Round-trip lemmas for `BitsToBytes` / `BytesToBits`
 
@@ -22,6 +24,8 @@ from this by extensionality.
 
 **Source**: NIST FIPS 203, § 4.2.1, Algorithms 1 & 2
 -/
+
+@[expose] public section
 
 namespace Fips203
 

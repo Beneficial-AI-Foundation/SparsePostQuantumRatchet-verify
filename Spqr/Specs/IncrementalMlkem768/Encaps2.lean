@@ -3,11 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
-import Spqr.Specs.Aeneas.ResultExpect
-
+module
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
+public import Spqr.Specs.Aeneas.ResultExpect
 /-! # Spec theorem for `incremental_mlkem768::encaps2`
 
 `encaps2` is round 2 of ML-KEM-768 encapsulation packaged for the SPQR ratchet: given the
@@ -39,6 +39,8 @@ Bridge 6.3 identify the output with `ct[960 : 1088]` of the monolithic
 
 **Source**: `src/incremental_mlkem768.rs`, lines 71:0-79:1 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result
 
 namespace Fips203.Bridge
@@ -54,7 +56,7 @@ theorem tryFromSharedArraySlice_ok_spec {T : Type} (N : Usize) (s : Slice T)
   simp only [core.array.TryFromSharedArraySlice.try_from]
   rw [dif_pos (by scalar_tac)]
   simp only [WP.spec_ok]
-  exact ⟨_, rfl, rfl⟩
+  exact ⟨_, rfl, Array.from_val _ _⟩
 
 end Fips203.Bridge
 
@@ -64,16 +66,16 @@ open libcrux_ml_kem.mlkem768.incremental
 
 /-- The effective state bytes consumed by `encaps2`: if the endianness workaround
 (`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`) returns `Some fixed`,
-use `fixed`; otherwise fall back to the original state `es`. -/
+use `fixed`; otherwise fall back to the original state `es`.
+
+`Result` is the Aeneas ITree monad and cannot be pattern-matched directly, so the selection
+is expressed monadically with `Option.elim`. -/
 def encaps2EffectiveState
-    (es : alloc.vec.Vec Std.U8) : Result (List Std.U8) :=
-  open _root_.incremental_mlkem768 in
-  match potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-    es with
-  | ok (some fixed) => ok fixed.val
-  | ok none         => ok es.val
-  | fail e          => fail e
-  | div             => div
+    (es : alloc.vec.Vec Std.U8) : Result (List Std.U8) := do
+  let mf ←
+    _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+      es
+  ok (mf.elim es.val (fun fixed => fixed.val))
 
 /-- Postcondition predicate for `encaps2`: the result is the 128-byte
 second ciphertext half `c₂` computed from the effective state and the
@@ -138,19 +140,24 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
     simp only [Slice.length, s_post, es1_post, o_post, mf]
     simp only [core.option.Option.unwrap_or_none]
     scalar_tac
-  simp only [r_post1]
+  obtain ⟨a0, r_post, r_post1⟩ :
+      ∃ a0 : Array Std.U8 2080#usize,
+        r = core.result.Result.Ok a0 ∧ a0.val = s.val :=
+    ⟨_, r_post, r_post1⟩
+  rw [r_post]
   step*
-  simp only [r1_post1]
+  rw [r1_post]
   step*
-  refine ⟨⟨es.val, ?_, r, r1, ?_, ?_, ?_⟩, ?_⟩
+  rw [a_post, a1_post] at ct2_post1
+  have h_s2 : result.slice = ct2.value.to_slice := by
+    rw [← s2_post]; assumption
+  have h_result : result.val = Fips203.Bridge.ct2List a0 a := by
+    rw [alloc.vec.Vec.val, h_s2, Array.val_to_slice, ct2_post1]
+  refine ⟨⟨es.val, ?_, a0, a, ?_, ?_, h_result⟩, ?_⟩
   · simp [encaps2EffectiveState, h_eq, mf]
-  · rw [r_post2, s_post, es1_post]
+  · rw [r_post1, s_post, es1_post]
     simp only [o_post, mf, core.option.Option.unwrap_or_none]
-  · rw [r1_post2, s1_post]
-  · simp only [← result_post, s2_post,
-      Array.val_to_slice, ct2_post2, a_post, a1_post]
-  · simp only [alloc.vec.Vec.length, ← result_post,
-      s2_post, Array.val_to_slice, ct2_post2,
-      Fips203.Bridge.ct2List_length]
+  · rw [r1_post1, s1_post]
+  · simp only [alloc.vec.Vec.length, h_result, Fips203.Bridge.ct2List_length]
 
 end spqr.incremental_mlkem768

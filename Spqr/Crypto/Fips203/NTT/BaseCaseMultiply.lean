@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.NTT.Zetas
+module
+public import Spqr.Crypto.Fips203.NTT.Zetas
 /-!
 # FIPS 203 Algorithm 10 — BaseCaseMultiply
 
@@ -28,6 +29,8 @@ BaseCaseMultiply(a₀, a₁, b₀, b₁, γ):
 
 **Source**: NIST FIPS 203, § 4.3 (Algorithm 10)
 -/
+
+@[expose] public section
 
 noncomputable section
 

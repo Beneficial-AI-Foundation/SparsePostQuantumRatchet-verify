@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Mathlib.Data.ZMod.Basic
-import Mathlib.Tactic.NormNum.Prime
+module
+public import Mathlib.Data.ZMod.Basic
+public import Mathlib.Tactic.NormNum.Prime
 /-!
 # FIPS 203 ML-KEM Parameter Sets
 
@@ -22,6 +23,8 @@ completeness and to enable future parameter-generic reasoning.
 
 **Source**: NIST FIPS 203, Table 2 (§ 8)
 -/
+
+@[expose] public section
 
 namespace Fips203
 

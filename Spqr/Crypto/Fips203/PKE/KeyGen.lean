@@ -3,13 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Params
-import Spqr.Crypto.Fips203.Ring
-import Spqr.Crypto.Fips203.Sampling.SampleNTT
-import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD
-import Spqr.Crypto.Fips203.NTT.NTT
-import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
-import Spqr.Crypto.Fips203.Conversion.ByteEncode
+module
+public import Spqr.Crypto.Fips203.Params
+public import Spqr.Crypto.Fips203.Ring
+public import Spqr.Crypto.Fips203.Sampling.SampleNTT
+public import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD
+public import Spqr.Crypto.Fips203.NTT.NTT
+public import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
+public import Spqr.Crypto.Fips203.Conversion.ByteEncode
 /-!
 # FIPS 203 Algorithm 13: `K-PKE.KeyGen(d)`
 
@@ -28,6 +29,8 @@ The algorithm:
 
 **Source**: NIST FIPS 203, § 5.1 (Algorithm 13)
 -/
+
+@[expose] public section
 
 noncomputable section
 

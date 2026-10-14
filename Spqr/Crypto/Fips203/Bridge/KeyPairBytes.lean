@@ -3,10 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Aeneas
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.Crypto.Fips203.KEM.KeyGen
+module
+public import Aeneas
+public import Spqr.Auxiliary.Aeneas.Scalar
+public import Spqr.Crypto.Fips203.KEM.KeyGen
 /-!
 # FIPS 203 model of libcrux's `KeyPairCompressedBytes::from_seed`
 
@@ -33,6 +33,8 @@ deliberately does **not** import `SrcTranslated` (it is imported *by* it).
 lines 240–246 and `src/ind_cca/incremental/types.rs` lines 415–433.
 -/
 
+@[expose] public section
+
 noncomputable section
 
 open Aeneas Aeneas.Std
@@ -54,7 +56,7 @@ def seedZ (seed : Fin 64 → UInt8) : Fin 32 → UInt8 :=
 
 /-- Read a 64-byte Aeneas array as a `Fin 64 → UInt8` seed. -/
 def seedOfArray (seed : Array U8 64#usize) : Fin 64 → UInt8 :=
-  fun i => (seed.val[i.val]'(by rw [Array.length_eq]; exact i.isLt)).toUInt8
+  fun i => (seed.val[i.val]'(by rw [Aeneas.Std.Array.length_eq]; exact i.isLt)).toUInt8
 
 /-! ## Byte-vector ↔ Aeneas list -/
 
@@ -87,7 +89,7 @@ theorem keyPairList_length (seed : Fin 64 → UInt8) : (keyPairList seed).length
 
 /-- The buffer as an Aeneas `Array U8 2400`. -/
 def keyPairArray (seed : Fin 64 → UInt8) : Array U8 2400#usize :=
-  Array.make 2400#usize (keyPairList seed) (keyPairList_length seed)
+  Aeneas.Std.Array.make 2400#usize (keyPairList seed) (keyPairList_length seed)
 
 /-! ## The public projections
 

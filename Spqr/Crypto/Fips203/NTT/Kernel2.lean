@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.NTT.Packed
+module
+public import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT — kernel verification shard 2 (basis vectors 128–191)
 
@@ -12,6 +13,8 @@ packed basis vector `δⱼ` to the packed closed form of `nttSpec δⱼ`.  Split
 four files so each compiles in well under 30 s and `lake` can run them in
 parallel.
 -/
+
+@[expose] public section
 
 namespace Fips203
 

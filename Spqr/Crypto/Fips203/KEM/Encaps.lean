@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.KEM.KeyGen
-import Spqr.Crypto.Fips203.PKE.Encrypt
+module
+public import Spqr.Crypto.Fips203.KEM.KeyGen
+public import Spqr.Crypto.Fips203.PKE.Encrypt
 /-!
 # FIPS 203 Algorithm 17: `ML-KEM.Encaps_internal(ek, m)`
 
@@ -24,6 +25,8 @@ randomness is a parameter in this development, Algorithm 17 is the top-level def
 
 **Source**: NIST FIPS 203, § 6.2 (Algorithm 17)
 -/
+
+@[expose] public section
 
 noncomputable section
 

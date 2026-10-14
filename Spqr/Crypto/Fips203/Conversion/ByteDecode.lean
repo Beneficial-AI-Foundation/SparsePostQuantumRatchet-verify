@@ -3,12 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Params
-import Spqr.Crypto.Fips203.Ring
-import Spqr.Crypto.Fips203.Conversion.BytesToBits
-import Spqr.Crypto.Fips203.Conversion.ByteEncode
-import Spqr.Crypto.Fips203.Conversion.RoundTrip
-import Mathlib.Tactic.Ring
+module
+public import Spqr.Crypto.Fips203.Params
+public import Spqr.Crypto.Fips203.Ring
+public import Spqr.Crypto.Fips203.Conversion.BytesToBits
+public import Spqr.Crypto.Fips203.Conversion.ByteEncode
+public import Spqr.Crypto.Fips203.Conversion.RoundTrip
+public import Mathlib.Tactic.Ring
 /-!
 # FIPS 203 Algorithm 4: `ByteDecode_d`
 
@@ -26,6 +27,8 @@ Its inverse is `ByteEncode_d` (Algorithm 3).
 
 **Source**: NIST FIPS 203, § 4.2.1, Algorithm 4
 -/
+
+@[expose] public section
 
 namespace Fips203
 

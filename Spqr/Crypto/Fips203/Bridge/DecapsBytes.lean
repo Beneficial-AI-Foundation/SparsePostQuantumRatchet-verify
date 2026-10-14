@@ -3,11 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Aeneas
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.Crypto.Fips203.KEM.Decaps
-import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+module
+public import Aeneas
+public import Spqr.Auxiliary.Aeneas.Scalar
+public import Spqr.Crypto.Fips203.KEM.Decaps
+public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
 /-!
 # FIPS 203 model of libcrux's incremental `decapsulate_compressed_key`
 
@@ -27,6 +27,8 @@ can use it as the definition of the external `decapsulate_compressed_key`.  It d
 439–443 and `src/ind_cca/incremental.rs` (`decapsulate_compressed_key`).
 -/
 
+@[expose] public section
+
 noncomputable section
 
 open Aeneas Aeneas.Std
@@ -38,7 +40,7 @@ namespace Fips203.Bridge
 /-- Read the 2400-byte Aeneas key-pair buffer as a `Fin dkSize → UInt8` decapsulation key. -/
 def dkOfArray (dk : Array U8 2400#usize) : Fin mlkem768.dkSize → UInt8 :=
   fun i => (dk.val[i.val]'(by
-    rw [Array.length_eq]
+    rw [Aeneas.Std.Array.length_eq]
     have := i.isLt
     simp only [ParamSet.dkSize, mlkem768_k] at this
     change i.val < 2400
@@ -48,7 +50,7 @@ def dkOfArray (dk : Array U8 2400#usize) : Fin mlkem768.dkSize → UInt8 :=
 theorem dkOfArray_keyPairArray (seed : Fin 64 → UInt8) :
     dkOfArray (keyPairArray seed) = keyPairBytes seed := by
   funext i
-  simp only [dkOfArray, keyPairArray, Array.val_make, keyPairList]
+  simp only [dkOfArray, keyPairArray, Aeneas.Std.Array.make_val, keyPairList]
   rw [toU8List_getElem, U8.toUInt8_ofUInt8]
 
 /-- Reassemble the 1088-byte ciphertext `c = c₁ ‖ c₂` from the two fixed-size halves. -/
@@ -57,13 +59,13 @@ def ctOfParts (ct1 : Array U8 960#usize) (ct2 : Array U8 128#usize) :
   fun i =>
     if h : i.val < ct1Size then
       (ct1.val[i.val]'(by
-        rw [Array.length_eq]
+        rw [Aeneas.Std.Array.length_eq]
         simp only [ct1Size] at h
         change i.val < 960
         exact h)).toUInt8
     else
       (ct2.val[i.val - ct1Size]'(by
-        rw [Array.length_eq]
+        rw [Aeneas.Std.Array.length_eq]
         have hi := i.isLt
         simp only [ParamSet.ctSizeEnc, mlkem768_d_u, mlkem768_d_v, mlkem768_k] at hi
         simp only [ct1Size] at h
@@ -89,6 +91,6 @@ theorem ssList_length (dk : Array U8 2400#usize) (ct1 : Array U8 960#usize)
 /-- The shared secret as an Aeneas `Array U8 32`. -/
 def ssArray (dk : Array U8 2400#usize) (ct1 : Array U8 960#usize) (ct2 : Array U8 128#usize) :
     Array U8 32#usize :=
-  Array.make 32#usize (ssList dk ct1 ct2) (ssList_length dk ct1 ct2)
+  Aeneas.Std.Array.make 32#usize (ssList dk ct1 ct2) (ssList_length dk ct1 ct2)
 
 end Fips203.Bridge

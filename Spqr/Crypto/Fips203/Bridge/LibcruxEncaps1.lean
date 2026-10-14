@@ -3,9 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.EncapsBytes
-import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
+module
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+public import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
 /-!
 # Bridge: FIPS 203 Algorithm 17 (round 1) ↔ libcrux `incremental::encapsulate1`
 
@@ -31,6 +32,8 @@ outputs to the *monolithic* Algorithm 17 on that key's `ek`: `K = (mlkemEncaps e
 344–367 and `src/ind_cca/incremental.rs` lines 181–276.
 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result
 
 namespace Fips203.Bridge
@@ -47,10 +50,11 @@ theorem encapsulate1_eq_mlkemEncapsPhase1 (pk1 : Slice U8) (randomness : Array U
     (h_state : encapsStateSize ≤ state.length) :
     encapsulate1 pk1 randomness state shared_secret =
       ok (.Ok { value := ct1Array pk1.val h_pk1 (msgOfArray randomness) },
-        ⟨overwritePrefix state.val (stateOut pk1.val h_pk1 (msgOfArray randomness)), by
-          rw [overwritePrefix_length _ _ h_state]; exact state.length_ineq⟩,
-        ⟨overwritePrefix shared_secret.val (ssOut pk1.val h_pk1 (msgOfArray randomness)), by
-          rw [overwritePrefix_length _ _ h_ss]; exact shared_secret.length_ineq⟩) := by
+        Slice.from (overwritePrefix state.val (stateOut pk1.val h_pk1 (msgOfArray randomness))) (by
+          rw [overwritePrefix_length _ _ h_state]; exact state.length_ineq),
+        Slice.from
+          (overwritePrefix shared_secret.val (ssOut pk1.val h_pk1 (msgOfArray randomness))) (by
+          rw [overwritePrefix_length _ _ h_ss]; exact shared_secret.length_ineq)) := by
   simp only [encapsulate1, dif_pos h_pk1, dif_neg (Nat.not_lt.mpr h_ss),
     dif_neg (Nat.not_lt.mpr h_state)]
 
@@ -64,8 +68,7 @@ theorem encapsulate1_ct1 (pk1 : Slice U8) (randomness : Array U8 32#usize)
     c.value.val = ct1List pk1.val h_pk1 (msgOfArray randomness) := by
   rw [encapsulate1_eq_mlkemEncapsPhase1 pk1 randomness state shared_secret h_pk1 h_ss h_state,
     ok.injEq, Prod.mk.injEq, Prod.mk.injEq, core.result.Result.Ok.injEq] at h
-  rw [← h.1]
-  exact Array.val_make _ _ _
+  rw [← h.1]; simp only [ct1Array, Aeneas.Std.Array.make_val]
 
 /-- The first `2080` bytes of the output `state` are the serialised `(ŷ, e₂, m)`. -/
 theorem encapsulate1_state_take (pk1 : Slice U8) (randomness : Array U8 32#usize)
@@ -78,7 +81,7 @@ theorem encapsulate1_state_take (pk1 : Slice U8) (randomness : Array U8 32#usize
       toU8List (stateBytes (encaps1Output pk1.val h_pk1 (msgOfArray randomness)).state) := by
   rw [encapsulate1_eq_mlkemEncapsPhase1 pk1 randomness state shared_secret h_pk1 h_ss h_state,
     ok.injEq, Prod.mk.injEq, Prod.mk.injEq] at h
-  rw [← h.2.1]
+  rw [← h.2.1]; simp only [Slice.from_val]
   exact overwritePrefix_take _ _
 
 /-- The first `32` bytes of the output `shared_secret` are `K` of round 1. -/
@@ -90,7 +93,7 @@ theorem encapsulate1_ss_take (pk1 : Slice U8) (randomness : Array U8 32#usize)
     ss.val.take 32 = toU8List (encaps1Output pk1.val h_pk1 (msgOfArray randomness)).ss := by
   rw [encapsulate1_eq_mlkemEncapsPhase1 pk1 randomness state shared_secret h_pk1 h_ss h_state,
     ok.injEq, Prod.mk.injEq, Prod.mk.injEq] at h
-  rw [← h.2.2]
+  rw [← h.2.2]; simp only [Slice.from_val]
   exact overwritePrefix_take _ _
 
 /-- The written state decodes back to the FIPS 203 state `(ŷ, e₂, m)` of round 1: this is the

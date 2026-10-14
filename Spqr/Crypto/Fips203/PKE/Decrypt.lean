@@ -3,12 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.PKE.Encrypt
-import Spqr.Crypto.Fips203.NTT.InvNTT
-import Spqr.Crypto.Fips203.Conversion.ByteDecode
-import Spqr.Crypto.Fips203.Conversion.Decompress
-import Spqr.Crypto.Fips203.Conversion.ByteEncode
-import Spqr.Crypto.Fips203.Conversion.Compress
+module
+public import Spqr.Crypto.Fips203.PKE.Encrypt
+public import Spqr.Crypto.Fips203.NTT.InvNTT
+public import Spqr.Crypto.Fips203.Conversion.ByteDecode
+public import Spqr.Crypto.Fips203.Conversion.Decompress
+public import Spqr.Crypto.Fips203.Conversion.ByteEncode
+public import Spqr.Crypto.Fips203.Conversion.Compress
 /-!
 # FIPS 203 Algorithm 15: `K-PKE.Decrypt(dkPKE, c)`
 
@@ -28,6 +29,8 @@ The algorithm:
 
 **Source**: NIST FIPS 203, § 5.3 (Algorithm 15)
 -/
+
+@[expose] public section
 
 noncomputable section
 

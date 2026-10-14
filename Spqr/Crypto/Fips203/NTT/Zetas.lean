@@ -3,7 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.Ring
+module
+public import Spqr.Crypto.Fips203.Ring
 /-!
 # FIPS 203 NTT Zeta Constants
 
@@ -29,6 +30,8 @@ where `BitRev₇` reverses a 7-bit integer.  This file provides:
 
 **Source**: NIST FIPS 203, § 4.3 (Number-Theoretic Transform)
 -/
+
+@[expose] public section
 
 namespace Fips203
 

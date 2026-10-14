@@ -3,9 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.FunsExternal
-import Spqr.Crypto.Fips203.Bridge.EncapsBytes
-import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
+module
+public import SrcTranslated.FunsExternal
+public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
 /-!
 # Bridge: FIPS 203 Algorithm 17 (round 2) ↔ libcrux `incremental::encapsulate2`
 
@@ -31,6 +32,8 @@ output to the *monolithic* Algorithm 17 on that key's `ek`:
 400–412 and `src/ind_cca/incremental.rs` lines 278–319.
 -/
 
+@[expose] public section
+
 noncomputable section
 
 open Aeneas Aeneas.Std Result
@@ -43,23 +46,23 @@ open libcrux_ml_kem.mlkem768.incremental
 
 /-- A 2080-byte state vector as an Aeneas `Array U8 2080`. -/
 def stateArray (b : Fin encapsStateSize → UInt8) : Array U8 2080#usize :=
-  Array.make 2080#usize (toU8List b) (toU8List_length b)
+  Aeneas.Std.Array.make 2080#usize (toU8List b) (toU8List_length b)
 
 /-- An 1152-byte `pk2` vector as an Aeneas `Array U8 1152`. -/
 def pk2Array (b : Fin 1152 → UInt8) : Array U8 1152#usize :=
-  Array.make 1152#usize (toU8List b) (toU8List_length b)
+  Aeneas.Std.Array.make 1152#usize (toU8List b) (toU8List_length b)
 
 /-- Reading back the bytes of `stateArray` recovers the vector. -/
 theorem stateOfArray_stateArray (b : Fin encapsStateSize → UInt8) :
     stateOfArray (stateArray b) = b := by
   funext i
-  simp only [stateOfArray, stateArray, Array.make]
+  simp only [stateOfArray, stateArray, Aeneas.Std.Array.make_val]
   rw [toU8List_getElem, U8.toUInt8_ofUInt8]
 
 /-- Reading back the bytes of `pk2Array` recovers the vector. -/
 theorem pk2OfArray_pk2Array (b : Fin 1152 → UInt8) : pk2OfArray (pk2Array b) = b := by
   funext i
-  simp only [pk2OfArray, pk2Array, Array.make]
+  simp only [pk2OfArray, pk2Array, Aeneas.Std.Array.make_val]
   rw [toU8List_getElem, U8.toUInt8_ofUInt8]
 
 /-! ## `encapsulate2` ↔ round 2 of Algorithm 17 -/

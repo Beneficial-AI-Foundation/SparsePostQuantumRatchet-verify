@@ -3,14 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.NTT.Kernel0
-import Spqr.Crypto.Fips203.NTT.Kernel1
-import Spqr.Crypto.Fips203.NTT.Kernel2
-import Spqr.Crypto.Fips203.NTT.Kernel3
-import Spqr.Crypto.Fips203.NTT.InvKernel0
-import Spqr.Crypto.Fips203.NTT.InvKernel1
-import Spqr.Crypto.Fips203.NTT.InvKernel2
-import Spqr.Crypto.Fips203.NTT.InvKernel3
+module
+public import Spqr.Crypto.Fips203.NTT.Kernel0
+public import Spqr.Crypto.Fips203.NTT.Kernel1
+public import Spqr.Crypto.Fips203.NTT.Kernel2
+public import Spqr.Crypto.Fips203.NTT.Kernel3
+public import Spqr.Crypto.Fips203.NTT.InvKernel0
+public import Spqr.Crypto.Fips203.NTT.InvKernel1
+public import Spqr.Crypto.Fips203.NTT.InvKernel2
+public import Spqr.Crypto.Fips203.NTT.InvKernel3
 /-!
 # FIPS 203 NTT — combined kernel verification
 
@@ -22,6 +23,8 @@ two statements used by `RoundTrip.lean`: for every `j < 256`,
 * the packed clone of the Algorithm 8 butterfly layers sends that closed form
   back to `128 · δⱼ`  (`invNttP_formulaP_eq`).
 -/
+
+@[expose] public section
 
 namespace Fips203
 

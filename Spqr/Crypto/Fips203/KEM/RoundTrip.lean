@@ -3,8 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Crypto.Fips203.KEM.Decaps
-import Spqr.Crypto.Fips203.PKE.RoundTrip
+module
+public import Spqr.Crypto.Fips203.KEM.Decaps
+public import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # FIPS 203 ML-KEM Round-Trip Correctness: `Decaps(dk, Encaps(ek, m).c) = Encaps(ek, m).K`
 
@@ -29,6 +30,8 @@ holds for every parameter set and every instantiation of the oracles `G`, `H`, `
 
 **Source**: NIST FIPS 203, § 6 (Algorithms 16–18)
 -/
+
+@[expose] public section
 
 noncomputable section
 

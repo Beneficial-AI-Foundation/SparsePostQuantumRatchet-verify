@@ -3,11 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Mathlib.Data.ZMod.Basic
-import Mathlib.Algebra.Field.ZMod
-import Mathlib.RingTheory.AdjoinRoot
-import Mathlib.RingTheory.IsAdjoinRoot
-import Spqr.Crypto.Fips203.Params
+module
+public import Mathlib.Data.ZMod.Basic
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.RingTheory.AdjoinRoot
+public import Mathlib.RingTheory.IsAdjoinRoot
+public import Spqr.Crypto.Fips203.Params
 /-!
 # FIPS 203 Polynomial Ring `R_q`
 
@@ -30,6 +31,8 @@ This file provides:
 
 **Source**: NIST FIPS 203, § 2.4 (Algebraic Background)
 -/
+
+@[expose] public section
 
 open Polynomial
 
