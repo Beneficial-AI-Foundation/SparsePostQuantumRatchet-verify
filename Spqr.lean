@@ -42,6 +42,11 @@ import Spqr.Crypto.Fips203.NTT.Packed
 import Spqr.Crypto.Fips203.NTT.RoundTrip
 import Spqr.Crypto.Fips203.NTT.Spec
 import Spqr.Crypto.Fips203.NTT.Zetas
+import Spqr.Crypto.Fips203.Noise.Compression
+import Spqr.Crypto.Fips203.Noise.Distribution
+import Spqr.Crypto.Fips203.Noise.FailureRate
+import Spqr.Crypto.Fips203.Noise.Moments
+import Spqr.Crypto.Fips203.Noise.TailBound
 import Spqr.Crypto.Fips203.PKE.Decrypt
 import Spqr.Crypto.Fips203.PKE.Encrypt
 import Spqr.Crypto.Fips203.PKE.KeyGen

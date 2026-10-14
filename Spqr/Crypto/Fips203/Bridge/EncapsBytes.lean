@@ -8,6 +8,7 @@ import Spqr.Auxiliary.Aeneas.Array
 import Spqr.Auxiliary.Aeneas.Scalar
 import Spqr.Crypto.Fips203.KEM.EncapsIncremental
 import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # FIPS 203 model of libcrux's incremental `encapsulate1`
 
@@ -321,5 +322,66 @@ theorem ct2List_length (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) :
 /-- The second ciphertext half as an Aeneas `Array U8 128`. -/
 def ct2Array (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : Array U8 128#usize :=
   Array.make 128#usize (ct2List st pk2) (ct2List_length st pk2)
+
+/-! ## Public-key validation predicate -/
+
+/-- Read a 1152-byte portion of an Aeneas `List U8` as a `Fin 1152 → UInt8` byte vector,
+for use with `decodePk2THat`.  Requires `1152 ≤ pk2.length`. -/
+def pk2OfList (pk2 : List U8) (h : 1152 ≤ pk2.length) : Fin 1152 → UInt8 :=
+  fun i => (pk2[i.val]'(by omega)).toUInt8
+
+/-- FIPS 203 public-key modulus check for `pk2` (the serialised `t̂` portion of an ML-KEM-768
+encapsulation key):
+
+`pk2Valid pk2` holds iff `pk2` has at least 1152 bytes and re-encoding the decoded
+NTT vector `t̂ = ByteDecode₁₂(pk2)` via `ByteEncode₁₂` yields the same bytes,
+i.e. every coefficient of `t̂` has canonical representative `< q = 3329`.
+
+This check is performed by `validate_pk_bytes` in libcrux-ml-kem 0.0.7 and corresponds to
+FIPS 203 § 7.2 (Encapsulation Key Check).
+
+The definition re-encodes the decoded polynomial vector and checks byte-by-byte equality
+with the original input, using the existing `decodePk2THat` and `byteEncodeZq`
+infrastructure. -/
+def pk2Valid (pk2 : List U8) : Prop :=
+  ∃ (h : 1152 ≤ pk2.length),
+    ∀ (polyIdx : Fin mlkem768.k) (j : Fin (32 * 12)),
+      byteEncodeZq 12 (decodePk2THat (pk2OfList pk2 h) polyIdx) j =
+        pk2OfList pk2 h ⟨384 * polyIdx.val + j.val, by
+          have := polyIdx.isLt; have := j.isLt; simp only [mlkem768_k] at *; omega⟩
+
+/-- `pk2OfList (toU8List b) h` is pointwise equal to `b`. -/
+theorem pk2OfList_toU8List (b : Fin 1152 → UInt8) (h : 1152 ≤ (toU8List b).length) :
+    pk2OfList (toU8List b) h = b := by
+  funext i
+  simp [pk2OfList, toU8List_getElem, U8.toUInt8_ofUInt8]
+
+
+/-- For validly generated keys, the modulus check always passes: the NTT vector `t̂` is
+encoded via `ByteEncode₁₂` by key generation, so the round-trip
+`ByteEncode₁₂(ByteDecode₁₂(pk2))` is the identity. -/
+theorem pk2Valid_pk2Bytes (seed : Fin 64 → UInt8) :
+    pk2Valid (toU8List (pk2Bytes seed)) := by
+  refine ⟨by simp [toU8List_length], fun polyIdx j => ?_⟩
+  rw [pk2OfList_toU8List]
+  rw [decodePk2THat_pk2Bytes]
+  change
+  byteEncodeZq 12 (decodeEkTHat ((mlkemKeyGen (seedD seed) (seedZ seed) mlkem768).ek) polyIdx) j =
+    (mlkemKeyGen (seedD seed) (seedZ seed) mlkem768).ek ⟨384 * polyIdx.val + j.val, _⟩
+  rw [mlkemKeyGen_ek, show (kpkeKeyGen (seedD seed) mlkem768).ek =
+    encodeEk (computeTHat (genMatrixA (rho (seedD seed) mlkem768) mlkem768)
+      (nttVec (genSecret (sigma (seedD seed) mlkem768) mlkem768))
+      (nttVec (genError (sigma (seedD seed) mlkem768) mlkem768)))
+    (rho (seedD seed) mlkem768) from rfl]
+  rw [decodeEkTHat_encodeEk]
+  simp only [encodeEk, encodePoly12, byteEncodeZq]
+  have h_lt : 384 * polyIdx.val + j.val < 384 * mlkem768.k := by
+    have := polyIdx.isLt; have := j.isLt; simp only [mlkem768_k] at *; omega
+  simp only [h_lt, ↓reduceDIte]
+  have h_div : (384 * polyIdx.val + j.val) / 384 = polyIdx.val := by omega
+  have h_mod : (384 * polyIdx.val + j.val) % 384 = j.val := by omega
+  simp only [h_div, h_mod, Fin.cast_mk]
+
+instance (pk2 : List U8) : Decidable (pk2Valid pk2) := Classical.dec _
 
 end Fips203.Bridge

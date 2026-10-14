@@ -2036,12 +2036,55 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes] -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]
+
+    Concrete model of Rust's `validate_pk_bytes(pk1, pk2)`:
+    1. `PublicKey1::try_from(pk1)`: fails with `InvalidInputLength` if `pk1.len() < 64`.
+    2. `PublicKey2::try_from(pk2)`: fails with `InvalidInputLength` if `pk2.len() < 1152`.
+    3. FIPS 203 public key validation: checks that `ByteEncode₁₂(ByteDecode₁₂(pk2)) == pk2`
+       (all coefficients are in `[0, q)`).
+
+    The outer `Result` is always `ok` (the call never panics).
+
+    **Modelling note**: The modulus check (step 3) is modelled opaquely via
+    `Fips203.Bridge.pk2Valid`, since fully expanding the `ByteEncode₁₂ ∘ ByteDecode₁₂`
+    round-trip into the definition would couple this file to deep FIPS 203 internals.
+    For validly generated keys (produced by `from_seed`), the modulus check always passes
+    (see `Fips203.Bridge.pk2Valid_pk2Bytes`). -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes"]
-axiom libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+noncomputable def libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   :
   Slice Std.U8 → Slice Std.U8 → Result (core.result.Result Unit
-    libcrux_ml_kem.ind_cca.incremental.types.Error)
+    libcrux_ml_kem.ind_cca.incremental.types.Error) :=
+  fun pk1 pk2 =>
+    if pk1.length < 64 then
+      ok (.Err .InvalidInputLength)
+    else if pk2.length < 1152 then
+      ok (.Err .InvalidInputLength)
+    else if Fips203.Bridge.pk2Valid pk2.val then
+      ok (.Ok ())
+    else
+      ok (.Err .InvalidInputLength)
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes`**:
+
+- The call never panics (the outer `Result` is always `ok`).
+- Returns `Err InvalidInputLength` if `pk1.len() < 64` or `pk2.len() < 1152`.
+- Returns `Ok ()` if both length checks pass and the FIPS 203 public-key modulus check
+  (`Fips203.Bridge.pk2Valid`) succeeds; `Err InvalidInputLength` otherwise. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes_spec
+    (pk1 pk2 : Slice Std.U8) :
+    libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes pk1 pk2
+      ⦃ (r : core.result.Result Unit libcrux_ml_kem.ind_cca.incremental.types.Error) =>
+      (pk1.length < 64 → r = .Err .InvalidInputLength) ∧
+      (64 ≤ pk1.length → pk2.length < 1152 → r = .Err .InvalidInputLength) ∧
+      (64 ≤ pk1.length → 1152 ≤ pk2.length → Fips203.Bridge.pk2Valid pk2.val →
+        r = .Ok ()) ∧
+      (64 ≤ pk1.length → 1152 ≤ pk2.length → ¬ Fips203.Bridge.pk2Valid pk2.val →
+        r = .Err .InvalidInputLength) ⦄ := by
+  unfold libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+  split <;> (try split) <;> (try split) <;> simp_all [WP.spec_ok]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 344:8-349:39

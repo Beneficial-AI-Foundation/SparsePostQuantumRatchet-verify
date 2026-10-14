@@ -247,7 +247,9 @@ Compile time of `PKE/RoundTrip.lean`: ≈ 3 s; the whole `PKE/` directory ≈ 8 
 
 Remaining (future work, not needed for the SPQR bridge): discharging `h_noise`
 probabilistically for ML-KEM-768 (`η₁ = η₂ = 2`, `d_u = 10`, `d_v = 4`) — a
-tail bound on the centred-binomial noise, FIPS 203 § 3.3 / Table 2.
+tail bound on the centred-binomial noise, FIPS 203 § 3.3 / Table 2.  Tracked as
+**Phase 8** below; steps 8.1–8.5 (`Noise/`) are done up to the conditional
+oracle-uniformity instantiation noted in 8.5.
 
 ### Phase 5 — Full KEM (Alg 16–18)
 
@@ -373,6 +375,21 @@ step matches a FIPS 203 algorithm step → close with `omega`/`ring`/`decide`.
 | 7.2 | `IncrementalMlkem768/Encaps1.lean` | `encaps1_spec`: assuming `fill_bytes` is panic-free and `64 ≤ hdr.len()`, `encaps1` returns `(ct1, es, ss)` where there is a 32-byte message `m` (the one `fill_bytes` wrote) with `ct1 = ct1List hdr m`, `es = stateOut hdr m`, `ss = ssOut hdr m` (round 1 of Algorithm 17 via Bridge 6.2), plus the length facts `960 / 2080 / 32`. **Done — no custom axioms, no `sorry`** (only the `Formatter`/`CoreFmtDebug.fmt`/`native.decide` axioms already carried by the extracted `encaps1` body itself, via `expect`'s message string). |
 | 7.3 | `IncrementalMlkem768/Encaps2.lean` | `encaps2_spec`: assuming the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`) and the hax contract of the opaque endianness workaround (it succeeds and any `Some` output has 2080 bytes), `encaps2` returns the 128-byte `c₂ = ct2List st pk` of round 2 of Algorithm 17 (Bridge 6.3), where `st` is the state the workaround selected (the fixed one on `Some`, `es` on `None`) and `pk` holds the bytes of `ek`, plus the length fact `128`. **Done — no custom axioms beyond the opaque workaround's contract hypothesis, no `sorry`.** |
 | 7.4 | `IncrementalMlkem768/Decaps.lean` | `decaps_spec`: assuming the Rust `requires` (`dk.len() = 2400`, `ct1.len() = 960`, `ct2.len() = 128`), `decaps` returns the 32-byte shared secret `Fips203.Bridge.ssList dk ct1 ct2` of FIPS 203 Algorithm 18 (`mlkemDecaps`, via Bridge 6.4) on the decapsulation key read from the key-pair buffer and the reassembled ciphertext `c₁ ‖ c₂`, plus the length fact `32`. Composed with `ssBytes_roundTrip` (Bridge 6.4) this recovers the encapsulated secret on a generated key under the noise bound. **Done — no custom axioms, no `sorry`** (only the `Formatter`/`CoreFmtDebug.fmt` axioms already carried by the extracted `decaps` body itself, via `expect`'s message string). |
+
+### Phase 8 — Probabilistic Noise Analysis (discharging `h_noise`)
+
+Goal: bound the probability that the K-PKE round-trip hypothesis
+`noiseBoundedAt (honestW − Decompress₁ m)` fails for ML-KEM-768
+(FIPS 203 § 3.3, decryption-failure rate `δ ≤ 2⁻¹⁶⁴`).  Not needed for the
+SPQR bridge (Phases 6–7), which takes `h_noise` as a hypothesis.
+
+| Step | File | Description |
+|------|------|-------------|
+| 8.1 | `Noise/Distribution.lean` | Model `CBD_η` as a Mathlib `PMF ℤ`: pushforward of the uniform distribution on `2η`-bit tuples under the Alg 6 bit-sum map `cbdVal`.  Counting formula `cbdPMF_apply`, support bound `abs_le_of_mem_support_cbdPMF`, the concrete `η = 2` probabilities `(1,4,6,4,1)/16` (by `decide` over the 16 tuples), and the bridge `cbdCoeff_eq_ofInt_cbdVal` connecting the deterministic Alg 6 sampler to `Zq.ofInt ∘ cbdVal`.  **Done — no axioms, no `sorry`.** |
+| 8.2 | `Noise/Moments.lean` | Symmetry `cbdPMF_neg` (`CBD_η(−x) = CBD_η(x)`, via the halves-swapping involution `swapHalves` with `cbdVal ∘ swapHalves = −cbdVal`), mean zero at the counting level (`sum_cbdVal_eq_zero`), and the second moment `∑_b (cbdVal η b)² = η·2^(2η−1)` for the concrete FIPS 203 parameters `η = 2` (`16`, variance `1`) and `η = 3` (`96`, variance `3/2`) by kernel computation (`sum_cbdVal_sq_two/three`), plus the `PMF`-level weighted form `cbdPMF_two_secondMoment` (`E[X²] = 1`). **Done — no axioms, no `sorry`.** |
+| 8.3 | `Noise/Compression.lean` | Compression rounding error in **centred form**: `absZq_eq_min` (`absZq (a−b)` = min of the two mod-`q` distances), `absZq_decompress_compress` (round-trip error `≤ compressError d`, transported from Phase 1's `decompress_compress_error'`), polynomial form `absZq_compressionNoisePoly` for `compressionNoisePoly` of `PKE/RoundTrip.lean`, ML-KEM-768 instantiations (`≤ 2` for `d_u = 10`, `≤ 105` for `d_v = 4`), and `compression_budget` (`2 + 105 < ⌊q/4⌋ = 832`, leaving `725` for the CBD terms). **Done — no axioms, no `sorry`.** |
+| 8.4 | `Noise/TailBound.lean` | Counting-level tail machinery: Chebyshev/Markov `sq_mul_card_filter_abs_le` (`t² · #{a : t ≤ \|f a\|} ≤ ∑ f²` for `0 ≤ t`), instantiated to `CBD_2`/`CBD_3` via the step-8.2 second moments (`card_cbdVal_tail_two/three`); exact `CBD_2` tails by kernel computation (`#{\|X\| ≥ 1} = 10`, `#{\|X\| ≥ 2} = 2`, `#{\|X\| ≥ 3} = 0`); union bound `card_filter_exists_le` (count of tuples violating some event of a finite family ≤ sum of per-event counts, the `Fin 256` tool for 8.5). **Done — no axioms, no `sorry`.** |
+| 8.5 | `Noise/FailureRate.lean` | Failure events and the union-bound failure count: `noiseViolation` (per-coefficient event `⌊q/4⌋ ≤ \|noise idx\|`), `noiseOk`/`noiseOk_iff_not_exists` (the `h_noise` hypothesis ↔ no violation), `mlkem_roundTrip_of_not_violation` (round trip in failure-event form), `card_noiseFail_le_sum` (over any finite seed space with seed projections `d/m/r`, failure count ≤ ∑ per-coefficient counts, via 8.4's union bound with `ι = Fin 256`) and `card_noiseFail_le_of_bound` (uniform bound `c` ⟹ failure count `≤ 256·c`, i.e. `P[failure] ≤ 256·P_max`). **Done — no axioms, no `sorry`.**  Remaining (open): a concrete numeric `δ` (FIPS 203 § 3.3: `≤ 2⁻¹⁶⁴`) needs a uniformity assumption on the opaque oracles (`hashG`, `prf`, `xof`) to discharge the per-coefficient hypothesis `hc` from the CBD tails (8.4) + compression budget (8.3); the oracles are `opaque`, so this is necessarily conditional. |
 
 ---
 
