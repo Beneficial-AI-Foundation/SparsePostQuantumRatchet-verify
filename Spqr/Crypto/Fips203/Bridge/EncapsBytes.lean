@@ -67,8 +67,8 @@ def ct1Size : ℕ := 960
 /-- libcrux `SHARED_SECRET_SIZE`. -/
 def sharedSecretSize : ℕ := 32
 
-theorem ct1Size_eq : 32 * mlkem768.d_u * mlkem768.k = ct1Size := by
-  simp only [mlkem768_d_u, mlkem768_k, ct1Size]
+theorem ct1Size_eq : 32 * mlkem768.compressionU * mlkem768.k = ct1Size := by
+  simp only [mlkem768CompressionU, mlkem768_k, ct1Size]
 
 /-! ## Header parsing `pk1 = ρ ‖ H(ek)` -/
 
@@ -280,8 +280,8 @@ Decompress₁(m)))`. -/
 /-- libcrux `Ciphertext2::len()` for ML-KEM-768: `32 · d_v`. -/
 def ct2Size : ℕ := 128
 
-theorem ct2Size_eq : 32 * mlkem768.d_v = ct2Size := by
-  simp only [mlkem768_d_v, ct2Size]
+theorem ct2Size_eq : 32 * mlkem768.compressionV = ct2Size := by
+  simp only [mlkem768CompressionV, ct2Size]
 
 /-- Read the 2080-byte Aeneas state array as a `Fin 2080 → UInt8` byte vector. -/
 def stateOfArray (st : Array U8 2080#usize) : Fin encapsStateSize → UInt8 :=

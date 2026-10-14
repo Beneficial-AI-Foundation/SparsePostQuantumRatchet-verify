@@ -63,19 +63,20 @@ structure ParamSet where
   /-- CBD parameter for encryption noise. -/
   η₂ : ℕ
   /-- Ciphertext compression depth for the vector component `u`. -/
-  d_u : ℕ
+  compressionU : ℕ
   /-- Ciphertext compression depth for the polynomial component `v`. -/
-  d_v : ℕ
+  compressionV : ℕ
   /-- `k ≥ 2` (FIPS 203 requires `k ∈ {2, 3, 4}`). -/
   hk : 2 ≤ k
   /-- `η₁ ≥ 1`. -/
   hη₁ : 1 ≤ η₁
   /-- `η₂ ≥ 1`. -/
   hη₂ : 1 ≤ η₂
-  /-- `1 ≤ d_u < 12` (compression depth is bounded by the coefficient bit-width `⌈log₂ q⌉`). -/
-  hd_u : 1 ≤ d_u ∧ d_u < 12
-  /-- `1 ≤ d_v < 12`. -/
-  hd_v : 1 ≤ d_v ∧ d_v < 12
+  /-- `1 ≤ compressionU < 12` (compression depth is
+  bounded by the coefficient bit-width `⌈log₂ q⌉`). -/
+  hCompressionU : 1 ≤ compressionU ∧ compressionU < 12
+  /-- `1 ≤ compressionV < 12`. -/
+  hCompressionV : 1 ≤ compressionV ∧ compressionV < 12
 
 /-! ## Derived sizes (FIPS 203, Table 2)
 
@@ -88,9 +89,10 @@ def ParamSet.ekSize (p : ParamSet) : ℕ := 384 * p.k + 32
 def ParamSet.dkSize (p : ParamSet) : ℕ := 768 * p.k + 96
 
 /-- Ciphertext size: `32 · (d_u · k + d_v)`. -/
-def ParamSet.ctSize (p : ParamSet) : ℕ := 32 * (p.d_u * p.k + p.d_v)
+def ParamSet.ctSize (p : ParamSet) : ℕ := 32 * (p.compressionU * p.k + p.compressionV)
 
 /-- Shared-secret size: always 32 bytes. -/
+@[nolint unusedArguments]
 def ParamSet.ssSize (_ : ParamSet) : ℕ := 32
 
 /-! ## Concrete parameter sets -/
@@ -100,39 +102,39 @@ def mlkem512 : ParamSet where
   k   := 2
   η₁  := 3
   η₂  := 2
-  d_u := 10
-  d_v := 4
+  compressionU := 10
+  compressionV := 4
   hk  := by omega
   hη₁ := by omega
   hη₂ := by omega
-  hd_u := by omega
-  hd_v := by omega
+  hCompressionU := by omega
+  hCompressionV := by omega
 
 /-- **ML-KEM-768** (NIST security category 3).  This is the parameter set used by SPQR. -/
 def mlkem768 : ParamSet where
   k   := 3
   η₁  := 2
   η₂  := 2
-  d_u := 10
-  d_v := 4
+  compressionU := 10
+  compressionV := 4
   hk  := by omega
   hη₁ := by omega
   hη₂ := by omega
-  hd_u := by omega
-  hd_v := by omega
+  hCompressionU := by omega
+  hCompressionV := by omega
 
 /-- **ML-KEM-1024** (NIST security category 5). -/
 def mlkem1024 : ParamSet where
   k   := 4
   η₁  := 2
   η₂  := 2
-  d_u := 11
-  d_v := 5
+  compressionU := 11
+  compressionV := 5
   hk  := by omega
   hη₁ := by omega
   hη₂ := by omega
-  hd_u := by omega
-  hd_v := by omega
+  hCompressionU := by omega
+  hCompressionV := by omega
 
 /-! ## Derived-size evaluations for ML-KEM-768
 
@@ -141,8 +143,8 @@ These are the concrete values that appear in SPQR's size-level postconditions. -
 @[simp] theorem mlkem768_k : mlkem768.k   = 3  := rfl
 @[simp] theorem mlkem768_η₁ : mlkem768.η₁  = 2  := rfl
 @[simp] theorem mlkem768_η₂ : mlkem768.η₂  = 2  := rfl
-@[simp] theorem mlkem768_d_u : mlkem768.d_u = 10 := rfl
-@[simp] theorem mlkem768_d_v : mlkem768.d_v = 4  := rfl
+@[simp] theorem mlkem768CompressionU : mlkem768.compressionU = 10 := rfl
+@[simp] theorem mlkem768CompressionV : mlkem768.compressionV = 4  := rfl
 
 /-- Encryption-key size for ML-KEM-768: `384 · 3 + 32 = 1184` bytes. -/
 @[simp] theorem mlkem768_ekSize : mlkem768.ekSize = 1184 := by

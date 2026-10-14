@@ -67,7 +67,7 @@ def ctOfParts (ct1 : Array U8 960#usize) (ct2 : Array U8 128#usize) :
       (ct2.val[i.val - ct1Size]'(by
         rw [Aeneas.Std.Array.length_eq]
         have hi := i.isLt
-        simp only [ParamSet.ctSizeEnc, mlkem768_d_u, mlkem768_d_v, mlkem768_k] at hi
+        simp only [ParamSet.ctSizeEnc, mlkem768CompressionU, mlkem768CompressionV, mlkem768_k] at hi
         simp only [ct1Size] at h
         change i.val - 960 < 128
         omega)).toUInt8

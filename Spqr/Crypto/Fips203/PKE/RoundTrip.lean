@@ -368,43 +368,43 @@ lemma decodeCiphertextU_encodeCiphertext {p : ParamSet}
     (u : Fin p.k → (Fin n → Zq)) (v : Fin n → Zq)
     (i : Fin p.k) (idx : Fin n) :
     decodeCiphertextU (encodeCiphertext u v) i idx =
-      decompressPoly p.d_u (compressPoly p.d_u (u i)) idx := by
+      decompressPoly p.compressionU (compressPoly p.compressionU (u i)) idx := by
   simp only [decodeCiphertextU, decompressPoly]
   congr 1
-  have hd_u := p.hd_u.1
+  have hCompressionU := p.hCompressionU.1
   have hi := i.isLt
   -- The byte array extracted from the ciphertext for polynomial i
   -- equals byteEncode d_u (compressPoly d_u (u i))
-  have h_eq_bytes : ∀ (j : Fin (32 * p.d_u)),
-      encodeCiphertext u v ⟨32 * p.d_u * i.val + j.val, by
+  have h_eq_bytes : ∀ (j : Fin (32 * p.compressionU)),
+      encodeCiphertext u v ⟨32 * p.compressionU * i.val + j.val, by
         have hj := j.isLt; simp only [ParamSet.ctSizeEnc]; nlinarith⟩ =
-      encodeCompressPoly p.d_u (u i) j := by
+      encodeCompressPoly p.compressionU (u i) j := by
     intro j; have hj := j.isLt
     simp only [encodeCiphertext]
-    have h_lt : 32 * p.d_u * i.val + j.val < 32 * p.d_u * p.k := by nlinarith
+    have h_lt : 32 * p.compressionU * i.val + j.val < 32 * p.compressionU * p.k := by nlinarith
     simp only [h_lt, dite_true, encodeC1, encodeCompressPoly]
-    -- Goal: byteEncode p.d_u (compressPoly p.d_u (u ⟨div, _⟩)) ⟨mod, _⟩ =
-    --       byteEncode p.d_u (compressPoly p.d_u (u i)) j
-    have h0 : 0 < 32 * p.d_u := by omega
-    have h_div : (32 * p.d_u * i.val + j.val) / (32 * p.d_u) = i.val := by
-      rw [show 32 * p.d_u * i.val = (32 * p.d_u) * i.val from by ring]
+    -- Goal: byteEncode p.compressionU (compressPoly p.compressionU (u ⟨div, _⟩)) ⟨mod, _⟩ =
+    --       byteEncode p.compressionU (compressPoly p.compressionU (u i)) j
+    have h0 : 0 < 32 * p.compressionU := by omega
+    have h_div : (32 * p.compressionU * i.val + j.val) / (32 * p.compressionU) = i.val := by
+      rw [show 32 * p.compressionU * i.val = (32 * p.compressionU) * i.val from by ring]
       rw [Nat.mul_add_div h0]
-      have : j.val / (32 * p.d_u) = 0 := Nat.div_eq_of_lt hj
+      have : j.val / (32 * p.compressionU) = 0 := Nat.div_eq_of_lt hj
       omega
-    have h_mod : (32 * p.d_u * i.val + j.val) % (32 * p.d_u) = j.val := by
-      rw [show 32 * p.d_u * i.val = (32 * p.d_u) * i.val from by ring]
+    have h_mod : (32 * p.compressionU * i.val + j.val) % (32 * p.compressionU) = j.val := by
+      rw [show 32 * p.compressionU * i.val = (32 * p.compressionU) * i.val from by ring]
       rw [Nat.mul_add_mod]; exact Nat.mod_eq_of_lt hj
     -- Use Fin.val equality to substitute
-    have h1 : (⟨(32 * p.d_u * i.val + j.val) / (32 * p.d_u),
+    have h1 : (⟨(32 * p.compressionU * i.val + j.val) / (32 * p.compressionU),
       Nat.div_lt_of_lt_mul (by omega)⟩ : Fin p.k) = i := Fin.ext h_div
-    have h2 : (⟨(32 * p.d_u * i.val + j.val) % (32 * p.d_u),
-      Nat.mod_lt _ h0⟩ : Fin (32 * p.d_u)) = j := Fin.ext h_mod
+    have h2 : (⟨(32 * p.compressionU * i.val + j.val) % (32 * p.compressionU),
+      Nat.mod_lt _ h0⟩ : Fin (32 * p.compressionU)) = j := Fin.ext h_mod
     rw [h1, h2]
-  conv_lhs => rw [show (fun j => encodeCiphertext u v ⟨32 * p.d_u * i.val + j.val, _⟩) =
-    encodeCompressPoly p.d_u (u i) from funext h_eq_bytes]
+  conv_lhs => rw [show (fun j => encodeCiphertext u v ⟨32 * p.compressionU * i.val + j.val, _⟩) =
+    encodeCompressPoly p.compressionU (u i) from funext h_eq_bytes]
   simp only [encodeCompressPoly]
-  exact byteDecode_byteEncode p.d_u hd_u _
-    (fun idx => compress_lt_two_pow p.d_u (u i idx)) idx
+  exact byteDecode_byteEncode p.compressionU hCompressionU _
+    (fun idx => compress_lt_two_pow p.compressionU (u i idx)) idx
 
 /-- **Ciphertext V decode–encode round-trip**: decoding `v` from an encoded
 ciphertext recovers `Decompress_{d_v}(Compress_{d_v}(v))`. -/
@@ -412,24 +412,24 @@ lemma decodeCiphertextV_encodeCiphertext {p : ParamSet}
     (u : Fin p.k → (Fin n → Zq)) (v : Fin n → Zq)
     (idx : Fin n) :
     decodeCiphertextV (encodeCiphertext u v) idx =
-      decompressPoly p.d_v (compressPoly p.d_v v) idx := by
+      decompressPoly p.compressionV (compressPoly p.compressionV v) idx := by
   simp only [decodeCiphertextV, decompressPoly]
   congr 1
-  have hd_v := p.hd_v.1
-  have h_eq_bytes : ∀ (j : Fin (32 * p.d_v)),
-      encodeCiphertext u v ⟨32 * p.d_u * p.k + j.val, by
+  have hCompressionV := p.hCompressionV.1
+  have h_eq_bytes : ∀ (j : Fin (32 * p.compressionV)),
+      encodeCiphertext u v ⟨32 * p.compressionU * p.k + j.val, by
         have hj := j.isLt; simp only [ParamSet.ctSizeEnc]; omega⟩ =
-      encodeCompressPoly p.d_v v j := by
+      encodeCompressPoly p.compressionV v j := by
     intro j
     simp only [encodeCiphertext]
-    have h_not_lt : ¬ ((32 * p.d_u * p.k + j.val) < 32 * p.d_u * p.k) := by omega
+    have h_not_lt : ¬ ((32 * p.compressionU * p.k + j.val) < 32 * p.compressionU * p.k) := by omega
     simp only [h_not_lt, dite_false, encodeC2, encodeCompressPoly]
     congr 1; exact Fin.ext (by grind)
-  conv_lhs => rw [show (fun j => encodeCiphertext u v ⟨32 * p.d_u * p.k + j.val, _⟩) =
-    encodeCompressPoly p.d_v v from funext h_eq_bytes]
+  conv_lhs => rw [show (fun j => encodeCiphertext u v ⟨32 * p.compressionU * p.k + j.val, _⟩) =
+    encodeCompressPoly p.compressionV v from funext h_eq_bytes]
   simp only [encodeCompressPoly]
-  exact byteDecode_byteEncode p.d_v hd_v _
-    (fun idx => compress_lt_two_pow p.d_v (v idx)) idx
+  exact byteDecode_byteEncode p.compressionV hCompressionV _
+    (fun idx => compress_lt_two_pow p.compressionV (v idx)) idx
 
 /-! ## Message byte-encoding round-trip -/
 
@@ -567,9 +567,9 @@ def honestV (d m r : Fin 32 → UInt8) (p : ParamSet) : Fin n → Zq :=
 honestly generated ciphertext, with `u', v'` the compress/decompress images. -/
 def honestW (d m r : Fin 32 → UInt8) (p : ParamSet) : Fin n → Zq :=
   computeW
-    (decompressPoly p.d_v (compressPoly p.d_v (honestV d m r p)))
+    (decompressPoly p.compressionV (compressPoly p.compressionV (honestV d m r p)))
     (nttVec (genSecret (sigma d p) p))
-    (fun i => decompressPoly p.d_u (compressPoly p.d_u (honestU d r p i)))
+    (fun i => decompressPoly p.compressionU (compressPoly p.compressionU (honestU d r p i)))
 
 /-- `kpkeEncrypt` on a generated key produces `encodeCiphertext honestU honestV`. -/
 lemma kpkeEncrypt_kpkeKeyGen_ct (d m r : Fin 32 → UInt8) (p : ParamSet) :
@@ -585,11 +585,11 @@ lemma kpkeDecrypt_kpkeKeyGen (d m r : Fin 32 → UInt8) (p : ParamSet) :
       recoverMsg (honestW d m r p) := by
   rw [kpkeEncrypt_kpkeKeyGen_ct]
   have hv : decodeCiphertextV (encodeCiphertext (honestU d r p) (honestV d m r p)) =
-      decompressPoly p.d_v (compressPoly p.d_v (honestV d m r p)) :=
+      decompressPoly p.compressionV (compressPoly p.compressionV (honestV d m r p)) :=
     funext (decodeCiphertextV_encodeCiphertext _ _)
   have hu : (fun i => decodeCiphertextU
       (encodeCiphertext (honestU d r p) (honestV d m r p)) i) =
-      fun i => decompressPoly p.d_u (compressPoly p.d_u (honestU d r p i)) :=
+      fun i => decompressPoly p.compressionU (compressPoly p.compressionU (honestU d r p i)) :=
     funext fun i => funext (decodeCiphertextU_encodeCiphertext _ _ i)
   change recoverMsg (computeW
       (decodeCiphertextV (encodeCiphertext (honestU d r p) (honestV d m r p)))

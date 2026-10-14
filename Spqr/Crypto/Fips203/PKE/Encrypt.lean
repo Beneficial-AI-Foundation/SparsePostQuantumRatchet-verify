@@ -134,25 +134,25 @@ def encodeCompressPoly (d : ℕ) (f : Fin n → Zq) :
 and concatenate. -/
 def encodeC1 {p : ParamSet}
     (u : Fin p.k → (Fin n → Zq)) :
-    Fin (32 * p.d_u * p.k) → UInt8 :=
+    Fin (32 * p.compressionU * p.k) → UInt8 :=
   fun idx =>
-    let polyIdx : Fin p.k := ⟨idx.val / (32 * p.d_u), by
-      have := idx.isLt; have := p.hd_u.1
+    let polyIdx : Fin p.k := ⟨idx.val / (32 * p.compressionU), by
+      have := idx.isLt; have := p.hCompressionU.1
       exact Nat.div_lt_of_lt_mul (by omega)⟩
-    let byteIdx : Fin (32 * p.d_u) := ⟨idx.val % (32 * p.d_u), by
-      have := p.hd_u.1; exact Nat.mod_lt _ (by omega)⟩
-    encodeCompressPoly p.d_u (u polyIdx) byteIdx
+    let byteIdx : Fin (32 * p.compressionU) := ⟨idx.val % (32 * p.compressionU), by
+      have := p.hCompressionU.1; exact Nat.mod_lt _ (by omega)⟩
+    encodeCompressPoly p.compressionU (u polyIdx) byteIdx
 
 /-- Ciphertext component `c₂`: compress `v` with depth `d_v`. -/
 def encodeC2 {p : ParamSet} (v : Fin n → Zq) :
-    Fin (32 * p.d_v) → UInt8 :=
-  encodeCompressPoly p.d_v v
+    Fin (32 * p.compressionV) → UInt8 :=
+  encodeCompressPoly p.compressionV v
 
 /-! ## Ciphertext size -/
 
 /-- Ciphertext size: `32 · d_u · k + 32 · d_v` bytes. -/
 def ParamSet.ctSizeEnc (p : ParamSet) : ℕ :=
-  32 * p.d_u * p.k + 32 * p.d_v
+  32 * p.compressionU * p.k + 32 * p.compressionV
 
 /-- The ciphertext size matches `32 · (d_u · k + d_v)`. -/
 theorem ctSizeEnc_eq_ctSize (p : ParamSet) :
@@ -166,12 +166,12 @@ def encodeCiphertext {p : ParamSet}
     (u : Fin p.k → (Fin n → Zq)) (v : Fin n → Zq) :
     Fin p.ctSizeEnc → UInt8 :=
   fun idx =>
-    if h : idx.val < 32 * p.d_u * p.k then
+    if h : idx.val < 32 * p.compressionU * p.k then
       encodeC1 u ⟨idx.val, h⟩
     else
-      have h_bound : idx.val - 32 * p.d_u * p.k < 32 * p.d_v := by
+      have h_bound : idx.val - 32 * p.compressionU * p.k < 32 * p.compressionV := by
         have := idx.isLt; unfold ParamSet.ctSizeEnc at *; omega
-      encodeC2 v ⟨idx.val - 32 * p.d_u * p.k, h_bound⟩
+      encodeC2 v ⟨idx.val - 32 * p.compressionU * p.k, h_bound⟩
 
 /-! ## K-PKE.Encrypt — top-level definition -/
 

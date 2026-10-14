@@ -60,7 +60,7 @@ theorem tryFromSharedArraySlice_ok_spec {T : Type} (N : Usize) (s : Slice T)
 
 end Fips203.Bridge
 
-namespace spqr.incremental_mlkem768
+namespace Spqr.IncrementalMlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
 
@@ -90,6 +90,12 @@ def Encaps2Post
       st.val = stBytes ∧
       pk.val = ek.val ∧
       result.val = Fips203.Bridge.ct2List st pk
+
+end Spqr.IncrementalMlkem768
+
+namespace spqr.incremental_mlkem768
+
+open Spqr.IncrementalMlkem768
 
 /-- **Spec theorem for `incremental_mlkem768.encaps2`**:
 

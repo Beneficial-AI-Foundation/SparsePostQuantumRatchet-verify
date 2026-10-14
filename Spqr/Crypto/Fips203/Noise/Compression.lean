@@ -85,17 +85,17 @@ the CBD terms analysed in steps 8.2 / 8.4. -/
 
 /-- Rounding error of the `u` component (`d_u = 10`): at most `2` per coefficient. -/
 theorem absZq_compressionNoise_du (f : Fin n → Zq) (idx : Fin n) :
-    absZq (compressionNoisePoly f mlkem768.d_u idx) ≤ 2 := by
-  have h := absZq_compressionNoisePoly mlkem768.d_u f idx
-  rw [mlkem768_d_u] at h ⊢
+    absZq (compressionNoisePoly f mlkem768.compressionU idx) ≤ 2 := by
+  have h := absZq_compressionNoisePoly mlkem768.compressionU f idx
+  rw [mlkem768CompressionU] at h ⊢
   rw [compressError_10] at h
   exact h
 
 /-- Rounding error of the `v` component (`d_v = 4`): at most `105` per coefficient. -/
 theorem absZq_compressionNoise_dv (f : Fin n → Zq) (idx : Fin n) :
-    absZq (compressionNoisePoly f mlkem768.d_v idx) ≤ 105 := by
-  have h := absZq_compressionNoisePoly mlkem768.d_v f idx
-  rw [mlkem768_d_v] at h ⊢
+    absZq (compressionNoisePoly f mlkem768.compressionV idx) ≤ 105 := by
+  have h := absZq_compressionNoisePoly mlkem768.compressionV f idx
+  rw [mlkem768CompressionV] at h ⊢
   rw [compressError_4] at h
   exact h
 

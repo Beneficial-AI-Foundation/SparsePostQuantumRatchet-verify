@@ -125,23 +125,23 @@ def compressError (d : ℕ) : ℕ := (q + 2 ^ (d + 1) - 1) / 2 ^ (d + 1)
 /-! ## ML-KEM-768 instantiations -/
 
 /-- Compress a polynomial with depth `d_u = 10`. -/
-def compressPolyDu : (Fin n → Zq) → (Fin n → ℕ) := compressPoly mlkem768.d_u
+def compressPolyDu : (Fin n → Zq) → (Fin n → ℕ) := compressPoly mlkem768.compressionU
 
 /-- Compress a polynomial with depth `d_v = 4`. -/
-def compressPolyDv : (Fin n → Zq) → (Fin n → ℕ) := compressPoly mlkem768.d_v
+def compressPolyDv : (Fin n → Zq) → (Fin n → ℕ) := compressPoly mlkem768.compressionV
 
 /-- Decompress a polynomial with depth `d_u = 10`. -/
-def decompressPolyDu : (Fin n → ℕ) → (Fin n → Zq) := decompressPoly mlkem768.d_u
+def decompressPolyDu : (Fin n → ℕ) → (Fin n → Zq) := decompressPoly mlkem768.compressionU
 
 /-- Decompress a polynomial with depth `d_v = 4`. -/
-def decompressPolyDv : (Fin n → ℕ) → (Fin n → Zq) := decompressPoly mlkem768.d_v
+def decompressPolyDv : (Fin n → ℕ) → (Fin n → Zq) := decompressPoly mlkem768.compressionV
 
 /-- Compress a vector with depth `d_u = 10`. -/
 def compressVecDu : RqVec mlkem768 → Fin mlkem768.k → (Fin n → ℕ) :=
-  compressVec mlkem768 mlkem768.d_u
+  compressVec mlkem768 mlkem768.compressionU
 
 /-- Decompress a vector with depth `d_u = 10`. -/
 def decompressVecDu : (Fin mlkem768.k → (Fin n → ℕ)) → RqVec mlkem768 :=
-  decompressVec mlkem768 mlkem768.d_u
+  decompressVec mlkem768 mlkem768.compressionU
 
 end Fips203

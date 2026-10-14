@@ -66,7 +66,7 @@ structure EncapsPhase1Output (p : ParamSet) where
   /-- Shared secret `K`. -/
   ss : Fin 32 → UInt8
   /-- First ciphertext half `c₁` of `32 · d_u · k` bytes. -/
-  ct1 : Fin (32 * p.d_u * p.k) → UInt8
+  ct1 : Fin (32 * p.compressionU * p.k) → UInt8
   /-- The state `(ŷ, e₂, m)` for round 2. -/
   state : EncapsState p
 
@@ -95,7 +95,7 @@ def mlkemEncapsPhase1 (p : ParamSet) (hdr : EncapsHeader) (m : Fin 32 → UInt8)
 From the state `(ŷ, e₂, m)` and the NTT-domain public vector `t̂`, output
 `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ ∘ ŷ) + e₂ + Decompress₁(m)))`. -/
 def mlkemEncapsPhase2 (p : ParamSet) (st : EncapsState p) (tHat : Fin p.k → (Fin n → Zq)) :
-    Fin (32 * p.d_v) → UInt8 :=
+    Fin (32 * p.compressionV) → UInt8 :=
   encodeC2 (computeV tHat st.yHat st.e2 (decompressMsg st.m))
 
 /-! ## Composition: the two rounds compute Algorithm 17 -/
@@ -112,7 +112,7 @@ theorem mlkemEncapsPhase1_state_m (p : ParamSet) (hdr : EncapsHeader) (m : Fin 3
 /-- The first ciphertext half of round 1 on the header of `ek` is the `c₁` part of the
 ciphertext of `ML-KEM.Encaps_internal(ek, m)`. -/
 theorem mlkemEncapsPhase1_ct1 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
-    (m : Fin 32 → UInt8) (i : Fin (32 * p.d_u * p.k)) :
+    (m : Fin 32 → UInt8) (i : Fin (32 * p.compressionU * p.k)) :
     (mlkemEncapsPhase1 p (headerOfEk ek) m).ct1 i =
       (mlkemEncaps p ek m).ct ⟨i.val, by
         have := i.isLt; unfold ParamSet.ctSizeEnc; omega⟩ := by
@@ -123,9 +123,9 @@ theorem mlkemEncapsPhase1_ct1 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt
 /-- Round 2 on the state of round 1 is the `c₂` part of the ciphertext of
 `ML-KEM.Encaps_internal(ek, m)`. -/
 theorem mlkemEncapsPhase2_ct2 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
-    (m : Fin 32 → UInt8) (i : Fin (32 * p.d_v)) :
+    (m : Fin 32 → UInt8) (i : Fin (32 * p.compressionV)) :
     mlkemEncapsPhase2 p (mlkemEncapsPhase1 p (headerOfEk ek) m).state (decodeEkTHat ek) i =
-      (mlkemEncaps p ek m).ct ⟨32 * p.d_u * p.k + i.val, by
+      (mlkemEncaps p ek m).ct ⟨32 * p.compressionU * p.k + i.val, by
         have := i.isLt; unfold ParamSet.ctSizeEnc; omega⟩ := by
   simp only [mlkemEncapsPhase2, mlkemEncapsPhase1, headerOfEk, mlkemEncaps, kpkeEncrypt,
     encodeCiphertext]
@@ -136,20 +136,20 @@ theorem mlkemEncapsPhase2_ct2 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt
 theorem mlkemEncaps_ct_eq_phases (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) (idx : Fin p.ctSizeEnc) :
     (mlkemEncaps p ek m).ct idx =
-      if h : idx.val < 32 * p.d_u * p.k then
+      if h : idx.val < 32 * p.compressionU * p.k then
         (mlkemEncapsPhase1 p (headerOfEk ek) m).ct1 ⟨idx.val, h⟩
       else
         mlkemEncapsPhase2 p (mlkemEncapsPhase1 p (headerOfEk ek) m).state (decodeEkTHat ek)
-          ⟨idx.val - 32 * p.d_u * p.k, by
+          ⟨idx.val - 32 * p.compressionU * p.k, by
             have := idx.isLt; unfold ParamSet.ctSizeEnc at this; omega⟩ := by
-  by_cases h : idx.val < 32 * p.d_u * p.k
+  by_cases h : idx.val < 32 * p.compressionU * p.k
   · rw [dif_pos h, mlkemEncapsPhase1_ct1]
   · rw [dif_neg h, mlkemEncapsPhase2_ct2]
     exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-- For ML-KEM-768, `c₁` has `960` bytes and `c₂` has `128` bytes. -/
 theorem encapsPhase_sizes_768 :
-    32 * mlkem768.d_u * mlkem768.k = 960 ∧ 32 * mlkem768.d_v = 128 := by
-  simp only [mlkem768_d_u, mlkem768_k, mlkem768_d_v, and_self]
+    32 * mlkem768.compressionU * mlkem768.k = 960 ∧ 32 * mlkem768.compressionV = 128 := by
+  simp only [mlkem768CompressionU, mlkem768_k, mlkem768CompressionV, and_self]
 
 end Fips203

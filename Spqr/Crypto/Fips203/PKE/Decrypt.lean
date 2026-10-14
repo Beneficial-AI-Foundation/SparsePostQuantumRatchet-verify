@@ -42,23 +42,23 @@ namespace Fips203
 of the ciphertext, via `Decompress_{d_u}(ByteDecode_{d_u}(…))`. -/
 def decodeCiphertextU {p : ParamSet}
     (c : Fin p.ctSizeEnc → UInt8) (i : Fin p.k) : Fin n → Zq :=
-  decompressPoly p.d_u (byteDecode p.d_u (fun j =>
-    c ⟨32 * p.d_u * i.val + j.val, by
+  decompressPoly p.compressionU (byteDecode p.compressionU (fun j =>
+    c ⟨32 * p.compressionU * i.val + j.val, by
       have hi := i.isLt; have hj := j.isLt
-      have hd := p.hd_u.1
-      have key : 32 * p.d_u * i.val + j.val < 32 * p.d_u * p.k := by
-        calc 32 * p.d_u * i.val + j.val
-            < 32 * p.d_u * i.val + 32 * p.d_u := by omega
-          _ = 32 * p.d_u * (i.val + 1) := by ring
-          _ ≤ 32 * p.d_u * p.k := Nat.mul_le_mul_left _ (by omega)
+      have hd := p.hCompressionU.1
+      have key : 32 * p.compressionU * i.val + j.val < 32 * p.compressionU * p.k := by
+        calc 32 * p.compressionU * i.val + j.val
+            < 32 * p.compressionU * i.val + 32 * p.compressionU := by omega
+          _ = 32 * p.compressionU * (i.val + 1) := by ring
+          _ ≤ 32 * p.compressionU * p.k := Nat.mul_le_mul_left _ (by omega)
       unfold ParamSet.ctSizeEnc; omega⟩))
 
 /-- Extract the decompressed polynomial `v'` from the second part `c₂`
 of the ciphertext, via `Decompress_{d_v}(ByteDecode_{d_v}(…))`. -/
 def decodeCiphertextV {p : ParamSet}
     (c : Fin p.ctSizeEnc → UInt8) : Fin n → Zq :=
-  decompressPoly p.d_v (byteDecode p.d_v (fun j =>
-    c ⟨32 * p.d_u * p.k + j.val, by
+  decompressPoly p.compressionV (byteDecode p.compressionV (fun j =>
+    c ⟨32 * p.compressionU * p.k + j.val, by
       have hj := j.isLt
       unfold ParamSet.ctSizeEnc; omega⟩))
 

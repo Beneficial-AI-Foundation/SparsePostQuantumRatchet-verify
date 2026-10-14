@@ -179,14 +179,14 @@ checked entry-by-entry when needed. -/
 
 /-- The first entry: `ζ^{BitRev₇(0)} = ζ⁰ = 1`. -/
 @[simp]
-theorem zetaTable_zero : zetaTable ⟨0, by omega⟩ = (1 : Zq) := by
+theorem zetaTable_zero : zetaTable 0 = (1 : Zq) := by
   simp only [zetaTable, bitRev7Table, ζ]
   norm_num
 
 /-- The second entry: `ζ^{BitRev₇(1)} = ζ⁶⁴ = 1729 (mod 3329)`.
 This is the twiddle factor for the first butterfly layer. -/
 @[simp]
-theorem zetaTable_one : zetaTable ⟨1, by omega⟩ = (1729 : Zq) := by
+theorem zetaTable_one : zetaTable 1 = (1729 : Zq) := by
   simp only [zetaTable, bitRev7Table, ζ]
   exact zmod_pow_eq_cast 17 64 1729 (by norm_num)
 

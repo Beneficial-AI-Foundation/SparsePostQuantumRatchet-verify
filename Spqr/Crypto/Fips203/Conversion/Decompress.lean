@@ -90,15 +90,15 @@ theorem decompressVec_spec (p : ParamSet) (d : ℕ)
 
 /-- Decompress a polynomial with depth `d_u = 10`. -/
 theorem decompressPolyDu_spec (g : Fin n → ℕ) :
-    decompressPolyDu g = decompressPoly mlkem768.d_u g := rfl
+    decompressPolyDu g = decompressPoly mlkem768.compressionU g := rfl
 
 /-- Decompress a polynomial with depth `d_v = 4`. -/
 theorem decompressPolyDv_spec (g : Fin n → ℕ) :
-    decompressPolyDv g = decompressPoly mlkem768.d_v g := rfl
+    decompressPolyDv g = decompressPoly mlkem768.compressionV g := rfl
 
 /-- Decompress a vector with depth `d_u = 10` for ML-KEM-768. -/
 theorem decompressVecDu_spec (g : Fin mlkem768.k → (Fin n → ℕ)) :
-    decompressVecDu g = decompressVec mlkem768 mlkem768.d_u g := rfl
+    decompressVecDu g = decompressVec mlkem768 mlkem768.compressionU g := rfl
 
 /-! ## Round-trip error bound (decompression side) -/
 
