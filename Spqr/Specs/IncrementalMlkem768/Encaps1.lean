@@ -99,23 +99,16 @@ theorem encaps1_spec {R : Type} (rngInst : rand.rng.Rng R)
       result.1.2.2.length = Fips203.Bridge.sharedSecretSize ⦄ := by
   unfold encaps1
   step*
-  -- Reduce the two `deref_mut` views of the output buffers to their underlying slices.
   simp only [alloc.vec.Vec.deref_mut, lift, bind_tc_ok]
-  -- Length facts needed by Bridge 6.2.
   have h_s2 : 64 ≤ s2.length := by simp only [Slice.length, s2_post]; exact h_hdr
   have h_state : Fips203.Bridge.encapsStateSize ≤
       Slice.length (⟨state.val, state.property⟩ : Slice U8) := by
     simp only [Slice.length]; scalar_tac
   have h_ss : (32 : ℕ) ≤ Slice.length (⟨ss.val, ss.property⟩ : Slice U8) := by
     simp only [Slice.length]; scalar_tac
-  -- Bridge 6.2: `encapsulate1_spec` (a `@[step]` theorem) gives the FIPS 203 values of the
-  -- three outputs.
   step*
-  -- Unwrap the `expect` on the `Ok` ciphertext and copy it into an owned `Vec`.
   subst ct1_post1
   step*
-  -- Lengths of the output buffers: both were allocated with exactly the written sizes, so the
-  -- untouched suffixes are empty and each buffer equals the FIPS 203 value byte-for-byte.
   have h_state_len : state.val.length = Fips203.Bridge.encapsStateSize := by
     simp only [state_post1, List.length_replicate]; exact i_post
   have h_ss_len : ss.val.length = (32 : ℕ) := by

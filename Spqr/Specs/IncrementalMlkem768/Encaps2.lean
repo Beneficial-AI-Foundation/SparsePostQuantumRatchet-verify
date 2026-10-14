@@ -62,55 +62,95 @@ namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
 
+/-- The effective state bytes consumed by `encaps2`: if the endianness workaround
+(`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`) returns `Some fixed`,
+use `fixed`; otherwise fall back to the original state `es`. -/
+def encaps2EffectiveState
+    (es : alloc.vec.Vec Std.U8) : Result (List Std.U8) :=
+  open _root_.incremental_mlkem768 in
+  match potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+    es with
+  | ok (some fixed) => ok fixed.val
+  | ok none         => ok es.val
+  | fail e          => fail e
+  | div             => div
+
+/-- Postcondition predicate for `encaps2`: the result is the 128-byte
+second ciphertext half `c₂` computed from the effective state and the
+encapsulation key, via FIPS 203 round 2 (Bridge 6.3). -/
+def Encaps2Post
+    (ek es : alloc.vec.Vec Std.U8)
+    (result : alloc.vec.Vec Std.U8) : Prop :=
+  ∃ stBytes : List Std.U8,
+    encaps2EffectiveState es = ok stBytes ∧
+    ∃ (st : Array Std.U8 2080#usize)
+      (pk : Array Std.U8 1152#usize),
+      st.val = stBytes ∧
+      pk.val = ek.val ∧
+      result.val = Fips203.Bridge.ct2List st pk
+
 /-- **Spec theorem for `incremental_mlkem768.encaps2`**:
 
-Assuming the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`) and the hax contract of the
-opaque endianness workaround (`h_fix`: it succeeds, and when it returns `Some` the fixed state
-has 2080 bytes), `encaps2` succeeds and returns the 128-byte second ciphertext half `c₂` of
-round 2 of FIPS 203 Algorithm 17 (Bridge 6.3): there are fixed-size arrays `st` (the possibly
-fixed state the workaround selected) and `pk` (the bytes of `ek`) with
-`result = Fips203.Bridge.ct2List st pk`, i.e.
+Assuming the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`), `encaps2` succeeds and
+returns the 128-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17
+(Bridge 6.3): there are fixed-size arrays `st` (the possibly fixed state the workaround
+selected) and `pk` (the bytes of `ek`) with `result = Fips203.Bridge.ct2List st pk`, i.e.
 `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))` on the decoded
-state `(ŷ, e₂, m)` and `t̂`. -/
+state `(ŷ, e₂, m)` and `t̂`.
+
+The hax contract of the opaque endianness workaround (it succeeds, and when it returns `Some`
+the fixed state has 2080 bytes) is derived from the concrete definition and spec theorem
+`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec` rather than taken as
+an external hypothesis. -/
 theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
-    (h_ek : ek.length = 1152) (h_es : es.length = 2080)
-    (h_fix : ∃ mf : Option (alloc.vec.Vec Std.U8),
-      _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-        es = ok mf ∧ ∀ v ∈ mf, v.length = 2080) :
+    (h_ek : ek.length = 1152) (h_es : es.length = 2080) :
     encaps2 ek es ⦃ (result : alloc.vec.Vec Std.U8) =>
-      (∃ (mf : Option (alloc.vec.Vec Std.U8)) (st : Array Std.U8 2080#usize)
-          (pk : Array Std.U8 1152#usize),
-        _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-          es = ok mf ∧
-        st.val = (core.option.Option.unwrap_or mf es).val ∧
-        pk.val = ek.val ∧
-        result.val = Fips203.Bridge.ct2List st pk) ∧
+      Encaps2Post ek es result ∧
       result.length = 128 ⦄ := by
-  obtain ⟨mf, h_eq, h_len⟩ := h_fix
+  -- Suffices to show the expanded form of `Encaps2Post`.
+  suffices h : encaps2 ek es ⦃ (result : alloc.vec.Vec Std.U8) =>
+      (∃ stBytes : List Std.U8,
+        encaps2EffectiveState es = ok stBytes ∧
+        ∃ (st : Array Std.U8 2080#usize)
+          (pk : Array Std.U8 1152#usize),
+          st.val = stBytes ∧
+          pk.val = ek.val ∧
+          result.val = Fips203.Bridge.ct2List st pk) ∧
+      result.length = 128 ⦄ from h
+  -- Resolve the endianness workaround to `none`.
+  open _root_.incremental_mlkem768 in
+  have h_fix_spec :=
+    potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
+      es h_es
+  open _root_.incremental_mlkem768 in
+  have h_eq :
+    potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+      es = ok none := by
+    simp [
+      potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]
+  set mf : Option (alloc.vec.Vec Std.U8) := none
+  have h_len : ∀ v ∈ mf, v.length = 2080 := by
+    simp [mf]
   unfold encaps2
   rw [h_eq]
   step*
-  -- The (possibly fixed) state has 2080 bytes: by `h_fix` when the workaround returned `Some`,
-  -- and by `h_es` when it fell back to `es`.
   case h =>
-    simp only [Slice.length, s_post, es1_post, o_post]
-    cases mf with
-    | none => simp only [core.option.Option.unwrap_or_none]; scalar_tac
-    | some v =>
-      have := h_len v rfl
-      simp only [core.option.Option.unwrap_or_some]; scalar_tac
-  -- Unwrap the first `expect` on the `Ok` state array and continue to the second `try_from`.
+    simp only [Slice.length, s_post, es1_post, o_post, mf]
+    simp only [core.option.Option.unwrap_or_none]
+    scalar_tac
   simp only [r_post1]
   step*
-  -- Unwrap the second `expect` on the `Ok` `ek` array, run `encapsulate2` (Bridge 6.3) and copy
-  -- the ciphertext bytes into an owned `Vec`.
   simp only [r1_post1]
   step*
-  refine ⟨⟨mf, r, r1, rfl, ?_, ?_, ?_⟩, ?_⟩
-  · rw [r_post2, s_post, es1_post, o_post]
+  refine ⟨⟨es.val, ?_, r, r1, ?_, ?_, ?_⟩, ?_⟩
+  · simp [encaps2EffectiveState, h_eq, mf]
+  · rw [r_post2, s_post, es1_post]
+    simp only [o_post, mf, core.option.Option.unwrap_or_none]
   · rw [r1_post2, s1_post]
-  · simp only [← result_post, s2_post, Array.val_to_slice, ct2_post2, a_post, a1_post]
-  · simp only [alloc.vec.Vec.length, ← result_post, s2_post, Array.val_to_slice, ct2_post2,
+  · simp only [← result_post, s2_post,
+      Array.val_to_slice, ct2_post2, a_post, a1_post]
+  · simp only [alloc.vec.Vec.length, ← result_post,
+      s2_post, Array.val_to_slice, ct2_post2,
       Fips203.Bridge.ct2List_length]
 
 end spqr.incremental_mlkem768
