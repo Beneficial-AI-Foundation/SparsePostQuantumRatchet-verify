@@ -6,7 +6,7 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.IntoPb
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-!

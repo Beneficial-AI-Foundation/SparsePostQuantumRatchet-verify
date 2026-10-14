@@ -6,8 +6,8 @@ Authors: Liao Zhang
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Aeneas.IndexRangeFull
-public import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Aeneas.IndexRangeFull
+import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::encode_chunk`

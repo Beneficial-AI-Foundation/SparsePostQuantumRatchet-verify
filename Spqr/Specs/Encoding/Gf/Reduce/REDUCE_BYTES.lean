@@ -6,7 +6,13 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
+import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
+public import Spqr.Math.Gf16.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Spec theorem for `spqr::encoding::gf::reduce::REDUCE_BYTES`

@@ -7,6 +7,9 @@ module
 
 public import Spqr.Math.Gf2Poly.Basic
 public import Mathlib.Algebra.Polynomial.Div
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
 
 /-!
 # Generic monic-polynomial utilities

@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.KeyHistory.New
+import Spqr.Specs.Chain.KeyHistory.New
 /-! # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::new`
 
 Constructs a `ChainEpochDirection` from a byte slice `k` with `ctr = 0`,

@@ -6,8 +6,8 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Aeneas.IndexRangeFull
-public import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Aeneas.IndexRangeFull
+import Spqr.Specs.Aeneas.VecExtendFromSlice
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::add`
 
 `KeyHistory::add` appends a single key record to the history.  Given a key pair

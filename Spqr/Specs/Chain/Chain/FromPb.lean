@@ -6,9 +6,9 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.ChainEpochDirection.FromPb
+import Spqr.Specs.Chain.ChainEpochDirection.FromPb
 public import Spqr.Specs.Chain.Chain.FunctionalModels
-public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::from_pb`
 

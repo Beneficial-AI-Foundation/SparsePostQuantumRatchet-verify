@@ -5,7 +5,12 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
+import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Gf.GF16.ONE
 
 /-! # Spec theorem for `spqr::encoding::polynomial::COMPLETE_POINTS_POLYS_1`
 

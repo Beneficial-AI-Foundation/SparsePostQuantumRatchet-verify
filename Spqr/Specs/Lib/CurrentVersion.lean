@@ -6,9 +6,10 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Lib.DecodeState
+import Spqr.Specs.Lib.DecodeState
 public import Spqr.Specs.Lib.CurrentVersion.CallOnce
-public import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
+import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
+public import Spqr.Specs.Lib.StatePb
 /-! # Spec theorem for `spqr::current_version`
 
 Deserializes a `SerializedState` via `decode_state`, then reads `inner` (`None` → V0,

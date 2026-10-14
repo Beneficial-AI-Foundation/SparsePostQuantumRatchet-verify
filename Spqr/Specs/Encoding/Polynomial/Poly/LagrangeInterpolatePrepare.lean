@@ -6,12 +6,24 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
-public import Spqr.Specs.Encoding.Gf.GF16.Eq
-public import Spqr.Specs.Encoding.Gf.GF16.ONE
-public import Spqr.Specs.Encoding.Gf.GF16.ZERO
-public import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
+import Spqr.Specs.Encoding.Gf.GF16.Eq
+import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Gf.GF16.ZERO
+import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
 -- Unfolds `List.resize`, whose body upstream does not `@[expose]`.
 import all Aeneas.Data.List.List
+public import Spqr.Math.Poly.ExpectedTrailing.Defs
+public import Spqr.Math.Poly.LinearFactors.Basic
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Encoding.Gf.GF16.Mul
+import Spqr.Specs.Encoding.Gf.GF16.SubAssign
 
 /-! # Spec theorem for `lagrange_interpolate_prepare`: loop body 0
 

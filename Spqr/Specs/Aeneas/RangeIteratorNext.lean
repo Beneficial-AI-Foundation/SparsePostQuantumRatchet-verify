@@ -6,7 +6,8 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+public import Aeneas
 
 /-!
 # Spec theorem for `core::ops::range::{Iterator for Range<usize>}::next`

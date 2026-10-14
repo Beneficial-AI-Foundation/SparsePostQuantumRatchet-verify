@@ -8,12 +8,15 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Math.Poly.ModByMonic
 public import Spqr.Math.Poly.Identities.Basic
-public import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
+import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 public import Spqr.Specs.Aeneas.SliceIteratorNext
-public import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
-public import Spqr.Specs.Aeneas.RangeIteratorNext
-public import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec theorem for `PolyEncoder::into_pb`: loop body 1
 

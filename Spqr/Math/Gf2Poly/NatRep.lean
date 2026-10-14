@@ -5,9 +5,13 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Mathlib.Data.Nat.Bitwise
-public import Mathlib.Tactic.IntervalCases
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Tactic.IntervalCases
 public import Spqr.Math.Gf2Poly.Basic
+public import Mathlib.Algebra.Polynomial.Degree.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
 
 
 /-!

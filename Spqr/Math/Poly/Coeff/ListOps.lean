@@ -5,7 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.Basic
+import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Linking lemmas: `listToGF216Poly` and list operations

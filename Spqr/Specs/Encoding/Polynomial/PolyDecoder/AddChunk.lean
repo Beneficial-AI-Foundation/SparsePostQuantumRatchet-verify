@@ -5,11 +5,27 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Aeneas.GF16New
-public import Spqr.Specs.Aeneas.RangeIteratorNext
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
+import Spqr.Specs.Aeneas.GF16New
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.SliceChunksExact
+import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.EncodingError.From
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
+import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
+import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 
 /-! # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 

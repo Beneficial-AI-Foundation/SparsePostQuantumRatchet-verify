@@ -5,7 +5,7 @@ Authors: Oliver Butterley
 -/
 module
 
-public import Spqr.Auxiliary.Aeneas.SpecImpExists
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 public import Aeneas
 
 

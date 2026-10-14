@@ -6,7 +6,17 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.List
-public import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 /-! # Spec theorem for `encoding.polynomial.PolyConst.mult_loop.body`
 
 `PolyConst::mult` (`src/encoding/polynomial.rs`, lines 398:4-410:5) scales each coefficient

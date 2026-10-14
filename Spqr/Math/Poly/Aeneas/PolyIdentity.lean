@@ -5,7 +5,12 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Horner.Eval
+import Spqr.Math.Poly.Horner.Eval
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Horner.Defs
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Poly.CharTwo.Basic
+import Spqr.Math.Poly.Coeff.Basic
 
 /-!
 # Polynomial identity from loop 1 (lagrange_interpolate_complete)

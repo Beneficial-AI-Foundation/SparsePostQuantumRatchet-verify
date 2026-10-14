@@ -7,8 +7,14 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
-public import Spqr.Specs.Encoding.Gf.Mul2U16
-public import Spqr.Specs.Encoding.Gf.GF16.MulAssign
+import Spqr.Specs.Encoding.Gf.Mul2U16
+import Spqr.Specs.Encoding.Gf.GF16.MulAssign
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 /-! # Spec theorem for `spqr::encoding::gf::parallel_mult`
 
 Processes the slice in two phases: a pair loop (`parallel_mult_loop`) using `mul2_u16` in

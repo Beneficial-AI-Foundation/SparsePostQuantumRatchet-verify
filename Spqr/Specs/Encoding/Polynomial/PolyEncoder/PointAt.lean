@@ -5,11 +5,16 @@ Authors: Hoang Le Truong, Lacramioara Astefanoaei
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
-public import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
+import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
 public import Spqr.Math.Poly.Lagrange.CompletePoints
-public import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
+import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Math.Poly.Eval
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Gf.GF16.New
+import Spqr.Specs.Aeneas.RangeIteratorNext
 
 
 /-!

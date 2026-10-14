@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Aeneas.IndexRangeFull
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec Theorem for `Pt::serialize`
 

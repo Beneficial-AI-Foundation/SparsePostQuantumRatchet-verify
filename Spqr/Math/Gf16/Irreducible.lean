@@ -6,7 +6,13 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.Gf16.Basic
-public import Spqr.Math.Gf2Poly.NatRep
+import Spqr.Math.Gf2Poly.NatRep
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Mathlib.Tactic.IntervalCases
 
 
 /-!

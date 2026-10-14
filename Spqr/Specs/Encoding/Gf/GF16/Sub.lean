@@ -6,7 +6,10 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Gf.GF16.SubAssign
+import Spqr.Specs.Encoding.Gf.GF16.SubAssign
+public import Spqr.Math.Gf16.Field
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 /-!
 # Spec theorem for `spqr::encoding::gf::{impl ops::Sub for GF16}::sub`
 

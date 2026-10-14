@@ -8,9 +8,10 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 public import Spqr.Specs.Kdf.HkdfToSlice
-public import Spqr.Specs.Kdf.HkdfToVec
-public import Spqr.Auxiliary.Aeneas.Vec
-public import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Kdf.HkdfToVec
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Specs.Aeneas.SliceConcat
+public import Spqr.Crypto.Hkdf
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::update`

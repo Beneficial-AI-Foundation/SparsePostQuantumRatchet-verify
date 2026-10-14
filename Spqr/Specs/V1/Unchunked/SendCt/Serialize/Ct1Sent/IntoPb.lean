@@ -6,7 +6,7 @@ Authors: Liao Zhang
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
 
 /-! # Spec theorem for `spqr::v1::unchunked::send_ct::serialize::Ct1Sent::into_pb`
 

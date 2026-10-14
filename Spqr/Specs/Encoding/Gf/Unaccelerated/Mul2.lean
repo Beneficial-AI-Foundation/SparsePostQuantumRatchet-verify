@@ -5,7 +5,11 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
+public import Spqr.Math.Gf16.Field
+public import SrcTranslated.Funs
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::encoding::gf::unaccelerated::mul2`

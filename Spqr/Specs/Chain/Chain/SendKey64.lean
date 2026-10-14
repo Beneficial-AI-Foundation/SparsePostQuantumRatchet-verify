@@ -5,7 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Chain.Chain.SendKey
+import Spqr.Specs.Chain.Chain.SendKey
+public import Spqr.Specs.Chain.Chain.Defs
 /-! # 64-bit specialization of `send_key_spec`
 
 On 64-bit platforms (`System.Platform.numBits = 64`) the `h_diff_fits` precondition of

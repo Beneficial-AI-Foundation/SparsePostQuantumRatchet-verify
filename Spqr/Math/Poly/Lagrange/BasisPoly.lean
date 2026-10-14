@@ -5,8 +5,10 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Math.Poly.LinearFactors.Degree
 public import Spqr.Math.Poly.Lagrange.DenomProd
+public import Spqr.Math.Poly.LinearFactors.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Lagrange scaling factor and basis polynomial

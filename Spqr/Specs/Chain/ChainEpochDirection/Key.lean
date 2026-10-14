@@ -6,12 +6,15 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Specs.Chain.ChainEpochDirection.NextKey
-public import Spqr.Specs.Chain.KeyHistory.Get
-public import Spqr.Specs.Chain.KeyHistory.Clear
-public import Spqr.Specs.Chain.KeyHistory.Gc
-public import Spqr.Specs.Chain.ChainParams.MaxJumpOrDefault
+import Spqr.Specs.Chain.KeyHistory.Get
+import Spqr.Specs.Chain.KeyHistory.Clear
+import Spqr.Specs.Chain.KeyHistory.Gc
+import Spqr.Specs.Chain.ChainParams.MaxJumpOrDefault
 public import Spqr.Specs.Chain.Chain.Defs
-public import Spqr.Specs.Chain.KeyHistory.Add
+import Spqr.Specs.Chain.KeyHistory.Add
+import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
+import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::key`: loop body 0
 

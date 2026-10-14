@@ -6,8 +6,18 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Specs.Chain.Chain.RecvKey
-public import Spqr.Specs.Chain.ChainEpochDirection.Key32
+import Spqr.Specs.Chain.ChainEpochDirection.Key32
 public import Spqr.Specs.Chain.Chain.Defs
+import Spqr.Specs.Aeneas.CopyFromSlice
+import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.TryFromSliceToArray
+import Spqr.Specs.Chain.ChainParams.MaxJumpOrDefault
+import Spqr.Specs.Chain.KeyHistory.Add
+import Spqr.Specs.Chain.KeyHistory.Clear
+import Spqr.Specs.Chain.KeyHistory.Gc
+import Spqr.Specs.Chain.KeyHistory.Get
+import Spqr.Specs.Kdf.HkdfToSlice
 
 /-! # 32-bit specialization of `recv_key_spec`
 

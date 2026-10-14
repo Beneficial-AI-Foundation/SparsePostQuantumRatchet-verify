@@ -6,6 +6,12 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.Poly.CharTwo.ToGF216
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Coeff.Basic
 
 /-! # Power-vector invariant
 

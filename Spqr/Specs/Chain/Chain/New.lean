@@ -7,8 +7,8 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Chain.Chain.CedForDirection
-public import Spqr.Specs.Lib.Direction.Switch
-public import Spqr.Specs.Kdf.HkdfToSlice
+import Spqr.Specs.Lib.Direction.Switch
+import Spqr.Specs.Kdf.HkdfToSlice
 public import Spqr.Crypto.Hkdf
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::new`
 

@@ -7,7 +7,9 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
-public import Spqr.Specs.Encoding.Gf.GF16.DivImpl
+import Spqr.Specs.Encoding.Gf.GF16.DivImpl
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr.encoding.gf.GF16.Insts.CoreOpsArithDivAssignShared0GF16.div_assign`
 

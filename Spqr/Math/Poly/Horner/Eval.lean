@@ -6,9 +6,11 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.Poly.Horner.Defs
-public import Spqr.Math.Poly.CharTwo.Basic
-public import Spqr.Math.Poly.Coeff.Basic
-public import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.CharTwo.Basic
+import Spqr.Math.Poly.Coeff.Basic
+import Spqr.Math.Poly.Basic.Zero
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Horner-scheme evaluation bridge

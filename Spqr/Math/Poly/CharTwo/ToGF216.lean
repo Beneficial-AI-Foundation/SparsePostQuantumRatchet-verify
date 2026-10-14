@@ -5,8 +5,13 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.Basic
-public import Mathlib.RingTheory.DedekindDomain.Basic
+import Spqr.Math.Poly.Coeff.Basic
+import Mathlib.RingTheory.DedekindDomain.Basic
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # `GF16.toGF216` at distinguished values, and the `getElem!`/`coeff` bridge

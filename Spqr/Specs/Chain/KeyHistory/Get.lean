@@ -6,10 +6,11 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
-public import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
+import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 public import Spqr.Specs.Chain.Defs
-public import Spqr.Specs.Chain.KeyHistory.Remove
+import Spqr.Specs.Chain.KeyHistory.Remove
+import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::get`: loop body 0
 
 One iteration of the key-lookup loop in `KeyHistory::get`. Steps through `data` in 36-byte

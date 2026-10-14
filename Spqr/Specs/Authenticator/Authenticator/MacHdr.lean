@@ -7,9 +7,9 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Authenticator.Authenticator.MACSIZE
-public import Spqr.Auxiliary.Aeneas.Vec
-public import Spqr.Auxiliary.Aeneas.SpecRefl
-public import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.SpecRefl
+import Spqr.Specs.Aeneas.SliceConcat
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::mac_hdr`

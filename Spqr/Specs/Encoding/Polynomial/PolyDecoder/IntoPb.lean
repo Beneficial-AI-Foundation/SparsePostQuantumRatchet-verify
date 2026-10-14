@@ -7,10 +7,13 @@ module
 
 public import Spqr.Math.Poly.ModByMonic
 public import Spqr.Specs.Aeneas.SliceIteratorNext
-public import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
-public import Spqr.Specs.Aeneas.RangeIteratorNext
-public import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec theorem for `PolyDecoder::into_pb`: loop body 1
 
