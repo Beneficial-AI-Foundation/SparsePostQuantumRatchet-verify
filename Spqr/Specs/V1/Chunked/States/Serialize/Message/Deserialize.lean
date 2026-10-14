@@ -3,33 +3,38 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
-import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
-import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
-import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
+public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
+public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
+public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`
 
-`Message::deserialize` parses the encoding produced by `Message::serialize`:
+`Message::deserialize` parses the body of a chunked message, i.e. what follows the common
+preamble `[version] ++ [varint(epoch)] ++ [varint(index)]` (parsed separately by
+`spqr::msg_preamble`, see `Spqr/Specs/Lib/MsgPreamble.lean`; the epoch is passed in):
 
-  `[version = 1] ++ [varint(epoch)] ++ [varint(index)] ++ [tag byte]`
+  `[tag byte]`
 
 plus, for the chunk-carrying tags, a chunk block `[varint(chunk.index)] ++ [32 data bytes]`.
-Trailing bytes past the consumed prefix are allowed (forward compatibility), so the returned
-cursor is what marks the end of the message.
+Trailing bytes past the consumed prefix are allowed (forward compatibility).
 
-We prove that on success `from[0 .. at)` has exactly that layout, with the two varint blocks
-decoding to the returned `epoch` (nonzero) and `index`, the tag byte equal to
-`payloadTag msg.payload` (the model `Message.serialize_spec` also uses), and the cursor landing
-right after the last block, within the buffer.  Every failure is `Error::MsgDecode`.
+We prove that on success the returned message carries the given `epoch`, `from[0]` is the tag
+byte `payloadTag msg.payload` (the model `Message.serialize_spec` also uses), and for the
+chunk-carrying payloads a chunk block carrying the returned chunk starts at offset `1`, within
+the buffer.  Every failure is `Error::MsgDecode`.
 
-The blocks are stated via `varintBlockAt` and `chunkBlockAt`, so the layout claimed here is
-literally what `decode_varint_spec` and `decode_chunk_spec` establish.
+The chunk block is stated via `chunkBlockAt`, so the layout claimed here is literally what
+`decode_chunk_spec` establishes.
 
-**Source**: src/v1/chunked/states/serialize.rs (lines 247-278)
+**Source**: src/v1/chunked/states/serialize.rs (lines 200-219)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -41,103 +46,62 @@ open core.result.Result.Insts Message.deserialize
 /-- Discharge a `?`-propagated error branch. -/
 local macro "close_err" : tactic =>
   `(tactic| simp_all only [core.result.Result.map_err_Ok, core.result.Result.map_err_Err,
-    closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError,
-    closure.Insts.CoreOpsFunctionFnOnceTupleTryFromIntErrorError.call_once,
-    closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError,
-    closure_1.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once,
-    CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-    core.convert.FromSame.from, bind_tc_ok, WP.spec_ok])
+    closure.Insts.CoreOpsFunctionFnOnceTupleStringError,
+    closure.Insts.CoreOpsFunctionFnOnceTupleStringError.call_once,
+    CoreOpsTry_traitFromResidualResult.from_residual,
+    core.convert.FromSame.from, bind_ok, bind_tc_ok, WP.spec_ok])
 
 /-- **Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`**:
 
-On success (`Ok (msg, index, at)`) the prefix `from[0 .. at)` is the layout above — version
-byte `1`, a varint block decoding to `msg.epoch ≠ 0`, a varint block decoding to `index`, the
-tag byte `payloadTag msg.payload`, then a chunk block carrying the returned chunk for the
-chunk-carrying payloads — and `at ≤ from.len()`.  On failure the error is `Error::MsgDecode`. -/
+On success (`Ok msg`) the message carries the given `epoch`, the buffer is non-empty, its first
+byte is the tag byte `payloadTag msg.payload`, and for the chunk-carrying payloads a chunk block
+carrying the returned chunk starts right after the tag byte (`chunkBlockAt from 1 n₃ c`, which
+includes `1 + n₃ + 32 ≤ from.len()`); a `Ct1Ack` payload carries `true`.  On failure the error
+is `Error::MsgDecode`. -/
 @[step]
 theorem Message.deserialize_spec
-    (from1 : alloc.vec.Vec Std.U8)
+    (epoch : Std.U64) (from1 : Slice Std.U8)
     (hlen : from1.length + 32 ≤ Std.Usize.max) :
-    Message.deserialize from1 ⦃ (p : core.result.Result
-        (v1.chunked.states.Message × Std.U32 × Std.Usize) Error) =>
+    Message.deserialize epoch from1 ⦃ (p : core.result.Result v1.chunked.states.Message Error) =>
       match p with
-      | .Ok (msg, index, at1) =>
-        0 < msg.epoch.val ∧ at1.val ≤ from1.length ∧
-        -- `0 < from1.length` is implied by `1 + n₁ + n₂ < from1.length` below, but is kept
-        -- outside the `∃` so the `[0]!` access next to it is meaningful on its own.
-        0 < from1.length ∧ from1.val[0]!.val = 1 ∧
-        ∃ n₁ n₂, varintBlockAt from1.val 1 n₁ msg.epoch.val ∧
-          varintBlockAt from1.val (1 + n₁) n₂ index.val ∧
-          1 + n₁ + n₂ < from1.length ∧
-          from1.val[1 + n₁ + n₂]!.val = payloadTag msg.payload ∧
+      | .Ok msg =>
+        msg.epoch = epoch ∧
+        0 < from1.length ∧ from1.val[0]!.val = payloadTag msg.payload ∧
           match msg.payload with
-          | .None => at1.val = 2 + n₁ + n₂
-          | .Ct1Ack b => b = true ∧ at1.val = 2 + n₁ + n₂
+          | .None => True
+          | .Ct1Ack b => b = true
           | .Hdr c | .Ek c | .EkCt1Ack c | .Ct1 c | .Ct2 c =>
-            ∃ n₃, chunkBlockAt from1.val (2 + n₁ + n₂) n₃ c ∧
-              at1.val = 2 + n₁ + n₂ + n₃ + 32
+            ∃ n₃, chunkBlockAt from1.val 1 n₃ c
       | .Err e => e = Error.MsgDecode ⦄ := by
   unfold Message.deserialize
-  simp only [core.convert.IntoFrom.into, U8.Insts.CoreConvertFromVersion.from,
-    core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+  simp only [core.result.Result.Insts.CoreOpsTry.branch]
   step*
-  -- The `Vec::is_empty` guard: turn `¬isEmpty` into `0 < length`.  `simp_all` is terminal
-  -- and bridges the Bool/Prop gap together with `b_post`.
-  case hbound => simp_all [List.length_pos_iff]
-  match r with
-  | .Err _ => close_err
-  | .Ok epochV =>
-    obtain ⟨-, n₁, hat₁, hblk₁⟩ :
-        1 < from1.length ∧ ∃ n, _ = 1 + n ∧ varintBlockAt (↑from1) 1 n ↑epochV := by
-      assumption
-    step*
-    match r1 with
-    | .Err _ => close_err
-    | .Ok idx64 =>
-      obtain ⟨-, n₂, hat₂, hblk₂⟩ :
-          _ < from1.length ∧ ∃ n, _ = _ + n ∧ varintBlockAt (↑from1) _ n ↑idx64 := by
-        assumption
-      step*
-      match r2 with
-      | .Err _ => close_err
-      | .Ok idx =>
-        obtain ⟨-, hidx⟩ : _ ∧ idx.val = idx64.val := by assumption
-        simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-        step*
-        rw [hat₁, ← hidx] at hblk₂
-        have h0 : (from1.val[0]!).val = 1 := by
-          rw [getElem!_pos from1.val 0 (by scalar_tac), ← i_post]; scalar_tac
-        have hbyte : (from1.val[1 + n₁ + n₂]!).val = i3.val := by
-          rw [show (1 + n₁ + n₂ : ℕ) = at1.val by omega,
-            getElem!_pos from1.val at1.val (by scalar_tac), ← i3_post]
-        split at r4_post
-        case h_2 | h_3 | h_4 | h_6 | h_7 =>
-          -- tags 1, 2, 3, 5, 6: a chunk block follows
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          match r6 with
-          | .Err _ => close_err
-          | .Ok c =>
-            obtain ⟨n₃, hat₃, hcblk, hclen, hcdata⟩ :
-                ∃ n, _ = _ + n + 32 ∧ chunkBlockAt (↑from1) _ n c := by assumption
-            have hat2v : at2.val = 2 + n₁ + n₂ := by omega
-            rw [hat2v] at hcblk hclen hcdata
-            refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, h0, n₁, n₂, hblk₁, hblk₂,
-              by scalar_tac, ?_, n₃, ⟨hcblk, hclen, hcdata⟩, by scalar_tac⟩
-            simp only [payloadTag]; rw [hbyte]; omega
-        case h_1 | h_5 =>
-          subst r4_post
-          simp only [core.result.Result.map_err_Ok, bind_tc_ok]
-          step*
-          refine ⟨by scalar_tac, by scalar_tac, by scalar_tac, h0, n₁, n₂, hblk₁, hblk₂,
-            by scalar_tac, ?_, ?_⟩
-          · simp only [payloadTag]; rw [hbyte]; omega
-          · scalar_tac
-        case h_8 =>
-          -- tag > 6: `MessageType::try_from` fails and `map_err` turns it into `MsgDecode`
-          subst r4_post
-          close_err
+  -- The `is_empty` guard: turn `¬isEmpty` into `0 < length`.
+  have hpos : 0 < from1.length := by
+    have : ¬from1.length = 0 := by rw [← ‹(b = true) = (from1.length = 0)›]; assumption
+    omega
+  have h0 : (from1.val[0]!).val = i.val := by
+    rw [getElem!_pos from1.val 0 (by scalar_tac), ‹i = _›]
+  split at *
+  case h_2 | h_3 | h_4 | h_6 | h_7 =>
+    -- tags 1, 2, 3, 5, 6: a chunk block follows
+    subst ‹r = _›
+    simp only [core.result.Result.map_err_Ok, bind_ok]
+    step as ⟨r2, _, _, hr2⟩
+    rcases r2 with c | e
+    · obtain ⟨n₃, -, hblk⟩ := hr2
+      simp only [bind_ok, WP.spec_ok]
+      refine ⟨trivial, hpos, ?_, n₃, hblk⟩
+      rw [h0]; simp only [payloadTag]; scalar_tac
+    · close_err
+  case h_1 | h_5 =>
+    subst ‹r = _›
+    simp only [core.result.Result.map_err_Ok, bind_ok, WP.spec_ok]
+    simp only [h0, payloadTag, hpos, true_and, and_true]; scalar_tac
+  case h_8 =>
+    -- tag > 6: `MessageType::try_from` fails and `map_err` turns it into `MsgDecode`
+    obtain ⟨_, rfl⟩ : ∃ e, r = .Err e := ‹_›
+    close_err
 
 end spqr.v1.chunked.states.serialize

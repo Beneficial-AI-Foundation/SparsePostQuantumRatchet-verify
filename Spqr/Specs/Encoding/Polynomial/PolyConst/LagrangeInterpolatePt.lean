@@ -3,12 +3,27 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
 import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
-import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
-import Spqr.Math.Poly.Lagrange.CountNonSkip
+public import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
+public import Spqr.Math.Poly.Lagrange.CountNonSkip
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Lagrange.DenomProd
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.Identities.MultXdiff
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+import Spqr.Specs.Encoding.Gf.GF16.ConstSub
 
 /-! # Spec theorem for `PolyConst::lagrange_interpolate_pt`: loop body 0
 
@@ -26,6 +41,8 @@ unfolding and bound lemmas) live in `Spqr.Math.Poly.Lagrange.CondProdLinearFacto
 and `Spqr.Math.Poly.Lagrange.CountNonSkip` respectively.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
@@ -210,19 +227,20 @@ theorem lagrange_interpolate_pt_spec
   unfold lagrange_interpolate_pt
   step*
   · unfold PolyConst.degree
-    simp only [a1_post, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
+    simp only [‹a1 = _›, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
     rw [listToGF216Poly_replicate_zero_set_one N h_N_pos, Polynomial.natDegree_one, Nat.zero_add]
     have h_count : countNonSkip pi.x (List.take (↑N) (↑pts)) 0 ≤ ↑N - 1 := by
       apply countNonSkip_le_of_skip_exists pi.x _ (↑N)
         (by simp only [List.length_take, inf_le_left]) (↑i) h_i_lt_N
       grind
     omega
-  · subst pi1_post1
-    have h_init : listToGF216Poly a1 = 1 := by
-      simp only [a1_post, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
+  · have h_init : listToGF216Poly a1 = 1 := by
+      simp only [‹a1 = _›, Array.set_val_eq, Array.repeat_val, UScalar.ofNatCore_val_eq]
       exact listToGF216Poly_replicate_zero_set_one N.val h_N_pos
-    simp only [result_post1, pi1_post2, g_post, pi1_post3, GF16.ONE_toGF216, one_mul, h_init,
-      mul_one, pi_post]
-    grind
+    rw [‹listToGF216Poly result.coefficients = _›, ‹listToGF216Poly p.coefficients = _›,
+      ‹g.toGF216 = _›, ‹denominator.toGF216 = _›, h_init]
+    subst_vars
+    simp only [GF16.ONE_toGF216, one_mul, mul_one]
+    rfl
 
 end spqr.encoding.polynomial.PolyConst

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
+module
+
+public import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
 
 /-! # Spec theorem for `spqr::encoding::polynomial::NUM_POLYS`
 
@@ -11,6 +13,8 @@ In Protocol V1, each 32-byte chunk (`CHUNK_SIZE`) is split into 2-byte pairs, wi
 representing a single element of GF(2¹⁶). Therefore: `NUM_POLYS = CHUNK_SIZE / 2 = 32 / 2 = 16`
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

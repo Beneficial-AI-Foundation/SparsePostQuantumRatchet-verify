@@ -3,15 +3,15 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Authenticator.Authenticator.MACSIZE
-import Spqr.Specs.Kdf.HkdfToSlice
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+public import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Kdf.HkdfToVec
-import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Auxiliary.Aeneas.Vec
-import Spqr.Auxiliary.Aeneas.Array
-import Spqr.Auxiliary.Aeneas.ArraySlice
 import Spqr.Specs.Aeneas.SliceConcat
+public import Spqr.Crypto.Hkdf
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::update`
@@ -21,6 +21,8 @@ import Spqr.Specs.Aeneas.SliceConcat
 
 Source: "spqr/src/authenticator.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 namespace spqr.authenticator.Authenticator
@@ -57,6 +59,6 @@ theorem update_spec (self : Authenticator) (ep : U64) (k : Slice U8)
   step*
   · simp [*]
   · simp [*]; grind
-  · simp_all [updateLabel]
+  · simp_all [updateLabel, alloc.vec.Vec.val]
 
 end spqr.authenticator.Authenticator

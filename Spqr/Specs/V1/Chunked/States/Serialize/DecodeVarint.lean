@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
 
-/-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_varint`
+public import SrcTranslated.Funs
+
+/-! # Spec theorem for `spqr::decode_varint`
 
 `decode_varint` reads a LEB128-style variable-length integer from the byte buffer `from`
 starting at cursor `at`, advancing the cursor past the bytes it consumed.
@@ -16,8 +18,10 @@ the returned value is the LEB128 decoding (`varintVal`) of the `n` consumed byte
 bits per byte, least-significant septet first, truncated to 64 bits — where byte `n-1` is the
 terminator (high bit clear) and all earlier bytes are continuation bytes (high bit set).
 
-**Source**: src/v1/chunked/states/serialize.rs (lines 151-182)
+**Source**: src/lib.rs (lines 524-554)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result ControlFlow Error
 
@@ -25,7 +29,7 @@ open Aeneas Aeneas.Std Result ControlFlow Error
 -- avoiding bit-vector reasoning about the `i as i32` conversion inside the loop.
 attribute [local step] UScalar.hcast_inBounds_spec
 
-namespace spqr.v1.chunked.states.serialize
+namespace spqr
 
 /-! ## Pure model -/
 
@@ -145,7 +149,7 @@ since `out < 2^(7i)`, is addition of `(byte % 128)·2^(7i)` mod 2⁶⁴ — and 
 whether this byte was the terminator (high bit clear). -/
 @[step]
 theorem decode_varint_loop_body_spec
-    (from1 : alloc.vec.Vec Std.U8) (at1 max_i : Std.Usize)
+    (from1 : Slice Std.U8) (at1 max_i : Std.Usize)
     (out : Std.U64) (i : Std.Usize) (done1 : Bool)
     (hmax10 : max_i.val ≤ 10)
     (hmaxlen : at1.val + max_i.val ≤ from1.length)
@@ -169,28 +173,29 @@ theorem decode_varint_loop_body_spec
       step*
       have hidx : at1.val + i.val < from1.length := by scalar_tac
       have hbyte : byte = from1.val[at1.val + i.val]! := by
-        simp only [byte_post]
+        simp only [‹byte = _›]
         rw [getElem!_pos from1.val (at1.val + i.val) (by scalar_tac)]
         simp [*]
       have h1 : i8.val = byte.val &&& 128 := by
-        rw [i8_post1, UScalar.val_and]
+        rw [‹i8.val = (byte &&& 128#u8).val›, UScalar.val_and]
         scalar_tac
       have h2 : byte.val &&& 128 = 0 ↔ byte.val < 128 := and_128_eq_zero_iff (by scalar_tac)
       refine ⟨by scalar_tac, by scalar_tac, ?_, ?_, ?_⟩
       · -- Accumulator equation
         have hs : 7 * i.val < 64 := by scalar_tac
         have hi2 : i2.val = byte.val := by
-          rw [i2_post]
+          rw [‹i2 = _›]
           scalar_tac
         have h127 : i3.val = byte.val % 128 := by
           have h : i3.val = byte.val &&& 127 := by
-            rw [i3_post1, UScalar.val_and, hi2]
+            rw [‹i3.val = (i2 &&& 127#u64).val›, UScalar.val_and, hi2]
             scalar_tac
           rw [h, show (127 : ℕ) = 2 ^ 7 - 1 from rfl, Nat.and_two_pow_sub_one_eq_mod]
         have hshift : (i5.val).toNat = 7 * i.val := by scalar_tac
         have hi6 : i6.val = i3.val <<< (7 * i.val) % 2 ^ 64 := by
-          rw [i6_post1, hshift, u64_size_eq_two_pow]
-        have hor : out1.val = out.val ||| i6.val := by rw [out1_post1, UScalar.val_or]
+          rw [‹i6.val = (i3.val <<< (i5.val).toNat) % U64.size›, hshift, u64_size_eq_two_pow]
+        have hor : out1.val = out.val ||| i6.val := by
+          rw [‹out1.val = (out ||| i6).val›, UScalar.val_or]
         rw [hor, hi6, h127, hbyte, lor_shiftLeft_mod_eq_add hs hout]
       · -- Terminator flag, forward direction
         intro hf
@@ -219,10 +224,10 @@ Under `max_i ≤ 10` and `at1 + max_i ≤ from.len()`, the loop terminates in a 
 earlier bytes were continuation bytes (high bit set). -/
 @[step]
 theorem decode_varint_loop_spec
-    (from1 : alloc.vec.Vec Std.U8) (at1 max_i : Std.Usize)
+    (from1 : Slice Std.U8) (at1 max_i : Std.Usize)
     (hmax10 : max_i.val ≤ 10)
     (hmaxlen : at1.val + max_i.val ≤ from1.length) :
-    decode_varint_loop from1 at1 0#u64 0#usize false max_i ⦃
+    decode_varint_loop from1 0#u64 0#usize false at1 max_i ⦃
       (p : Std.U64 × Std.Usize × Bool) =>
       p.2.1.val ≤ max_i.val ∧
       p.1.val = varintVal from1.val at1.val p.2.1.val % 2 ^ 64 ∧
@@ -291,7 +296,7 @@ theorem decode_varint_loop_spec
   · dsimp only
     simp [varintVal]
 
-/-- **Spec theorem for `spqr::v1::chunked::states::serialize::decode_varint`**:
+/-- **Spec theorem for `spqr::decode_varint`**:
 
 The cursor never moves backwards and, on success, `decode_varint` consumed a well-formed
 LEB128 block of `n` bytes decoding to the returned value — `varintBlockAt`, which also bounds
@@ -300,7 +305,7 @@ the final cursor is at most `from.len()`. On failure the error is `MsgDecode` an
 is returned unchanged. -/
 @[step]
 theorem decode_varint_spec
-    (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize) :
+    (from1 : Slice Std.U8) (at1 : Std.Usize) :
     decode_varint from1 at1 ⦃ (p : (core.result.Result Std.U64 Error) × Std.Usize) =>
       at1.val ≤ p.2.val ∧
       (match p.1 with
@@ -309,14 +314,13 @@ theorem decode_varint_spec
           ∃ n, p.2.val = at1.val + n ∧ varintBlockAt from1.val at1.val n v.val
        | .Err e => e = Error.MsgDecode ∧ p.2 = at1) ⦄ := by
   unfold decode_varint
-  by_cases hge : at1 ≥ alloc.vec.Vec.len from1
-  · simp only [hge, ↓reduceIte]
+  by_cases hge : at1 ≥ Slice.len from1
+  · simp only [hge, ↓reduceIte, WP.spec_ok]
     exact ⟨by scalar_tac, by simp⟩
   · simp only [hge, ↓reduceIte, core.cmp.min, MAX_VARINT_BYTES_LEN]
     step*
-    have hd : done1 = true := by assumption
-    obtain ⟨h1, h2, h3⟩ := out_post3 hd
+    obtain ⟨h1, h2, h3⟩ := ‹done1 = true → _› ‹_›
     exact ⟨by scalar_tac, by scalar_tac, i3.val, ‹_›, h1, by scalar_tac, by scalar_tac,
-      out_post2, h2, h3⟩
+      ‹_›, h2, h3⟩
 
-end spqr.v1.chunked.states.serialize
+end spqr

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::necessary_points`
 
@@ -12,6 +14,8 @@ Distributes `pts_needed` across 16 polynomials via Euclidean division: each gets
 (division by 16 is infallible; the `+1` cannot overflow `usize`).
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

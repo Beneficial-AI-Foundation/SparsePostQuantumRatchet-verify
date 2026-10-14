@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::serialize::{impl core::clone::Clone for spqr::serialize::Error}::clone`
@@ -13,6 +15,8 @@ value. Since the enum carries no data, the clone is exactly the input.
 
 **Source**: src/serialize.rs (line 6, `#[derive(..., Clone)]`)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

@@ -3,8 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.GF16.SubAssign
+public import Spqr.Math.Gf16.Field
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 /-!
 # Spec theorem for `spqr::encoding::gf::{impl ops::Sub for GF16}::sub`
 
@@ -28,6 +33,8 @@ since every element is its own additive inverse (`a + a = 0`).
 
 **Source**: spqr/src/encoding/gf.rs (lines 104:4-108:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 

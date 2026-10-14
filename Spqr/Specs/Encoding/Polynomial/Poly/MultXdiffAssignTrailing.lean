@@ -3,10 +3,24 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
 import Spqr.Specs.Encoding.Gf.GF16.Mul
 import Spqr.Specs.Encoding.Gf.GF16.SubAssign
 import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.GF16.MulAssign
 /-! # Spec theorem for `mult_xdiff_assign_trailing`: loop body 0
 
 Let `v = [c₀, c₁, …, cₙ₋₁]` be a polynomial over `GF(2¹⁶)` stored in ascending degree order, and let
@@ -25,6 +39,8 @@ the `x · p(x)` term shifts coefficients by one degree, while `−d · p(x)` con
 position `i − 1`. The loop performs this update in place over the trailing range.
 
 **Source**: `spqr/src/encoding/polynomial.rs`-/
+
+@[expose] public section
 
 
 open Aeneas Aeneas.Std  spqr.encoding.gf
@@ -53,10 +69,8 @@ theorem body_spec
               (v.val[iter.start.val]!).toGF216 * difference.toGF216) ∧
           (∀ j ≠ iter.start.val - 1, v1.val[j]! = v.val[j]!) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1, h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]

@@ -3,8 +3,20 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
+module
+
+public import Spqr.Math.List
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 /-! # Spec theorem for `encoding.polynomial.PolyConst.mult_loop.body`
 
 `PolyConst::mult` (`src/encoding/polynomial.rs`, lines 398:4-410:5) scales each coefficient
@@ -18,6 +30,8 @@ This file specifies **loop body 0** — one step of the loop (lines 403:8-408:9)
 GF(2¹⁶) multiplication is carry-less polynomial multiplication mod `x¹⁶+x¹²+x³+x+1` (0x1100b).
 
 **Source**: spqr/src/encoding/polynomial.rs-/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf Polynomial
 
@@ -48,7 +62,7 @@ theorem body_spec
   unfold body
   by_cases h_lt : i.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.Vector.length_val, List.get_eq_getElem, getElem!_pos, forall_true_left, ne_eq, true_and]
+      List.get_eq_getElem, ne_eq, true_and]
     step*
     grind
   · step*
@@ -122,7 +136,6 @@ private lemma mult_result_eq
   apply listToGF216Poly_eq_of_coeffs
   · grind [← getElem!_toGF216_eq_coeff]
   · intro j hj
-    simp only [List.Vector.length_val] at hj
     rw [coeff_C_mul, listToGF216Poly_coeff_eq_zero _ j (by grind), mul_zero]
 
 /-- **Spec theorem for `encoding.polynomial.PolyConst.mult`**:

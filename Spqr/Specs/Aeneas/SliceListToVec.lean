@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for `Slice.listToVec`
@@ -11,6 +13,8 @@ import SrcTranslated.Funs
 `Slice.listToVec` packages a `List T` as a `Vec T`, succeeding exactly when the list
 length fits within `Usize.max`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 

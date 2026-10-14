@@ -3,9 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Coeff.ListOps
 import Spqr.Math.Poly.CharTwo.ToGF216
 import Spqr.Specs.Encoding.Gf.ParallelMult
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Poly.Coeff.Basic
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::mult_assign`
 
@@ -14,6 +21,8 @@ scalar multiplication by `C(m.toGF216)` in `GF216[X]`. Delegates directly to `pa
 the postcondition follows from `parallel_mult_spec`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf Polynomial
 
@@ -31,16 +40,20 @@ theorem mult_assign_spec
       result.degree = self.degree ∧
       result.toGF216Poly = C (m.toGF216) * self.toGF216Poly ⦄ := by
   unfold mult_assign
-  simp only [alloc.vec.Vec.deref_mut, lift, bind_tc_ok, degree]
+  simp only [alloc.vec.Vec.deref_mut, lift, degree]
   step*
-  refine ⟨by simp_all [Slice.length], ?_⟩
-  simp only [Poly.toGF216Poly]
+  have hlen : (↑s1 : List GF16).length = (↑self.coefficients.slice : List GF16).length := by
+    simpa [Slice.length] using ‹s1.length = self.coefficients.slice.length›
+  have hval : (↑({ slice := s1 } : alloc.vec.Vec GF16) : List GF16) = ↑s1 := rfl
+  have hcoef : (↑self.coefficients : List GF16) = ↑self.coefficients.slice := rfl
+  refine ⟨by simp_all [alloc.vec.Vec.length], ?_⟩
+  simp only [Poly.toGF216Poly, hval, hcoef]
   apply listToGF216Poly_eq_of_coeffs
   · intro j hj
     rw [coeff_C_mul, ← getElem!_toGF216_eq_coeff]
     grind
   · intro j hj
-    rw [coeff_C_mul, listToGF216Poly_coeff_eq_zero _ _ (by simp_all [Slice.length])]
+    rw [coeff_C_mul, listToGF216Poly_coeff_eq_zero _ _ (by omega)]
     ring
 
 end spqr.encoding.polynomial.Poly

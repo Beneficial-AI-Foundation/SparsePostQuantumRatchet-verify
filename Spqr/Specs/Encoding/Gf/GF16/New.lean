@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
 
 /-! # Spec theorem for `spqr::encoding::gf::GF16::new`
 
@@ -21,6 +23,8 @@ natToBinaryPoly` (with `BinaryPoly.toGF216 : BinaryPoly →+* GF216`).
 
 **Source**: spqr/src/encoding/gf.rs (lines 544:4-546:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

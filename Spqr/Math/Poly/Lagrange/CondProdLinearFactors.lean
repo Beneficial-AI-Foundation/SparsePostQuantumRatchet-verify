@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Conditional product of linear factors
@@ -27,6 +33,8 @@ evaluation point whose x-coordinate differs from the interpolation point.
 * `condProdLinearFactors_skip` — one-step skip unfolding.
 * `condProdLinearFactors_accum` — one-step accumulate unfolding.
 -/
+
+@[expose] public section
 
 open Polynomial spqr.encoding.gf
 

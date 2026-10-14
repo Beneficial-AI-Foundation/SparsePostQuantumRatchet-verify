@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
 
 /-!
 # Coefficient characterization of `listToGF216Poly`
@@ -18,6 +20,8 @@ the in-range and out-of-range coefficients, the singleton and cons decomposition
 * `listToGF216Poly_singleton` — `listToGF216Poly [a] = C a.toGF216`.
 * `listToGF216Poly_cons` — Horner-like decomposition for a cons cell.
 -/
+
+@[expose] public section
 
 open Polynomial
 

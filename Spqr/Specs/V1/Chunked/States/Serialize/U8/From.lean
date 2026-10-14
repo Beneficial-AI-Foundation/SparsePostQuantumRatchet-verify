@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{impl core::convert::From<`
@@ -16,6 +18,8 @@ it as a `u8`: `None ↦ 0`, `Hdr ↦ 1`, `Ek ↦ 2`, `EkCt1Ack ↦ 3`, `Ct1Ack �
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 95:9-95:22)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

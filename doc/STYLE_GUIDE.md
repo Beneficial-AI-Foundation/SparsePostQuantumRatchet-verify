@@ -53,9 +53,11 @@ into helper lemmas to bring the cost down.
 - Limit all lines to 100 characters.
 - In multi-line comments, wrap only when necessary, each line should use as much of the 100-character limit as possible before breaking.
 - Imports should be listed immediately after the file header without empty lines.
-- When adding definitions and theorems (except for spec theorems), follow the [Mathlib naming guidelines][mathlib-naming].
+- When adding definitions and theorems (except for function spec theorems), follow the [Mathlib naming guidelines][mathlib-naming].
 
 ## Spec Theorem File Guidelines
+
+`Spqr/Specs/` holds two kinds of specs. Function specs state the pre- and postconditions of a single Rust function and follow this section and [Spec Theorem Style](#spec-theorem-style). Braid specs, in `Spqr/Specs/Braid/`, state properties from the ML-KEM Braid specification that are not about a single function and follow [Braid Spec File Guidelines](#braid-spec-file-guidelines) instead.
 
 - Each spec theorem lives in its own file together with any additional lemmas which are required for the proof of it, unless they can also be used elsewhere, in which case they should be placed in a central location.
 - The file contains a module docstring which explains concisely the function and includes the Rust source file path where the associated function is originally defined. The module docstring should appear immediately after the imports.
@@ -74,7 +76,7 @@ into helper lemmas to bring the cost down.
 
 ### Spec Theorem Style
 
-All spec theorems should be stated using `⦃ ... ⦄` Aeneas WP syntax. The canonical layout is:
+All function spec theorems should be stated using `⦃ ... ⦄` Aeneas WP syntax. The canonical layout is:
 
 ```lean
 /-- **Spec theorem for `full::rust::function::name::including::module`**
@@ -103,6 +105,20 @@ theorem fun_name_spec (a : argType) (b : argType) (h1 : pre_condition1)
   - Postconditions `post_condition_i ∧`: 6 spaces
   - Proof body: 2 spaces
 
+## Braid Spec File Guidelines
+
+Braid specs state properties from the [ML-KEM Braid specification][mlkem-braid] (Rev. 1) that range over more than one function call, such as every run of one party's state machine or both parties together.
+
+- Place the file in a folder named after the section of the ML-KEM Braid spec the property comes from, not after a Rust source file: e.g. `Spqr/Specs/Braid/Scka/` for §1.1 (the SCKA interface) and `Spqr/Specs/Braid/StateMachine/` for §2.5.
+- Name the file after the property in UpperCamelCase, e.g. `EpochUniqueness.lean`. Lemmas needed only by that property go in a folder of the same name next to it.
+- The module docstring of the property file states the property in words, cites the section of the Braid spec (and of the SCKA paper, where relevant) it comes from, and gives the Rust source lines it covers.
+- The module docstring of a lemma file says which property it supports and gives the Rust source it covers: line ranges where its lemmas are about one contiguous region, otherwise the source file paths.
+- Theorem names say what the result is and follow the [Mathlib naming guidelines][mathlib-naming], e.g. `epochs_nodup`, rather than `<function>_spec`. They are not tagged `@[step]`.
+- Tag the theorem that states the property, not its support lemmas, with `@[correctness_spec, braid_spec "§x.y"]` (from `Spqr.Auxiliary.SpecTags`), giving the Braid spec section. Write the tags in the theorem's own `@[…]` header rather than in a separate `attribute` command, and keep `,` and `]` out of the section argument.
+- A property over runs may take successful calls as hypotheses (`f args = ok r`) instead of using `⦃ ... ⦄`.
+- The module docstring of the property file states whether the property covers one party or both, and arbitrary or only initialized states. If the property takes successful calls as hypotheses, the docstring says that it covers only successful calls and does not show that any call succeeds.
+
 
 [mathlib-style]: https://leanprover-community.github.io/contribute/style.html
 [mathlib-naming]: https://leanprover-community.github.io/contribute/naming.html
+[mlkem-braid]: https://signal.org/docs/specifications/mlkembraid/mlkembraid.pdf

@@ -3,8 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Gf16.Field
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::gf::GF16::const_div`
 
@@ -31,6 +37,8 @@ The function proceeds in three layers:
 
 **Source**: spqr/src/encoding/gf.rs (lines 572:4-589:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.gf
 

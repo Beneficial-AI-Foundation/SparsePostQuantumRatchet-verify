@@ -30,6 +30,8 @@ what the spec theorem proves.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 34:0-43:1 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result
 
 namespace spqr.incremental_mlkem768
@@ -60,7 +62,7 @@ Remaining future work (not expressible at this layer): distributional faithfulne
 theorem generate_spec {R : Type} (rngInst : rand.rng.Rng R)
     (cryptoInst : rand_core.CryptoRng R) (rng : R)
     (h_fill : ∀ (r : R) (s : Slice Std.U8),
-      rngInst.rand_coreRngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
+      rngInst.rand_core_1RngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
     generate rngInst cryptoInst rng ⦃ (result : Keys × R) =>
         (∃ seed : Fin 64 → UInt8,
           result.1.dk.val  = Fips203.Bridge.keyPairList seed ∧

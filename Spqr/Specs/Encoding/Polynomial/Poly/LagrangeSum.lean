@@ -3,11 +3,27 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
 import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
 import Spqr.Specs.Encoding.Polynomial.Poly.Clone
 import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Identities.Basic
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.ParallelMult
 
 /-!
 # Spec theorem for `Poly::lagrange_sum`: loop body 0
@@ -16,6 +32,8 @@ Given points `pts` and parallel basis polynomials `polys`, it builds the GF(2¹�
 `out = Σ_i pts[i].y · polys[i]`, one term per loop step.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Polynomial
 
@@ -51,13 +69,15 @@ theorem body_spec
           out1.toGF216Poly = out.toGF216Poly +
             C ((pts[iter.start]!).y.toGF216) * (polys[iter.start]!).toGF216Poly ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end.val
-  · step*
-    all_goals grind
+  · simp only [Slice.getElem!_Usize_eq] at *
+    have : iter.start.val < polys.val.length := by scalar_tac
+    have : iter.start.val < pts.val.length := by scalar_tac
+    obtain ⟨rfl, _, _⟩ := h_some h_lt
+    step*
+    all_goals simp_all
   · grind
 
 /-! # Spec theorem for `Poly::lagrange_sum`: loop 0
@@ -160,7 +180,9 @@ theorem lagrange_sum_spec
   have h_end_le_pts : (Slice.len pts).val ≤ pts.val.length := by simp
   have h_end_le_polys : (Slice.len pts).val ≤ polys.val.length := by grind
   have h_out : out.coefficients.val.length < Usize.max := by grind
-  have h_polys' : ∀ i < (Slice.len pts), (polys[i]!).degree + 2 ≤ Usize.max := by grind
+  have h_polys' : ∀ i < (Slice.len pts), (polys[i]!).degree + 2 ≤ Usize.max := by
+    intro i hi
+    simpa [Slice.getElem!_Usize_eq] using h_polys i.val (by scalar_tac)
   have h_sum_init :
       out.toGF216Poly =
         ∑ j ∈ Finset.range (0#usize), C ((pts[j]!).y.toGF216) * (polys[j]!).toGF216Poly := by

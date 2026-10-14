@@ -3,30 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import Aeneas
+module
 
-/-!
-# Staged for upstream to Aeneas `Std/Slice.lean` -/
--- https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/305
+public import Aeneas
+
+/-! # Staged for upstream to Aeneas `Std/Slice.lean` -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 
-/-- Constructs an `Aeneas.Std.Slice` from a `List`, discharging the `length ≤ Usize.max` obligation
-with grind by default. -/
-def _root_.Aeneas.Std.Slice.make {α : Type} (l : List α) (h : l.length ≤ Usize.max := by grind) :
-    Slice α := ⟨l, h⟩
-
-@[simp, grind =] theorem _root_.Aeneas.Std.Slice.val_make {α : Type} (l : List α) (h) :
-    (Slice.make l h).val = l := rfl
-
--- Not `@[simp]`: `Slice.length` is reducibly `·.val.length`, so `simp` already normalizes
--- `(Slice.make l h).length` via `val_make` (flagged by the `simpNF` linter otherwise).
-@[scalar_tac_simps, grind =] theorem _root_.Aeneas.Std.Slice.length_make {α : Type}
-    (l : List α) (h) : (Slice.make l h).length = l.length := rfl
-
-@[simp, grind =] theorem _root_.Aeneas.Std.Slice.make_val {α : Type} (s : Slice α) (h) :
-    Slice.make s.val h = s := rfl
-
-theorem _root_.Aeneas.Std.Slice.make_inj {α : Type} (l₁ l₂ : List α) (h₁ h₂) :
-    Slice.make l₁ h₁ = Slice.make l₂ h₂ ↔ l₁ = l₂ :=
-  Subtype.ext_iff
+/-- The empty slice, e.g. to index a list of slices (such as the chunks of a `ChunksExact`
+iterator) with `[k]!`. -/
+noncomputable instance Aeneas.Std.Slice.instInhabited {α : Type} : Inhabited (Slice α) :=
+  ⟨Slice.from [] (by simp)⟩

@@ -3,11 +3,27 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+module
+
+public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Gf.GF16.Eq
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
 import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
+-- Unfolds `List.resize`, whose body upstream does not `@[expose]`.
+import all Aeneas.Data.List.List
+public import Spqr.Math.Poly.ExpectedTrailing.Defs
+public import Spqr.Math.Poly.LinearFactors.Basic
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Encoding.Gf.GF16.Mul
+import Spqr.Specs.Encoding.Gf.GF16.SubAssign
 
 /-! # Spec theorem for `lagrange_interpolate_prepare`: loop body 0
 
@@ -20,6 +36,8 @@ Invariant: vector length = `offset + 1`; after `i` steps
 `p[offset−i..]` = `∏_{j<i} (x − pts[j].x)`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std  spqr.encoding.gf Polynomial
 
@@ -67,14 +85,12 @@ theorem body_spec
               j + 1 < p.coefficients.length) →
             p1.coefficients[j]? = p.coefficients[j]?) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    simp only [uncurry_apply_pair, not_lt, tsub_le_iff_right, not_and]
+    simp only [not_lt, tsub_le_iff_right, not_and]
     have h_i_lt_pts : iter.start < pts.length := by grind
     have h_i_lt_offset : iter.start < offset := by grind
     step*
@@ -264,44 +280,48 @@ theorem lagrange_interpolate_prepare_spec
   · simp_all [GF16.Insts.CoreCloneClone.clone]
   · simp_all [degree]
   · simp_all [degree]
-  · have p1_len : p1.coefficients.val.length = (index_mut_back ONE).length := p1_post1
+  · have p_len : p.coefficients.val.length = (index_mut_back ONE).length := by
+      simpa [degree] using ‹p.degree = _›
     simp_all
-  · have p1_len : p1.coefficients.length =
-        (index_mut_back ONE).val.length := p1_post1
+  · have p_len : p.coefficients.length =
+        (index_mut_back ONE).val.length := by
+      simpa [degree] using ‹p.degree = _›
     simp_all only [Slice.length, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
-      alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.set_val_eq, List.length_set, List.resize_length,
+      alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.set_val_eq, List.length_set,
+      List.length_replicate,
       lt_add_iff_pos_right, Order.lt_one_iff, getElem!_pos, List.getElem_set_self,
       alloc.vec.Vec.getElem_Nat_eq, ONE_toGF216, implies_true, tsub_self, zero_le, true_and, not_lt,
       alloc.vec.Vec.getElem?_Nat_eq, tsub_zero, zero_add, ONE_value, alloc.vec.Vec.length,
       Order.lt_add_one_iff]
     have h_bridge : expectedTrailingPoly
-        ((p.coefficients.val.resize (pts.length + 1) ZERO).set pts.length ONE)
+        ((List.replicate (pts.length + 1) ZERO).set pts.length ONE)
         pts pts.length 0 pts.length =
       prodLinearFactors pts 0 pts.length := by
       apply expectedTrailingPoly_eq_prodLinearFactors
-      · have hlen : pts.length < (p.coefficients.val.resize (pts.length + 1) ZERO).length := by
-          grind
-        grind [list_getElem_bang_set_self _ _ _ hlen, ONE_toGF216]
+      · have hlen : pts.length < (List.replicate (pts.length + 1) ZERO).length := by
+          simp
+        rw [list_getElem_bang_set_self _ _ _ hlen, ONE_toGF216]
       · intro j hj
-        have hj_lt : j < (p.coefficients.val.resize (pts.length + 1) ZERO).length := by grind
-        unfold List.resize at hj_lt ⊢
-        by_cases hk : j < p.coefficients.length
-        · grind
-        · simp_all
+        rw [getElem!_pos _ j (by simp only [List.length_set, List.length_replicate]; omega),
+          List.getElem_set_ne (by omega), List.getElem_replicate, ZERO_toGF216]
       · exact le_refl _
       · exact le_refl _
+    have h_tr := ‹∀ m ≤ (↑pts : List Pt).length,
+      ∀ (_ : m < ({ coefficients := v.set pts.len ONE } : Poly).degree), _›
     constructor
     · intro m hm
-      have hm_bound : m < (v.set pts.len ONE).length := by grind
-      have h5 := p1_post5 m (by omega) hm_bound
+      have hm_bound : m < ({ coefficients := v.set pts.len ONE } : Poly).degree := by
+        simp only [degree]; grind
+      have h5 := h_tr m hm hm_bound
       rw [h_bridge] at h5
       exact h5
-    · change listToGF216Poly p1.coefficients = prodLinearFactors pts 0 pts.length
+    · change listToGF216Poly p.coefficients = prodLinearFactors pts 0 pts.length
       apply listToGF216Poly_eq_of_coeffs
       · intro m hm
         have hm_le : m ≤ pts.length := by grind
-        have hm_bound : m < (v.set pts.len ONE).length := by grind
-        have h5 := p1_post5 m hm_le hm_bound
+        have hm_bound : m < ({ coefficients := v.set pts.len ONE } : Poly).degree := by
+          simp only [degree]; grind
+        have h5 := h_tr m hm_le hm_bound
         grind
       · intro m hm
         exact prodLinearFactors_coeff_eq_zero_high _ _ _ _ (by grind)

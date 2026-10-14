@@ -3,13 +3,21 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{Encoder for PolyEncoder}::next_chunk`
 
 Casts `self.idx` to U16, calls `chunk_at`, then wrapping-increments the index mod 2³².
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 

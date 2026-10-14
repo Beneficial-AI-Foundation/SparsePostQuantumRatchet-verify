@@ -3,7 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Gf.GF16.ONE
 
 /-! # Spec theorem for `spqr::encoding::polynomial::COMPLETE_POINTS_POLYS_1`
 
@@ -12,6 +19,8 @@ import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 constant polynomial `1 : GF216[X]`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
@@ -31,22 +40,24 @@ theorem COMPLETE_POINTS_POLYS_1_spec :
       (result.val[0]).degree = 0 ∧
       listToGF216Poly (result.val[0]).coefficients.val = 1 ⦄ := by
   unfold COMPLETE_POINTS_POLYS_1
-  step*
-  have h := result_post2 0 (by omega) (by grind) (by grind)
+  apply WP.spec_mono (lagrange_polys_for_complete_points_spec _ (by scalar_tac) (by scalar_tac))
+  rintro result ⟨ones1, h_pts, h_poly⟩
+  have h := h_poly 0 (by scalar_tac) (by grind) (by grind)
   rw [condProdLinearFactors_skip _ _ 0 (by grind [List.length_take]),
       condProdLinearFactors_ge _ _ 1 (by simp [List.length_take]),
       lagrangeDenomProd_skip _ _ 0 (by grind [List.length_take]) ,
       lagrangeDenomProd_eq_one_of_le _ _ 1 (by simp [List.length_take])] at h
   · simp only [Nat.reducePow, Nat.reduceSub, one_pow, mul_one] at h
-    have h_y := (result_post1 0 (by omega)).2
+    have h_y := (h_pts 0 (by scalar_tac)).2
     constructor
     · grind
     · constructor
       · unfold PolyConst.degree
         rw [h]
         simp
-      · grind [ GF16.ONE_toGF216]
-  · grind
-  · grind
+      · simp only [Array.getElem!_Nat_eq] at h_y
+        rw [h, h_y, GF16.ONE_toGF216, Polynomial.C_1]
+  · simp
+  · simp
 
 end spqr.encoding.polynomial
