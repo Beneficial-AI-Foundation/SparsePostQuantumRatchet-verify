@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.ChainEpochDirection.New
+import Spqr.Specs.Chain.ChainEpochDirection.New
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::Chain}::ced_for_direction`
 

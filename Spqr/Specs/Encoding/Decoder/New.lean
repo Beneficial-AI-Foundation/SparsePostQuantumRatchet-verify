@@ -6,7 +6,8 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 
 /-!
 # Spec theorems for `spqr::encoding::{Decoder for Option<T>}::new`

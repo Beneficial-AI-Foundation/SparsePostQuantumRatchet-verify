@@ -7,8 +7,13 @@ module
 
 public import Spqr.Math.List
 public import Spqr.Math.Gf16.Field
-public import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
-public import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-!
 # Spec theorem for `Poly::serialize`: loop body 0

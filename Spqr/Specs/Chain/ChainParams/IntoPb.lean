@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
+import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-! # Spec theorem for `spqr::chain::{spqr::chain::ChainParams}::into_pb`
 
 Converts `ChainParams` to its protobuf form `ChainParamsPB`, replacing each field with `0` when

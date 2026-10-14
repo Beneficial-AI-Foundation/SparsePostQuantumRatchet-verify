@@ -5,12 +5,25 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
-public import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
-public import Spqr.Specs.Encoding.Gf.GF16.ONE
-public import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
+import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
+import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
+import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 public import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
 public import Spqr.Math.Poly.Lagrange.CountNonSkip
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Lagrange.DenomProd
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.Identities.MultXdiff
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+import Spqr.Specs.Encoding.Gf.GF16.ConstSub
 
 /-! # Spec theorem for `PolyConst::lagrange_interpolate_pt`: loop body 0
 

@@ -5,8 +5,24 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
-public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Lagrange.BasisPoly
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Aeneas.PolyIdentity
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.FmtArgumentsFromStr
+import Spqr.Specs.Encoding.Gf.GF16.Div
+import Spqr.Specs.Encoding.Gf.GF16.Eq
+import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Gf.GF16.Sub
+import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
 
 /-! # Spec theorem for
 `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate_pt`

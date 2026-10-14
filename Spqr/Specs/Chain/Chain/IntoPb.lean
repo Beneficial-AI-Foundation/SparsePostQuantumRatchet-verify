@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
+import Spqr.Specs.Chain.ChainEpochDirection.IntoPb
 public import Spqr.Specs.Chain.Chain.FunctionalModels
 
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::into_pb`

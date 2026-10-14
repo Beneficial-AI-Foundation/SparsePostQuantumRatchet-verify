@@ -6,7 +6,7 @@ Authors: Liao Zhang, Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
+import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.FunctionalModels
 
 /-!

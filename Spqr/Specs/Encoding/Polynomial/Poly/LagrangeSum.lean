@@ -5,11 +5,25 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
-public import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
-public import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
-public import Spqr.Specs.Encoding.Polynomial.Poly.Clone
-public import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
+import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
+import Spqr.Specs.Encoding.Polynomial.Poly.Clone
+import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Identities.Basic
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.ParallelMult
 
 /-!
 # Spec theorem for `Poly::lagrange_sum`: loop body 0

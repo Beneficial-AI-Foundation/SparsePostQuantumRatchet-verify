@@ -6,8 +6,9 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
+import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
 public import Spqr.Specs.Aeneas.VecDerefMut
+public import Spqr.Crypto.Hkdf
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key`
 

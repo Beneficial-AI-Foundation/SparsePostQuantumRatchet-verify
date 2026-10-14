@@ -7,7 +7,7 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
-public import Spqr.Specs.Aeneas.VecIndexRangeFull
+import Spqr.Specs.Aeneas.VecIndexRangeFull
 
 /-!
 # Spec theorem for `spqr::msg_preamble`

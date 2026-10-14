@@ -8,8 +8,8 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 public import Spqr.Specs.Chain.Chain.New
-public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
-public import Spqr.Auxiliary.Aeneas.SpecRefl
+import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+import Spqr.Auxiliary.Aeneas.SpecRefl
 /-!
 # Spec theorem for `spqr::chain_from_version_negotiation`
 

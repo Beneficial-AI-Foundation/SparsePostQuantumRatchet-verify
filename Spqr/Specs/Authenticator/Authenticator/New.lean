@@ -7,6 +7,8 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Authenticator.Authenticator.Update
+import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Kdf.HkdfToVec
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::new`

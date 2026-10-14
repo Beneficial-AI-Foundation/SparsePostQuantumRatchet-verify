@@ -5,9 +5,16 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.Coeff.ListOps
 public import Spqr.Math.Poly.Eval
-public import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::add_assign`
 

@@ -6,7 +6,11 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Gf16.Field
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::gf::GF16::const_div`
 

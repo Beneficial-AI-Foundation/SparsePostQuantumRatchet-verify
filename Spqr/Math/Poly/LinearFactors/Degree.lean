@@ -6,6 +6,10 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.Poly.LinearFactors.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Degree and structural properties of `prodLinearFactors`

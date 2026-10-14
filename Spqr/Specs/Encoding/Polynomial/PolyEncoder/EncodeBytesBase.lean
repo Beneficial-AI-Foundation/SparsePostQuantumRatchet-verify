@@ -5,11 +5,20 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
-public import Spqr.Specs.Aeneas.SliceChunksExact
-public import Spqr.Specs.Encoding.Gf.GF16.New
+import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+import Spqr.Specs.Aeneas.SliceChunksExact
+import Spqr.Specs.Encoding.Gf.GF16.New
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Auxiliary.Aeneas.Slice
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop body 0
 

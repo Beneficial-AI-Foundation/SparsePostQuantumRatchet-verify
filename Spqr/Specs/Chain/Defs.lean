@@ -7,6 +7,11 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
+import Spqr.Specs.Aeneas.CopyFromSlice
+import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.TryFromSliceToArray
+import Spqr.Specs.Kdf.HkdfToSlice
 /-!
 # Definitions for `ChainEpochDirection` key-loop helpers
 

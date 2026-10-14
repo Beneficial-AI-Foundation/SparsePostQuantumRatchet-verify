@@ -6,7 +6,11 @@ Authors: Hoang Le Truong, Lacramioara Astefanoaei
 module
 
 public import Spqr.Specs.Aeneas.SliceIter
-public import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
+import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::encoding::polynomial::const_polys_to_polys`

@@ -7,6 +7,7 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-! # Spec theorem for `spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::trim_size`
 
 Computes the GC threshold as `max_ooo * 11 / 10 + 1`, where `max_ooo` comes from

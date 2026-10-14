@@ -8,10 +8,13 @@ module
 public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
 public import Spqr.Math.Gf16.Field
-public import Spqr.Specs.Encoding.Gf.GF16.Mul
-public import Spqr.Specs.Encoding.Gf.Mul2U16
+import Spqr.Specs.Encoding.Gf.GF16.Mul
+import Spqr.Specs.Encoding.Gf.Mul2U16
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::gf::{impl ops::Div for GF16}::div_impl`
 

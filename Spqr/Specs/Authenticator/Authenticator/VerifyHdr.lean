@@ -6,9 +6,13 @@ Authors: Oliver Butterley
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Authenticator.MacHdr
-public import Spqr.Specs.Util.Compare
-public import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Specs.Authenticator.Authenticator.MacHdr
+import Spqr.Specs.Util.Compare
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.SpecRefl
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Util.IsNonZero
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`

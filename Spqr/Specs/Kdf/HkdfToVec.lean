@@ -7,7 +7,8 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Auxiliary.Aeneas.Vec
-public import Spqr.Specs.Kdf.HkdfToSlice
+import Spqr.Specs.Kdf.HkdfToSlice
+public import Spqr.Crypto.Hkdf
 
 /-!
 # Spec theorem for `spqr::kdf::hkdf_to_vec`

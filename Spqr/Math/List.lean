@@ -12,6 +12,13 @@ public import Spqr.Math.Poly.Lagrange.InterpolantSum
 public import Spqr.Math.Poly.Horner.Eval
 public import Spqr.Math.Poly.ExpectedTrailing.Basic
 public import Spqr.Math.Poly.Identities.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
 
 /-!
 # General-purpose utility results

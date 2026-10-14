@@ -5,9 +5,14 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.ListOps
-public import Spqr.Math.Poly.CharTwo.ToGF216
-public import Spqr.Specs.Encoding.Gf.ParallelMult
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Specs.Encoding.Gf.ParallelMult
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Poly.Coeff.Basic
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::mult_assign`
 

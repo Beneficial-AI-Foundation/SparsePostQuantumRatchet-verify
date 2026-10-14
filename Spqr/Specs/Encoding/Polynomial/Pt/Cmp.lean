@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
+import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 /-!
 # Spec theorem for `spqr::encoding::polynomial::{impl core::cmp::Ord for Pt}::cmp`
 

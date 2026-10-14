@@ -7,7 +7,8 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Lib.ChainFromVersionNegotiation
-public import Spqr.Specs.Chain.Chain.FromPb
+import Spqr.Specs.Chain.Chain.FromPb
+public import Spqr.Specs.Chain.Chain.FunctionalModels
 /-!
 # Spec theorem for `spqr::chain_from`
 

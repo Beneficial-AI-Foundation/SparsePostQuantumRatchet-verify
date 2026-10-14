@@ -5,7 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `PolyDecoder::new_with_poly_count` closure `call_once`
 

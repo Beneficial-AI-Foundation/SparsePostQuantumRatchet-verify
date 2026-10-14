@@ -6,8 +6,8 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Util.IsNonZero
-public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Specs.Util.IsNonZero
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 
 /-!
 # Spec theorem for `spqr::util::compare`

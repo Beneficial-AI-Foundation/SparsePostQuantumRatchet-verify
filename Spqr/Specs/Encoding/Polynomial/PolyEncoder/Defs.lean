@@ -9,6 +9,10 @@ public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
 public import Spqr.Math.Gf2Poly.Basic
 public import Spqr.Math.Poly.Identities.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-! # Postcondition predicates for `PolyEncoder`
 

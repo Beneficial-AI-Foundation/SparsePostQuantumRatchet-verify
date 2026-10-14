@@ -5,8 +5,16 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.CharTwo.ToGF216
-public import Spqr.Math.Poly.Eval
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Eval
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
 
 /-!
 # Dot-product to evaluation bridge

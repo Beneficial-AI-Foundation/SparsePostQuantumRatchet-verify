@@ -6,10 +6,12 @@ Authors: Hoang Le Truong
 module
 
 public import Mathlib.Algebra.Polynomial.Div
-public import Mathlib.Data.Nat.Bitwise
-public import Mathlib.Tactic.ComputeDegree
-public import Mathlib.Tactic.IntervalCases
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Tactic.ComputeDegree
+import Mathlib.Tactic.IntervalCases
 public import Spqr.Math.Gf2Poly.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.RingTheory.Polynomial.Basic
 
 
 /-!

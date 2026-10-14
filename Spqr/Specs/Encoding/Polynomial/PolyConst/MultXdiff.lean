@@ -7,9 +7,19 @@ module
 
 public import Spqr.Specs.Encoding.Gf.GF16.ZERO
 public import Spqr.Math.List
-public import Spqr.Math.Poly.Identities.MultXdiff
-public import Spqr.Specs.Encoding.Gf.GF16.ConstSub
-public import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+import Spqr.Math.Poly.Identities.MultXdiff
+import Spqr.Specs.Encoding.Gf.GF16.ConstSub
+import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop body 0
 

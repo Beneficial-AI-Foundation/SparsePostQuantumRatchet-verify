@@ -7,6 +7,10 @@ module
 
 public import Spqr.Math.Poly.Coeff.Basic
 public import Spqr.Math.Poly.CharTwo.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Miscellaneous polynomial identities and `Inhabited` instances

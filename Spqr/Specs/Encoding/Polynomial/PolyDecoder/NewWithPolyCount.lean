@@ -6,7 +6,8 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
-public import Spqr.Specs.Encoding.EncodingError.From
+import Spqr.Specs.Encoding.EncodingError.From
+public import SrcTranslated.Funs
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::new_with_poly_count`
 
 Builds a fresh `PolyDecoder` from `len_bytes` and an ignored `_polys` parameter.

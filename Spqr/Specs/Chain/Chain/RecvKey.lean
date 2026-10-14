@@ -7,7 +7,7 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Chain.Chain.EpochIdx
-public import Spqr.Specs.Chain.ChainEpochDirection.Key
+import Spqr.Specs.Chain.ChainEpochDirection.Key
 public import Spqr.Specs.Aeneas.VecDerefMut
 public import Spqr.Specs.Chain.Chain.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::recv_key`

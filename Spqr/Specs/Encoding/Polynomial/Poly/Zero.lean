@@ -6,7 +6,9 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.Basic.Zero
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Tactic.ComputeDegree
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::zero`
 
 A `Poly` holds coefficients `[a₀, …, aₙ]` of a GF(2¹⁶) polynomial `a₀ + a₁·x + … + aₙ·xⁿ`.

@@ -7,10 +7,11 @@ module
 
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.Algebra.Lie.OfAssociative
-public import Mathlib.Algebra.Order.Ring.Star
-public import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
 public import Mathlib.Data.Nat.BitIndices
-public import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.RingTheory.Polynomial.Basic
+public import Mathlib.Algebra.Polynomial.Basic
 
 
 /-!

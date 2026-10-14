@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
+import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-!
 # Spec theorem for `spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::max_ooo_keys_or_default`
 

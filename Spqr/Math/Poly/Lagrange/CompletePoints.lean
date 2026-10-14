@@ -7,6 +7,10 @@ module
 
 public import Spqr.Math.Poly.Lagrange.DenomProd
 public import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Complete evaluation points and scaled Lagrange basis

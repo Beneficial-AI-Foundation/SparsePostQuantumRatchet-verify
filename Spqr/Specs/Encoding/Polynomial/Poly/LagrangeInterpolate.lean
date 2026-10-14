@@ -5,9 +5,23 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.Poly.Clone
-public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
-public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+import Spqr.Specs.Encoding.Polynomial.Poly.Clone
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
+public import Spqr.Math.Poly.Eval
+public import Spqr.Math.Poly.Lagrange.InterpolantSum
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
+import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Math.Poly.Identities.Basic
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Coeff.Basic
 
 /-! # Spec theorem for `lagrange_interpolate`: loop body 1
 

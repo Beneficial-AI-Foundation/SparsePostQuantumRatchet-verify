@@ -6,7 +6,7 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Util.Inz
+import Spqr.Specs.Util.Inz
 
 /-!
 # Spec theorem for `spqr::util::is_non_zero`

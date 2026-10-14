@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
+import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::new`
 
 Constructs an empty `KeyHistory` with `data.length = 0`. Pre-allocates capacity for 72 bytes

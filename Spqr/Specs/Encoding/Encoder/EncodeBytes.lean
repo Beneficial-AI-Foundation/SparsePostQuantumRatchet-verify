@@ -6,7 +6,9 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorems for `spqr::encoding::{Encoder for Option<T>}::encode_bytes`
 

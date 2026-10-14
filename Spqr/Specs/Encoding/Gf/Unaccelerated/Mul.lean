@@ -7,9 +7,9 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
-public import Spqr.Math.Poly.ModByMonic
-public import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
-public import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
+import Spqr.Math.Poly.ModByMonic
+import Spqr.Specs.Encoding.Gf.Reduce.PolyReduce
+import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 
 /-!
 # Spec theorem for `spqr::encoding::gf::unaccelerated::mul`

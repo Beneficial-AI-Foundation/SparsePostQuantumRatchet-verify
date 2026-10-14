@@ -6,7 +6,7 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Aeneas.VecClone
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-!

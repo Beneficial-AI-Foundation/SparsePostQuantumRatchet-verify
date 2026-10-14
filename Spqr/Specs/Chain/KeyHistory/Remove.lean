@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
+import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::remove`
 
 `KeyHistory::remove` deletes a 36-byte record at `my_array_index` from `self.data` using

@@ -5,10 +5,22 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
-public import Spqr.Specs.Encoding.Gf.GF16.Mul
-public import Spqr.Specs.Encoding.Gf.GF16.SubAssign
-public import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
+import Spqr.Specs.Encoding.Gf.GF16.Mul
+import Spqr.Specs.Encoding.Gf.GF16.SubAssign
+import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.GF16.MulAssign
 /-! # Spec theorem for `mult_xdiff_assign_trailing`: loop body 0
 
 Let `v = [c₀, c₁, …, cₙ₋₁]` be a polynomial over `GF(2¹⁶)` stored in ascending degree order, and let

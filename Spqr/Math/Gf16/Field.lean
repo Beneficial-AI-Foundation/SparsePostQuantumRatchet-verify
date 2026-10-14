@@ -5,9 +5,10 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Gf16.Irreducible
 public import SrcTranslated.Types
 public import Mathlib.FieldTheory.Finite.GaloisField
+public import Spqr.Math.Gf16.Basic
 
 /-!
 # The construction of GF(2¹⁶)

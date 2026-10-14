@@ -7,15 +7,15 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Crypto.Hkdf
-public import Spqr.Specs.Kdf.HkdfToSlice
-public import Spqr.Specs.Aeneas.CopyFromSlice
+import Spqr.Specs.Kdf.HkdfToSlice
+import Spqr.Specs.Aeneas.CopyFromSlice
 public import Spqr.Specs.Aeneas.ArrayIndexRangeTo
 public import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
-public import Spqr.Specs.Aeneas.TryFromSliceToArray
-public import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Aeneas.TryFromSliceToArray
+import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.Aeneas.SliceConcatListAux
 public import Spqr.Specs.Aeneas.SliceListToVec
-public import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.SliceConcat
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key_internal`
 

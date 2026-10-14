@@ -6,8 +6,8 @@ Authors: Liao Zhang
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Aeneas.RangeIteratorNext
-public import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
+import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::encode_varint`
 

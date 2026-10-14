@@ -6,7 +6,9 @@ Authors: Hoang Le Truong, Liao Zhang
 module
 
 public import Spqr.Math.Poly.Identities.Basic
-public import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Aeneas.VecClone
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Clone for Poly}::clone`
 

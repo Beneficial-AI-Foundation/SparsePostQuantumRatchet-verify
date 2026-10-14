@@ -5,10 +5,14 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Aeneas.TryFromSliceToArray
+import Spqr.Specs.Aeneas.TryFromSliceToArray
 public import Spqr.Specs.Aeneas.VecIndexRangeFull
 public import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
+import Spqr.Specs.Aeneas.RangeIteratorNext
 
 /-! # Spec theorem for `PolyEncoder::chunk_at`: loop body 0
 

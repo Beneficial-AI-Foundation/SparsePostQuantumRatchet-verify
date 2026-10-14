@@ -9,7 +9,16 @@ public import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Gf.GF16.New
 public import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Math.Poly.Lagrange.CompletePoints
-public import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
+import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
+import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
+import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 /-! # Spec theorem for `lagrange_polys_for_complete_points`: loop body 0
 
 Specifies one iteration of the initialisation loop in `lagrange_polys_for_complete_points`.

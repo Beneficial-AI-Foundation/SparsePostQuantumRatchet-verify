@@ -6,12 +6,21 @@ Authors: Hoang Le Truong, Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Auxiliary.Aeneas.Vec
-public import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
-public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
-public import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
+import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-public import Spqr.Specs.Aeneas.GF16New
+import Spqr.Specs.Aeneas.GF16New
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop body 0
 

@@ -5,11 +5,20 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Eval.DotProduct
-public import Spqr.Math.Poly.Eval.PowerVector
-public import Spqr.Specs.Encoding.Gf.GF16.Mul
-public import Spqr.Specs.Encoding.Gf.GF16.AddAssign
-public import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Math.Poly.Eval.DotProduct
+import Spqr.Math.Poly.Eval.PowerVector
+import Spqr.Specs.Encoding.Gf.GF16.Mul
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Eval
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Specs.Encoding.Gf.GF16.MulAssign
 
 /-! # Spec theorem for `Poly::compute_at`: loop body 0
 

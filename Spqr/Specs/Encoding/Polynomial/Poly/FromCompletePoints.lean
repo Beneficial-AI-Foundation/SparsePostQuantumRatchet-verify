@@ -5,14 +5,17 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
-public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeSum
-public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_1
-public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_3
-public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
-public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
-public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
-public import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
+import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
+import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeSum
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_1
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_3
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
+import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Specification for `Poly::from_complete_points`
 

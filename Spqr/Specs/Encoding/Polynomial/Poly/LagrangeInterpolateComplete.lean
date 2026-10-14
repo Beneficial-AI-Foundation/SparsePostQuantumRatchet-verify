@@ -6,17 +6,28 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.List
-public import Spqr.Math.Poly.Aeneas.PolyIdentity
-public import Spqr.Specs.Encoding.Gf.GF16.Sub
-public import Spqr.Specs.Encoding.Gf.GF16.Div
-public import Spqr.Specs.Encoding.Gf.GF16.Eq
+import Spqr.Math.Poly.Aeneas.PolyIdentity
+import Spqr.Specs.Encoding.Gf.GF16.Sub
+import Spqr.Specs.Encoding.Gf.GF16.Div
+import Spqr.Specs.Encoding.Gf.GF16.Eq
 public import Spqr.Specs.Encoding.Gf.GF16.ZERO
-public import Spqr.Specs.Encoding.Gf.GF16.ONE
-public import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Specs.Aeneas.SliceIteratorNext
-public import Spqr.Specs.Aeneas.FmtArgumentsFromStr
+import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 public import Mathlib.RingTheory.DedekindDomain.Basic
+public import Spqr.Math.Poly.Eval
+public import Spqr.Math.Poly.Horner.Defs
+public import Spqr.Math.Poly.Lagrange.BasisPoly
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Gf.GF16.Mul
+import Spqr.Specs.Encoding.Gf.GF16.MulAssign
+import Spqr.Math.Poly.Horner.Eval
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 /-!
 # Spec Theorem for `lagrange_interpolate_complete`: loop body 0
 

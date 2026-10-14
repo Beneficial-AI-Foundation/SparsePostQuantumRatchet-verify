@@ -7,6 +7,11 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes`
 
