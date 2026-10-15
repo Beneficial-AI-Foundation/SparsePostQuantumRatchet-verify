@@ -3,10 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Auxiliary.Aeneas.Result
-import Spqr.Auxiliary.Aeneas.Scalar
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Auxiliary.Aeneas.Result
+public import Spqr.Auxiliary.Aeneas.Scalar
 
 /-! # Epochs of the states returned by the unchunked callees of the chunked states
 
@@ -19,6 +21,8 @@ input, except `EkSentCt1Received::recv_ct2`, which moves to the next epoch. Wher
 also emits a key, the key carries the input epoch. All are in the "if it returns `Ok`" form.
 
 **Source**: spqr/src/v1/unchunked/send_ek.rs, spqr/src/v1/unchunked/send_ct.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 open core.result.Result.Insts.CoreOpsTry_traitFromResidualResult (from_residual_ne_ok)
@@ -75,8 +79,8 @@ theorem Ct1SentEkReceived_send_ct2_epoch (self : v1.unchunked.send_ct.Ct1SentEkR
   rfl
 
 /-- If `send_ct1` returns, the new state and the emitted key both carry the input epoch. -/
-theorem HeaderReceived_send_ct1_epoch {R : Type} (i₁ : rand.rng.Rng R)
-    (i₂ : rand_core.CryptoRng R) (self : v1.unchunked.send_ct.HeaderReceived) (rng : R)
+theorem HeaderReceived_send_ct1_epoch {R : Type} (i₁ : rand_1.rng.Rng R)
+    (i₂ : rand_core_1.CryptoRng R) (self : v1.unchunked.send_ct.HeaderReceived) (rng : R)
     {r : (v1.unchunked.send_ct.Ct1Sent × alloc.vec.Vec Std.U8 × EpochSecret) × R}
     (h : v1.unchunked.send_ct.HeaderReceived.send_ct1 i₁ i₂ self rng = ok r) :
     r.1.1.epoch = self.epoch ∧ r.1.2.2.epoch = self.epoch := by

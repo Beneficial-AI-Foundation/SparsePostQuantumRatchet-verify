@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Auxiliary.Aeneas.Result
-import Spqr.Auxiliary.Aeneas.Scalar
-import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Auxiliary.Aeneas.Result
+public import Spqr.Auxiliary.Aeneas.Scalar
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 
 /-! # Epochs of the states returned by the chunked `send` / `recv` callees
 
@@ -32,6 +34,8 @@ Fig. 1 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
 
 **Source**: spqr/src/v1/chunked/send_ek.rs, spqr/src/v1/chunked/send_ct.rs -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result
 open core.result.Result.Insts.CoreOpsTry (branch_eq_continue)
 open core.result.Result.Insts.CoreOpsTry_traitFromResidualResult (from_residual_ne_ok)
@@ -40,8 +44,8 @@ namespace spqr.v1.chunked.states.epoch_uniqueness
 
 /-! ## `send` callees -/
 
-theorem KeysUnsampled_send_hdr_chunk_epoch {R : Type} (i₁ : rand.rng.Rng R)
-    (i₂ : rand_core.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) (rng : R)
+theorem KeysUnsampled_send_hdr_chunk_epoch {R : Type} (i₁ : rand_1.rng.Rng R)
+    (i₂ : rand_core_1.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) (rng : R)
     {r : (v1.chunked.send_ek.KeysSampled × encoding.Chunk) × R}
     (h : v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk i₁ i₂ self rng = ok r) :
     r.1.1.uc.epoch = self.uc.epoch := by
@@ -82,8 +86,8 @@ theorem Ct1Received_send_ek_chunk_epoch (self : v1.chunked.send_ek.Ct1Received)
 /-- If `send_ct1_chunk` returns, the new state and the emitted key both carry the input
 epoch. This is transition (7) of the ML-KEM Braid spec, §2.5, marked in
 *HeaderReceived.Send* on p. 18. -/
-theorem HeaderReceived_send_ct1_chunk_epoch {R : Type} (i₁ : rand.rng.Rng R)
-    (i₂ : rand_core.CryptoRng R) (self : v1.chunked.send_ct.HeaderReceived) (rng : R)
+theorem HeaderReceived_send_ct1_chunk_epoch {R : Type} (i₁ : rand_1.rng.Rng R)
+    (i₂ : rand_core_1.CryptoRng R) (self : v1.chunked.send_ct.HeaderReceived) (rng : R)
     {r : (v1.chunked.send_ct.Ct1Sampled × encoding.Chunk × EpochSecret) × R}
     (h : v1.chunked.send_ct.HeaderReceived.send_ct1_chunk i₁ i₂ self rng = ok r) :
     r.1.1.uc.epoch = self.uc.epoch ∧ r.1.2.2.epoch = self.uc.epoch := by
@@ -184,8 +188,8 @@ theorem EkSentCt1Received_recv_ct2_chunk_epoch (self : v1.chunked.send_ek.EkSent
     subst h
     rfl
   | some ct2 =>
-    simp only [bind_eq_ok, Prod.exists, uncurry_apply_pair] at h
-    obtain ⟨_, -, mac, ct21, -, res, hres, cf, hcf, h⟩ := h
+    simp only [bind_eq_ok] at h
+    obtain ⟨_, -, _, -, _, -, _, -, _, -, _, -, res, hres, cf, hcf, h⟩ := h
     cases cf with
     | Continue val =>
       obtain rfl := branch_eq_continue hcf
@@ -211,8 +215,8 @@ theorem NoHeaderReceived_recv_hdr_chunk_epoch (self : v1.chunked.send_ct.NoHeade
     subst h
     rfl
   | some hdr =>
-    simp only [bind_eq_ok, Prod.exists, uncurry_apply_pair] at h
-    obtain ⟨_, -, mac, hdr1, -, _, -, _, -, res, hres, cf, hcf, h⟩ := h
+    simp only [bind_eq_ok] at h
+    obtain ⟨_, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, res, hres, cf, hcf, h⟩ := h
     cases cf with
     | Continue val =>
       obtain rfl := branch_eq_continue hcf

@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Auxiliary.Aeneas.Result
-import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
-import Spqr.Specs.Braid.StateMachine.Run
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Auxiliary.Aeneas.Result
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
+public import Spqr.Specs.Braid.StateMachine.Run
 
 /-! # The epoch of the next key a state can emit
 
@@ -31,6 +33,8 @@ Fig. 1 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
   <https://signal.org/docs/specifications/mlkembraid/mlkembraid.pdf>
 
 **Source**: spqr/src/v1/chunked/states.rs:203-220, spqr/src/v1/chunked/states.rs:361-368 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 open core.result.Result.Insts.CoreOpsTry (branch_eq_continue)
@@ -76,7 +80,7 @@ def keyFloor : States → Nat
 
 The second case is transition (7) of the ML-KEM Braid spec, §2.5, marked in
 *HeaderReceived.Send* on p. 18. -/
-theorem send_step {R : Type} (i₁ : rand.rng.Rng R) (i₂ : rand_core.CryptoRng R)
+theorem send_step {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
     (s : States) (rng rng' : R) (r : v1.chunked.states.Send)
     (h : States.send i₁ i₂ s rng = ok (.Ok r, rng')) :
     match (generalizing := false) r.key with
@@ -233,7 +237,7 @@ theorem recv_step (s : States) (msg : Message) (r : v1.chunked.states.Recv)
 carries the epoch of `st`, and the new state is `Ct1Sampled` at that same epoch. This is
 transition (7) of the ML-KEM Braid spec, §2.5, marked in *HeaderReceived.Send* on
 p. 18. -/
-theorem send_key_epoch {R : Type} (i₁ : rand.rng.Rng R) (i₂ : rand_core.CryptoRng R)
+theorem send_key_epoch {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
     (s : States) (rng rng' : R) (r : v1.chunked.states.Send) (k : EpochSecret)
     (h : States.send i₁ i₂ s rng = ok (.Ok r, rng')) (hk : r.key = some k) :
     ∃ st st', s = .HeaderReceived st ∧ r.state = .Ct1Sampled st' ∧
@@ -258,8 +262,8 @@ theorem recv_key_epoch (s : States) (msg : Message) (r : v1.chunked.states.Recv)
 
 /-- A successful `send` from `HeaderReceived` emits a key. With `send_key_epoch`, a `send`
 emits a key exactly when it starts from `HeaderReceived`. -/
-theorem send_HeaderReceived_key_isSome {R : Type} (i₁ : rand.rng.Rng R)
-    (i₂ : rand_core.CryptoRng R) (st : v1.chunked.send_ct.HeaderReceived) (rng rng' : R)
+theorem send_HeaderReceived_key_isSome {R : Type} (i₁ : rand_1.rng.Rng R)
+    (i₂ : rand_core_1.CryptoRng R) (st : v1.chunked.send_ct.HeaderReceived) (rng rng' : R)
     (r : v1.chunked.states.Send)
     (h : States.send i₁ i₂ (.HeaderReceived st) rng = ok (.Ok r, rng')) : r.key.isSome := by
   simp only [States.send, bind_eq_ok, Prod.exists, uncurry_apply_pair, ok.injEq, Prod.mk.injEq,
@@ -292,7 +296,7 @@ theorem recv_EkSentCt1Received_key_isSome (st : v1.chunked.send_ek.EkSentCt1Rece
       rfl
 
 /-- A `send` that emits no key keeps `keyFloor`. -/
-theorem send_keyFloor {R : Type} (i₁ : rand.rng.Rng R) (i₂ : rand_core.CryptoRng R)
+theorem send_keyFloor {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
     (s : States) (rng rng' : R) (r : v1.chunked.states.Send)
     (h : States.send i₁ i₂ s rng = ok (.Ok r, rng')) (hk : r.key = none) :
     keyFloor r.state = keyFloor s := by

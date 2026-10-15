@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # Runs of one party's chunked `States` machine
 
@@ -15,6 +17,8 @@ order. Both are relations: the RNG or message of a step is a field of its proof.
 
 **Source**: spqr/src/v1/chunked/states.rs:203-220, spqr/src/v1/chunked/states.rs:361-368 -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result
 
 namespace spqr.v1.chunked.states
@@ -22,7 +26,7 @@ namespace spqr.v1.chunked.states
 /-- One successful call of one party: a `send` with some RNG, or a `recv` of some
 message, that returns `Ok` at both the Aeneas and the Rust level. -/
 inductive Step : States → States → Option EpochSecret → Prop
-  | send {s : States} {R : Type} (i₁ : rand.rng.Rng R) (i₂ : rand_core.CryptoRng R)
+  | send {s : States} {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
       (rng rng' : R) (r : v1.chunked.states.Send) :
       States.send i₁ i₂ s rng = ok (.Ok r, rng') → Step s r.state r.key
   | recv {s : States} (msg : Message) (r : v1.chunked.states.Recv) :

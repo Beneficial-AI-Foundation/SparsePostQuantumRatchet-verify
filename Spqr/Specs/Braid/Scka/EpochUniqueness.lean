@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import Spqr.Auxiliary.SpecTags
-import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
+module
+
+public meta import Spqr.Auxiliary.SpecTags
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 
 /-! # Per-participant epoch uniqueness
 
@@ -168,6 +170,8 @@ machine. They do not cover:
   <https://eprint.iacr.org/2025/2267>
 
 **Source**: spqr/src/v1/chunked/states.rs:203-220, spqr/src/v1/chunked/states.rs:361-368 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

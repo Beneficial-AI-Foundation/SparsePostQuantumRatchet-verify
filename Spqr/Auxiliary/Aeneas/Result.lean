@@ -3,12 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import Aeneas
+module
+
+public import Aeneas
 
 /-! # Staged for upstream to Aeneas `Std/Primitives.lean` and `Std/Core/Convert.lean`
 
 Inversion lemmas for proofs in the "if it returns `Ok`" form: a bind that returns `ok`, and
 the two halves of the Rust `?` operator, `Result::branch` and `Result::from_residual`. -/
+
+@[expose] public section
 
 namespace Aeneas.Std
 

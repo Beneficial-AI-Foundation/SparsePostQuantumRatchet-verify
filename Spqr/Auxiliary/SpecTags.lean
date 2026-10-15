@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Lacramioara Astefanoaei
 -/
-import Mathlib.Tactic.Linter.Style
-import Lean
+module
+
+public import Mathlib.Tactic.Linter.Style
+public import Lean
 
 /-! # Tags for specs that are not about a single Rust function
 
@@ -19,6 +21,8 @@ tags instead:
 * `@[braid_spec "§x.y"]`: the section of the ML-KEM Braid spec (Rev. 1) the property comes from.
   The argument must not contain `,` or `]`.
 -/
+
+@[expose] public section
 
 open Lean
 
