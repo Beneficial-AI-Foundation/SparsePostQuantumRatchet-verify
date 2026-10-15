@@ -123,7 +123,8 @@ theorem ct_eq_ct1Bytes_append_ct2Bytes (seed : Fin 64 → UInt8)
         ct2Bytes (stateArray (stateOut (toU8List (pk1Bytes seed)) h m))
           (pk2Array (pk2Bytes seed)) ⟨idx.val - ct1Size, by
             have := idx.isLt
-            simp only [ParamSet.ctSizeEnc, mlkem768CompressionU, mlkem768CompressionV, mlkem768_k] at this
+            simp only [ParamSet.ctSizeEnc, mlkem768CompressionU,
+            mlkem768CompressionV, mlkem768_k] at this
             simp only [ct1Size, ct2Size]; omega⟩ := by
   by_cases hlt : idx.val < ct1Size
   · rw [dif_pos hlt, ct1Bytes_pk1Bytes]
