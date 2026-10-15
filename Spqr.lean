@@ -1,5 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
@@ -7,6 +8,7 @@ public import Spqr.Auxiliary.Aeneas.SpecRefl
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Auxiliary.SpecTags
 public import Spqr.Crypto.Hkdf
 public import Spqr.Crypto.RFC5869
 public import Spqr.Lint.Basic
@@ -74,6 +76,11 @@ public import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+public import Spqr.Specs.Braid.Scka.EpochUniqueness
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
 public import Spqr.Specs.Chain.Chain.Defs
