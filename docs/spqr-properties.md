@@ -21,7 +21,7 @@ Status values:
 | Status | Meaning |
 |--------|---------|
 | Proved | Theorem on `main`, no `sorry`, and no hand-written axiom beyond the six §1 documents: `hkdf_to_slice_spec`, `encode_state_pb_spec`, `decode_state_pb_total`, `libcrux_hmac.hmac_sha256_tag32_spec`, `KeyPairCompressedBytes.from_seed_spec` and `alloc.fmt.format_spec`. Closures can also contain the Aeneas library's `core.fmt.Formatter` axiom and `native_decide` artifacts of extracted definitions, and `bv_decide` artifacts (ruling S-16, extended 2026-10-15). §1 carries each one's location, postcondition and whether it is avoidable; this cell names them only so that a `Proved` row can be checked against its own definition |
-| Proved (branch) | Theorem exists only on a branch, not on `main`: `la/lean-v1-protocol-proofs` (draft PR #46) or a property branch (`la/prop-30`). Those proofs also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. The last two are false as stated, since both reach `generate`, which can fail; they need a premise, not just a proof. Merging requires replacing all three with theorems. |
+| Proved (branch) | Theorem exists only on a branch, not on `main`: `la/lean-v1-protocol-proofs` (draft PR #46) or a property branch (`la/prop-30`). The proofs on `la/lean-v1-protocol-proofs` also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. The last two are false as stated, since both reach `generate`, which can fail; they need a premise, not just a proof. Merging them requires replacing all three with theorems. A property branch adds no axiom; its row says what its closure contains. |
 | Open | Statement fixed, no theorem yet |
 | Axiom | Cannot be a theorem: the code calls an opaque library function |
 
@@ -411,7 +411,8 @@ format is SPQR-specific rather than a pure ML-KEM Braid message.
 The converse of PROP-35 (does a byte string have at most one parse, and does a message
 have at most one encoding?) is **false** for this wire format. `Message::serialize` is not
 injective on messages, and the parse `msg_preamble` followed by `Message::deserialize` is not
-injective on byte strings. Both are witnessed:
+injective on byte strings. The parse output is judged on version, epoch, index and message,
+as in STRUCT-02b. Both are witnessed:
 
 1. **Tag collapse.** `Message { epoch: 1, payload: Ct1Ack(false) }` and
    `Message { epoch: 1, payload: Ct1Ack(true) }` have the same serialization:
@@ -421,11 +422,11 @@ injective on byte strings. Both are witnessed:
 2. **Non-minimal LEB128.** `01 01 00 00` and `01 81 00 00 00` both parse to the preamble
    `(version 1, epoch 1, index 0, remaining [00])` and to
    `Message { epoch: 1, payload: None }`, because `decode_varint` (`lib.rs:524`) accepts a
-   non-minimal block. The collision is on the whole parse result; there is no cursor since
+   non-minimal block. Here even `remaining` agrees; there is no cursor since
    `dd8e6b9`. The ten-byte truncation pair (`… 80 00 …` against `… 80 02 …` in the tenth
    septet) collides the same way.
 3. **Trailing bytes.** Appending bytes after the message changes only the preamble's
-   `remaining`, not the parsed message: `Message::deserialize` ignores data past the chunk
+   `remaining`, not the version, epoch, index or message: `Message::deserialize` ignores data past the chunk
    deliberately, for forward compatibility (`serialize.rs:215-218`).
 
 No parse stage checks the version byte (it is returned in the preamble and read by `recv`'s
@@ -758,7 +759,7 @@ here are grounded in the code.
 | PROP-12a | `KeyHistory.data.len() % 36 = 0` (`KEY_SIZE = 4 + 32`, `chain.rs:130`) is preserved by `add`, `get`, `gc` | `src/chain.rs:128-208` | **Proved** (`add_spec`, `get_loop_spec`, `gc_loop_spec` carry the alignment) |
 | PROP-12b | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `src/chain.rs:184-207` | **Open**; `get_loop_spec` gives the per-slot behaviour |
 | PROP-37 | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `src/v1/chunked/states/serialize.rs:10-90`; `src/v1/chunked/send_ek/serialize.rs:10-112`; `src/v1/chunked/send_ct/serialize.rs:11-151` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for chunked `KeysUnsampled` and `KeysSampled`; model-level `roundtrip_fromPb_intoPb` theorems exist for several states, some under a `WellFormed` field-length hypothesis |
-| PROP-38 | `Chain::from_pb(c.into_pb()) = ok c` for every `c` whose links each hold an empty or 32-byte `next` in both directions (`chain.rs:308-310` rejects any other length), with `c.links` stored contiguously from index 0 | `src/chain.rs:299-316`; `src/chain.rs:424-462` | **Proved** on the functional models (`roundtrip_fromPb_intoPb`, `Spqr/Specs/Chain/Chain/FunctionalModels.lean:206`), linked to the code by `from_pb_spec` and `into_pb_spec`; the composed statement over the extracted functions is not stated |
+| PROP-38 | `Chain::from_pb(c.into_pb()) = ok c` for every `c` whose links each hold an empty or 32-byte `next` in both directions (`chain.rs:308-310` rejects any other length) | `src/chain.rs:299-316`; `src/chain.rs:424-462` | **Open** over the extracted functions. Proved on the functional models (`roundtrip_fromPb_intoPb`, `Spqr/Specs/Chain/Chain/FunctionalModels.lean:206`), which `from_pb_spec` and `into_pb_spec` link to the code; the composition is not stated. The model theorem also assumes `links.head = 0` and `links.length = links.buf.length`: these are hypotheses about the Lean `VecDeque` layout, not part of the Rust statement, since Rust `VecDeque` equality ignores layout. The code-level theorem must remove them or compare up to layout |
 | PROP-51 | Along any run of one party's state machine, feeding the emitted keys in order to `add_epoch` never fails, the `assert!(epoch_secret.epoch == self.current_epoch + 1)` included, provided the chain starts one epoch behind the run (`current_epoch + 1 = keyFloor s`, true for `Chain::new` with either init state) and the link buffer has room; the chain ends one behind the run. Over the state machine and `add_epoch` only: no `send_key`/`recv_key`, no serialization, chain present | `src/lib.rs:295-299`; `src/lib.rs:463-466`; `src/chain.rs:356-375`; `src/chain.rs:333-354` | **Open**; statement drafted (`docs/statements/PROP-51-chain-epoch-sync.md`), review pending; needs PROP-21 and PROP-9 |
 
 Finding: PROP-37's statement above is **false as written** (found 2026-09-15), for
@@ -807,9 +808,9 @@ corollary of this row on whatever domain Phase 7 designs, not a separate propert
 PROP-38 was **false as originally written** after upstream v1.6.0:
 `ChainEpochDirection::from_pb` (`src/chain.rs:307-316`) rejects a `next` that is neither
 empty nor 32 bytes, while `into_pb` copies it verbatim (`src/chain.rs:299-305`), so a
-chain holding such a link does not round-trip. The restated row adds that domain, and
-the representation condition `head = 0` under which `roundtrip_fromPb_intoPb` (#578)
-proves it. `params` is already the protobuf type (`src/chain.rs:120`), so no
+chain holding such a link does not round-trip. The restated row adds that domain.
+`roundtrip_fromPb_intoPb` (#578) proves it on the functional models, under two further
+`VecDeque` layout hypotheses that the row records but does not adopt as domain. `params` is already the protobuf type (`src/chain.rs:120`), so no
 default-collapsing applies.
 
 Note on §3.8 (epoch wraparound). Epochs are `u64`. The code excludes
@@ -890,7 +891,7 @@ inline.
 | PROP-35 | 6 | Proved (components); roundtrip Open |
 | PROP-36 | 6 | Proved (preamble check); underflow half Open |
 | PROP-37 | 10 | Open |
-| PROP-38 | 10 | Proved (functional models, restated domain) |
+| PROP-38 | 10 | Open (restated domain); proved on the functional models |
 | PROP-40 | 7 | Proved |
 | PROP-41 | 5 | Proved (labels); KDF_OK literal Open |
 | PROP-42 | 5 | Proved |
