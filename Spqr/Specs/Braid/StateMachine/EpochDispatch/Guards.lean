@@ -6,21 +6,27 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import SrcTranslated.Funs
+public meta import Spqr.Auxiliary.SpecTags
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-! # The epoch guards of `States::recv`
 
-Every arm of `States::recv` first compares `msg.epoch` with the state's epoch. When they
-differ, the arm returns before looking at the payload:
+Let `e = States.epochOf s` be the epoch of the state `s`. Every arm of `States::recv` first
+compares `msg.epoch` with `e`. When `msg.epoch ≠ e`, the arm decides without reading the payload:
 
-* `recv_of_lt`: an older message leaves the state unchanged and emits no key.
-* `recv_of_gt`: a newer message is `Err(EpochOutOfRange msg.epoch)`, except in `Ct2Sampled`
-  at exactly one epoch ahead.
-* `recv_Ct2Sampled_next_epoch`: that exception moves to `KeysUnsampled` at the message's
-  epoch, keeping the authenticator and ignoring the payload. This is transition (13) of the
-  ML-KEM Braid spec, §2.5, marked in *Ct2Sampled.Receive* on p. 23.
+* `recv_of_lt`: if `msg.epoch < e`, the state is unchanged and no key is emitted.
+* `recv_of_gt`: if `msg.epoch > e`, the result is `Err(EpochOutOfRange msg.epoch)`, except in
+  `Ct2Sampled` with `msg.epoch = e + 1`.
+* `recv_Ct2Sampled_next_epoch`: in that exception the state becomes `KeysUnsampled` at epoch
+  `e + 1` with the same authenticator, and no key is emitted. This is transition (13) of
+  [ML-KEM Braid] §2.5, marked in *Ct2Sampled.Receive* on p. 23.
 
-The spec treats a newer message as a no-op; the code rejects it. These lemmas state the code.
+The theorems state the code. `recv_of_lt` and `recv_Ct2Sampled_next_epoch` agree with §2.5 and
+carry its tag. `recv_of_gt` does not, because of one departure from the spec:
+
+1. D2. In §2.5 every `Receive` function ignores a message with `msg.epoch > e`, apart from
+   transition (13). The code returns `Err(EpochOutOfRange msg.epoch)` instead, so it is
+   stricter than the spec.
 
 ## References
 
@@ -47,6 +53,7 @@ private theorem add_one (x : Std.U64) (h : x.val < Std.U64.max) :
   WP.spec_imp_exists (U64.add_spec (by scalar_tac))
 
 /-- A message from an earlier epoch leaves every state unchanged and emits no key. -/
+@[correctness_spec, braid_spec "§2.5"]
 theorem recv_of_lt (s : States) (msg : Message) (h : msg.epoch.val < s.epochOf.val) :
     States.recv s msg = ok (.Ok { key := none, state := s }) := by
   cases s <;> simp only [States.epochOf] at h <;> simp only [States.recv,
@@ -76,6 +83,7 @@ theorem recv_of_gt (s : States) (msg : Message) (h : s.epochOf.val < msg.epoch.v
 
 /-- In `Ct2Sampled`, a message exactly one epoch ahead moves to `KeysUnsampled` at the
 message's epoch with the same authenticator and emits no key; the payload is not read. -/
+@[correctness_spec, braid_spec "§2.5"]
 theorem recv_Ct2Sampled_next_epoch (st : send_ct.Ct2Sampled) (msg : Message)
     (h : msg.epoch.val = st.uc.epoch.val + 1) :
     States.recv (.Ct2Sampled st) msg =

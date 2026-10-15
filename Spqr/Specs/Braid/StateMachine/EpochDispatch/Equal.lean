@@ -18,19 +18,22 @@ type. This module compares that dispatch with the `Receive` functions of [ML-KEM
 
 * `recv_of_eq_unexpected`: a payload type the state does not act on (`States.Expects`) leaves
   the state unchanged and emits no key.
-* `recv_of_eq_refines`: for every payload, an `Ok` result has the successor state name and key
-  presence that `specRecvEq` gives, and an `Err` happens exactly when `specRecvEq` raises.
+* `recv_of_eq_refines`: for every payload, if `States.recv` returns, an `Ok` result has the
+  successor state name and key presence that `specRecvEq` gives, and an `Err` happens exactly
+  when `specRecvEq` raises.
 
 `specRecvEq` transcribes the spec's `Receive` bodies at the level of state names and key
 presence; the fields of the successor and the key's value are not compared. It includes the
 code's two extra acceptances, `Ct1Ack true` in `EkReceivedCt1Sampled` (D3) and `Ek` chunks in
 `Ct1Acknowledged` (D4). A chunk that completes a decoder takes the transition if the completed
 message passes the state's check (`States.Accepts`) and raises if it fails (`States.Rejects`).
-The check is stated with the code's own call: `recv_ct2` (`VfyCt`), `verify_hdr` (`VfyHdr`) and
-`ek_matches_header`, on the message split with `take` / `drop`.
+Decoding and the check are stated with the code's own calls: `add_chunk` and `decoded_message`
+for the decoder, and `recv_ct2` (`VfyCt`), `verify_hdr` (`VfyHdr`) and `ek_matches_header` for
+the check, on the message split with `take` / `drop`. The theorems relate the dispatch to these
+calls' results; that the calls compute the spec's checks is not proved here.
 
-Both theorems are in the "if it returns `Ok`" form: they say nothing about calls that panic, and
-nothing about whether a completing chunk exists.
+`recv_of_eq_unexpected` is total. `recv_of_eq_refines` is in the "if it returns" form: it says
+nothing about calls that panic, and nothing about whether a completing chunk exists.
 
 Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
@@ -87,12 +90,17 @@ def States.Decodes : States → MessagePayload → alloc.vec.Vec Std.U8 → Prop
   | .Ct1Acknowledged st, .EkCt1Ack c, m => decodes st.receiving_ek c m
   | _, _, _ => False
 
-/-- The check the spec runs on a completed message `m` passes: `VfyCt` after decapsulation in
-`EkSentCt1Received` (the inner result of the code's `recv_ct2`, whose only inner error is
-`verify_ct`'s) on `m` split into ciphertext and MAC, `VfyHdr` on `m` split into header and MAC in
-`NoHeaderReceived`, and the `ek`
-integrity check `SHA3-256(ek_seed || ek_vector) = hek` in `Ct1Sampled` and `Ct1Acknowledged`.
-`HeaderSent` takes transition (3) without a check. -/
+/-- The code's check on a completed message `m` returns without panicking and passes. Write
+`m[..i]` for the first `i` bytes of `m` and `m[i..]` for the rest.
+
+* `EkSentCt1Received`: `recv_ct2` on ciphertext `m[..i]` and MAC `m[i..]`, with
+  `i = CIPHERTEXT2_SIZE`, gives `Ok`. It implements the spec's `Decaps` then `VfyCt`. Its only inner
+  error is the one `verify_ct` returns.
+* `NoHeaderReceived`: `verify_hdr`, the spec's `VfyHdr`, on header `m[..i]` and MAC `m[i..]`,
+  with `i = HEADER_SIZE`, gives `Ok`.
+* `Ct1Sampled` and `Ct1Acknowledged`: `ek_matches_header m hdr` gives `true`. It stands for the
+  spec's `SHA3-256(ek_seed || ek_vector) = hek`. That it computes this is not proved here.
+* Every other state: `True`. In particular, `HeaderSent` takes transition (3) without a check. -/
 def States.CheckPasses : States → alloc.vec.Vec Std.U8 → Prop
   | .EkSentCt1Received st, m =>
       ∃ (i : Std.Usize) (ct2 mac : alloc.vec.Vec Std.U8)
@@ -114,8 +122,10 @@ def States.CheckPasses : States → alloc.vec.Vec Std.U8 → Prop
 def States.Accepts (s : States) (p : MessagePayload) : Prop :=
   ∃ m, s.Decodes p m ∧ s.CheckPasses m
 
-/-- The chunk completes the state's decoder and the completed message fails the state's check:
-the spec raises. -/
+/-- The chunk completes the state's decoder and the code's check on the completed message does
+not pass: the spec raises. Not passing includes the check call panicking (for example, the epoch
+increment in `recv_ct2` at `U64.max`), so this matches the spec only on runs where the call
+returns. -/
 def States.Rejects (s : States) (p : MessagePayload) : Prop :=
   ∃ m, s.Decodes p m ∧ ¬ s.CheckPasses m
 
@@ -141,11 +151,19 @@ def States.name : States → SpecState
   | .Ct2Sampled _ => .Ct2Sampled
 
 open Classical in
-/-- ML-KEM Braid §2.5 `Receive` for a message from the state's own epoch, observed as the
-successor's name and whether a key is emitted, or `none` when the spec raises. Numbered cases are
-the spec's transitions; a chunk that completes the decoder takes the transition if the completed
-message passes the check and raises if it fails, and an incomplete one stays. Any payload the
-state does not expect is a no-op. D3 and D4 are the code's extra acceptances. -/
+/-- ML-KEM Braid §2.5 `Receive` on a message from the state's own epoch, extended by D3 and D4.
+The result is the successor's name and whether a key is emitted, or `none` when the spec
+raises. The comments on the arms give the spec's transition numbers.
+
+* Transitions (2), (4) and (12), and D3, need no completed message and are taken directly.
+* Transitions (3), (5), (6), (9), (10), (11) and D4 are taken when `States.Accepts` holds. The
+  result is `none` when `States.Rejects` holds. When no message completes the decoder, neither
+  holds and the state keeps its name. The exception is `Ct1Sampled` on `EkCt1Ack`, which then
+  takes transition (8).
+* A payload type the state does not expect keeps the state's name.
+
+Only transition (5) emits a key. `States.Accepts` and `States.Rejects` read the code's calls,
+so the table matches the spec only on runs where those calls return. -/
 noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecState × Bool) :=
   let stay := some (s.name, false)
   let complete (n : SpecState) (key : Bool) (otherwise : Option (SpecState × Bool)) :=
@@ -164,6 +182,13 @@ noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecSta
   | .Ct1Acknowledged _, .EkCt1Ack _ => complete .Ct2Sampled false stay   -- (11)
   | .Ct1Acknowledged _, .Ek _ => complete .Ct2Sampled false stay         -- D4
   | _, _ => stay
+
+/-- If state `s` does not expect payload `p`, then `specRecvEq s p` keeps the state's name and
+emits no key. This keeps `States.Expects` consistent with the last arm of `specRecvEq`. -/
+theorem specRecvEq_of_not_expects {s : States} {p : MessagePayload} (hp : ¬ s.Expects p) :
+    specRecvEq s p = some (s.name, false) := by
+  cases s <;> rcases p with _ | _ | _ | _ | (_ | _) | _ | _ <;>
+    simp only [States.Expects, not_true_eq_false] at hp <;> rfl
 
 /-! ## Support lemmas
 
@@ -218,9 +243,10 @@ the chunk completes a message and whether that message passes `CheckPasses`.
 `recv_header_check` and `recv_ek_check` give the same split for the unchunked calls that the
 handlers make. -/
 
-open core.result.Result.Insts.CoreOpsTry (branch_eq_continue)
+open core.result.Result.Insts.CoreOpsTry (branch_eq_continue branch_eq_break)
 
-/-- If the decoder is still incomplete after the chunk, the chunk completes it with no message. -/
+/-- If `decoded_message` returns `none` after `add_chunk`, then `decodes d c m` is false for every
+`m`. -/
 theorem not_decodes_of_none {d d' : encoding.polynomial.PolyDecoder} {c : encoding.Chunk}
     (h1 : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk d c = ok d')
     (h2 : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message d' = ok none)
@@ -248,15 +274,6 @@ theorem HeaderSent_recv_ct1_chunk_outcome (st : send_ek.HeaderSent) (e : Std.U64
     obtain ⟨_, -, h⟩ := bind_eq_ok.1 h
     simp only [ok.injEq] at h; subst h
     exact ⟨m, d', hd, ho⟩
-
-
-private theorem branch_eq_break {T E : Type} {r : core.result.Result T E}
-    {res : core.result.Result Never E}
-    (h : core.result.Result.Insts.CoreOpsTry.branch r = ok (.Break res)) :
-    ∃ e, r = .Err e := by
-  cases r with
-  | Ok v => simp [core.result.Result.Insts.CoreOpsTry.branch] at h
-  | Err e => exact ⟨e, rfl⟩
 
 /-- The code's split of a completed message `m` at `i` is `take i` / `drop i`. -/
 private theorem split_vals {m : alloc.vec.Vec Std.U8} {i : Std.Usize} {s s1 s2 : Slice Std.U8}
@@ -306,10 +323,7 @@ theorem EkSentCt1Received_recv_ct2_chunk_outcome (st : send_ek.EkSentCt1Received
       obtain ⟨_, -, _, -, _, -, _, -, rfl⟩ := h
       exact ⟨m, ⟨d', hd, ho⟩, i, ct2, mac, (uc, sec), hi, hlo, hhi, hres⟩
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
       subst h
@@ -319,7 +333,6 @@ theorem EkSentCt1Received_recv_ct2_chunk_outcome (st : send_ek.EkSentCt1Received
       obtain rfl : ct2' = ct2 := alloc.vec.Vec.ext _ _ (by rw [hlo', hlo])
       obtain rfl : mac' = mac := alloc.vec.Vec.ext _ _ (by rw [hhi', hhi])
       rw [hres, ok.injEq] at hres'; cases hres'
-
 
 /-- If `NoHeaderReceived::recv_header` returns, an `Ok` result means that `verify_hdr` accepts
 the header and MAC. An `Err` result means that `verify_hdr` returns an inner `Err` on them. -/
@@ -340,10 +353,7 @@ theorem recv_header_check (uc : v1.unchunked.send_ct.NoHeaderReceived) (e : Std.
     simp only [ok.injEq] at h; subst h
     exact hres
   | Break rs =>
-    obtain ⟨err, rfl⟩ := branch_eq_break hcf
-    simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-      core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-    subst hcf
+    obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
     simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
       bind_tc_eq, bind_eq_ok] at h
     obtain ⟨_, -, h⟩ := h
@@ -384,10 +394,7 @@ theorem NoHeaderReceived_recv_hdr_chunk_outcome (st : send_ct.NoHeaderReceived) 
       obtain ⟨_, -, rfl⟩ := h
       exact ⟨m, ⟨d', hd, ho⟩, i, hdr, mac, hi, hlo, hhi, hchk⟩
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
       subst h
@@ -398,7 +405,6 @@ theorem NoHeaderReceived_recv_hdr_chunk_outcome (st : send_ct.NoHeaderReceived) 
       obtain rfl : hdr' = hdr := alloc.vec.Vec.ext _ _ (by rw [hlo', hlo])
       obtain rfl : mac' = mac := alloc.vec.Vec.ext _ _ (by rw [hhi', hhi])
       rw [hv, ok.injEq] at hv'; cases hv'
-
 
 /-- If `Ct1Sent::recv_ek` returns, an `Ok` result means that `ek_matches_header` gives `true`.
 An `Err` result means that it gives `false`. -/
@@ -468,10 +474,7 @@ theorem Ct1Sampled_recv_ek_chunk_outcome (st : send_ct.Ct1Sampled) (e : Std.U64)
         obtain ⟨_, _, _, -, _, -, rfl⟩ := h
         exact ⟨rfl, m, ⟨d', hd, ho⟩, hchk⟩
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
       subst h
@@ -509,15 +512,11 @@ theorem Ct1Acknowledged_recv_ek_chunk_outcome (st : send_ct.Ct1Acknowledged) (e 
       obtain ⟨_, _, _, -, _, -, rfl⟩ := h
       exact ⟨m, ⟨d', hd, ho⟩, hchk⟩
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at h
       subst h
       exact ek_fail_of_err hd ho hchk
-
 
 private theorem not_accepts_rejects {s : States} {p : MessagePayload}
     {d : encoding.polynomial.PolyDecoder}
@@ -556,9 +555,9 @@ theorem recv_of_eq_unexpected (s : States) (msg : Message) (h : msg.epoch = s.ep
       Nat.compare_eq_eq.2 rfl, Bool.false_eq_true, ite_false]
   all_goals rfl
 
-/-- For every message from the state's own epoch, `States.recv` agrees with the spec's `Receive`
-on the successor's name and on whether a key is emitted, and returns an error exactly when the
-spec raises. -/
+/-- If `States.recv` returns on a message from the state's own epoch, it agrees with the §2.5
+`Receive` table extended by D3 and D4 (`specRecvEq`) on the successor's name and on whether a
+key is emitted, and its result is an error exactly when that table raises. -/
 @[correctness_spec, braid_spec "§2.5"]
 theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
     (r : core.result.Result Recv Error) (hr : States.recv s msg = ok r) :
@@ -618,10 +617,7 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         rw [if_pos (accepts_of hD ho)]; rfl
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
@@ -645,10 +641,7 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         rw [if_pos (accepts_of hD ho)]; rfl
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
@@ -672,10 +665,7 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         rw [if_pos (accepts_of hD ho)]; rfl
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
@@ -699,31 +689,14 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         rw [if_pos (accepts_of hD ho)]; rfl
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
       rw [if_neg hA, if_pos hR]
-  case Ct1Sampled.None st _ =>
-    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
-    rw [ok.injEq] at hr; subst hr; rfl
-  case Ct1Sampled.Hdr st _ =>
-    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
-    rw [ok.injEq] at hr; subst hr; rfl
-  case Ct1Sampled.Ct1Ack.false st _ =>
-    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
-    rw [ok.injEq] at hr; subst hr; rfl
-  case Ct1Sampled.Ct1Ack.true st _ =>
-    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
-    rw [ok.injEq] at hr; subst hr; rfl
-  case Ct1Sampled.Ct1 st _ =>
-    change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
-    rw [ok.injEq] at hr; subst hr; rfl
-  case Ct1Sampled.Ct2 st _ =>
+  case Ct1Sampled.None st _ | Ct1Sampled.Hdr st _ | Ct1Sampled.Ct1Ack.false st _
+      | Ct1Sampled.Ct1Ack.true st _ | Ct1Sampled.Ct1 st _ | Ct1Sampled.Ct2 st _ =>
     change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
     rw [ok.injEq] at hr; subst hr; rfl
   case Ct1Sampled.Ek st _ =>
@@ -743,10 +716,7 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
            rw [if_neg hA, if_neg hR]; rfl)
         | (obtain ⟨-, ho⟩ := ho; rw [if_pos (accepts_of hD ho)]; rfl)
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
@@ -769,10 +739,7 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
            rw [if_neg hA, if_neg hR]; rfl)
         | (obtain ⟨-, ho⟩ := ho; rw [if_pos (accepts_of hD ho)]; rfl)
     | Break rs =>
-      obtain ⟨err, rfl⟩ := branch_eq_break hcf
-      simp only [core.result.Result.Insts.CoreOpsTry.branch, ok.injEq,
-        core.ops.control_flow.ControlFlow.Break.injEq] at hcf
-      subst hcf
+      obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
