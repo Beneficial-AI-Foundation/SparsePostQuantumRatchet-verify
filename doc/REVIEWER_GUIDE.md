@@ -18,7 +18,7 @@ For other kinds of PRs use the below as guidelines and apply your personal judge
 You can usually omit this step when the PR introduces a `sorry`-free proof, but for `axiom`s there are no such guardrails.
 Since `axioms` are required to provide links to justifying sources, you should inspect those sources to ensure they are legitimate, and that the formulation of the axiom has been correctly transcribed. Any comments w.r.t. correctness should be _blocking_.
 
-### 2. Asses the level of abstraction
+### 2. Assess the level of abstraction
 Unless a particular specification is externally motivated, there is usually some degree of flexibility in the exact formulation. Consider the example of a function `f` returning the `Nat` value `r = 42`. The same function could be equipped with:
 	- `r > 1`
 	- `r != 0 /\ r % 2 = 0`
