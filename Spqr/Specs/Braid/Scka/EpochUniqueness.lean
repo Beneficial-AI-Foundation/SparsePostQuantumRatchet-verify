@@ -139,18 +139,10 @@ built with overflow checks, or for a release run in which no call overflows
 
 The results are safety facts about successful calls; none of them shows that a call emitting a
 key can succeed. Both emitting transitions go through opaque stubs with no success guarantee
-(`encapsulate1` and the map iterator on the send side; `decoded_message`, decapsulation and the
-MAC check on the recv side), so a machine whose emitting calls always fail satisfies every result
-here. A key cannot be dropped silently, though: a successful emitting transition that returned
-no key would raise `keyFloor`, which the no-key case of `Step.keyFloor_step` forbids.
-
-`#print axioms epochs_nodup` includes `sorryAx`, as does every declaration stated over `Step`
-or `Run`, `Run.append` and their recursors included. It comes from one `sorry`, the
-extraction's map-iterator stub `next := sorry` (aeneas#1043). The chunk encoders of all eight
-send callees reach it, so `States.send` does too. The `Step.send` constructor names
-`States.send` in its type, so every result about steps or runs inherits it. The send proofs use
-no fact about the iterator's output: they read the epoch off the state built around the
-encoder. The recv lemmas, `recv_step` and `recv_key_epoch` among them, are free of `sorryAx`.
+(`encapsulate1` on the send side; `decoded_message`, decapsulation and the MAC check on the recv
+side), so a machine whose emitting calls always fail satisfies every result here. A key cannot
+be dropped silently, though: a successful emitting transition that returned no key would raise
+`keyFloor`, which the no-key case of `Step.keyFloor_step` forbids.
 
 ## Scope
 
