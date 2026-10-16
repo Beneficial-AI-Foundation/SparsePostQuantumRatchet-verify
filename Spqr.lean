@@ -234,6 +234,7 @@ public import Spqr.Specs.Lib.Version.TryFrom
 public import Spqr.Specs.Lib.Version.U8.From
 public import Spqr.Specs.Proto.PqRatchet.Direction.From
 public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
+public import Spqr.Specs.Proto.PqRatchet.Version.From
 public import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
 public import Spqr.Specs.Serialize.Error.Clone
 public import Spqr.Specs.Serialize.Error.Debug
