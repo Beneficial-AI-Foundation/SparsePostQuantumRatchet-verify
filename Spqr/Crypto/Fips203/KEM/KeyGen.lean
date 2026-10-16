@@ -35,16 +35,16 @@ noncomputable section
 
 namespace Fips203
 
-/-! ## Hash function `H` (axiomatised)
+/-! ## Hash function `H`
 
-`H` is SHA3-256 producing 32 bytes.  Axiomatised as an opaque oracle like `hashG`. -/
+`H` (SHA3-256, 32 bytes) is the field `H` of a `Primitives` record (`Primitives.lean`), taken
+as the explicit argument `prims` by every definition below that depends on it. -/
 
-/-- `H(input)` — SHA3-256 hash producing 32 bytes. -/
-opaque hashH (input : List UInt8) : Fin 32 → UInt8
+variable (prims : Primitives)
 
 /-- `H(ek)`: hash of the encapsulation key, stored in `dk` and re-used by `Encaps`. -/
 def hashEk {N : ℕ} (ek : Fin N → UInt8) : Fin 32 → UInt8 :=
-  hashH (List.ofFn ek)
+  prims.H (List.ofFn ek)
 
 /-! ## Decapsulation-key layout
 
@@ -146,40 +146,40 @@ structure MlkemKeyPair (p : ParamSet) where
 Given the 32-byte seed `d` for `K-PKE.KeyGen` and the 32-byte implicit-rejection seed `z`,
 produces the encapsulation key `ek` and the decapsulation key `dk`. -/
 def mlkemKeyGen (d z : Fin 32 → UInt8) (p : ParamSet) : MlkemKeyPair p :=
-  let kp := kpkeKeyGen d p
+  let kp := kpkeKeyGen prims d p
   { ek := kp.ek
-    dk := encodeMlkemDk kp.dk kp.ek (hashEk kp.ek) z }
+    dk := encodeMlkemDk kp.dk kp.ek (hashEk prims kp.ek) z }
 
 /-! ## Elementary properties -/
 
 /-- The encapsulation key is exactly `ekPKE`. -/
 theorem mlkemKeyGen_ek (d z : Fin 32 → UInt8) (p : ParamSet) :
-    (mlkemKeyGen d z p).ek = (kpkeKeyGen d p).ek := rfl
+    (mlkemKeyGen prims d z p).ek = (kpkeKeyGen prims d p).ek := rfl
 
 /-- The decapsulation key is `dkPKE ‖ ekPKE ‖ H(ekPKE) ‖ z`. -/
 theorem mlkemKeyGen_dk (d z : Fin 32 → UInt8) (p : ParamSet) :
-    (mlkemKeyGen d z p).dk =
-      encodeMlkemDk (kpkeKeyGen d p).dk (kpkeKeyGen d p).ek
-        (hashEk (kpkeKeyGen d p).ek) z := rfl
+    (mlkemKeyGen prims d z p).dk =
+      encodeMlkemDk (kpkeKeyGen prims d p).dk (kpkeKeyGen prims d p).ek
+        (hashEk prims (kpkeKeyGen prims d p).ek) z := rfl
 
 /-- `dk[0 : 384·k]` of a generated key is `dkPKE`. -/
 theorem decodeDkPke_mlkemKeyGen (d z : Fin 32 → UInt8) (p : ParamSet) :
-    decodeDkPke (mlkemKeyGen d z p).dk = (kpkeKeyGen d p).dk := by
+    decodeDkPke (mlkemKeyGen prims d z p).dk = (kpkeKeyGen prims d p).dk := by
   rw [mlkemKeyGen_dk, decodeDkPke_encodeMlkemDk]
 
 /-- `dk[384·k : 768·k + 32]` of a generated key is `ek`. -/
 theorem decodeDkEk_mlkemKeyGen (d z : Fin 32 → UInt8) (p : ParamSet) :
-    decodeDkEk (mlkemKeyGen d z p).dk = (mlkemKeyGen d z p).ek := by
+    decodeDkEk (mlkemKeyGen prims d z p).dk = (mlkemKeyGen prims d z p).ek := by
   rw [mlkemKeyGen_dk, decodeDkEk_encodeMlkemDk, mlkemKeyGen_ek]
 
 /-- `dk[768·k + 32 : 768·k + 64]` of a generated key is `H(ek)`. -/
 theorem decodeDkH_mlkemKeyGen (d z : Fin 32 → UInt8) (p : ParamSet) :
-    decodeDkH (mlkemKeyGen d z p).dk = hashEk (mlkemKeyGen d z p).ek := by
+    decodeDkH (mlkemKeyGen prims d z p).dk = hashEk prims (mlkemKeyGen prims d z p).ek := by
   rw [mlkemKeyGen_dk, decodeDkH_encodeMlkemDk, mlkemKeyGen_ek]
 
 /-- `dk[768·k + 64 : 768·k + 96]` of a generated key is `z`. -/
 theorem decodeDkZ_mlkemKeyGen (d z : Fin 32 → UInt8) (p : ParamSet) :
-    decodeDkZ (mlkemKeyGen d z p).dk = z := by
+    decodeDkZ (mlkemKeyGen prims d z p).dk = z := by
   rw [mlkemKeyGen_dk, decodeDkZ_encodeMlkemDk]
 
 /-- For ML-KEM-768, `ek` has `1184` bytes and `dk` has `2400` bytes. -/

@@ -28,9 +28,12 @@ The extracted body in `SrcTranslated/Funs.lean` proceeds in three steps:
 (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `st` and the NTT-domain
 vector `t̂` decoded from `pk = ByteEncode₁₂(t̂)` — where `pk` holds the bytes of `ek` and `st`
 holds the bytes of the state actually consumed: the fixed state when the opaque endianness
-workaround returned `Some`, and `es` itself otherwise.  The correctness of the workaround is
-outside FIPS 203 scope (`doc/plan.md`, § 10.3); its hax contract (success, 2080-byte output) is
-taken as the hypothesis `h_fix`.
+workaround returned `Some`, and `es` itself otherwise.  The workaround is SPQR's own Rust
+(`#[hax_lib::opaque]`) and is kept uninterpreted in `SrcTranslated/FunsExternal.lean`; the only
+fact used about it is its hax contract (success, any `Some` has 2080 bytes), the trusted axiom
+`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec`.  The spec therefore
+holds for **every** admitted (2080-byte) state, including the byte-swapped ones the Rust repairs:
+it does not assume the workaround returns `None`.
 
 When `es` is the serialised round-1 state of `encaps1` on a generated key and the workaround is
 the identity (`None`), `ct2Bytes_stateOut_pk2Bytes` and `ct_eq_ct1Bytes_append_ct2Bytes` of
@@ -70,7 +73,7 @@ use `fixed`; otherwise fall back to the original state `es`.
 
 `Result` is the Aeneas ITree monad and cannot be pattern-matched directly, so the selection
 is expressed monadically with `Option.elim`. -/
-def encaps2EffectiveState
+noncomputable def encaps2EffectiveState
     (es : alloc.vec.Vec Std.U8) : Result (List Std.U8) := do
   let mf ←
     _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
@@ -106,10 +109,12 @@ selected) and `pk` (the bytes of `ek`) with `result = Fips203.Refinement.ct2List
 `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))` on the decoded
 state `(ŷ, e₂, m)` and `t̂`.
 
-The hax contract of the opaque endianness workaround (it succeeds, and when it returns `Some`
-the fixed state has 2080 bytes) is derived from the concrete definition and spec theorem
-`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec` rather than taken as
-an external hypothesis. -/
+The endianness workaround is uninterpreted (it is `#[hax_lib::opaque]` SPQR Rust, see
+`SrcTranslated/FunsExternal.lean`); the proof uses only its hax contract — the trusted axiom
+`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec` (success, and any `Some`
+has 2080 bytes).  In particular the theorem makes **no** assumption on whether the workaround
+returns `None` or `Some`; `Encaps2Post` records the state actually consumed through
+`encaps2EffectiveState`. -/
 theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
     (h_ek : ek.length = 1152) (h_es : es.length = 2080) :
     encaps2 ek es ⦃ (result : alloc.vec.Vec Std.U8) =>
@@ -125,27 +130,28 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
           pk.val = ek.val ∧
           result.val = Fips203.Refinement.ct2List st pk) ∧
       result.length = 128 ⦄ from h
-  -- Resolve the endianness workaround to `none`.
+  -- The workaround stays uninterpreted: obtain an arbitrary `mf` satisfying the hax contract.
   open _root_.incremental_mlkem768 in
-  have h_fix_spec :=
-    potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
-      es h_es
-  open _root_.incremental_mlkem768 in
-  have h_eq :
-    potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-      es = ok none := by
-    simp [
-      potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]
-  set mf : Option (alloc.vec.Vec Std.U8) := none
-  have h_len : ∀ v ∈ mf, v.length = 2080 := by
-    simp [mf]
+  obtain ⟨mf, h_eq, h_len⟩ :=
+    WP.spec_imp_exists
+      (potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec es h_es)
+  -- The effective state has 2080 bytes in both branches (`Some` by `h_len`, `None` by `h_es`).
+  have h_eff_len : (mf.elim es.val (fun fixed => fixed.val)).length = 2080 := by
+    cases mf with
+    | none => simpa [alloc.vec.Vec.length] using h_es
+    | some v => simpa [alloc.vec.Vec.length] using h_len v (by simp)
   unfold encaps2
   rw [h_eq]
   step*
   case h =>
-    simp only [Slice.length, s_post, es1_post, o_post, mf]
-    simp only [core.option.Option.unwrap_or_none]
-    scalar_tac
+    simp only [Slice.length, s_post, es1_post, o_post]
+    cases mf with
+    | none =>
+      simp only [core.option.Option.unwrap_or_none, Option.elim] at h_eff_len ⊢
+      exact h_eff_len
+    | some v =>
+      simp only [core.option.Option.unwrap_or_some, Option.elim] at h_eff_len ⊢
+      exact h_eff_len
   obtain ⟨a0, r_post, r_post1⟩ :
       ∃ a0 : Array Std.U8 2080#usize,
         r = core.result.Result.Ok a0 ∧ a0.val = s.val :=
@@ -159,10 +165,11 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
     rw [← s2_post]; assumption
   have h_result : result.val = Fips203.Refinement.ct2List a0 a := by
     rw [alloc.vec.Vec.val, h_s2, Array.val_to_slice, ct2_post1]
-  refine ⟨⟨es.val, ?_, a0, a, ?_, ?_, h_result⟩, ?_⟩
-  · simp [encaps2EffectiveState, h_eq, mf]
+  refine ⟨⟨mf.elim es.val (fun fixed => fixed.val), ?_, a0, a, ?_, ?_, h_result⟩, ?_⟩
+  · simp [encaps2EffectiveState, h_eq]
   · rw [r_post1, s_post, es1_post]
-    simp only [o_post, mf, core.option.Option.unwrap_or_none]
+    cases mf <;> simp only [o_post, core.option.Option.unwrap_or_none,
+      core.option.Option.unwrap_or_some, Option.elim]
   · rw [r1_post1, s1_post]
   · simp only [alloc.vec.Vec.length, h_result, Fips203.Refinement.ct2List_length]
 

@@ -78,7 +78,7 @@ theorem toU8List_getElem {N : ℕ} (b : Fin N → UInt8) (i : ℕ) (h : i < (toU
 FIPS 203 decapsulation key `dk = dkPKE ‖ ek ‖ H(ek) ‖ z` of `ML-KEM.KeyGen_internal(d, z)` for
 `d = seed[0 : 32]`, `z = seed[32 : 64]`. -/
 def keyPairBytes (seed : Fin 64 → UInt8) : Fin mlkem768.dkSize → UInt8 :=
-  (mlkemKeyGen (seedD seed) (seedZ seed) mlkem768).dk
+  (mlkemKeyGen stdPrimitives (seedD seed) (seedZ seed) mlkem768).dk
 
 /-- `keyPairBytes` as an Aeneas list. -/
 def keyPairList (seed : Fin 64 → UInt8) : List U8 :=
@@ -103,7 +103,7 @@ libcrux `pk2 = value[1152 : 2304]` is `ByteEncode₁₂(t̂)`, the encapsulation
 
 /-- The 1184-byte FIPS 203 encapsulation key `ek = ByteEncode₁₂(t̂) ‖ ρ`. -/
 def ekBytes (seed : Fin 64 → UInt8) : Fin (384 * mlkem768.k + 32) → UInt8 :=
-  (mlkemKeyGen (seedD seed) (seedZ seed) mlkem768).ek
+  (mlkemKeyGen stdPrimitives (seedD seed) (seedZ seed) mlkem768).ek
 
 /-- libcrux `pk2`: the first `1152` bytes of `ek`, i.e. the serialised `t̂`. -/
 def pk2Bytes (seed : Fin 64 → UInt8) : Fin 1152 → UInt8 :=
@@ -113,7 +113,7 @@ def pk2Bytes (seed : Fin 64 → UInt8) : Fin 1152 → UInt8 :=
 def pk1Bytes (seed : Fin 64 → UInt8) : Fin 64 → UInt8 :=
   fun i =>
     if h : i.val < 32 then ekBytes seed ⟨1152 + i.val, by simp only [mlkem768_k]; omega⟩
-    else hashEk (ekBytes seed) ⟨i.val - 32, by omega⟩
+    else hashEk stdPrimitives (ekBytes seed) ⟨i.val - 32, by omega⟩
 
 /-! ## Layout lemmas
 
@@ -123,7 +123,8 @@ Each byte of `keyPairBytes` is one of the four fields, by `encodeMlkemDk`. -/
 theorem keyPairBytes_dkPke (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 1152)
     (h : i < mlkem768.dkSize) :
     keyPairBytes seed ⟨i, h⟩ =
-      (kpkeKeyGen (seedD seed) mlkem768).dk ⟨i, by simp only [mlkem768_k]; omega⟩ := by
+      (kpkeKeyGen stdPrimitives (seedD seed) mlkem768).dk
+        ⟨i, by simp only [mlkem768_k]; omega⟩ := by
   simp only [keyPairBytes, mlkemKeyGen_dk, encodeMlkemDk, mlkem768_k]
   rw [dif_pos (by omega)]
 
@@ -139,7 +140,7 @@ theorem keyPairBytes_ek (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 1184)
 /-- `value[2336 + i] = H(ek)[i]` for `i < 32`. -/
 theorem keyPairBytes_hash (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 32)
     (h : 2336 + i < mlkem768.dkSize) :
-    keyPairBytes seed ⟨2336 + i, h⟩ = hashEk (ekBytes seed) ⟨i, hi⟩ := by
+    keyPairBytes seed ⟨2336 + i, h⟩ = hashEk stdPrimitives (ekBytes seed) ⟨i, hi⟩ := by
   simp only [keyPairBytes, ekBytes, mlkemKeyGen_dk, mlkemKeyGen_ek, encodeMlkemDk, mlkem768_k]
   rw [dif_neg (by omega), dif_neg (by omega), dif_pos (by omega)]
   exact congrArg _ (Fin.ext (by simp only; omega))

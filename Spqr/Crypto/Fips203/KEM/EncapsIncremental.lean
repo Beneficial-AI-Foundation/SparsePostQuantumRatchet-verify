@@ -35,6 +35,8 @@ noncomputable section
 
 namespace Fips203
 
+variable (prims : Primitives)
+
 /-! ## The header `pk1 = ρ ‖ H(ek)` -/
 
 /-- The 64-byte libcrux header: the matrix seed `ρ` followed by `H(ek)`. -/
@@ -46,7 +48,7 @@ structure EncapsHeader where
 
 /-- The header of a FIPS 203 encapsulation key. -/
 def headerOfEk {p : ParamSet} (ek : Fin (384 * p.k + 32) → UInt8) : EncapsHeader :=
-  { ρ := decodeEkRho ek, h := hashEk ek }
+  { ρ := decodeEkRho ek, h := hashEk prims ek }
 
 /-! ## The round-1 state `(ŷ, e₂, m)` -/
 
@@ -74,7 +76,7 @@ structure EncapsPhase1Output (p : ParamSet) where
 randomness `r`. -/
 def encapsU (p : ParamSet) (ρ : Fin 32 → UInt8) (r : Fin 32 → UInt8) :
     Fin p.k → (Fin n → Zq) :=
-  computeU (genMatrixAT ρ p) (nttVec (genEncSecret r p)) (genEncError1 r p)
+  computeU (genMatrixAT prims ρ p) (nttVec (genEncSecret prims r p)) (genEncError1 prims r p)
 
 /-- **Round 1 of incremental encapsulation** (libcrux `encapsulate1`).
 
@@ -82,11 +84,11 @@ From the header `ρ ‖ h` and the message `m`: derive `(K, r) = G(m ‖ h)`, co
 and `r`, and keep `(ŷ, e₂, m)` for round 2. -/
 def mlkemEncapsPhase1 (p : ParamSet) (hdr : EncapsHeader) (m : Fin 32 → UInt8) :
     EncapsPhase1Output p :=
-  let K := sharedKey m hdr.h
-  let r := encRandomness m hdr.h
+  let K := sharedKey prims m hdr.h
+  let r := encRandomness prims m hdr.h
   { ss := K
-    ct1 := encodeC1 (encapsU p hdr.ρ r)
-    state := { yHat := nttVec (genEncSecret r p), e2 := genEncError2 r p, m := m } }
+    ct1 := encodeC1 (encapsU prims p hdr.ρ r)
+    state := { yHat := nttVec (genEncSecret prims r p), e2 := genEncError2 prims r p, m := m } }
 
 /-! ## Round 2 -/
 
@@ -103,18 +105,19 @@ def mlkemEncapsPhase2 (p : ParamSet) (st : EncapsState p) (tHat : Fin p.k → (F
 /-- Round 1 on the header of `ek` returns the shared secret of `ML-KEM.Encaps_internal(ek, m)`. -/
 theorem mlkemEncapsPhase1_ss (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) :
-    (mlkemEncapsPhase1 p (headerOfEk ek) m).ss = (mlkemEncaps p ek m).ss := rfl
+    (mlkemEncapsPhase1 prims p (headerOfEk prims ek) m).ss = (mlkemEncaps prims p ek m).ss :=
+  rfl
 
 /-- The state of round 1 records the message. -/
 theorem mlkemEncapsPhase1_state_m (p : ParamSet) (hdr : EncapsHeader) (m : Fin 32 → UInt8) :
-    (mlkemEncapsPhase1 p hdr m).state.m = m := rfl
+    (mlkemEncapsPhase1 prims p hdr m).state.m = m := rfl
 
 /-- The first ciphertext half of round 1 on the header of `ek` is the `c₁` part of the
 ciphertext of `ML-KEM.Encaps_internal(ek, m)`. -/
 theorem mlkemEncapsPhase1_ct1 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) (i : Fin (32 * p.compressionU * p.k)) :
-    (mlkemEncapsPhase1 p (headerOfEk ek) m).ct1 i =
-      (mlkemEncaps p ek m).ct ⟨i.val, by
+    (mlkemEncapsPhase1 prims p (headerOfEk prims ek) m).ct1 i =
+      (mlkemEncaps prims p ek m).ct ⟨i.val, by
         have := i.isLt; unfold ParamSet.ctSizeEnc; omega⟩ := by
   simp only [mlkemEncapsPhase1, headerOfEk, mlkemEncaps, kpkeEncrypt, encodeCiphertext,
     encapsU]
@@ -124,8 +127,9 @@ theorem mlkemEncapsPhase1_ct1 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt
 `ML-KEM.Encaps_internal(ek, m)`. -/
 theorem mlkemEncapsPhase2_ct2 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) (i : Fin (32 * p.compressionV)) :
-    mlkemEncapsPhase2 p (mlkemEncapsPhase1 p (headerOfEk ek) m).state (decodeEkTHat ek) i =
-      (mlkemEncaps p ek m).ct ⟨32 * p.compressionU * p.k + i.val, by
+    mlkemEncapsPhase2 p (mlkemEncapsPhase1 prims p (headerOfEk prims ek) m).state
+        (decodeEkTHat ek) i =
+      (mlkemEncaps prims p ek m).ct ⟨32 * p.compressionU * p.k + i.val, by
         have := i.isLt; unfold ParamSet.ctSizeEnc; omega⟩ := by
   simp only [mlkemEncapsPhase2, mlkemEncapsPhase1, headerOfEk, mlkemEncaps, kpkeEncrypt,
     encodeCiphertext]
@@ -135,11 +139,12 @@ theorem mlkemEncapsPhase2_ct2 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt
 /-- **Composition.**  `c₁ ‖ c₂` of the two rounds is exactly the ciphertext of Algorithm 17. -/
 theorem mlkemEncaps_ct_eq_phases (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) (idx : Fin p.ctSizeEnc) :
-    (mlkemEncaps p ek m).ct idx =
+    (mlkemEncaps prims p ek m).ct idx =
       if h : idx.val < 32 * p.compressionU * p.k then
-        (mlkemEncapsPhase1 p (headerOfEk ek) m).ct1 ⟨idx.val, h⟩
+        (mlkemEncapsPhase1 prims p (headerOfEk prims ek) m).ct1 ⟨idx.val, h⟩
       else
-        mlkemEncapsPhase2 p (mlkemEncapsPhase1 p (headerOfEk ek) m).state (decodeEkTHat ek)
+        mlkemEncapsPhase2 p (mlkemEncapsPhase1 prims p (headerOfEk prims ek) m).state
+          (decodeEkTHat ek)
           ⟨idx.val - 32 * p.compressionU * p.k, by
             have := idx.isLt; unfold ParamSet.ctSizeEnc at this; omega⟩ := by
   by_cases h : idx.val < 32 * p.compressionU * p.k

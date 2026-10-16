@@ -19,7 +19,7 @@ and 32 bytes of randomness `r`, it produces a ciphertext `c`.
 The algorithm:
 
 1. Parse `ekPKE` to recover `t̂` (via `ByteDecode₁₂`) and the public seed `ρ`.
-2. Re-derive the `k × k` NTT-domain matrix `Â` from `ρ` via `SampleNTT(ρ ‖ i ‖ j)`.
+2. Re-derive the `k × k` NTT-domain matrix `Â` from `ρ` via `Â[i,j] = SampleNTT(ρ ‖ j ‖ i)`.
 3. Sample secret vector `y`, error vector `e₁` from `CBD_η₁`, and error polynomial
    `e₂` from `CBD_η₂`, using `PRF(r, N)` with a running counter `N`.
 4. Compute `ŷ = NTT(y)`.
@@ -38,6 +38,8 @@ The algorithm:
 noncomputable section
 
 namespace Fips203
+
+variable (prims : Primitives)
 
 /-! ## Encryption key parsing -/
 
@@ -65,16 +67,16 @@ def decodeEkRho {p : ParamSet} (ek : Fin (384 * p.k + 32) → UInt8) :
 /-- Sample encryption secret vector `y[i] = SamplePolyCBD_η₁(PRF(r, i))`. -/
 def genEncSecret (r : Fin 32 → UInt8) (p : ParamSet) :
     Fin p.k → (Fin n → Zq) :=
-  fun i => samplePolyCBD (prf r (UInt8.ofNat i.val) p.η₁) p.η₁
+  fun i => samplePolyCBD (prims.PRF r (UInt8.ofNat i.val) p.η₁) p.η₁
 
 /-- Sample encryption error vector `e₁[i] = SamplePolyCBD_η₂(PRF(r, k+i))`. -/
 def genEncError1 (r : Fin 32 → UInt8) (p : ParamSet) :
     Fin p.k → (Fin n → Zq) :=
-  fun i => samplePolyCBD (prf r (UInt8.ofNat (p.k + i.val)) p.η₂) p.η₂
+  fun i => samplePolyCBD (prims.PRF r (UInt8.ofNat (p.k + i.val)) p.η₂) p.η₂
 
 /-- Sample encryption error polynomial `e₂ = SamplePolyCBD_η₂(PRF(r, 2k))`. -/
 def genEncError2 (r : Fin 32 → UInt8) (p : ParamSet) : Fin n → Zq :=
-  samplePolyCBD (prf r (UInt8.ofNat (2 * p.k)) p.η₂) p.η₂
+  samplePolyCBD (prims.PRF r (UInt8.ofNat (2 * p.k)) p.η₂) p.η₂
 
 /-! ## Message encoding -/
 
@@ -92,7 +94,7 @@ def decompressMsg (m : Fin 32 → UInt8) : Fin n → Zq :=
 /-- Transpose the `k × k` NTT-domain matrix `Â`. -/
 def genMatrixAT (ρ : Fin 32 → UInt8) (p : ParamSet) :
     Fin p.k → Fin p.k → (Fin n → Zq) :=
-  fun i j => genMatrixA ρ p j i
+  fun i j => genMatrixA prims ρ p j i
 
 /-- `NTT⁻¹` applied componentwise to a vector of NTT-domain polynomials. -/
 def invNttVec {p : ParamSet} (v : Fin p.k → (Fin n → Zq)) :
@@ -190,10 +192,10 @@ def kpkeEncrypt (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     KpkeCiphertext p :=
   let t_hat := decodeEkTHat ek
   let ρ     := decodeEkRho ek
-  let aHatT := genMatrixAT ρ p
-  let y     := genEncSecret r p
-  let e1    := genEncError1 r p
-  let e2    := genEncError2 r p
+  let aHatT := genMatrixAT prims ρ p
+  let y     := genEncSecret prims r p
+  let e1    := genEncError1 prims r p
+  let e2    := genEncError2 prims r p
   let y_hat := nttVec y
   let u     := computeU aHatT y_hat e1
   let mu    := decompressMsg m
@@ -231,7 +233,7 @@ theorem computeV_eq {p : ParamSet}
 /-- The transpose of `genMatrixA` equals `genMatrixAT`. -/
 theorem genMatrixAT_eq_transpose (ρ : Fin 32 → UInt8)
     (p : ParamSet) (i j : Fin p.k) :
-    genMatrixAT ρ p i j = genMatrixA ρ p j i := by
+    genMatrixAT prims ρ p i j = genMatrixA prims ρ p j i := by
   simp [genMatrixAT]
 
 end Fips203

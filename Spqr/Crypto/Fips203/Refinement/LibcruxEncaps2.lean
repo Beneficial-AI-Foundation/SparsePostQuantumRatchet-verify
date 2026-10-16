@@ -104,7 +104,7 @@ serialised `t̂`, round 2 produces `ct[960 : 1088]` of the monolithic
 theorem ct2Bytes_stateOut_pk2Bytes (seed : Fin 64 → UInt8)
     (h : 64 ≤ (toU8List (pk1Bytes seed)).length) (m : Fin 32 → UInt8) (i : Fin ct2Size) :
     ct2Bytes (stateArray (stateOut (toU8List (pk1Bytes seed)) h m)) (pk2Array (pk2Bytes seed)) i =
-      (mlkemEncaps mlkem768 (ekBytes seed) m).ct ⟨960 + i.val, by
+      (mlkemEncaps stdPrimitives mlkem768 (ekBytes seed) m).ct ⟨960 + i.val, by
         have := i.isLt; simp only [ct2Size] at this
         rw [ctSizeEnc_eq_ctSize, mlkem768_ctSize]; omega⟩ := by
   rw [stateOut, ct2Bytes_stateArray, decodePk2THat_pk2Bytes, encaps1Output_pk1Bytes,
@@ -116,7 +116,7 @@ byte-for-byte the ciphertext of Algorithm 17 on its `ek`. -/
 theorem ct_eq_ct1Bytes_append_ct2Bytes (seed : Fin 64 → UInt8)
     (h : 64 ≤ (toU8List (pk1Bytes seed)).length) (m : Fin 32 → UInt8)
     (idx : Fin mlkem768.ctSizeEnc) :
-    (mlkemEncaps mlkem768 (ekBytes seed) m).ct idx =
+    (mlkemEncaps stdPrimitives mlkem768 (ekBytes seed) m).ct idx =
       if hlt : idx.val < ct1Size then
         ct1Bytes (toU8List (pk1Bytes seed)) h m ⟨idx.val, hlt⟩
       else

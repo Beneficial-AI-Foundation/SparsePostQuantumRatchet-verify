@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 public import Spqr.Crypto.Fips203.Params
 public import Spqr.Crypto.Fips203.Ring
+public import Spqr.Crypto.Fips203.Primitives
 public import Spqr.Crypto.Fips203.Sampling.SampleNTT
 public import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD
 public import Spqr.Crypto.Fips203.NTT.NTT
@@ -21,7 +22,8 @@ and a decryption key `dkPKE`.
 The algorithm:
 
 1. Expand the seed `d` via `G` (SHA3-512) to obtain `(ρ, σ) = G(d ‖ k)`.
-2. Generate the `k × k` matrix `Â` in NTT domain via `SampleNTT(ρ ‖ i ‖ j)`.
+2. Generate the `k × k` matrix `Â` in NTT domain via `Â[i,j] = SampleNTT(ρ ‖ j ‖ i)`
+   (note: column index `j` precedes row index `i` in the XOF input).
 3. Sample secret vector `s` and error vector `e` from `CBD_η₁` via `PRF_η₁(σ, N)`.
 4. Compute `ŝ = NTT(s)`, `ê = NTT(e)`.
 5. Compute `t̂ = Â ◦ ŝ + ê`.
@@ -36,16 +38,14 @@ noncomputable section
 
 namespace Fips203
 
-/-! ## Hash functions (axiomatised)
+/-! ## Hash functions
 
-`G` is SHA3-512 producing 64 bytes.  `PRF_η` is SHAKE-256 producing `64·η` bytes
-from a 33-byte input `(σ ‖ N)`.  Both are axiomatised as opaque oracles. -/
+`G` (SHA3-512, 64 bytes) and `PRF_η` (SHAKE-256, `64·η` bytes from `σ ‖ N`) are the fields
+`G` and `PRF` of a `Primitives` record (`Primitives.lean`).  Every definition and theorem in
+this file that depends on them takes the record as an explicit argument `prims`, so the
+results hold for every instantiation of the primitives. -/
 
-/-- `G(input)` — SHA3-512 hash producing 64 bytes. -/
-opaque hashG (input : List UInt8) : Fin 64 → UInt8
-
-/-- `PRF_η(σ, N)` — SHAKE-256 producing `64 · η` bytes from `σ ‖ N`. -/
-opaque prf (σ : Fin 32 → UInt8) (N : UInt8) (η : ℕ) : ℕ → UInt8
+variable (prims : Primitives)
 
 /-! ## Seed expansion -/
 
@@ -55,37 +55,69 @@ def seedInput (d : Fin 32 → UInt8) (p : ParamSet) : List UInt8 :=
 
 /-- Extract the public seed `ρ` (first 32 bytes of `G(d ‖ k)`). -/
 def rho (d : Fin 32 → UInt8) (p : ParamSet) : Fin 32 → UInt8 :=
-  fun i => hashG (seedInput d p) ⟨i.val, by omega⟩
+  fun i => prims.G (seedInput d p) ⟨i.val, by omega⟩
 
 /-- Extract the private seed `σ` (last 32 bytes of `G(d ‖ k)`). -/
 def sigma (d : Fin 32 → UInt8) (p : ParamSet) : Fin 32 → UInt8 :=
-  fun i => hashG (seedInput d p) ⟨32 + i.val, by omega⟩
+  fun i => prims.G (seedInput d p) ⟨32 + i.val, by omega⟩
 
 /-! ## XOF seed construction -/
 
-/-- Build the 34-byte XOF seed `ρ ‖ i ‖ j` for matrix entry `Â[i,j]`. -/
-def xofSeed (ρ : Fin 32 → UInt8) (i j : UInt8) : Fin 34 → UInt8 :=
+/-- Build the 34-byte XOF seed `ρ ‖ b₃₂ ‖ b₃₃`: the 32 bytes of `ρ` followed by
+`b₃₂` at (0-indexed) byte 32 and `b₃₃` at byte 33.
+
+This is a plain concatenation; the FIPS 203 index ordering for matrix entries is
+applied by the caller (`genMatrixA`). -/
+def xofSeed (ρ : Fin 32 → UInt8) (b₃₂ b₃₃ : UInt8) : Fin 34 → UInt8 :=
   fun idx =>
     if h : idx.val < 32 then ρ ⟨idx.val, h⟩
-    else if idx.val = 32 then i
-    else j
+    else if idx.val = 32 then b₃₂
+    else b₃₃
 
 /-! ## Matrix generation -/
 
-/-- Generate the `k × k` NTT-domain matrix `Â` from the public seed `ρ`. -/
+/-- Generate the `k × k` NTT-domain matrix `Â` from the public seed `ρ`.
+
+FIPS 203, Algorithm 13 step 5 (and Algorithm 14 step 6):
+
+  `Â[i, j] ← SampleNTT(ρ ‖ j ‖ i)`
+
+Note the order: the **column** index `j` is byte 32 and the **row** index `i` is
+byte 33 of the XOF input (FIPS counts them as bytes 33 and 34 from 1).  Getting this
+backwards yields `Âᵀ` instead of `Â`; the scheme still round-trips, but the encoded
+`t̂` (and hence `ekPKE`) and the ciphertext's `u` component would not match FIPS 203
+or interoperable implementations such as libcrux. -/
 def genMatrixA (ρ : Fin 32 → UInt8) (p : ParamSet) :
     Fin p.k → Fin p.k → (Fin n → Zq) :=
-  fun i j => sampleNTT (xofSeed ρ (UInt8.ofNat i.val) (UInt8.ofNat j.val))
+  fun i j => sampleNTT prims (xofSeed ρ (UInt8.ofNat j.val) (UInt8.ofNat i.val))
+
+/-- `Â[i,j]` is sampled from the seed `ρ ‖ j ‖ i` (column index first), as in
+FIPS 203 Algorithm 13 step 5. -/
+theorem genMatrixA_seed (ρ : Fin 32 → UInt8) (p : ParamSet) (i j : Fin p.k) :
+    genMatrixA prims ρ p i j =
+      sampleNTT prims (xofSeed ρ (UInt8.ofNat j.val) (UInt8.ofNat i.val)) := rfl
+
+/-- Byte 32 of the XOF seed used for `Â[i,j]` is the column index `j`. -/
+theorem genMatrixA_seed_byte32 (ρ : Fin 32 → UInt8) (p : ParamSet) (i j : Fin p.k) :
+    xofSeed ρ (UInt8.ofNat j.val) (UInt8.ofNat i.val) ⟨32, by omega⟩ =
+      UInt8.ofNat j.val := by
+  simp [xofSeed]
+
+/-- Byte 33 of the XOF seed used for `Â[i,j]` is the row index `i`. -/
+theorem genMatrixA_seed_byte33 (ρ : Fin 32 → UInt8) (p : ParamSet) (i j : Fin p.k) :
+    xofSeed ρ (UInt8.ofNat j.val) (UInt8.ofNat i.val) ⟨33, by omega⟩ =
+      UInt8.ofNat i.val := by
+  simp [xofSeed]
 
 /-! ## Secret and error vector sampling -/
 
 /-- Sample secret vector `s[i] = SamplePolyCBD_η₁(PRF(σ, i))` for `i ∈ {0,…,k−1}`. -/
 def genSecret (σ : Fin 32 → UInt8) (p : ParamSet) : Fin p.k → (Fin n → Zq) :=
-  fun i => samplePolyCBD (prf σ (UInt8.ofNat i.val) p.η₁) p.η₁
+  fun i => samplePolyCBD (prims.PRF σ (UInt8.ofNat i.val) p.η₁) p.η₁
 
 /-- Sample error vector `e[i] = SamplePolyCBD_η₁(PRF(σ, k+i))` for `i ∈ {0,…,k−1}`. -/
 def genError (σ : Fin 32 → UInt8) (p : ParamSet) : Fin p.k → (Fin n → Zq) :=
-  fun i => samplePolyCBD (prf σ (UInt8.ofNat (p.k + i.val)) p.η₁) p.η₁
+  fun i => samplePolyCBD (prims.PRF σ (UInt8.ofNat (p.k + i.val)) p.η₁) p.η₁
 
 /-! ## NTT of vectors -/
 
@@ -157,11 +189,11 @@ structure KpkeKeyPair (p : ParamSet) where
 Given a 32-byte seed `d`, produces an encryption key `ekPKE` and a decryption key
 `dkPKE` for the internal lattice-based public-key encryption scheme. -/
 def kpkeKeyGen (d : Fin 32 → UInt8) (p : ParamSet) : KpkeKeyPair p :=
-  let ρ     := rho d p
-  let σ     := sigma d p
-  let aHat  := genMatrixA ρ p
-  let s     := genSecret σ p
-  let e     := genError σ p
+  let ρ     := rho prims d p
+  let σ     := sigma prims d p
+  let aHat  := genMatrixA prims ρ p
+  let s     := genSecret prims σ p
+  let e     := genError prims σ p
   let s_hat := nttVec s
   let e_hat := nttVec e
   let t_hat := computeTHat aHat s_hat e_hat

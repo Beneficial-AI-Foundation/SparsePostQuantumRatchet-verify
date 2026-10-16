@@ -121,21 +121,22 @@ round 1 of Algorithm 17 on that key's `ek`, so the outputs are those of the *mon
 theorem encaps1Output_pk1Bytes (seed : Fin 64 → UInt8) (h : 64 ≤ (toU8List (pk1Bytes seed)).length)
     (m : Fin 32 → UInt8) :
     encaps1Output (toU8List (pk1Bytes seed)) h m =
-      mlkemEncapsPhase1 mlkem768 (headerOfEk (ekBytes seed)) m := by
+      mlkemEncapsPhase1 stdPrimitives mlkem768 (headerOfEk stdPrimitives (ekBytes seed)) m := by
   rw [encaps1Output, headerOfList_pk1Bytes]
 
 /-- The shared secret of round 1 on a generated key's header is the shared secret of
 Algorithm 17 on its `ek`. -/
 theorem ssOut_pk1Bytes (seed : Fin 64 → UInt8) (h : 64 ≤ (toU8List (pk1Bytes seed)).length)
     (m : Fin 32 → UInt8) :
-    ssOut (toU8List (pk1Bytes seed)) h m = (mlkemEncaps mlkem768 (ekBytes seed) m).ss := by
+    ssOut (toU8List (pk1Bytes seed)) h m =
+      (mlkemEncaps stdPrimitives mlkem768 (ekBytes seed) m).ss := by
   rw [ssOut, encaps1Output_pk1Bytes, mlkemEncapsPhase1_ss]
 
 /-- `c₁` of round 1 on a generated key's header is `ct[0 : 960]` of Algorithm 17 on its `ek`. -/
 theorem ct1Bytes_pk1Bytes (seed : Fin 64 → UInt8) (h : 64 ≤ (toU8List (pk1Bytes seed)).length)
     (m : Fin 32 → UInt8) (i : Fin ct1Size) :
     ct1Bytes (toU8List (pk1Bytes seed)) h m i =
-      (mlkemEncaps mlkem768 (ekBytes seed) m).ct ⟨i.val, by
+      (mlkemEncaps stdPrimitives mlkem768 (ekBytes seed) m).ct ⟨i.val, by
         have := i.isLt; simp only [ct1Size] at this
         rw [ctSizeEnc_eq_ctSize, mlkem768_ctSize]; omega⟩ := by
   rw [ct1Bytes, encaps1Output_pk1Bytes, mlkemEncapsPhase1_ct1]

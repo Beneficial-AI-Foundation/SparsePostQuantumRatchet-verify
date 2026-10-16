@@ -23,8 +23,18 @@ The algorithm:
 6. If `c ≠ c'` then `K' ← K̄`.
 7. Return `K'`.
 
-`ML-KEM.Decaps` (Algorithm 21) is `Decaps_internal` after input validation; the validation
-concerns only byte lengths, which are enforced here by the dependent types.
+`ML-KEM.Decaps` (Algorithm 21) is `Decaps_internal` after the input validation of § 7.3,
+which consists of two checks:
+
+* **Length checks** — `dk` has `768·k + 96` bytes and `c` has `32·(d_u·k + d_v)` bytes.
+  These are enforced here by the dependent types `Fin p.dkSize → UInt8` and
+  `Fin p.ctSizeEnc → UInt8`.
+* **Hash check** — `H(dk[384k : 768k+32]) = dk[768k+32 : 768k+64]`, i.e. the `h` segment
+  stored in `dk` must be the hash of the embedded `ekPKE`.  This check is **not** modelled:
+  this file defines only `Decaps_internal`, and the libcrux function it is used to specify
+  (`incremental::decapsulate_compressed_key`) does not perform the hash check either, so
+  `mlkemDecaps` is applied to every well-sized `dk`.  Modelling the check would make the
+  specification stricter than the code it describes.
 
 **Source**: NIST FIPS 203, § 6.3 (Algorithm 18)
 -/
@@ -35,17 +45,17 @@ noncomputable section
 
 namespace Fips203
 
-/-! ## Hash function `J` (axiomatised)
+/-! ## Hash function `J`
 
-`J` is SHAKE-256 producing 32 bytes.  Axiomatised as an opaque oracle like `hashG`. -/
+`J` (SHAKE-256, 32 bytes) is the field `J` of a `Primitives` record (`Primitives.lean`), taken
+as the explicit argument `prims` by every definition below that depends on it. -/
 
-/-- `J(input)` — SHAKE-256 producing 32 bytes. -/
-opaque hashJ (input : List UInt8) : Fin 32 → UInt8
+variable (prims : Primitives)
 
 /-- Implicit-rejection key `K̄ = J(z ‖ c)`. -/
 def rejectionKey {p : ParamSet} (z : Fin 32 → UInt8) (c : Fin p.ctSizeEnc → UInt8) :
     Fin 32 → UInt8 :=
-  hashJ (List.ofFn z ++ List.ofFn c)
+  prims.J (List.ofFn z ++ List.ofFn c)
 
 /-! ## ML-KEM.Decaps_internal — top-level definition -/
 
@@ -61,10 +71,10 @@ def mlkemDecaps (p : ParamSet) (dk : Fin p.dkSize → UInt8)
   let h     := decodeDkH dk
   let z     := decodeDkZ dk
   let m'    := kpkeDecrypt p dkPke c
-  let K'    := sharedKey m' h
-  let r'    := encRandomness m' h
-  let Kbar  := rejectionKey z c
-  let c'    := (kpkeEncrypt p ekPke m' r').ct
+  let K'    := sharedKey prims m' h
+  let r'    := encRandomness prims m' h
+  let Kbar  := rejectionKey prims z c
+  let c'    := (kpkeEncrypt prims p ekPke m' r').ct
   if c = c' then K' else Kbar
 
 /-! ## Elementary properties -/
@@ -72,18 +82,19 @@ def mlkemDecaps (p : ParamSet) (dk : Fin p.dkSize → UInt8)
 /-- When the re-encryption check succeeds, `Decaps` returns `G(m' ‖ h)`'s first half. -/
 theorem mlkemDecaps_of_reencrypt_eq (p : ParamSet) (dk : Fin p.dkSize → UInt8)
     (c : Fin p.ctSizeEnc → UInt8)
-    (h_eq : c = (kpkeEncrypt p (decodeDkEk dk) (kpkeDecrypt p (decodeDkPke dk) c)
-      (encRandomness (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk))).ct) :
-    mlkemDecaps p dk c = sharedKey (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk) := by
+    (h_eq : c = (kpkeEncrypt prims p (decodeDkEk dk) (kpkeDecrypt p (decodeDkPke dk) c)
+      (encRandomness prims (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk))).ct) :
+    mlkemDecaps prims p dk c =
+      sharedKey prims (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk) := by
   unfold mlkemDecaps
   rw [if_pos h_eq]
 
 /-- When the re-encryption check fails, `Decaps` returns the implicit-rejection key. -/
 theorem mlkemDecaps_of_reencrypt_ne (p : ParamSet) (dk : Fin p.dkSize → UInt8)
     (c : Fin p.ctSizeEnc → UInt8)
-    (h_ne : c ≠ (kpkeEncrypt p (decodeDkEk dk) (kpkeDecrypt p (decodeDkPke dk) c)
-      (encRandomness (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk))).ct) :
-    mlkemDecaps p dk c = rejectionKey (decodeDkZ dk) c := by
+    (h_ne : c ≠ (kpkeEncrypt prims p (decodeDkEk dk) (kpkeDecrypt p (decodeDkPke dk) c)
+      (encRandomness prims (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk))).ct) :
+    mlkemDecaps prims p dk c = rejectionKey prims (decodeDkZ dk) c := by
   unfold mlkemDecaps
   rw [if_neg h_ne]
 

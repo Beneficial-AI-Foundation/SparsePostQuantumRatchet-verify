@@ -32,6 +32,8 @@ noncomputable section
 
 namespace Fips203
 
+variable (prims : Primitives)
+
 /-! ## Key derivation `(K, r) = G(m ‖ h)` -/
 
 /-- The 64-byte input `m ‖ h` to `G`. -/
@@ -40,11 +42,11 @@ def gInput (m h : Fin 32 → UInt8) : List UInt8 :=
 
 /-- Shared secret `K`: the first 32 bytes of `G(m ‖ h)`. -/
 def sharedKey (m h : Fin 32 → UInt8) : Fin 32 → UInt8 :=
-  fun i => hashG (gInput m h) ⟨i.val, by omega⟩
+  fun i => prims.G (gInput m h) ⟨i.val, by omega⟩
 
 /-- Encryption randomness `r`: the last 32 bytes of `G(m ‖ h)`. -/
 def encRandomness (m h : Fin 32 → UInt8) : Fin 32 → UInt8 :=
-  fun i => hashG (gInput m h) ⟨32 + i.val, by omega⟩
+  fun i => prims.G (gInput m h) ⟨32 + i.val, by omega⟩
 
 /-! ## ML-KEM.Encaps_internal — top-level definition -/
 
@@ -61,23 +63,24 @@ Given an encapsulation key `ek` (of size `384 · k + 32` bytes) and a 32-byte me
 produces the shared secret `K` and the ciphertext `c`. -/
 def mlkemEncaps (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) : MlkemEncapsOutput p :=
-  let h := hashEk ek
-  let K := sharedKey m h
-  let r := encRandomness m h
+  let h := hashEk prims ek
+  let K := sharedKey prims m h
+  let r := encRandomness prims m h
   { ss := K
-    ct := (kpkeEncrypt p ek m r).ct }
+    ct := (kpkeEncrypt prims p ek m r).ct }
 
 /-! ## Elementary properties -/
 
 /-- The shared secret is the first half of `G(m ‖ H(ek))`. -/
 theorem mlkemEncaps_ss (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) :
-    (mlkemEncaps p ek m).ss = sharedKey m (hashEk ek) := rfl
+    (mlkemEncaps prims p ek m).ss = sharedKey prims m (hashEk prims ek) := rfl
 
 /-- The ciphertext is `K-PKE.Encrypt(ek, m, r)` with `r` the second half of `G(m ‖ H(ek))`. -/
 theorem mlkemEncaps_ct (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt8)
     (m : Fin 32 → UInt8) :
-    (mlkemEncaps p ek m).ct = (kpkeEncrypt p ek m (encRandomness m (hashEk ek))).ct := rfl
+    (mlkemEncaps prims p ek m).ct =
+      (kpkeEncrypt prims p ek m (encRandomness prims m (hashEk prims ek))).ct := rfl
 
 /-- For ML-KEM-768, the ciphertext has `1088` bytes and the shared secret `32` bytes. -/
 theorem mlkemEncaps_sizes_768 :

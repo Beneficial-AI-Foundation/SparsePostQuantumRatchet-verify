@@ -57,7 +57,8 @@ theorem decapsulate_ss (dk : Array U8 2400#usize)
     (ct1 : spqr.libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
     (ct2 : spqr.libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
     (ss : Array U8 32#usize) (h : decapsulate_compressed_key dk ct1 ct2 = ok ss) :
-    ss.val = toU8List (mlkemDecaps mlkem768 (dkOfArray dk) (ctOfParts ct1.value ct2.value)) := by
+    ss.val = toU8List
+      (mlkemDecaps stdPrimitives mlkem768 (dkOfArray dk) (ctOfParts ct1.value ct2.value)) := by
   rw [decapsulate_eq_mlkemDecaps, ok.injEq] at h
   rw [← h]
   rfl
@@ -77,7 +78,7 @@ theorem ctOfParts_ct1Array_ct2Array (seed : Fin 64 → UInt8)
     ctOfParts (ct1Array (toU8List (pk1Bytes seed)) h m)
         (ct2Array (stateArray (stateOut (toU8List (pk1Bytes seed)) h m))
           (pk2Array (pk2Bytes seed))) =
-      (mlkemEncaps mlkem768 (ekBytes seed) m).ct := by
+      (mlkemEncaps stdPrimitives mlkem768 (ekBytes seed) m).ct := by
   funext idx
   rw [ct_eq_ct1Bytes_append_ct2Bytes seed h m idx]
   unfold ctOfParts
@@ -96,13 +97,14 @@ randomness. -/
 theorem ssBytes_roundTrip (seed : Fin 64 → UInt8)
     (h : 64 ≤ (toU8List (pk1Bytes seed)).length) (m : Fin 32 → UInt8)
     (h_noise : ∀ idx : Fin n,
-      absZq (honestW (seedD seed) m (honestR (seedD seed) m mlkem768) mlkem768 idx -
-        decompressMsg m idx) < q / 4) :
+      absZq (honestW stdPrimitives (seedD seed) m
+        (honestR stdPrimitives (seedD seed) m mlkem768) mlkem768 idx - decompressMsg m idx)
+        < q / 4) :
     ssBytes (keyPairArray seed) (ct1Array (toU8List (pk1Bytes seed)) h m)
         (ct2Array (stateArray (stateOut (toU8List (pk1Bytes seed)) h m))
           (pk2Array (pk2Bytes seed))) =
-      (mlkemEncaps mlkem768 (ekBytes seed) m).ss := by
+      (mlkemEncaps stdPrimitives mlkem768 (ekBytes seed) m).ss := by
   rw [ssBytes, dkOfArray_keyPairArray, ctOfParts_ct1Array_ct2Array seed h m]
-  exact mlkem_roundTrip_768 (seedD seed) (seedZ seed) m h_noise
+  exact mlkem_roundTrip_768 stdPrimitives (seedD seed) (seedZ seed) m h_noise
 
 end Fips203.Refinement

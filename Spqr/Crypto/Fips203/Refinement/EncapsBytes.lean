@@ -81,7 +81,7 @@ def headerOfList (pk1 : List U8) (h : 64 ≤ pk1.length) : EncapsHeader :=
 /-- The header read from the libcrux `pk1` buffer of a generated key pair is the FIPS 203
 header `(ρ, H(ek))` of that key's `ek`. -/
 theorem headerOfList_pk1Bytes (seed : Fin 64 → UInt8) (h : 64 ≤ (toU8List (pk1Bytes seed)).length) :
-    headerOfList (toU8List (pk1Bytes seed)) h = headerOfEk (ekBytes seed) := by
+    headerOfList (toU8List (pk1Bytes seed)) h = headerOfEk stdPrimitives (ekBytes seed) := by
   simp only [headerOfList, headerOfEk, toU8List_getElem, U8.toUInt8_ofUInt8, pk1Bytes]
   congr 1
   · funext i
@@ -238,7 +238,7 @@ theorem overwritePrefix_take {N : ℕ} (l : List U8) (b : Fin N → UInt8) :
 /-- Round 1 of Algorithm 17 on the parsed header and the 32-byte message. -/
 def encaps1Output (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) :
     EncapsPhase1Output mlkem768 :=
-  mlkemEncapsPhase1 mlkem768 (headerOfList pk1 h) m
+  mlkemEncapsPhase1 stdPrimitives mlkem768 (headerOfList pk1 h) m
 
 /-- The 960-byte first ciphertext half as a `Fin 960 → UInt8`. -/
 def ct1Bytes (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) : Fin ct1Size → UInt8 :=
@@ -368,13 +368,16 @@ theorem pk2Valid_pk2Bytes (seed : Fin 64 → UInt8) :
   rw [pk2OfList_toU8List]
   rw [decodePk2THat_pk2Bytes]
   change
-  byteEncodeZq 12 (decodeEkTHat ((mlkemKeyGen (seedD seed) (seedZ seed) mlkem768).ek) polyIdx) j =
-    (mlkemKeyGen (seedD seed) (seedZ seed) mlkem768).ek ⟨384 * polyIdx.val + j.val, _⟩
-  rw [mlkemKeyGen_ek, show (kpkeKeyGen (seedD seed) mlkem768).ek =
-    encodeEk (computeTHat (genMatrixA (rho (seedD seed) mlkem768) mlkem768)
-      (nttVec (genSecret (sigma (seedD seed) mlkem768) mlkem768))
-      (nttVec (genError (sigma (seedD seed) mlkem768) mlkem768)))
-    (rho (seedD seed) mlkem768) from rfl]
+  byteEncodeZq 12
+      (decodeEkTHat ((mlkemKeyGen stdPrimitives (seedD seed) (seedZ seed) mlkem768).ek) polyIdx) j =
+    (mlkemKeyGen stdPrimitives (seedD seed) (seedZ seed) mlkem768).ek
+      ⟨384 * polyIdx.val + j.val, _⟩
+  rw [mlkemKeyGen_ek, show (kpkeKeyGen stdPrimitives (seedD seed) mlkem768).ek =
+    encodeEk
+      (computeTHat (genMatrixA stdPrimitives (rho stdPrimitives (seedD seed) mlkem768) mlkem768)
+        (nttVec (genSecret stdPrimitives (sigma stdPrimitives (seedD seed) mlkem768) mlkem768))
+        (nttVec (genError stdPrimitives (sigma stdPrimitives (seedD seed) mlkem768) mlkem768)))
+      (rho stdPrimitives (seedD seed) mlkem768) from rfl]
   rw [decodeEkTHat_encodeEk]
   simp only [encodeEk, encodePoly12, byteEncodeZq]
   have h_lt : 384 * polyIdx.val + j.val < 384 * mlkem768.k := by
@@ -385,5 +388,47 @@ theorem pk2Valid_pk2Bytes (seed : Fin 64 → UInt8) :
   simp only [h_div, h_mod, Fin.cast_mk]
 
 instance (pk2 : List U8) : Decidable (pk2Valid pk2) := Classical.dec _
+
+/-! ## Header/key consistency check `H(pk2 ‖ ρ) = pk1[32 : 64]`
+
+libcrux `validate_pk_parts` (`src/ind_cca/incremental.rs` lines 315–339) rebuilds the full
+encapsulation key `ek = pk2 ‖ pk1[0 : 32]`, hashes it with `H` and compares the result against
+`pk1[32 : 64]`; a mismatch is reported as `InvalidPublicKey`. -/
+
+/-- The full FIPS 203 encapsulation key `ek = pk2 ‖ ρ` rebuilt from the two libcrux halves
+(`pk[0..1152] = pk2`, `pk[1152..1184] = pk1[0..32]`). -/
+def ekOfParts (pk1 pk2 : List U8) (h1 : 64 ≤ pk1.length) (h2 : 1152 ≤ pk2.length) :
+    Fin (384 * mlkem768.k + 32) → UInt8 :=
+  fun i =>
+    if h : i.val < 1152 then (pk2[i.val]'(by omega)).toUInt8
+    else (pk1[i.val - 1152]'(by
+      have := i.isLt; simp only [mlkem768_k] at this; omega)).toUInt8
+
+/-- libcrux's hash check: `H(pk2 ‖ pk1[0 : 32]) = pk1[32 : 64]`.  Requires both inputs to be
+long enough to be parsed. -/
+def pk1HashValid (pk1 pk2 : List U8) : Prop :=
+  ∃ (h1 : 64 ≤ pk1.length) (h2 : 1152 ≤ pk2.length),
+    hashEk stdPrimitives (ekOfParts pk1 pk2 h1 h2) = (headerOfList pk1 h1).h
+
+instance (pk1 pk2 : List U8) : Decidable (pk1HashValid pk1 pk2) := Classical.dec _
+
+/-- On a generated key pair, rebuilding `ek` from `pk1`/`pk2` recovers `ekBytes seed`. -/
+theorem ekOfParts_pk1Bytes_pk2Bytes (seed : Fin 64 → UInt8)
+    (h1 : 64 ≤ (toU8List (pk1Bytes seed)).length)
+    (h2 : 1152 ≤ (toU8List (pk2Bytes seed)).length) :
+    ekOfParts (toU8List (pk1Bytes seed)) (toU8List (pk2Bytes seed)) h1 h2 = ekBytes seed := by
+  funext i
+  simp only [ekOfParts, toU8List_getElem, U8.toUInt8_ofUInt8, pk2Bytes, pk1Bytes]
+  split
+  · rfl
+  · rw [dif_pos (by have := i.isLt; simp only [mlkem768_k] at this; omega)]
+    exact congrArg _ (Fin.ext (by simp only; omega))
+
+/-- For validly generated keys, the hash check always passes. -/
+theorem pk1HashValid_pk1Bytes (seed : Fin 64 → UInt8) :
+    pk1HashValid (toU8List (pk1Bytes seed)) (toU8List (pk2Bytes seed)) := by
+  refine ⟨by simp [toU8List_length], by simp [toU8List_length], ?_⟩
+  rw [ekOfParts_pk1Bytes_pk2Bytes, headerOfList_pk1Bytes]
+  rfl
 
 end Fips203.Refinement

@@ -38,16 +38,12 @@ public import Spqr.Crypto.Fips203.NTT.Packed
 public import Spqr.Crypto.Fips203.NTT.RoundTrip
 public import Spqr.Crypto.Fips203.NTT.Spec
 public import Spqr.Crypto.Fips203.NTT.Zetas
-public import Spqr.Crypto.Fips203.Noise.Compression
-public import Spqr.Crypto.Fips203.Noise.Distribution
-public import Spqr.Crypto.Fips203.Noise.FailureRate
-public import Spqr.Crypto.Fips203.Noise.Moments
-public import Spqr.Crypto.Fips203.Noise.TailBound
 public import Spqr.Crypto.Fips203.PKE.Decrypt
 public import Spqr.Crypto.Fips203.PKE.Encrypt
 public import Spqr.Crypto.Fips203.PKE.KeyGen
 public import Spqr.Crypto.Fips203.PKE.RoundTrip
 public import Spqr.Crypto.Fips203.Params
+public import Spqr.Crypto.Fips203.Primitives
 public import Spqr.Crypto.Fips203.Refinement.DecapsBytes
 public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
 public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes

@@ -77,7 +77,7 @@ def ctOfParts (ct1 : Array U8 960#usize) (ct2 : Array U8 128#usize) :
 /-- The 32-byte shared secret: `ML-KEM.Decaps_internal(dk, c₁ ‖ c₂)` (Algorithm 18). -/
 def ssBytes (dk : Array U8 2400#usize) (ct1 : Array U8 960#usize) (ct2 : Array U8 128#usize) :
     Fin 32 → UInt8 :=
-  mlkemDecaps mlkem768 (dkOfArray dk) (ctOfParts ct1 ct2)
+  mlkemDecaps stdPrimitives mlkem768 (dkOfArray dk) (ctOfParts ct1 ct2)
 
 /-- The shared secret as an Aeneas list. -/
 def ssList (dk : Array U8 2400#usize) (ct1 : Array U8 960#usize) (ct2 : Array U8 128#usize) :

@@ -1919,53 +1919,70 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]
 
-    Concrete model of Rust's `validate_pk_bytes(pk1, pk2)`:
-    1. `PublicKey1::try_from(pk1)`: fails with `InvalidInputLength` if `pk1.len() < 64`.
-    2. `PublicKey2::try_from(pk2)`: fails with `InvalidInputLength` if `pk2.len() < 1152`.
-    3. FIPS 203 public key validation: checks that `ByteEncode₁₂(ByteDecode₁₂(pk2)) == pk2`
-       (all coefficients are in `[0, q)`).
+    Concrete model of Rust's `validate_pk_bytes(pk1, pk2)`
+    (`src/ind_cca/incremental.rs` lines 297–339, `validate_pk_bytes` + `validate_pk_parts`):
+    1. Length check: fails with `InvalidInputLength` unless `pk1.len() == 64` **and**
+       `pk2.len() == 1152` (exact equality; over-long inputs are rejected).
+    2. Hash check: rebuilds `ek = pk2 ‖ pk1[0..32]` and fails with `InvalidPublicKey` unless
+       `H(ek) == pk1[32..64]` (`Fips203.Refinement.pk1HashValid`).
+    3. Modulus check (FIPS 203 § 7.2): fails with `InvalidPublicKey` unless
+       `ByteEncode₁₂(ByteDecode₁₂(pk2)) == pk2` (`Fips203.Refinement.pk2Valid`).
 
     The outer `Result` is always `ok` (the call never panics).
 
-    **Modelling note**: The modulus check (step 3) is modelled opaquely via
-    `Fips203.Refinement.pk2Valid`, since fully expanding the `ByteEncode₁₂ ∘ ByteDecode₁₂`
-    round-trip into the definition would couple this file to deep FIPS 203 internals.
-    For validly generated keys (produced by `from_seed`), the modulus check always passes
-    (see `Fips203.Refinement.pk2Valid_pk2Bytes`). -/
+    **Modelling note**: steps 2 and 3 are modelled via the predicates
+    `Fips203.Refinement.pk1HashValid` / `Fips203.Refinement.pk2Valid`; both always hold for keys
+    produced by `from_seed` (`pk1HashValid_pk1Bytes`, `pk2Valid_pk2Bytes`). -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes"]
 noncomputable def libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   :
   Slice Std.U8 → Slice Std.U8 → Result (core.result.Result Unit
     libcrux_ml_kem.ind_cca.incremental.types.Error) :=
   fun pk1 pk2 =>
-    if pk1.length < 64 then
+    if pk1.length ≠ 64 ∨ pk2.length ≠ 1152 then
       ok (.Err .InvalidInputLength)
-    else if pk2.length < 1152 then
-      ok (.Err .InvalidInputLength)
-    else if Fips203.Refinement.pk2Valid pk2.val then
-      ok (.Ok ())
+    else if ¬ Fips203.Refinement.pk1HashValid pk1.val pk2.val then
+      ok (.Err .InvalidPublicKey)
+    else if ¬ Fips203.Refinement.pk2Valid pk2.val then
+      ok (.Err .InvalidPublicKey)
     else
-      ok (.Err .InvalidInputLength)
+      ok (.Ok ())
 
 /-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes`**:
 
 - The call never panics (the outer `Result` is always `ok`).
-- Returns `Err InvalidInputLength` if `pk1.len() < 64` or `pk2.len() < 1152`.
-- Returns `Ok ()` if both length checks pass and the FIPS 203 public-key modulus check
-  (`Fips203.Refinement.pk2Valid`) succeeds; `Err InvalidInputLength` otherwise. -/
+- Returns `Err InvalidInputLength` if `pk1.len() ≠ 64` or `pk2.len() ≠ 1152`.
+- Otherwise returns `Err InvalidPublicKey` if the header hash check
+  `H(pk2 ‖ pk1[0..32]) = pk1[32..64]` (`Fips203.Refinement.pk1HashValid`) or the FIPS 203
+  modulus check (`Fips203.Refinement.pk2Valid`) fails.
+- Returns `Ok ()` iff the lengths are exact and both checks pass. -/
 @[step]
 theorem libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes_spec
     (pk1 pk2 : Slice Std.U8) :
     libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes pk1 pk2
       ⦃ (r : core.result.Result Unit libcrux_ml_kem.ind_cca.incremental.types.Error) =>
-      (pk1.length < 64 → r = .Err .InvalidInputLength) ∧
-      (64 ≤ pk1.length → pk2.length < 1152 → r = .Err .InvalidInputLength) ∧
-      (64 ≤ pk1.length → 1152 ≤ pk2.length → Fips203.Refinement.pk2Valid pk2.val →
-        r = .Ok ()) ∧
-      (64 ≤ pk1.length → 1152 ≤ pk2.length → ¬ Fips203.Refinement.pk2Valid pk2.val →
-        r = .Err .InvalidInputLength) ⦄ := by
+      (pk1.length ≠ 64 ∨ pk2.length ≠ 1152 → r = .Err .InvalidInputLength) ∧
+      (pk1.length = 64 → pk2.length = 1152 →
+        ¬ Fips203.Refinement.pk1HashValid pk1.val pk2.val → r = .Err .InvalidPublicKey) ∧
+      (pk1.length = 64 → pk2.length = 1152 →
+        ¬ Fips203.Refinement.pk2Valid pk2.val → r = .Err .InvalidPublicKey) ∧
+      (r = .Ok () ↔ pk1.length = 64 ∧ pk2.length = 1152 ∧
+        Fips203.Refinement.pk1HashValid pk1.val pk2.val ∧
+        Fips203.Refinement.pk2Valid pk2.val) ⦄ := by
   unfold libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
-  split <;> (try split) <;> (try split) <;> simp_all [WP.spec_ok]
+  split
+  · rename_i h
+    simp only [WP.spec_ok]
+    refine ⟨fun _ => trivial, fun h1 h2 _ => ?_, fun h1 h2 _ => ?_, ?_⟩
+    · exact absurd h (by simp [h1, h2])
+    · exact absurd h (by simp [h1, h2])
+    · constructor
+      · intro hc; cases hc
+      · rintro ⟨h1, h2, -, -⟩; exact absurd h (by simp [h1, h2])
+  · rename_i h
+    rw [not_or, not_not, not_not] at h
+    obtain ⟨h1, h2⟩ := h
+    split <;> (try split) <;> simp_all [WP.spec_ok]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 344:8-349:39
@@ -2046,7 +2063,10 @@ noncomputable def libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
   -- Model: FIPS 203 `ML-KEM.Decaps_internal` (`Fips203.mlkemDecaps`, Algorithm 18) on the
   -- decapsulation key read from the 2400-byte compressed key-pair buffer and the reassembled
   -- ciphertext `c = c₁ ‖ c₂`.  All inputs are fixed-size arrays, so there are no error cases
-  -- and the function never fails.  See `Spqr/Crypto/Fips203/Refinement/DecapsBytes.lean`.
+  -- and the function never fails.  Note that this is `Decaps_internal`, not `ML-KEM.Decaps`
+  -- (Algorithm 21): the FIPS 203 § 7.3 hash check `H(dk[1152:2336]) = dk[2336:2368]` is
+  -- not performed by libcrux's `decapsulate_compressed_key`, so the model admits any
+  -- 2400-byte `key_pair`.  See `Spqr/Crypto/Fips203/Refinement/DecapsBytes.lean`.
   ok (Fips203.Refinement.ssArray key_pair ciphertext1.value ciphertext2.value)
 
 /-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key`**
@@ -2521,36 +2541,41 @@ end spqr.kdf
 /-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
     Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1
 
-    Concrete model of the opaque endianness workaround for libcrux issue #1275.
-    The function inspects the error₂ coefficients in the 2080-byte encapsulation state
-    to detect incorrect endianness and, when detected, returns the byte-swapped state.
-    When no issue is detected (or the state is ambiguous), it returns `None`.
+    SPQR's own (not libcrux's) endianness workaround for libcrux issue #1275, marked
+    `#[hax_lib::opaque]` in the Rust source.  It scans the `error₂` region
+    `es[1536 .. 2048]` in 2-byte little-endian words:
+    * `0x0000` / `0xFFFF` are skipped (identical in both endiannesses);
+    * `0x0001` / `0x0002` / `0xFFFE` ⇒ the state is correctly encoded, return `None`;
+    * `0x0100` / `0x0200` / `0xFEFF` ⇒ the state is byte-swapped, return
+      `Some (flip_endianness_of_encapsulation_state es)`;
+    * any other word ⇒ "weird state", return `None`.
 
-    The model returns `None` (no fix applied): this is the common-case behaviour on
-    correctly encoded states and is sufficient for the FIPS 203 verification scope
-    (the correctness of the workaround itself is outside FIPS 203; see `doc/plan.md`,
-    § 10.3).  The spec theorem `potentially_fix_state_spec` captures the hax contract
-    (`ensures`: any `Some v` has `v.length = 2080`). -/
+    The function is kept **uninterpreted** here: on byte-swapped states it genuinely returns
+    `Some`, so any concrete stub (e.g. `fun _ => ok none`) would be an unsound model and would
+    let downstream specs claim `encaps2` consumes `es` itself on states the Rust repairs.  The
+    only property assumed is the hax contract (`potentially_fix_state_…_spec` below). -/
 @[rust_fun "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275"]
-def
+noncomputable opaque
   incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-  : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8)) :=
-  fun _es => ok none
+  : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8))
 
-/-- **Spec theorem for `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`**:
+/-- **Trusted spec axiom for `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`**:
 
-Captures the hax contract from `src/incremental_mlkem768.rs`, lines 85-90:
+Exactly the hax contract from `src/incremental_mlkem768.rs`, lines 85-90:
 - **requires**: `es.len() == 2080`
 - **ensures**: `|result| if let Some(es) = result { es.len() == 2080 } else { true }`
 
-Under the length precondition, the call succeeds with some `mf : Option (Vec U8)` such
-that any `Some v` satisfies `v.length = 2080`. -/
+Under the length precondition the call succeeds (the only panic site is
+`assert_eq!(es.len(), 2080)`, discharged by `h_es`; `chunks(2)` on the 512-byte region and
+`try_into` on each 2-byte chunk cannot fail) and returns `mf : Option (Vec U8)` such that any
+`Some v` has `v.length = 2080` (`flip_endianness_of_encapsulation_state` preserves length, see
+`flip_endianness_of_encapsulation_state_spec`).  Nothing is assumed about *which* of
+`None` / `Some (flipped es)` is returned. -/
 @[step]
-theorem incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
+axiom incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
     (es : alloc.vec.Vec Std.U8) (h_es : es.length = 2080) :
     incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 es
-      ⦃ (mf : Option (alloc.vec.Vec Std.U8)) => ∀ v ∈ mf, v.length = 2080 ⦄ := by
-  simp [incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]
+      ⦃ (mf : Option (alloc.vec.Vec Std.U8)) => ∀ v ∈ mf, v.length = 2080 ⦄
 
 /- See `Spqr/Specs/Lib/StatePb.lean`: these wrap prost's `encode_to_vec`/`decode` for the ratchet
 state (translation patch `lib-state_pb.patch`). -/

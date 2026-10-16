@@ -51,7 +51,8 @@ theorem from_seed_eq_mlkemKeyGen (seed : Array U8 64#usize) :
 theorem from_seed_value (seed : Array U8 64#usize) (kp : KeyPairCompressedBytes)
     (h : KeyPairCompressedBytes.from_seed seed = ok kp) :
     kp.value.val =
-      toU8List (mlkemKeyGen (seedD (seedOfArray seed)) (seedZ (seedOfArray seed)) mlkem768).dk := by
+      toU8List (mlkemKeyGen stdPrimitives (seedD (seedOfArray seed)) (seedZ (seedOfArray seed))
+        mlkem768).dk := by
   rw [from_seed_eq_mlkemKeyGen, ok.injEq] at h
   subst h; rfl
 
@@ -114,22 +115,23 @@ directly: e.g. the last 32 bytes are the implicit-rejection value `z = seed[32 :
 /-- The implicit-rejection value stored in the buffer is `seed[32 : 64]`. -/
 theorem from_seed_decodeDkZ (seed : Array U8 64#usize) :
     decodeDkZ (keyPairBytes (seedOfArray seed)) = seedZ (seedOfArray seed) :=
-  decodeDkZ_mlkemKeyGen _ _ _
+  decodeDkZ_mlkemKeyGen _ _ _ _
 
 /-- The hash stored in the buffer is `H(ek)` of the FIPS 203 encapsulation key. -/
 theorem from_seed_decodeDkH (seed : Array U8 64#usize) :
-    decodeDkH (keyPairBytes (seedOfArray seed)) = hashEk (ekBytes (seedOfArray seed)) :=
-  decodeDkH_mlkemKeyGen _ _ _
+    decodeDkH (keyPairBytes (seedOfArray seed)) =
+      hashEk stdPrimitives (ekBytes (seedOfArray seed)) :=
+  decodeDkH_mlkemKeyGen _ _ _ _
 
 /-- The encapsulation key embedded in the buffer is the FIPS 203 `ek`. -/
 theorem from_seed_decodeDkEk (seed : Array U8 64#usize) :
     decodeDkEk (keyPairBytes (seedOfArray seed)) = ekBytes (seedOfArray seed) :=
-  decodeDkEk_mlkemKeyGen _ _ _
+  decodeDkEk_mlkemKeyGen _ _ _ _
 
 /-- The PKE decryption key embedded in the buffer is the K-PKE `dkPKE`. -/
 theorem from_seed_decodeDkPke (seed : Array U8 64#usize) :
     decodeDkPke (keyPairBytes (seedOfArray seed)) =
-      (kpkeKeyGen (seedD (seedOfArray seed)) mlkem768).dk :=
-  decodeDkPke_mlkemKeyGen _ _ _
+      (kpkeKeyGen stdPrimitives (seedD (seedOfArray seed)) mlkem768).dk :=
+  decodeDkPke_mlkemKeyGen _ _ _ _
 
 end Fips203.Refinement

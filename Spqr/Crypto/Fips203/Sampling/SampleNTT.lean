@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 public import Spqr.Crypto.Fips203.Params
 public import Spqr.Crypto.Fips203.Ring
+public import Spqr.Crypto.Fips203.Primitives
 public import Mathlib.Tactic.Ring
 /-!
 # FIPS 203 Algorithm 5: `SampleNTT`
@@ -29,11 +30,12 @@ terminates once all 256 coefficients have been filled.
 
 namespace Fips203
 
-/-! ## XOF byte stream (axiomatised) -/
+/-! ## XOF byte stream
 
-/-- An opaque model of the SHAKE-128 XOF.  Given a 34-byte seed (`ρ ‖ i ‖ j`), produces
-an infinite stream of pseudo-random bytes. -/
-opaque xof (seed : Fin 34 → UInt8) : ℕ → UInt8
+The SHAKE-128 XOF is the `XOF` field of a `Primitives` record (`Primitives.lean`): given a
+34-byte seed (`ρ ‖ i ‖ j`) it produces an unbounded stream of bytes.  The definitions below
+that consume the stream take the record as an explicit argument `prims`, so every statement
+about them holds for every instantiation of the XOF. -/
 
 /-! ## Candidate extraction from byte triples -/
 
@@ -100,13 +102,19 @@ def processTriple (s : SampleState) (stream : ℕ → UInt8) (j : ℕ) : SampleS
 
 /-! ## Recursive sampling loop -/
 
-/-- Process at most `fuel` byte triples starting from index `j`.  Terminates early once
-all 256 coefficients are accepted. -/
+/-- Process at most `fuel` byte triples starting from index `j`.  Returns `some s'` as soon
+as all 256 coefficients are accepted, and `none` if the fuel is exhausted first.
+
+FIPS 203 Algorithm 7 loops unboundedly (`while j < 256`).  Appendix B permits a cap on the
+number of iterations provided that (i) the cap is at least 280 and (ii) on reaching the cap
+all intermediate results are destroyed and a single, stream-independent failure value is
+returned.  Returning `none` (rather than the partially filled state) satisfies (ii): the
+failure value is the same for every byte stream that exceeds the cap. -/
 def sampleLoop (stream : ℕ → UInt8) (s : SampleState) (j : ℕ) :
-    (fuel : ℕ) → SampleState
-  | 0        => s
+    (fuel : ℕ) → Option SampleState
+  | 0        => if s.ctr = n then some s else none
   | fuel + 1 =>
-    if s.ctr = n then s
+    if s.ctr = n then some s
     else sampleLoop stream (processTriple s stream j) (j + 1) fuel
 
 /-! ## Top-level definition -/
@@ -118,6 +126,11 @@ Given a 34-byte seed (`ρ ‖ i ‖ j`), produces an NTT-domain polynomial `â �
 
 The `fuel` parameter (default 1024) bounds byte triples consumed.  With `q = 3329`
 the acceptance rate is `3329/4096 ≈ 0.813`, so ≈ 315 triples suffice in expectation.
+If the stream does not yield 256 accepted coefficients within `fuel` triples, `sampleNTT?`
+returns `none`, and the total wrapper `sampleNTT` returns the fixed polynomial
+`sampleNTTFail` (all zeros).  Both are stream-independent failure values, as required by
+FIPS 203 Appendix B; crucially, no partially-filled intermediate state is ever returned.
+(With a real SHAKE-128 stream the probability of exceeding even 280 iterations is ≈ 2⁻²⁶¹.)
 
 ```
 SampleNTT(B):
@@ -131,8 +144,19 @@ SampleNTT(B):
   return â
 ```
 -/
-def sampleNTT (seed : Fin 34 → UInt8) (fuel : ℕ := 1024) : Fin n → Zq :=
-  (sampleLoop (xof seed) SampleState.init 0 fuel).coeffs
+def sampleNTT? (prims : Primitives) (seed : Fin 34 → UInt8) (fuel : ℕ := 1024) :
+    Option (Fin n → Zq) :=
+  (sampleLoop (prims.XOF seed) SampleState.init 0 fuel).map SampleState.coeffs
+
+/-- The single, stream-independent failure value used by `sampleNTT` when the iteration
+cap is exceeded (FIPS 203 Appendix B).  Chosen as the zero polynomial; what matters is
+that it is a constant, not derived from any intermediate state. -/
+def sampleNTTFail : Fin n → Zq := fun _ => 0
+
+/-- Total version of `SampleNTT`: `sampleNTT?` with the constant `sampleNTTFail` on cap
+exhaustion.  Convenient for downstream definitions that need a plain polynomial. -/
+def sampleNTT (prims : Primitives) (seed : Fin 34 → UInt8) (fuel : ℕ := 1024) : Fin n → Zq :=
+  (sampleNTT? prims seed fuel).getD sampleNTTFail
 
 /-! ## Elementary properties -/
 
@@ -157,24 +181,60 @@ theorem processTriple_ctr_le (s : SampleState) (stream : ℕ → UInt8) (j : ℕ
     (d₂ (stream (3 * j + 1)) (stream (3 * j + 2)))
   exact ⟨by omega, by omega⟩
 
-/-- Once the counter reaches `n`, `sampleLoop` is idempotent. -/
+/-- Once the counter reaches `n`, `sampleLoop` succeeds immediately with the same state. -/
 theorem sampleLoop_done (stream : ℕ → UInt8) (s : SampleState) (j fuel : ℕ)
     (h : s.ctr = n) :
-    sampleLoop stream s j fuel = s := by
-  induction fuel with
-  | zero => simp [sampleLoop]
-  | succ fuel _ => simp [sampleLoop, h]
+    sampleLoop stream s j fuel = some s := by
+  cases fuel with
+  | zero => simp [sampleLoop, h]
+  | succ fuel => simp [sampleLoop, h]
 
-/-- The counter never exceeds `n` after `sampleLoop`. -/
-theorem sampleLoop_ctr_le_n (stream : ℕ → UInt8) (s : SampleState)
-    (j fuel : ℕ) :
-    (sampleLoop stream s j fuel).ctr ≤ n := by
+/-- `sampleLoop` only succeeds with a completely filled coefficient array
+(`ctr = n`), so a `some` output never contains uninitialised (zero-padded) coefficients. -/
+theorem sampleLoop_some_ctr (stream : ℕ → UInt8) (s : SampleState) (j fuel : ℕ)
+    (s' : SampleState) (h : sampleLoop stream s j fuel = some s') :
+    s'.ctr = n := by
   induction fuel generalizing s j with
-  | zero => simp only [sampleLoop]; exact s.h_ctr
+  | zero =>
+    simp only [sampleLoop] at h
+    split at h
+    · cases h; assumption
+    · cases h
   | succ fuel ih =>
-    simp only [sampleLoop]
-    split
-    · exact s.h_ctr
-    · exact ih _ _
+    simp only [sampleLoop] at h
+    split at h
+    · cases h; assumption
+    · exact ih _ _ h
+
+/-- The failure value is independent of the stream: whenever `sampleLoop` fails it
+returns exactly `none`, carrying no intermediate state (FIPS 203 Appendix B). -/
+theorem sampleLoop_fail_eq (stream₁ stream₂ : ℕ → UInt8) (s₁ s₂ : SampleState)
+    (j₁ j₂ fuel₁ fuel₂ : ℕ)
+    (h₁ : sampleLoop stream₁ s₁ j₁ fuel₁ = none)
+    (h₂ : sampleLoop stream₂ s₂ j₂ fuel₂ = none) :
+    sampleLoop stream₁ s₁ j₁ fuel₁ = sampleLoop stream₂ s₂ j₂ fuel₂ := by
+  rw [h₁, h₂]
+
+/-- A successful `sampleNTT?` is fully determined by a run that filled all `n` coefficients. -/
+theorem sampleNTT?_some (prims : Primitives) (seed : Fin 34 → UInt8) (fuel : ℕ)
+    (a : Fin n → Zq) (h : sampleNTT? prims seed fuel = some a) :
+    ∃ s : SampleState, sampleLoop (prims.XOF seed) SampleState.init 0 fuel = some s ∧
+      s.ctr = n ∧ s.coeffs = a := by
+  unfold sampleNTT? at h
+  cases hs : sampleLoop (prims.XOF seed) SampleState.init 0 fuel with
+  | none => simp [hs] at h
+  | some s =>
+    refine ⟨s, rfl, sampleLoop_some_ctr _ _ _ _ _ hs, ?_⟩
+    simpa [hs] using h
+
+/-- The total `sampleNTT` either agrees with a successful `sampleNTT?`, or equals the
+constant `sampleNTTFail`.  There is no third, stream-dependent outcome. -/
+theorem sampleNTT_cases (prims : Primitives) (seed : Fin 34 → UInt8) (fuel : ℕ) :
+    sampleNTT? prims seed fuel = some (sampleNTT prims seed fuel) ∨
+    (sampleNTT? prims seed fuel = none ∧ sampleNTT prims seed fuel = sampleNTTFail) := by
+  unfold sampleNTT
+  cases h : sampleNTT? prims seed fuel with
+  | none => exact Or.inr ⟨rfl, rfl⟩
+  | some a => exact Or.inl rfl
 
 end Fips203
