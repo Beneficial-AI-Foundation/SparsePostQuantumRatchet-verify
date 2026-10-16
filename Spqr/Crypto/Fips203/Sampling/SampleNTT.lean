@@ -151,6 +151,7 @@ def sampleNTT? (prims : Primitives) (seed : Fin 34 → UInt8) (fuel : ℕ := 102
 /-- The single, stream-independent failure value used by `sampleNTT` when the iteration
 cap is exceeded (FIPS 203 Appendix B).  Chosen as the zero polynomial; what matters is
 that it is a constant, not derived from any intermediate state. -/
+@[nolint unusedArguments]
 def sampleNTTFail : Fin n → Zq := fun _ => 0
 
 /-- Total version of `SampleNTT`: `sampleNTT?` with the constant `sampleNTTFail` on cap
