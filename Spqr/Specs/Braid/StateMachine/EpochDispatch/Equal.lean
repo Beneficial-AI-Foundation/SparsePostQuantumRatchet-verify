@@ -13,8 +13,9 @@ public import Spqr.Specs.Braid.StateMachine.EpochDispatch.Guards
 
 /-! # `States::recv` on a message from the state's own epoch
 
-When `msg.epoch` equals the state's epoch, every arm of `States::recv` matches on the payload
-type. This module compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2.5.
+When `msg.epoch` equals the state's epoch, `States::recv` acts on the payload type in eight of
+the eleven states. `KeysUnsampled`, `HeaderReceived` and `Ct2Sampled` ignore the message. This
+module compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2.5.
 
 * `recv_of_eq_unexpected`: a payload type the state does not act on (`States.Expects`) leaves
   the state unchanged and emits no key.
@@ -23,20 +24,31 @@ type. This module compares that dispatch with the `Receive` functions of [ML-KEM
   when `specRecvEq` raises.
 
 `specRecvEq` transcribes the spec's `Receive` bodies at the level of state names and key
-presence; the fields of the successor and the key's value are not compared. It includes the
-code's two extra acceptances, `Ct1Ack true` in `EkReceivedCt1Sampled` (D3) and `Ek` chunks in
-`Ct1Acknowledged` (D4). A chunk that completes a decoder takes the transition if the completed
-message passes the state's check (`States.Accepts`) and raises if it fails (`States.Rejects`).
+presence. The fields of the successor and the key's value are not compared. A chunk that
+completes a decoder takes the transition if the completed message passes the state's check
+(`States.Accepts`) and raises if it does not pass (`States.Rejects`).
 Decoding and the check are stated with the code's own calls: `add_chunk` and `decoded_message`
-for the decoder, and `recv_ct2` (`VfyCt`), `verify_hdr` (`VfyHdr`) and `ek_matches_header` for
-the check, on the message split with `take` / `drop`. The theorems relate the dispatch to these
-calls' results; that the calls compute the spec's checks is not proved here.
+for the decoder, and `recv_ct2` (the spec's `Decaps` then `VfyCt`), `verify_hdr` (the spec's
+`VfyHdr`) and `ek_matches_header` for the check, on the message split with `take` / `drop`. The
+theorems relate the dispatch to the results of these calls. That the calls compute the spec's
+checks is not proved here.
 
 `recv_of_eq_unexpected` is total. `recv_of_eq_refines` is in the "if it returns" form: it says
 nothing about calls that panic, and nothing about whether a completing chunk exists.
 
 Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
+
+## Departures from §2.5
+
+`specRecvEq` follows the code where the code accepts more than the spec:
+
+* D3. In `EkReceivedCt1Sampled`, §2.5 acts only on `EkCt1Ack`. The code also takes
+  transition (12) on `Ct1Ack true`, which the peer sends from `EkSentCt1Received`. §2.3 defines
+  `Ct1Ack`, but §2.5 never uses it. The extra acceptance tolerates a lost acknowledgement.
+* D4. In `Ct1Acknowledged`, §2.5 acts only on `EkCt1Ack`. The code also feeds `Ek` chunks to
+  the same decoder, for out-of-order delivery, and checks the completed key against the header
+  as in transition (11).
 
 ## References
 
