@@ -36,7 +36,7 @@ equal, less, greater and greater-jump cases.
 Identical to `key_spec` but with the tighter maxOoo bound `108458770` and no `h_platform`
 hypothesis.
 
-**Source**: spqr/src/chain.rs, lines 247:4-296:5
+**Source**: spqr/src/chain.rs, lines 248:4-297:5
 -/
 @[step]
 theorem key_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
@@ -45,7 +45,6 @@ theorem key_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
     (h_maxooo_bound : (chain.maxOoo params).val < 108458770)
     (h_kh_cap : self.prev.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max)
     (h_prev_aligned : self.prev.data.length % 36 = 0)
-    (h_prev_bound : self.prev.data.length ≤ Usize.max)
     (h_prev_ctr : self.prev.data.length ≤ 36 * self.ctr.val)
     (h_ooo_no_overflow : ats + (chain.maxOoo params).val ≤ U32.max) :
     key self ats params ⦃ (result : (core.result.Result (alloc.vec.Vec U8) Error) ×
@@ -53,6 +52,6 @@ theorem key_spec_32 (self : chain.ChainEpochDirection) (ats : U32)
       chain.cedKeyPost self ats params result.1 result.2 ⦄ := by
   have h_raw := maxOoo_imp_raw_ooo params _ h_maxooo_bound
   exact key_spec_all_core self ats params h_next_len (by omega) (by scalar_tac) h_kh_cap
-    h_prev_aligned h_prev_bound h_prev_ctr h_ooo_no_overflow
+    h_prev_aligned h_prev_ctr h_ooo_no_overflow
 
 end spqr.chain.ChainEpochDirection
