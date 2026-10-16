@@ -1,5 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
@@ -7,6 +8,7 @@ public import Spqr.Auxiliary.Aeneas.SpecRefl
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Auxiliary.SpecTags
 public import Spqr.Crypto.Fips203.Bridge.DecapsBytes
 public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
 public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
@@ -123,6 +125,11 @@ public import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+public import Spqr.Specs.Braid.Scka.EpochUniqueness
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
+public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
 public import Spqr.Specs.Chain.Chain.Defs
@@ -264,6 +271,7 @@ public import Spqr.Specs.Lib.DecodeState.CallOnce
 public import Spqr.Specs.Lib.Direction.Switch
 public import Spqr.Specs.Lib.EmptyState
 public import Spqr.Specs.Lib.Error.From
+public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.MsgPreamble
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
@@ -277,6 +285,7 @@ public import Spqr.Specs.Lib.Version.DISABLED
 public import Spqr.Specs.Lib.Version.MAX
 public import Spqr.Specs.Lib.Version.TryFrom
 public import Spqr.Specs.Lib.Version.U8.From
+public import Spqr.Specs.Proto.PqRatchet.Direction.From
 public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
 public import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
 public import Spqr.Specs.Serialize.Error.Clone
