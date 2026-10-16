@@ -3,9 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::into_pb`
@@ -25,6 +29,8 @@ a `Polys` encoder writes into `polys` and leaves `pts` empty.
 
 **Source:** "src/v1/chunked/send_ek/serialize.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 open spqr.encoding.polynomial
@@ -54,11 +60,8 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
           PolyEncoder.IntoPbPostCond self.sending_hdr hdr_pb
       | _ => False ⦄ := by
   unfold into_pb
-  obtain ⟨hdr_pb, h_hdr_pb, h_hdr_pb_post⟩ := spec_imp_exists
-    (PolyEncoder.into_pb_spec self.sending_hdr h_overflow_points h_overflow_polys)
-  rw [h_hdr_pb]
   step*
-  refine ⟨?_, h_hdr_pb_post⟩
-  simp only [← hs_post1, ← hs_post2, ← hs_post3, ← hs_post4]
+  refine ⟨?_, ‹_›⟩
+  grind [cases proto.pq_ratchet.v1_state.unchunked.HeaderSent]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled

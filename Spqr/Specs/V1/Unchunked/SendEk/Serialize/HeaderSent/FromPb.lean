@@ -3,8 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
+public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-! # Spec theorem for `spqr::v1::unchunked::send_ek::serialize::HeaderSent::from_pb`
 
@@ -19,6 +22,8 @@ The reverse direction is `into_pb`.
 
 **Source**: src/v1/unchunked/send_ek/serialize.rs (lines 35:4-46:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -51,15 +56,15 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.HeaderSent) :
       simp only [hdk, hek, and_self, reduceIte]
       match pb.auth with
       | none =>
-        simp only [core.option.Option.as_ref, core.option.Option.ok_or,
+        simp [core.option.Option.as_ref, core.option.Option.ok_or,
           core.result.Result.Insts.CoreOpsTry.branch,
-          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-          core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+          core.convert.FromSame.from, WP.spec_ok]
       | some a' =>
         simp only [core.option.Option.as_ref, core.option.Option.ok_or,
-          core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+          core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
         step*
-        simp only [a_post, authenticator.serialize.Authenticator.FunctionalModels.fromPb]
+        simp_all [authenticator.serialize.Authenticator.FunctionalModels.fromPb]
     · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.ek = 1152#usize)]
       simp [hek, WP.spec_ok]
   · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.dk = 2400#usize)]

@@ -3,8 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.Basic
-import Spqr.Math.Poly.CharTwo.Basic
+module
+
+public import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Poly.CharTwo.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Miscellaneous polynomial identities and `Inhabited` instances
@@ -19,6 +25,8 @@ import Spqr.Math.Poly.CharTwo.Basic
 
 * `Inhabited Poly`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 open Polynomial

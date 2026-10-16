@@ -1,0 +1,180 @@
+Translation patch: <States>::send (spqr::v1::chunked::states)
+
+Change: the `log::info!` calls are commented out.
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
+Behaviour: identical apart from logging (no log output).
+
+diff --git a/src/v1/chunked/states.rs b/src/v1/chunked/states.rs
+index 1de4bce..78c2560 100644
+--- a/src/v1/chunked/states.rs
++++ b/src/v1/chunked/states.rs
+@@ -115,159 +115,159 @@ pub(crate) fn last_emitted_epoch(&self) -> Epoch {
+     pub(crate) fn send<R: Rng + CryptoRng>(self, rng: &mut R) -> Result<Send, Error> {
+         match self {
+             ////////////////////////////////////////////////////////////////////////////////
+             // send_ek
+             ////////////////////////////////////////////////////////////////////////////////
+             Self::KeysUnsampled(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_hdr_chunk(rng);
+ 
+-                #[cfg(not(hax))]
+-                log::info!(
+-                    "spqr v1.send_ek.send epoch {}: KeysUnsampled -> KeysSampled",
+-                    epoch
+-                );
++                // #[cfg(not(hax))]
++                // log::info!(
++                //     "spqr v1.send_ek.send epoch {}: KeysUnsampled -> KeysSampled",
++                //     epoch
++                // );
+                 Ok(Send {
+                     state: Self::KeysSampled(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Hdr(chunk),
+                     },
+                     key: None,
+                 })
+             }
+             Self::KeysSampled(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_hdr_chunk();
+                 Ok(Send {
+                     state: Self::KeysSampled(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Hdr(chunk),
+                     },
+                     key: None,
+                 })
+             }
+             Self::HeaderSent(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_ek_chunk();
+                 Ok(Send {
+                     state: Self::HeaderSent(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Ek(chunk),
+                     },
+                     key: None,
+                 })
+             }
+             Self::Ct1Received(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_ek_chunk();
+ 
+                 Ok(Send {
+                     state: Self::Ct1Received(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::EkCt1Ack(chunk),
+                     },
+                     key: None,
+                 })
+             }
+             Self::EkSentCt1Received(state) => {
+                 let epoch = state.epoch();
+ 
+                 Ok(Send {
+                     state: Self::EkSentCt1Received(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Ct1Ack(true),
+                     },
+                     key: None,
+                 })
+             }
+ 
+             ////////////////////////////////////////////////////////////////////////////////
+             // send_ct
+             ////////////////////////////////////////////////////////////////////////////////
+             Self::NoHeaderReceived(state) => {
+                 let epoch = state.epoch();
+ 
+                 Ok(Send {
+                     state: Self::NoHeaderReceived(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::None,
+                     },
+                     key: None,
+                 })
+             }
+             Self::HeaderReceived(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk, epoch_secret) = state.send_ct1_chunk(rng);
+ 
+-                #[cfg(not(hax))]
+-                log::info!(
+-                    "spqr v1.send_ct.send epoch {}: HeaderReceived -> Ct1Sampled",
+-                    epoch
+-                );
++                // #[cfg(not(hax))]
++                // log::info!(
++                //     "spqr v1.send_ct.send epoch {}: HeaderReceived -> Ct1Sampled",
++                //     epoch
++                // );
+                 Ok(Send {
+                     state: Self::Ct1Sampled(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Ct1(chunk),
+                     },
+                     key: Some(epoch_secret),
+                 })
+             }
+             Self::Ct1Sampled(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_ct1_chunk();
+ 
+                 Ok(Send {
+                     state: Self::Ct1Sampled(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Ct1(chunk),
+                     },
+                     key: None,
+                 })
+             }
+             Self::EkReceivedCt1Sampled(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_ct1_chunk();
+ 
+                 Ok(Send {
+                     state: Self::EkReceivedCt1Sampled(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Ct1(chunk),
+                     },
+                     key: None,
+                 })
+             }
+             Self::Ct1Acknowledged(state) => {
+                 let epoch = state.epoch();
+ 
+                 Ok(Send {
+                     state: Self::Ct1Acknowledged(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::None,
+                     },
+                     key: None,
+                 })
+             }
+             Self::Ct2Sampled(state) => {
+                 let epoch = state.epoch();
+                 let (state, chunk) = state.send_ct2_chunk();
+ 
+                 Ok(Send {
+                     state: Self::Ct2Sampled(state),
+                     msg: Message {
+                         epoch,
+                         payload: MessagePayload::Ct2(chunk),
+                     },
+                     key: None,
+                 })
+             }
+         }
+     }

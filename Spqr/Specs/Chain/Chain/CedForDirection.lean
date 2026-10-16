@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.New
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::Chain}::ced_for_direction`
@@ -13,6 +15,8 @@ Builds a `ChainEpochDirection` from a 96-byte `genr8r` and a `Direction` by sele
 
 **Source**: spqr/src/chain.rs (lines 322:4-327:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 
@@ -37,7 +41,7 @@ theorem ced_for_direction_spec (genr8r : Slice U8) (dir : proto.pq_ratchet.Direc
         | .B2A => genr8r.val.slice 64 96) ⦄ := by
   unfold ced_for_direction
   match dir with
-  | .A2B => step*
-  | .B2A => step*
+  | .A2B => step*; subst_vars; simp_all [alloc.vec.Vec.deref, alloc.vec.Vec.val]
+  | .B2A => step*; subst_vars; simp_all [alloc.vec.Vec.deref, alloc.vec.Vec.val]
 
 end spqr.chain.Chain

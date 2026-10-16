@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Characteristic-2 facts in `GF216` and `GF216Poly`
@@ -18,6 +24,8 @@ in `Spqr/Math/Gf2Poly/Basic.lean`.
 * `GF216.two_eq_zero`, `GF216.add_self_eq_zero` — characteristic-2 in `GF216`.
 * `GF216Poly.neg_eq`, `GF216Poly.sub_eq_add` — characteristic-2 in `GF216Poly`.
 -/
+
+@[expose] public section
 
 open Polynomial
 

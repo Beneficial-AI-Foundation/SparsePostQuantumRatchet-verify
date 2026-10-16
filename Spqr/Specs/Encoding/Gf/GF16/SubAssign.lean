@@ -3,8 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+public import Spqr.Math.Gf16.Field
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 /-!
 # Spec theorem for `spqr::encoding::gf::{impl ops::SubAssign for GF16}::sub_assign`
 
@@ -19,6 +24,8 @@ introducing no additional logic — the two are observationally identical:
 
 **Source**: spqr/src/encoding/gf.rs (lines 81:4-83:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 

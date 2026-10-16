@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
-import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ek::serialize::KeysUnsampled::from_pb`
@@ -20,6 +22,8 @@ of the `Authenticator` conversion. The reverse direction is `into_pb`.
 
 **Source**: spqr/src/v1/unchunked/send_ek/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 namespace spqr.v1.unchunked.send_ek.serialize.KeysUnsampled
@@ -36,13 +40,13 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) :
   unfold from_pb FunctionalModels.fromPb
   match pb.auth with
   | none =>
-    simp only [core.option.Option.as_ref, core.option.Option.ok_or,
+    simp [core.option.Option.as_ref, core.option.Option.ok_or,
       core.result.Result.Insts.CoreOpsTry.branch,
-      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
-      core.convert.FromSame.from, bind_tc_ok, WP.spec_ok]
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+      core.convert.FromSame.from, WP.spec_ok]
   | some a' =>
     simp only [core.option.Option.as_ref, core.option.Option.ok_or,
-      core.result.Result.Insts.CoreOpsTry.branch, bind_tc_ok]
+      core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
     step*
 
 end spqr.v1.unchunked.send_ek.serialize.KeysUnsampled

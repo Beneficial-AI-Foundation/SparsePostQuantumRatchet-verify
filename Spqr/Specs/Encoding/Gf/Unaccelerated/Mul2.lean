@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
+public import Spqr.Math.Gf16.Field
+public import SrcTranslated.Funs
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::encoding::gf::unaccelerated::mul2`
@@ -26,6 +32,8 @@ product, obtained by composing
 
 **Source**: spqr/src/encoding/gf.rs (lines 436:4-438:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.math.gf
 

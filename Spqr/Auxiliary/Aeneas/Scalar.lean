@@ -3,12 +3,19 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import Aeneas
+module
+
+public import Aeneas
+
 
 /-! # Staged for upstream to Aeneas `Std/Scalar/`
 
 Aeneas scalars and their Lean core counterparts are both `BitVec` wrappers. This provides conversion
-between them. Only `U8`/`UInt8` is provided since that is all that is currently required. -/
+between them. Only `U8`/`UInt8` is provided since that is all that is currently required.
+
+It also reads the value off a checked addition that returned `ok`. -/
+
+@[expose] public section
 
 namespace Aeneas.Std
 
@@ -36,5 +43,11 @@ theorem U8.map_ofUInt8_map_toUInt8 (l : List U8) :
 @[simp, grind =]
 theorem U8.map_toUInt8_map_ofUInt8 (l : List UInt8) :
     List.map (U8.toUInt8 ∘ U8.ofUInt8) l = l := by simp [comp_def]
+
+theorem UScalar.val_of_add_eq_ok {ty : UScalarTy} {x y z : UScalar ty} (h : x + y = Result.ok z) :
+    z.val = x.val + y.val := by
+  have := UScalar.add_equiv x y
+  rw [h] at this
+  exact this.2.1
 
 end Aeneas.Std

@@ -3,8 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorems for `spqr::encoding::{Encoder for Option<T>}::next_chunk`
@@ -18,6 +23,8 @@ This file proves:
 
 **Source**: spqr/src/encoding.rs -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result spqr encoding.polynomial encoding.gf Polynomial
 
 namespace spqr.core.option.Option.Insts.SpqrEncodingEncoder
@@ -27,7 +34,7 @@ namespace spqr.core.option.Option.Insts.SpqrEncodingEncoder
 If `self.isSome` and the inner `EncoderInst.next_chunk` satisfies predicate `P`, then
 `next_chunk EncoderInst self` satisfies `P` lifted through `Some`. -/
 @[step]
-theorem next_chunk_spec_lift
+theorem next_chunk_spec
     {T : Type} (EncoderInst : encoding.Encoder T) (self : Option T)
     (h_some : self.isSome)
     (P : encoding.Chunk → T → Prop)
@@ -38,10 +45,8 @@ theorem next_chunk_spec_lift
       ∃ tmp', result = some tmp' ∧ P chunk tmp' ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
-  step with Aeneas.Std.core.option.Option.unwrap.spec
-  rename_i tmp h_eq
-  have h_post := h_inner tmp h_eq
-  step with h_post
+  step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨tmp, h_eq⟩
+  step with h_inner tmp h_eq
   grind
 
 /-- **`next_chunk` spec for `Option<PolyEncoder>`**:
@@ -49,7 +54,6 @@ theorem next_chunk_spec_lift
 Lifts `PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec` through the `Option` wrapper via
 `next_chunk_spec_lift`. The result stays `Some` and the inner postcondition (chunk index, 32-byte
 data, wrapping index increment, polynomial evaluation / Lagrange interpolation) holds verbatim. -/
-@[step]
 theorem next_chunk_spec_poly_encoder
     (pe0 : PolyEncoder)
     (h_idx_fits : pe0.idx.val ≤ U16.max)
@@ -85,13 +89,14 @@ theorem next_chunk_spec_poly_encoder
       | none => False ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
-  step with Aeneas.Std.core.option.Option.unwrap.spec
-  rename_i tmp h_eq
+  step with Aeneas.Std.core.option.Option.unwrap.spec as ⟨tmp, h_eq⟩
   have h_tmp_eq : tmp = pe0 := by injection h_eq with h; exact h.symm
   simp only [h_tmp_eq]
   have h_inner := PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec pe0
     h_idx_fits h_admissible h_coeff_bound
   step with h_inner
-  grind
+  obtain ⟨h1, h2, h3, h4⟩ := ‹(chunk.index : Nat) = _ ∧ _›
+  refine ⟨h1, h2, h3, ?_⟩
+  cases hs : pe0.s <;> simp only [hs, Array.getElem!_Nat_eq] at h4 ⊢ <;> exact h4
 
 end spqr.core.option.Option.Insts.SpqrEncodingEncoder

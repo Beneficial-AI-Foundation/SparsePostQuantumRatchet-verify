@@ -3,13 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.Defs
-import Spqr.Specs.Chain.KeyHistory.Defs
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.Defs
+public import Spqr.Specs.Chain.KeyHistory.Defs
 
 /-! # Chain definitions
 
 Auxiliary definitions for `spqr.chain.Chain` specifications. -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -97,9 +101,7 @@ def recvKeyPre (params : proto.pq_ratchet.ChainParams) (index : U32)
   ce.recv.next.length = 32 ∧
   index.val ≤ U32.max - 390451572 ∧
   (chain.maxOoo params).val < 390451572 ∧
-  ce.recv.ctr.val ≤ U32.max - 390451572 ∧
   ce.recv.prev.data.length + 36 * (index.val - ce.recv.ctr.val) ≤ Usize.max ∧
-  ce.recv.ctr < U32.max ∧
   ce.recv.prev.data.length % 36 = 0 ∧
   ce.recv.prev.data.length ≤ 36 * ce.recv.ctr.val ∧
   index.val + (chain.maxOoo params).val ≤ U32.max ∧
@@ -111,9 +113,7 @@ def recvKeyPre32 (params : proto.pq_ratchet.ChainParams) (index : U32)
   ce.recv.next.length = 32 ∧
   index.val ≤ U32.max - 108458770 ∧
   (chain.maxOoo params).val < 108458770 ∧
-  ce.recv.ctr.val ≤ U32.max - 108458770 ∧
   ce.recv.prev.data.length + 36 * (index.val - ce.recv.ctr.val) ≤ Usize.max ∧
-  ce.recv.ctr < U32.max ∧
   ce.recv.prev.data.length % 36 = 0 ∧
   ce.recv.prev.data.length ≤ 36 * ce.recv.ctr.val ∧
   index.val + (chain.maxOoo params).val ≤ U32.max
@@ -248,7 +248,7 @@ def cedKeyAdvancePost (self : chain.ChainEpochDirection) (ats : U32)
   let finalOkm := nextKeyHkdfOutput loopSecret ctrAts
   let kh0 :=
     if ats.val > self.ctr.val + (chain.maxOoo params).val
-    then { data := ⟨[], by simp⟩ : chain.KeyHistory }
+    then { data := alloc.vec.Vec.from [] (by simp) : chain.KeyHistory }
     else self.prev
   let khPreGc := chain.ChainEpochDirection.iterKeyHistory
     self.next.val self.ctr.val ats.val params kh0 loopSteps
@@ -300,10 +300,10 @@ def recvKeyEpochPost (self : chain.Chain) (index : U32)
   ce'.send = ce.send ∧
   cedKeyPost ce.recv index self.params result ce'.recv
 
-/-- Total postcondition for `recv_key`: either the epoch is out of range
-(error, chain unchanged) or the epoch is in range and the chain is updated
-at exactly one slot with `recvKeyEpochPost`. -/
-def recvKeyPost (self : chain.Chain) (epoch : U64) (index : U32)
+/-- Postcondition for `recv_key` outside the `epoch == 0 && index == 0` early return: either
+the epoch is out of range (error, chain unchanged) or the epoch is in range and the chain is
+updated at exactly one slot with `recvKeyEpochPost`. -/
+def recvKeyRangePost (self : chain.Chain) (epoch : U64) (index : U32)
     (result : core.result.Result (alloc.vec.Vec U8) Error)
     (self' : chain.Chain) : Prop :=
   let phys := self.links.head.val + recvKeyIdx self epoch
@@ -319,6 +319,16 @@ def recvKeyPost (self : chain.Chain) (epoch : U64) (index : U32)
      | some _, none => False
      | some ce, some ce' =>
        recvKeyEpochPost self index ce ce' result)
+
+/-- Total postcondition for `recv_key`: for `epoch = 0` and `index = 0` the call returns an
+empty key and leaves the chain unchanged (early return added in spqr v1.6.0); otherwise
+`recvKeyRangePost` holds. -/
+def recvKeyPost (self : chain.Chain) (epoch : U64) (index : U32)
+    (result : core.result.Result (alloc.vec.Vec U8) Error)
+    (self' : chain.Chain) : Prop :=
+  if epoch.val = 0 ∧ index.val = 0 then
+    result = core.result.Result.Ok (alloc.vec.Vec.new U8) ∧ self' = self
+  else recvKeyRangePost self epoch index result self'
 
 
 
@@ -377,6 +387,8 @@ theorem keyPostGc_of_GcPost
       (chain.maxOoo params).val
       (((chain.maxOoo params).val * 11 / 10 + 1) * 36)
       ctr_new := by
+  simp only [chain.KeyHistory.IsExpired, chain.KeyHistory.horizonSlice,
+    chain.KeyHistory.horizonBytes, Slice.from_val] at gc_trim
   unfold keyPostGc
   refine ⟨?_, ?_, gc_noop, ?_, ?_⟩
   · intro htrim hmo

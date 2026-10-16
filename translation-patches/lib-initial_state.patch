@@ -1,0 +1,52 @@
+Translation patch: spqr::initial_state
+
+Change:
+1. the `log::info!` call is commented out;
+2. `PqRatchetState { .. }.encode_to_vec()` becomes `encode_state_pb(&PqRatchetState { .. })`.
+Why:
+1. `log` is excluded from the translation; its macros make Aeneas fail ("Internal error");
+2. `encode_state_pb` is opaque in the translation, so the prost-derived `Message` impls are not
+   reached (#102, aeneas#1046).
+Behaviour: identical apart from logging (no log output).
+Relies on: `encode_state_pb`, added by lib-state_pb.patch.
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 6bc0197..05daed8 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -209,27 +209,26 @@ fn init_inner(v: Version, d: Direction, auth_key: &[u8]) -> Option<pqrpb::pq_rat
+ }
+ 
+ pub fn initial_state(params: Params) -> Result<SerializedState, Error> {
+-    #[cfg(not(hax))]
+-    log::info!(
+-        "spqr initiating state with version {:?} and direction {:?}",
+-        params.version,
+-        params.direction
+-    );
++    // #[cfg(not(hax))]
++    // log::info!(
++    //     "spqr initiating state with version {:?} and direction {:?}",
++    //     params.version,
++    //     params.direction
++    // );
+     match params.version {
+         Version::V0 => Ok(empty_state()),
+         _ => {
+             let version_negotiation = Some(pqrpb::pq_ratchet_state::VersionNegotiation {
+                 auth_key: params.auth_key.to_vec(),
+                 direction: params.direction.into(),
+                 min_version: params.min_version.into(),
+                 chain_params: Some(params.chain_params.into_pb()),
+             });
+-            Ok(pqrpb::PqRatchetState {
++            Ok(encode_state_pb(&pqrpb::PqRatchetState {
+                 inner: init_inner(params.version, params.direction, params.auth_key),
+                 chain: None,
+                 version_negotiation,
+-            }
+-            .encode_to_vec())
++            }))
+         }
+     }
+ }

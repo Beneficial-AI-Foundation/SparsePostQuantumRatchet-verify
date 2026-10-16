@@ -3,231 +3,170 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Lacramioara Astefanoaei
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
-import Spqr.Math.Poly.Lagrange.CompletePoints
+public import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.CallOnce
-import Spqr.Specs.Aeneas.MapIteratorTransformerNext
-import Spqr.Specs.Aeneas.MapCollectBridge
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt.SliceIterEnumMapCollect
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Math.Poly.Eval
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Gf.GF16.New
+import Spqr.Specs.Aeneas.RangeIteratorNext
 
 
 /-!
 # Spec theorem for `PolyEncoder::point_at`: loop body 0
 
-One step of the conversion loop in `PolyEncoder::point_at` (lines 636–658), which iterates over
+One step of the conversion loop in `PolyEncoder::point_at` (lines 660–680), which iterates over
 `0..NUM_POLYS` and constructs the Lagrange interpolating polynomial for each `Point` in GF(2¹⁶).
 
 Given index `i` from the range iterator, the body either returns unchanged (`none`) or builds
-evaluation points via enumerate-map-collect, calls `Poly::from_complete_points`, and stores
-the result in `polys[i]`.
+evaluation points via the inner enumerate loop (`point_at_loop0_loop0`), calls
+`Poly::from_complete_points`, and stores the result in `polys[i]`.
 
-The proof composes `IteratorRange.next`, `Array.index_usize`, the enumerate-map-collect pipeline,
+The proof composes `IteratorRange.next`, `Array.index_usize`, the inner enumerate/push loop,
 `Poly::from_complete_points`, `Result.expect`, and `Array.update`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
-open PolyEncoder.point_at.closure_1  core.iter.adapters.map.Map
 
-namespace spqr.encoding.polynomial.PolyEncoder.point_at_loop
+namespace spqr.encoding.polynomial.PolyEncoder.point_at_loop0_loop0
 
-/-! ## Helper lemmas for the enumerate-map-collect pipeline -/
+/-! ## Spec for the inner `for (x, y) in pts[i].value.iter().enumerate()` loop -/
 
-/-- Abbreviation for the Enumerate iterator type used in the point_at pipeline. -/
-private abbrev PointAtEnumT := core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16)
+/-- One step of `Enumerate<slice::Iter<GF16>>::next` when the slice is not yet exhausted. -/
+private lemma enum_next_some
+    (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16))
+    (h_lt : iter.iter.i < iter.iter.slice.val.length)
+    (h_bound : iter.count.val + 1 ≤ Usize.max) :
+    ∃ (count' : Usize),
+      core.iter.adapters.enumerate.IteratorEnumerate.next
+        (core.iter.traits.iterator.IteratorSliceIter GF16) iter =
+          ok (some (iter.count, iter.iter.slice.val[iter.iter.i]),
+            { iter := { slice := iter.iter.slice, i := iter.iter.i + 1 }, count := count' }) ∧
+      count'.val = iter.count.val + 1 := by
+  obtain ⟨y, h_add_eq, h_y_val⟩ := WP.spec_imp_exists
+    (Usize.add_spec (x := iter.count) (y := 1#usize) (by scalar_tac))
+  refine ⟨y, ?_, by simpa using h_y_val⟩
+  have h_sn : core.slice.iter.IteratorSliceIter.next iter.iter =
+      .ok (some (iter.iter.slice.val[iter.iter.i]),
+        ⟨iter.iter.slice, iter.iter.i + 1⟩) := by
+    unfold core.slice.iter.IteratorSliceIter.next; rw [dif_pos (by simpa using h_lt)]; rfl
+  simp [core.iter.adapters.enumerate.IteratorEnumerate.next, h_sn, h_add_eq]
 
-/-- Abbreviation for the Map iterator type used in the point_at pipeline. -/
-private abbrev PointAtMapT :=
-  core.iter.adapters.map.Map (core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.Iter GF16)) PolyEncoder.point_at.closure_1
+/-- `Enumerate<slice::Iter<GF16>>::next` once the slice is exhausted. -/
+private lemma enum_next_none
+    (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16))
+    (h_ge : ¬ iter.iter.i < iter.iter.slice.val.length) :
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+        (core.iter.traits.iterator.IteratorSliceIter GF16) iter = ok (none, iter) := by
+  simp [core.iter.adapters.enumerate.IteratorEnumerate.next,
+    core.slice.iter.IteratorSliceIter.next, Slice.len, h_ge]
 
-/-- Inductive characterisation of `iterToList` for the enumerate-map-of-slice iterator
-in `PolyEncoder::point_at`. -/
-private theorem iterToList_enum_map_acc
-    (n : Nat)
-    (enum_iter : PointAtEnumT)
-    (acc : List Pt)
-    (h_n : n = enum_iter.iter.slice.val.length - enum_iter.iter.i)
-    (h_count : enum_iter.count.val = enum_iter.iter.i)
-    (h_len_le : enum_iter.iter.slice.val.length ≤ UScalar.max .U16)
-    (transIterInst : core.iter.traits.iterator.Iterator PointAtEnumT Pt)
-    (h_next : transIterInst.next = fun e => do
-      let (opt, iter') ←
-        (core.iter.traits.iterator.IteratorEnumerate
-          (core.iter.traits.iterator.IteratorSliceIter GF16)).next e
-      match opt with
-      | none =>
-        .ok (none, iter')
-      | some item => do
-        let (b, _) ←
-        PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt.call_mut
-            () item
-        .ok (some b, iter')) :
-    ∃ (L : List Pt),
-      alloc.vec.FromIteratorVec.iterToList transIterInst enum_iter acc =
-        .ok (acc.reverse ++ L) ∧
-      L.length = enum_iter.iter.slice.val.length - enum_iter.iter.i ∧
-      (∀ j (hj : j < L.length) (hs : j + enum_iter.iter.i < enum_iter.iter.slice.val.length),
-          (L.get ⟨j, hj⟩).x.value.val = j + enum_iter.iter.i ∧
-          (L.get ⟨j, hj⟩).y =
-            enum_iter.iter.slice.val.get ⟨j + enum_iter.iter.i, hs⟩) := by
-  induction n generalizing enum_iter acc with
-  | zero =>
-    have h_ge : ¬ (enum_iter.iter.i < enum_iter.iter.slice.val.length) := by omega
-    refine ⟨[], ?_, by simp; omega, by intro j hj; omega⟩
-    conv_lhs => unfold alloc.vec.FromIteratorVec.iterToList
-    rw [h_next]
-    simp  [
-      core.iter.adapters.enumerate.IteratorEnumerate.next,
-      core.slice.iter.IteratorSliceIter.next, Slice.len, h_ge,
-      ↓reduceDIte, bind_tc_ok]
-  | succ n ih =>
-    have h_lt : enum_iter.iter.i < enum_iter.iter.slice.val.length := by omega
-    have h_count_lt : enum_iter.count.val < 2 ^ 16 := by
-      have : enum_iter.count.val = enum_iter.iter.i := h_count
-      have : enum_iter.iter.i < enum_iter.iter.slice.val.length := h_lt
-      have : enum_iter.iter.slice.val.length ≤ UScalar.max .U16 := h_len_le
-      simp  at h_len_le ⊢
-      grind
-    have h_count_add : enum_iter.count.val + 1 ≤ Usize.max := by
-      have := enum_iter.count.hBounds; scalar_tac
-    have h_cm_eq :
-      PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt.call_mut
-        () (enum_iter.count, enum_iter.iter.slice.val.get ⟨enum_iter.iter.i, h_lt⟩) =
-        .ok ({ x := { value := UScalar.cast .U16 enum_iter.count },
-               y := enum_iter.iter.slice.val.get ⟨enum_iter.iter.i, h_lt⟩ },
-              ()) := by
-      unfold Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt.call_mut
-      simp only [ uncurry_apply_pair]
-      simp only [lift, bind_tc_ok]
-      unfold encoding.gf.GF16.new
-      simp [bind_tc_ok]
-    set pt : Pt := { x := { value := UScalar.cast .U16 enum_iter.count },
-                     y := enum_iter.iter.slice.val.get ⟨enum_iter.iter.i, h_lt⟩ }
-    have h_pt_x : pt.x.value.val = enum_iter.iter.i := by
-      simp only [UScalar.cast_val_eq, UScalarTy.U16_numBits_eq, Nat.reducePow, pt]
-      rw [Nat.mod_eq_of_lt (by omega)]
-      exact h_count
-    have h_pt_y : pt.y = enum_iter.iter.slice.val.get ⟨enum_iter.iter.i, h_lt⟩ := by
-      simp [pt]
-    set enum_iter' : PointAtEnumT :=
-      { iter := core.slice.iter.Iter.mk enum_iter.iter.slice (enum_iter.iter.i + 1),
-        count := ⟨enum_iter.count.val + 1, by scalar_tac⟩ }
-    have hei'_slice : enum_iter'.iter.slice = enum_iter.iter.slice := rfl
-    have hei'_i : enum_iter'.iter.i = enum_iter.iter.i + 1 := rfl
-    have hei'_count : enum_iter'.count.val = enum_iter'.iter.i := by
-      simp [enum_iter', h_count]
-      rfl
-    have h_step : alloc.vec.FromIteratorVec.iterToList transIterInst enum_iter acc =
-        alloc.vec.FromIteratorVec.iterToList transIterInst enum_iter'
-          (pt :: acc) := by
-      conv_lhs => unfold alloc.vec.FromIteratorVec.iterToList
-      rw [h_next]
-      simp only [core.iter.adapters.enumerate.IteratorEnumerate.next,
-        core.slice.iter.IteratorSliceIter.next, Slice.len, Usize.ofNatCore_val_eq, h_lt,
-        ↓reduceDIte, bind_tc_ok, bind_assoc, uncurry_apply_pair]
-      erw [h_cm_eq]
-      simp only [bind_tc_ok, uncurry_apply_pair]
-      have ⟨y, h_add_eq, h_y_val⟩ :
-          ∃ y, (enum_iter.count + 1#usize : Result Usize) = ok y
-          ∧ y.val = enum_iter.count.val + 1 := by
-        have : enum_iter.count.val + (1#usize : Usize).val ≤ Usize.max := by scalar_tac
-        have := Usize.add_spec this
-        revert this; generalize (enum_iter.count + 1#usize : Result Usize) = res
-        match res with
-        | .ok z => intro h; exact ⟨z, rfl, by simp_all [WP.spec_ok]⟩
-        | .fail _ => simp_all
-        | .div => simp_all
-      have : y = enum_iter'.count := by apply UScalar.eq_of_val_eq; omega
-      subst this
-      simp only [h_add_eq, bind_tc_ok, enum_iter']
-    have h_n' : n = enum_iter'.iter.slice.val.length - enum_iter'.iter.i := by
-      rw [hei'_slice, hei'_i]; omega
-    obtain ⟨L', hL'_eq, hL'_len, hL'_elts⟩ :=
-      ih enum_iter' (pt :: acc) h_n' hei'_count (by rwa [hei'_slice])
-    refine ⟨pt :: L', ?_, ?_, ?_⟩
-    · rw [h_step, hL'_eq]
-      simp [List.reverse_cons, List.append_assoc]
-    · simp [hL'_len, hei'_slice, hei'_i]; omega
-    · intro j hj hs
-      cases j with
-      | zero =>
-        simp only [Nat.zero_add]
-        exact ⟨h_pt_x, h_pt_y⟩
-      | succ k =>
-        have hk : k < L'.length := by
-          have : (pt :: L').length = L'.length + 1 := rfl
-          omega
-        have hks : k + enum_iter'.iter.i < enum_iter'.iter.slice.val.length := by
-          rw [hei'_slice, hei'_i]; omega
-        obtain ⟨hx, hy⟩ := hL'_elts k hk hks
-        simp only [List.get_eq_getElem, hei'_slice, hei'_i] at hx hy
-        refine ⟨?_, ?_⟩
-        · show ((pt :: L').get ⟨k + 1, hj⟩).x.value.val = k + 1 + enum_iter.iter.i
-          have : (pt :: L').get ⟨k + 1, hj⟩ = L'.get ⟨k, hk⟩ := by rfl
-          rw [this]
-          grind
-        · show ((pt :: L').get ⟨k + 1, hj⟩).y = _
-          have : (pt :: L').get ⟨k + 1, hj⟩ = L'.get ⟨k, hk⟩ := by rfl
-          rw [this]
-          rw [show enum_iter.iter.slice.val.get ⟨k + 1 + enum_iter.iter.i, hs⟩ =
-            enum_iter.iter.slice.val.get ⟨k + enum_iter'.iter.i, hks⟩ from by
-              congr 1; ext; simp [hei'_i]; omega]
-          exact hy
+/-- Loop invariant for `point_at_loop0_loop0`: after consuming the first `iter.iter.i`
+elements of `s`, `pt_vec` holds exactly the points `(j, s[j])` for `j < iter.iter.i`. -/
+abbrev _root_.spqr.encoding.polynomial.PolyEncoder.pointAtInnerInv (s : Slice GF16)
+    (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16))
+    (pt_vec : alloc.vec.Vec Pt) : Prop :=
+  iter.iter.slice = s ∧
+  iter.count.val = iter.iter.i ∧
+  iter.iter.i ≤ s.val.length ∧
+  pt_vec.val.length = iter.iter.i ∧
+  (∀ j (hj : j < pt_vec.val.length) (hs : j < s.val.length),
+    (pt_vec.val.get ⟨j, hj⟩).x.value.val = j ∧
+    (pt_vec.val.get ⟨j, hj⟩).y = s.val.get ⟨j, hs⟩)
 
-/-- Spec for `from_iter` (collect) in the point_at pipeline. -/
-private theorem from_iter_point_at_spec
+/-- Postcondition of `point_at_loop0_loop0`: `pt_vec` holds the points `(j, s[j])` for all
+`j < s.len()`. -/
+abbrev _root_.spqr.encoding.polynomial.PolyEncoder.pointAtInnerPost (s : Slice GF16)
+    (pt_vec : alloc.vec.Vec Pt) : Prop :=
+  pt_vec.val.length = s.val.length ∧
+  (∀ j (hj : j < pt_vec.val.length) (hs : j < s.val.length),
+    (pt_vec.val.get ⟨j, hj⟩).x.value.val = j ∧
+    (pt_vec.val.get ⟨j, hj⟩).y = s.val.get ⟨j, hs⟩)
+
+/-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop0_loop0.body`**:
+
+One iteration of `for (x, y) in pts[i].value.iter().enumerate()`: pushes
+`Pt { x: GF16::new(x as u16), y: *y }` onto `pt_vec`, preserving `pointAtInnerInv`, or
+terminates with `pointAtInnerPost` once the slice is exhausted. -/
+@[step]
+theorem body_spec
     (s : Slice GF16)
-    (h_len_le : s.val.length ≤ UScalar.max .U16) :
-    alloc.vec.FromIteratorVec.from_iter
-      (core.iter.traits.collect.IntoIterator.Blanket
-        (core.iter.adapters.map.mapIteratorTransformer
-          ({ iter := { iter := { slice := s, i := 0 }, count := 0#usize }, f := () } : PointAtMapT)
-          (core.iter.traits.iterator.IteratorEnumerate
-            (core.iter.traits.iterator.IteratorSliceIter GF16))
-          point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt))
-      { iter := { slice := s, i := 0 }, count := 0#usize }
-    ⦃ (pt_vec : alloc.vec.Vec Pt) =>
-      pt_vec.val.length = s.val.length ∧
-      (∀ j (hj : j < pt_vec.val.length) (hs : j < s.val.length),
-        (pt_vec.val.get ⟨j, hj⟩).x.value.val = j ∧
-        (pt_vec.val.get ⟨j, hj⟩).y = s.val.get ⟨j, hs⟩) ⦄ := by
-  unfold alloc.vec.FromIteratorVec.from_iter
-  simp only
-  apply WP.spec_bind (Pₘ := fun (L : List Pt) =>
-    L.length = s.val.length ∧
-    L.length ≤ Usize.max ∧
-    (∀ j (hj : j < L.length) (hs : j < s.val.length),
-        (L.get ⟨j, hj⟩).x.value.val = j ∧
-        (L.get ⟨j, hj⟩).y = s.val.get ⟨j, hs⟩))
-  · obtain ⟨L, hL_eq, hL_len, hL_elts⟩ := iterToList_enum_map_acc
-      s.val.length
-      { iter := { slice := s, i := 0 }, count := 0#usize }
-      [] (by simp) (by simp) h_len_le
-      (core.iter.adapters.map.mapIteratorTransformer
-        ({ iter := { iter := { slice := s, i := 0 }, count := 0#usize }, f := () } : PointAtMapT)
-        (core.iter.traits.iterator.IteratorEnumerate
-          (core.iter.traits.iterator.IteratorSliceIter GF16))
-        PolyEncoder.point_at.closure_1.Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt)
-      (by
-        ext e
-        grind[ Insts.CoreIterTraitsIteratorIterator.mapIteratorTransformer_next_spec _ _ _ e])
-    simp only [List.reverse_nil, List.nil_append] at hL_eq
-    rw [hL_eq]
-    simp only [WP.spec, WP.theta, WP.wp_return]
-    refine ⟨by simp [hL_len], by simp [hL_len]; grind, ?_⟩
+    (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16))
+    (pt_vec : alloc.vec.Vec Pt)
+    (h_len_le : s.val.length ≤ UScalar.max .U16)
+    (h_inv : pointAtInnerInv s iter pt_vec) :
+    body iter pt_vec ⦃ cf =>
+      match cf with
+      | ControlFlow.done pt_vec' => pointAtInnerPost s pt_vec'
+      | ControlFlow.cont p =>
+          pointAtInnerInv s p.1 p.2 ∧
+          s.val.length - p.1.iter.i < s.val.length - iter.iter.i ⦄ := by
+  obtain ⟨h_slice, h_count, h_i_le, h_vlen, h_elts⟩ := h_inv
+  subst h_slice
+  unfold body
+  by_cases h_lt : iter.iter.i < iter.iter.slice.val.length
+  · have h_u16 : iter.count.val ≤ UScalar.max .U16 := by
+      simp only [UScalar.max_UScalarTy_U16_eq, U16.max_eq] at h_len_le ⊢; omega
+    obtain ⟨count', h_next, h_count'⟩ :=
+      enum_next_some iter h_lt (by have := iter.count.hBounds; scalar_tac)
+    simp only [h_next, bind_ok, GF16.new_eq]
+    step*
+    subst ‹_ = UScalar.cast UScalarTy.U16 iter.count›
+    have h_i_val : (UScalar.cast UScalarTy.U16 iter.count).val = iter.iter.i := by
+      simp only [UScalar.cast_val_eq, UScalarTy.U16_numBits_eq, Nat.reducePow]
+      rw [Nat.mod_eq_of_lt (by
+        simp only [UScalar.max_UScalarTy_U16_eq, U16.max_eq] at h_u16; omega)]
+      exact h_count
+    obtain h_v1 : pt_vec1.val = pt_vec.val ++
+        [{ x := { value := UScalar.cast UScalarTy.U16 iter.count },
+           y := iter.iter.slice.val[iter.iter.i] }] := ‹_›
+    refine ⟨by omega, by omega, by simp [h_v1, h_vlen], ?_, by omega⟩
     intro j hj hs
-    have hs' : j + 0 < s.val.length := by omega
-    obtain ⟨hx, hy⟩ := hL_elts j (by omega) hs'
-    simp only [List.get_eq_getElem, add_zero] at hx
-    exact ⟨hx, hy⟩
-  · intro list ⟨h_len, h_max, h_elts⟩
-    split
-    · exact ⟨h_len, fun j hj hs => h_elts j hj hs⟩
-    · omega
+    simp only [List.get_eq_getElem, h_v1] at hj ⊢
+    by_cases hjl : j < pt_vec.val.length
+    · rw [List.getElem_append_left hjl]
+      simpa using h_elts j hjl hs
+    · have hj_eq : j = pt_vec.val.length := by simp at hj; omega
+      subst hj_eq
+      simp [h_i_val, h_vlen]
+  · rw [enum_next_none iter h_lt]
+    simp only [GF16.new_eq, bind_ok, uncurry_apply_pair, and_assoc, List.get_eq_getElem,
+      WP.spec_ok]
+    exact ⟨by omega, h_elts⟩
+
+/-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop0_loop0`**:
+
+Running the inner loop from a state satisfying `pointAtInnerInv` produces a vector satisfying
+`pointAtInnerPost`. -/
+@[step]
+theorem loop_spec
+    (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16))
+    (pt_vec : alloc.vec.Vec Pt)
+    (h_len_le : iter.iter.slice.val.length ≤ UScalar.max .U16)
+    (h_inv : pointAtInnerInv iter.iter.slice iter pt_vec) :
+    point_at_loop0_loop0 iter pt_vec ⦃ pt_vec' =>
+      pointAtInnerPost iter.iter.slice pt_vec' ⦄ := by
+  unfold point_at_loop0_loop0
+  apply loop.spec_decr_nat
+    (measure := fun (p : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter GF16) ×
+                       alloc.vec.Vec Pt) => iter.iter.slice.val.length - p.1.iter.i)
+    (inv := fun p => pointAtInnerInv iter.iter.slice p.1 p.2)
+  · rintro ⟨iter', pt_vec'⟩ h_inv'
+    apply WP.spec_mono (body_spec iter.iter.slice iter' pt_vec' h_len_le h_inv')
+    rintro (_ | _) h <;> exact h
+  · exact h_inv
+
+end spqr.encoding.polynomial.PolyEncoder.point_at_loop0_loop0
+
+namespace spqr.encoding.polynomial.PolyEncoder.point_at_loop0
 
 /-! ## Helper lemma: double-set at the same index -/
 
@@ -253,13 +192,13 @@ private lemma array_set_restore_set_getElem!
 
 /-! ## Spec theorem for the point_at loop body -/
 
-/-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop.body`**:
+/-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop0.body`**:
 
 One step of the point-to-polynomial conversion loop. Given `pts` (16 `Point`s), a range
 iterator, and the current `polys` array, retrieves the next index `i` and either:
 
 • **Done**: returns `polys` unchanged when the iterator is exhausted.
-• **Cont**: builds evaluation points via enumerate-map-collect, interpolates via
+• **Cont**: builds evaluation points via the inner enumerate/push loop, interpolates via
   `Poly::from_complete_points`, stores the result in `polys[i]`, and advances the iterator.
 
 Preconditions: iterator end ≤ 16, each point has admissible length (0/1/3/5/30/34/36).
@@ -293,44 +232,34 @@ theorem body_spec
             C (((pts.val[iter.start.val]!).value.val[j]!).toGF216) *
             scaledLagrangeBasis (alloc.vec.Vec.len ((pts.val[iter.start.val]!).value)) j) ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
     have h_i_lt_16 : iter.start.val < 16 := by omega
     have h_adm := h_admissible iter.start.val h_i_lt_16
-    simp only [UScalar.lt_equiv, UScalar.ofNatCore_val_eq, uncurry_apply_pair, not_lt,
+    simp only [UScalar.lt_equiv, UScalar.ofNatCore_val_eq, not_lt,
       List.getElem!_eq_getElem?_getD, ne_eq]
     simp only [core.slice.Slice.iter, core.iter.traits.iterator.Iterator.enumerate.trait_default,
-      core.iter.traits.iterator.Iterator.enumerate.default, bind_tc_ok]
-    step*
+      core.iter.traits.iterator.Iterator.enumerate.default]
+    step as ⟨p, p_post⟩
     subst p_post
     have h_len_le : (alloc.vec.Vec.deref ((pts.val[iter.start.val]!).value)).val.length ≤
         UScalar.max .U16 := by
-      simp only [alloc.vec.Vec.deref, List.getElem!_eq_getElem?_getD, Subtype.coe_eta,
-        UScalar.max_UScalarTy_U16_eq]
-      rcases h_adm with h | h | h | h | h | h | h <;> (simp_all only [List.Vector.length_val,
-        UScalar.ofNatCore_val_eq, getElem!_pos, List.length_eq_zero_iff, not_true_eq_false,
-        reduceCtorEq, false_and, implies_true,  and_self,
-        getElem?_pos, Option.getD_some, List.length_nil, zero_le])
-      all_goals (grind only [= U16.max_eq])
+      have h_dl : (alloc.vec.Vec.deref ((pts.val[iter.start.val]!).value)).val.length =
+          (pts.val[iter.start.val]!).value.val.length := by
+        simp [alloc.vec.Vec.deref]
+      rw [h_dl, UScalar.max_UScalarTy_U16_eq, U16.max_eq]
+      rcases h_adm with h | h | h | h | h | h | h <;> omega
     have h_pts_lt : iter.start.val < pts.val.length := by rw [pts.property]; exact h_i_lt_16
     have h_eq : pts.val[iter.start.val] = pts.val[iter.start.val]! :=
       List.Inhabited_getElem_eq_getElem! pts.val iter.start.val h_pts_lt
-    simp only [alloc.vec.Vec.len]
-    -- Apply the collect axiom, substitute m.iter via m_post, normalize with h_eq
-    have h_bridge := Spqr.Aeneas.collect_default_bridge
-      (inferInstanceAs (Subsingleton Unit))
-      (core.iter.traits.iterator.IteratorEnumerate
-        (core.iter.traits.iterator.IteratorSliceIter GF16))
-      Insts.CoreOpsFunctionFnMutTuplePairUsizeSharedGF16Pt
-      (core.iter.traits.collect.FromIteratorVec Pt) m
-    simp only [h_bridge, m_post, h_eq]; clear h_eq h_pts_lt
-    apply WP.spec_bind (from_iter_point_at_spec
-      (alloc.vec.Vec.deref ((pts.val[iter.start.val]!).value)) h_len_le)
+    simp only [h_eq]; clear h_eq h_pts_lt
+    apply WP.spec_bind (point_at_loop0_loop0.loop_spec
+      { iter := { slice := alloc.vec.Vec.deref ((pts.val[iter.start.val]!).value), i := 0 },
+        count := 0#usize } _ h_len_le
+      (by simp [pointAtInnerInv, alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]))
     intro pt_vec ⟨h_pt_len, h_pt_elts⟩
     have h_deref_len : (alloc.vec.Vec.deref pt_vec).val.length =
         (pts.val[iter.start.val]!).value.val.length := by
@@ -349,12 +278,12 @@ theorem body_spec
     have h_valid : ∀ (j : Nat) (hj : j < (alloc.vec.Vec.deref pt_vec).val.length),
         ((alloc.vec.Vec.deref pt_vec).val.get ⟨j, hj⟩).x.value.val = j := by
       intro j hj
-      simp only [alloc.vec.Vec.deref, Subtype.coe_eta, List.get_eq_getElem] at hj ⊢
+      simp only [alloc.vec.Vec.deref, Slice.from_val, List.get_eq_getElem] at hj ⊢
       exact (h_pt_elts j hj (by omega)).1
     match res with
     | core.result.Result.Ok poly =>
       obtain ⟨h_all_valid, h_deg, h_sum⟩ := h_res
-      simp only [core.result.Result.expect, bind_tc_ok]
+      simp only [core.result.Result.expect]
       simp only [massert]
       have h_massert : (iter.start.val < 16) = True := by grind
       simp only [h_massert, ↓reduceIte]
@@ -369,10 +298,10 @@ theorem body_spec
             · intro k hk
               simp_all
             · have h_a_eq : a[iter.start]! = poly := by
-                rw [a_post, p2_post1, p2_post2]
-                rw [List.Inhabited_getElem_eq_getElem! polys.val iter.start.val
-                  (by rw [polys.property]; exact h_i_lt_16)]
-                exact array_set_restore_set_getElem! polys iter.start poly (by grind)
+                have h_pl : iter.start.val < polys.val.length := by simp; omega
+                subst_vars
+                simp only [Array.getElem!_Usize_eq, Array.set_val_eq]
+                simp [List.getElem?_set_self h_pl]
               constructor
               · simp only [Array.getElem!_Usize_eq] at h_a_eq
                 grind
@@ -381,35 +310,27 @@ theorem body_spec
                   simp [Slice.len, alloc.vec.Vec.len, alloc.vec.Vec.deref] at h_deref_len ⊢
                   grind
                 rw [h_slicelen_eq] at h_sum
-                simp_all only [List.Vector.length_val, UScalar.ofNatCore_val_eq, getElem!_pos,
-                    List.length_eq_zero_iff, not_true_eq_false, reduceCtorEq, false_and,
-                    implies_true, and_self,  UScalar.max_UScalarTy_U16_eq,
-                    List.get_eq_getElem, forall_true_left, List.getElem!_eq_getElem?_getD,
-                    eq_iff_iff, iff_true, Array.getElem!_Usize_eq, Array.set_val_eq,
-                    List.set_getElem_self, List.length_set, List.getElem_set_self, getElem?_pos,
-                    Option.getD_some]
+                simp_all only [List.length_eq_zero_iff, not_true_eq_false, reduceCtorEq, false_and,
+                    implies_true, and_self, UScalar.max_UScalarTy_U16_eq, List.get_eq_getElem,
+                    forall_true_left, List.getElem!_eq_getElem?_getD, eq_iff_iff, iff_true,
+                    Array.getElem!_Usize_eq, Array.set_val_eq, List.set_getElem_self]
                 apply Finset.sum_congr rfl
                 intro j hj
                 have hj_range := Finset.mem_range.mp hj
                 have hj_pt : j < pt_vec.val.length := by
-                  simp [alloc.vec.Vec.deref] at *; omega
-                have hy := (h_pt_elts j
-                  (by simp [alloc.vec.Vec.deref]; omega)).2
-                simp only [alloc.vec.Vec.deref] at hy
-                simp only [alloc.vec.Vec.deref,
-                  List.getElem?_eq_getElem hj_pt,
-                  List.getElem?_eq_getElem hj_range,
-                  Option.getD_some]
-                rw [hy]
+                  rw [h_pt_len]; simpa [alloc.vec.Vec.deref] using hj_range
+                have hy := (h_pt_elts j (by simpa [alloc.vec.Vec.deref] using hj_range)).2
+                simp only [alloc.vec.Vec.deref, Slice.from_val] at hy ⊢
+                rw [List.getElem?_eq_getElem hj_pt, Option.getD_some, hy]
+                simp only [alloc.vec.Vec.len, List.getElem?_eq_getElem hj_range, Option.getD_some]
     | core.result.Result.Err () =>
       exfalso
       obtain ⟨j, hj, h_neq⟩ := h_res
       exact h_neq (h_valid j hj)
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
-/-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop`**:
+/-- **Spec theorem for `encoding.polynomial.PolyEncoder.point_at_loop0`**:
 
 The full point-to-polynomial conversion loop. Iterates over `0..NUM_POLYS`, building
 Lagrange interpolating polynomials for each point in `pts` and storing them in `polys`.
@@ -432,13 +353,13 @@ theorem loop_spec
         polys.val[j]!.toGF216Poly = ∑ k ∈ Finset.range (pts.val[j]!).value.val.length,
             C (((pts.val[j]!).value.val[k]!).toGF216) *
               scaledLagrangeBasis (alloc.vec.Vec.len ((pts.val[j]!).value)) k) :
-    point_at_loop iter pts polys ⦃ (polys' : Array encoding.polynomial.Poly 16#usize) =>
+    point_at_loop0 iter pts polys ⦃ (polys' : Array encoding.polynomial.Poly 16#usize) =>
       ∀ (j : Nat), j < iter.end.val →
         (polys'.val[j]!).degree + 1 ≤ Usize.max ∧
         polys'.val[j]!.toGF216Poly = ∑ k ∈ Finset.range (pts.val[j]!).value.val.length,
             C (((pts.val[j]!).value.val[k]!).toGF216) *
               scaledLagrangeBasis (alloc.vec.Vec.len ((pts.val[j]!).value)) k ⦄ := by
-  unfold point_at_loop
+  unfold point_at_loop0
   apply loop.spec_decr_nat
     (measure := fun (p : core.ops.range.Range Std.Usize ×
                        Array encoding.polynomial.Poly 16#usize) =>
@@ -488,7 +409,7 @@ theorem loop_spec
       · grind
   · exact ⟨rfl, h_start_le, h_pre⟩
 
-end spqr.encoding.polynomial.PolyEncoder.point_at_loop
+end spqr.encoding.polynomial.PolyEncoder.point_at_loop0
 
 /-!
 # Spec theorem for `spqr::encoding::polynomial::{PolyEncoder}::point_at`
@@ -497,7 +418,7 @@ end spqr.encoding.polynomial.PolyEncoder.point_at_loop
 Handles two encoder states:
 1. **Polys**: directly evaluates the stored polynomial.
 2. **Points**: returns cached value if `idx < len`, otherwise converts all 16 points to
-   interpolating polynomials via `point_at_loop` and evaluates.
+   interpolating polynomials via `point_at_loop0` and evaluates.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
@@ -510,7 +431,7 @@ Returns GF(2¹⁶) evaluation of the `poly`-th polynomial at index `idx`. Three 
 • **Points, cache hit**: returns `pts[poly].value[idx]`, state unchanged.
 • **Points, cache miss**: converts to `Polys` via Lagrange interpolation, then evaluates.
 
-Composes `point_at_loop.loop_spec` and `Poly.compute_at_spec`. -/
+Composes `point_at_loop0.loop_spec` and `Poly.compute_at_spec`. -/
 @[step]
 theorem point_at_spec
     (self : encoding.polynomial.PolyEncoder) (poly idx : Std.Usize)

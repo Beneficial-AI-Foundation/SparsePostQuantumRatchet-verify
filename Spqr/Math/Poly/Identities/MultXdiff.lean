@@ -3,7 +3,18 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.List
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
 
 /-!
 # Polynomial identities for `mult_xdiff`
@@ -19,6 +30,8 @@ This file collects the pure-mathematical polynomial identity lemmas used by the
   `listToGF216Poly xp2.val = (X − C d.toGF216) * listToGF216Poly a.val`
   derived from the loop 0 and loop 1 postconditions.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf Polynomial
 
@@ -70,7 +83,7 @@ lemma mult_xdiff_result_eq
       have h_xp1_0 : (xp1.val[0]!).toGF216 = 0 := by
         have h_unch := h_xp_unch 0 (by omega)
         have h_len_xp1 : 0 < xp1.val.length := by
-          simp [List.Vector.length_val]; omega
+          simp; omega
         have h_len_rep : 0 < (Array.repeat N GF16.ZERO).val.length := by
           simp [Array.repeat_val]; omega
         have h_eq := list_get_of_getElem?_eq h_unch h_len_xp1 h_len_rep

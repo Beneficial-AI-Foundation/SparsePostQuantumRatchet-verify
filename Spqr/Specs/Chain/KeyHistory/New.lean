@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::new`
 
@@ -11,6 +13,8 @@ Constructs an empty `KeyHistory` with `data.length = 0`. Pre-allocates capacity 
 (`KEY_SIZE * 2`) but stores no data. Infallible since `36 * 2` fits in `usize`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 
@@ -26,6 +30,6 @@ theorem new_spec :
       result.data.length = 0 ⦄ := by
   unfold new
   step*
-  simp only [alloc.vec.Vec.length, alloc.vec.Vec.with_capacity, alloc.vec.Vec.new, List.length_nil]
+  simp [alloc.vec.Vec.length, alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]
 
 end spqr.chain.KeyHistory

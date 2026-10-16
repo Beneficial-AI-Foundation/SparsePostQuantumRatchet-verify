@@ -3,8 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Gf16.Basic
+module
+
+public import Spqr.Math.Gf16.Basic
 import Spqr.Math.Gf2Poly.NatRep
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Mathlib.Tactic.IntervalCases
+
 
 /-!
 # Irreducibility of polyGF2
@@ -12,6 +21,8 @@ import Spqr.Math.Gf2Poly.NatRep
 Proof that `polyGF2 = X¹⁶ + X¹² + X³ + X + 1` is irreducible over `GF(2) = ZMod 2`, using the
 computable Nat-level representation and bridge lemmas from `Spqr.Math.Gf2Poly.NatRep`.
 -/
+
+@[expose] public section
 
 open Polynomial
 

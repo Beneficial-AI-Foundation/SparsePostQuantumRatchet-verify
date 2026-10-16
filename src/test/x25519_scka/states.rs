@@ -10,7 +10,6 @@ use crate::Epoch;
 use curve25519_dalek::{
     ristretto::CompressedRistretto, scalar::Scalar, traits::Identity, RistrettoPoint,
 };
-use rand_08::rngs::OsRng as OsRngFromRand08;
 use rand_core::CryptoRng;
 use sha2::Digest;
 
@@ -104,8 +103,10 @@ pub struct Send {
 }
 
 impl Send {
-    fn send<R: CryptoRng>(self, _rng: &mut R) -> (Option<(Epoch, Secret)>, Message, States) {
-        let mut secret = Scalar::random(&mut OsRngFromRand08);
+    fn send<R: CryptoRng>(self, rng: &mut R) -> (Option<(Epoch, Secret)>, Message, States) {
+        let mut secret_bytes = [0u8; 64];
+        rng.fill_bytes(&mut secret_bytes);
+        let mut secret = Scalar::from_bytes_mod_order_wide(&secret_bytes);
         let public = RistrettoPoint::mul_base(&secret);
 
         let local_public = serialize_public_key(public);
@@ -207,8 +208,10 @@ pub struct UninitSend {
 }
 
 impl UninitSend {
-    fn send<R: CryptoRng>(self, _rng: &mut R) -> (Option<(Epoch, Secret)>, Message, States) {
-        let secret = Scalar::random(&mut OsRngFromRand08);
+    fn send<R: CryptoRng>(self, rng: &mut R) -> (Option<(Epoch, Secret)>, Message, States) {
+        let mut secret_bytes = [0u8; 64];
+        rng.fill_bytes(&mut secret_bytes);
+        let secret = Scalar::from_bytes_mod_order_wide(&secret_bytes);
         let public = RistrettoPoint::mul_base(&secret);
 
         let local_public = serialize_public_key(public);

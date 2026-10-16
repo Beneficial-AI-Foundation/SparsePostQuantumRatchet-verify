@@ -3,11 +3,22 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Gf.GF16.New
-import Spqr.Math.Poly.Basic.Defs
-import Spqr.Math.Poly.Lagrange.CompletePoints
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Gf.GF16.New
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
+import Spqr.Specs.Encoding.Gf.GF16.ONE
+import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
+import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
 /-! # Spec theorem for `lagrange_polys_for_complete_points`: loop body 0
 
 Specifies one iteration of the initialisation loop in `lagrange_polys_for_complete_points`.
@@ -21,6 +32,8 @@ The loop sets `ones[i].x.value = i as u16` and keeps
 After all `N` iterations, `ones[j].x.toGF216 = Nat.toGF216 j` and `ones[j].y = GF16::ONE`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
@@ -168,8 +181,10 @@ theorem body_spec
   by_cases h_lt : i.val < N.val
   · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, true_and]
     step*
-    subst s_post a_post
-    simp_all [Array.to_slice]
+    subst_vars
+    simp only [Array.getElem_Usize_eq, Slice.getElem_Usize_eq, Array.val_to_slice,
+      Array.length_to_slice, Array.set_val_eq, Array.getElem?_Nat_eq, Array.getElem!_Usize_eq] at *
+    grind
   · step*
 
 /-!
@@ -271,9 +286,11 @@ theorem lagrange_polys_for_complete_points_spec
                 condProdLinearFactors (ones1[j]!).x (ones1.val.take N.val) 0) ⦄ := by
   unfold lagrange_polys_for_complete_points
   step*
-  refine ⟨ones1, fun j hj => ?_, fun j hj => result_post1 j (Nat.zero_le j) hj⟩
-  obtain ⟨hx, hy⟩ := ones1_post1 j (Nat.zero_le j) hj
-  exact ⟨hx, hy.trans (repeat_y _ j hj)⟩
+  simp only [Nat.zero_le, true_implies] at *
+  refine ⟨_, ?_, ‹_›⟩
+  intro j hj
+  have := repeat_y { x := GF16.ZERO, y := GF16.ONE } j hj
+  grind
 
 instance instInhabitedPolyConst {N : Usize} : Inhabited (PolyConst N) := ⟨PolyConst.ZEROS N⟩
 
@@ -296,13 +313,15 @@ theorem lagrange_polys_for_complete_points_scaled_spec
       ∀ (j : Nat) (_ : j < N.val),
         listToGF216Poly (result.val[j]!).coefficients.val =
           scaledLagrangeBasis N j ⦄ := by
-  step*
-  have h_eq : result = completePoints N := by
+  apply WP.spec_mono (lagrange_polys_for_complete_points_spec N h_N_pos h_N_bound)
+  rintro result ⟨ones1, h_pts, h_poly⟩ j hj
+  have h_eq : ones1 = completePoints N := by
     simp only [global_simps]
-    apply Subtype.ext
+    apply Aeneas.Std.Array.ext
+    simp only [Array.from_val]
     apply List.ext_getElem (by simp)
     intro n h1' h2'
-    obtain ⟨hx, hy⟩ := result_post1 n (by grind)
+    obtain ⟨hx, hy⟩ := h_pts n (by grind)
     simp only [Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
       List.getElem?_eq_getElem h1', Option.getD_some] at hx hy
     simp only [List.getElem_map, List.getElem_finRange] at h2' ⊢
@@ -315,7 +334,7 @@ theorem lagrange_polys_for_complete_points_scaled_spec
         simp [BitVec.toNat_ofNat]
         grind
     · exact hy.trans (gf16_ext GF16.ONE_value)
-  have h := result_post2 _ result_post3 (by grind) (by grind)
+  have h := h_poly j hj (by grind) (by grind)
   rw [h_eq] at h
   simp only [global_simps] at h ⊢
   simp only [List.getElem!_eq_getElem?_getD]

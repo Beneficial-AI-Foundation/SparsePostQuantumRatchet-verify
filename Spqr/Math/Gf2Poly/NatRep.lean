@@ -3,9 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Mathlib.Data.Nat.Bitwise
 import Mathlib.Tactic.IntervalCases
-import Spqr.Math.Gf2Poly.Basic
+public import Spqr.Math.Gf2Poly.Basic
+public import Mathlib.Algebra.Polynomial.Degree.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+
 
 /-!
 # Computable Nat-level representation of `BinaryPoly`
@@ -18,6 +25,8 @@ This module provides the computational backbone for verifying irreducibility of 
 polynomials: the `decide`-friendly functions operate on natural numbers, and the bridge lemmas
 connect their results back to the abstract polynomial ring `BinaryPoly = (ZMod 2)[X]`.
 -/
+
+public section
 
 open Polynomial
 

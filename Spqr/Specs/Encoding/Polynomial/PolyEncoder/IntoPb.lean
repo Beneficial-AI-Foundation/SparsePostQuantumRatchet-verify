@@ -3,15 +3,20 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Poly.ModByMonic
-import Spqr.Math.Poly.Identities.Basic
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Poly.ModByMonic
+public import Spqr.Math.Poly.Identities.Basic
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
-import Spqr.Specs.Aeneas.SliceIteratorNext
+public import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec theorem for `PolyEncoder::into_pb`: loop body 1
 
@@ -20,6 +25,8 @@ and either returns `v` unchanged (done) or appends the 2-byte big-endian encodin
 `v` (continue). Invariant: `v.len() == 2 * i` with `v[2*k]*256 + v[2*k+1] = pts[k].value.val`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 
@@ -49,10 +56,8 @@ theorem body_spec
             v1 = v ++ [hi, lo] ∧
             256 * hi  + lo = (pts[iter.start]!).value.val ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     step*
@@ -149,10 +154,8 @@ theorem body_spec
                 256 * (serialized[2 * k]!) + serialized[2 * k + 1]! =
                   ((points[iter.start]!).value.val[k]!).value.val ⦄ := by
   unfold body
-  obtain ⟨⟨opt, iter1'⟩, hnext, h_none, h_some⟩ :=
-    WP.spec_imp_exists (core.iter.range.IteratorRange.next_Usize_spec' iter)
-  rw [hnext]
-  simp only [bind_tc_ok]
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
@@ -167,8 +170,7 @@ theorem body_spec
     · simp_all
       grind
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
 
@@ -236,9 +238,16 @@ theorem loop_spec
       simp only [] at h_cf ⊢
       obtain ⟨h_lt, h_start1, h_end1, serialized, h_out_eq, h_ser_len, h_ser_encode⟩ := h_cf
       have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
-      constructor
+      have h_len : out'.val.length = iter'.start.val := h_out_len'
+      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+      by_cases hj_lt : j < iter'.start.val
       · grind
-      · grind
+      · have hj_eq : j = iter'.start.val := by omega
+        subst hj_eq
+        have h_get : out''.val[iter'.start.val]! = serialized := by grind
+        rw [h_get]
+        exact ⟨by simpa [Array.getElem!_Nat_eq] using h_ser_len,
+          by simpa [Array.getElem!_Nat_eq] using h_ser_encode⟩
   · grind
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
@@ -246,8 +255,8 @@ end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
 /-! # Spec theorem for `PolyEncoder::into_pb`: loop body 2
 
 One step of the polynomial-serialization loop (the `EncoderState::Polys` branch). Calls `next`
-on a slice iterator over `Poly` values and either returns `v` unchanged (done) or serializes
-the polynomial's coefficients via `Poly::serialize` and pushes the result onto `v` (continue).
+on a `Range<usize>` iterator over the indices of `polys` and either returns `v` unchanged (done)
+or serializes `polys[i]` via `Poly::serialize` and pushes the result onto `v` (continue).
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
@@ -255,55 +264,55 @@ namespace spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.into_pb_loop1.body`**:
 
-One step of the polynomial-serialization loop. Retrieves the next `Poly` from the slice iterator,
-serializes its coefficients via `Poly::serialize`, and pushes the result onto `v`. Done case
+One step of the polynomial-serialization loop. Retrieves index `i` from the range iterator,
+serializes `polys[i]` via `Poly::serialize`, and pushes the result onto `v`. Done case
 returns `v` unchanged; cont case appends one serialized entry with iterator advanced. -/
 @[step]
 theorem body_spec
-    (iter : core.slice.iter.Iter Poly)
+    (polys : Array Poly 16#usize)
+    (iter : core.ops.range.Range Usize)
     (v : alloc.vec.Vec (alloc.vec.Vec U8))
+    (h_end_le : iter.end ≤ polys.val.length)
     (h_out_overflow : v.length + 1 ≤ Usize.max)
-    (h_ser_overflow : ∀ j < iter.slice.length,
-        2 * (iter.slice[j]!).degree + 2 ≤ Usize.max) :
-    body iter v ⦃ cf =>
+    (h_ser_overflow : ∀ j < polys.length,
+        2 * (polys.val[j]!).degree + 2 ≤ Usize.max) :
+    body polys iter v ⦃ cf =>
       match cf with
       | ControlFlow.done v' =>
-          v' = v ∧ ¬(iter.i < iter.slice.length)
+          v' = v ∧ ¬(iter.start < iter.end)
       | ControlFlow.cont (iter1, v1) =>
-          iter.i < iter.slice.length ∧
-          iter1.i = iter.i + 1 ∧
-          iter1.slice = iter.slice ∧
+          iter.start < iter.end ∧
+          iter1.start = iter.start.val + 1 ∧
+          iter1.end = iter.end ∧
           ∃ (serialized : alloc.vec.Vec U8),
             v1 = v ++ [serialized] ∧
-            serialized.length =
-              2 * (iter.slice[iter.i]!).degree ∧
-            ∀ k < (iter.slice[iter.i]!).degree,
+            serialized.length = 2 * (polys.val[iter.start.val]!).degree ∧
+            ∀ k < (polys.val[iter.start.val]!).degree,
                 256 * serialized[2 * k]! + serialized[2 * k +1]! =
-                  ((iter.slice[iter.i]!).coefficients[k]!).value.val ⦄ := by
+                  ((polys.val[iter.start.val]!).coefficients[k]!).value.val ⦄ := by
   unfold body
-  obtain ⟨opt, iter1', hnext, h_none, h_some⟩ := core.slice.iter.IteratorSliceIter.next_post iter
-  rw [hnext]
-  simp only [bind_tc_ok]
-  by_cases h_lt : iter.i < iter.slice.length
-  · obtain ⟨h_opt_eq, h_i1, h_slice1⟩ := h_some h_lt
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    have h_ser := h_ser_overflow iter.i h_lt
-    have h_getelem : (iter.slice.val[iter.i]! : Poly) =
-        iter.slice.val[iter.i]'h_lt := by
-      rw [← List.Inhabited_getElem_eq_getElem! (hi := h_lt)]
+    have h_j_lt : iter.start.val < polys.val.length := by omega
+    have h_getelem : (polys.val[iter.start.val]! : Poly) =
+        polys.val[iter.start.val]'h_j_lt := by
+      rw [← List.Inhabited_getElem_eq_getElem! (hi := h_j_lt)]
+    have h_ser := h_ser_overflow iter.start.val h_j_lt
     step*
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    rw [h_opt_eq]
-    exact ⟨rfl, h_lt⟩
+    simp [h_opt_eq, WP.spec_ok, h_lt]
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 
 /-! # Spec theorem for `PolyEncoder::into_pb`: loop 2
 
-Full polynomial-serialization loop (the `EncoderState::Polys` branch). Iterates over a slice of
-`Poly` values, serializing each polynomial's coefficients into a byte vector. Postcondition:
-`result.len = slice.len` with each entry encoding the corresponding polynomial's coefficients
-in big-endian. Proof via `loop.spec_decr_nat`.
+Full polynomial-serialization loop (the `EncoderState::Polys` branch). Iterates over the
+indices `iter.start..iter.end` of `polys`, serializing each polynomial's coefficients into a
+byte vector. Postcondition: `result.len = iter.end` with each entry encoding the corresponding
+polynomial's coefficients in big-endian. Proof via `loop.spec_decr_nat`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
@@ -312,61 +321,57 @@ namespace spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.into_pb_loop1`**:
 
 Full polynomial-serialization loop. Drives the body to completion, producing a vector of byte
-vectors with `result.len = slice.len`, one serialized entry per polynomial. -/
+vectors with `result.len = iter.end`, one serialized entry per polynomial. -/
 @[step]
 theorem loop_spec
-    (iter : core.slice.iter.Iter Poly)
+    (polys : Array Poly 16#usize)
+    (iter : core.ops.range.Range Usize)
     (v : alloc.vec.Vec (alloc.vec.Vec U8))
-    (h_out_len : v.length = iter.i)
-    (h_start_le : iter.i ≤ iter.slice.length)
-    (h_overflow : iter.slice.length + 1 ≤ Usize.max)
-    (h_ser_overflow : ∀ j < iter.slice.length,
-        2 * (iter.slice[j]!).degree + 2 ≤ Usize.max)
-    (h_pre : ∀ j < iter.i,
-          (v[j]!).length = 2 * (iter.slice[j]!).degree ∧
-          ∀ k < (iter.slice[j]!).degree,
+    (h_end_le : iter.end ≤ polys.length)
+    (h_out_len : v.length = iter.start)
+    (h_start_le : iter.start ≤ iter.end.val)
+    (h_overflow : polys.length + 1 ≤ Usize.max)
+    (h_ser_overflow : ∀ j < polys.length,
+        2 * (polys.val[j]!).degree + 2 ≤ Usize.max)
+    (h_pre : ∀ j < iter.start.val,
+          (v[j]!).length = 2 * (polys.val[j]!).degree ∧
+          ∀ k < (polys.val[j]!).degree,
               256 * (v[j]!)[2 * k]! + (v[j]!)[2 * k + 1]! =
-                ((iter.slice[j]!).coefficients[k]!).value.val) :
-    into_pb_loop1 iter v ⦃ (result : alloc.vec.Vec (alloc.vec.Vec U8)) =>
-      result.length = iter.slice.length ∧
-      ∀ j < iter.slice.length,
-          (result[j]!).length = 2 * (iter.slice[j]!).degree ∧
-          ∀ k < (iter.slice[j]!).degree,
+                ((polys.val[j]!).coefficients[k]!).value.val) :
+    into_pb_loop1 iter polys v ⦃ (result : alloc.vec.Vec (alloc.vec.Vec U8)) =>
+      result.length = iter.end ∧
+      ∀ j < iter.end.val,
+          (result[j]!).length = 2 * (polys.val[j]!).degree ∧
+          ∀ k < (polys.val[j]!).degree,
               256 * (result[j]!)[2 * k]! + (result[j]!)[2 * k + 1]! =
-                ((iter.slice[j]!).coefficients[k]!).value.val ⦄ := by
+                ((polys.val[j]!).coefficients[k]!).value.val ⦄ := by
   unfold into_pb_loop1
   apply loop.spec_decr_nat
-    (measure := fun (p : core.slice.iter.Iter Poly ×
-                       alloc.vec.Vec (alloc.vec.Vec U8)) => p.1.slice.length - p.1.i)
-    (inv := fun (p : core.slice.iter.Iter Poly × alloc.vec.Vec (alloc.vec.Vec U8)) =>
-        p.1.slice = iter.slice ∧
-        p.1.i ≤ p.1.slice.length ∧
-        p.2.length = p.1.i ∧
-        (∀ j < p.1.i, (p.2[j]!).length = 2 * (iter.slice[j]!).degree ∧
-          ∀ k < (iter.slice[j]!).degree,
+    (measure := fun (p : core.ops.range.Range Usize ×
+                       alloc.vec.Vec (alloc.vec.Vec U8)) => p.1.end - p.1.start)
+    (inv := fun (p : core.ops.range.Range Usize × alloc.vec.Vec (alloc.vec.Vec U8)) =>
+        p.1.end = iter.end ∧
+        p.1.start ≤ p.1.end ∧
+        p.2.length = p.1.start ∧
+        (∀ j < p.1.start.val, (p.2[j]!).length = 2 * (polys.val[j]!).degree ∧
+          ∀ k < (polys.val[j]!).degree,
             256 * (p.2[j]!)[2 * k]! + (p.2[j]!)[2 * k + 1]! =
-            ((iter.slice[j]!).coefficients[k]!).value.val))
-  · rintro ⟨iter', out'⟩ ⟨h_slice', h_start_le', h_out_len', h_pre'⟩
-    simp only [] at h_slice' h_start_le' h_out_len' h_pre' ⊢
-    have h_slice_len : iter'.slice.val.length = iter.slice.val.length := by rw [h_slice']
-    have h_body := body_spec iter' out' (by grind) (by rw [h_slice']; exact h_ser_overflow)
+            ((polys.val[j]!).coefficients[k]!).value.val))
+  · rintro ⟨iter', out'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
+    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
+    have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_body := body_spec polys iter' out' (by grind) (by grind) h_ser_overflow
     apply WP.spec_mono h_body
     intro cf h_cf
     match cf with
     | ControlFlow.done out'' => grind
     | ControlFlow.cont (iter'', out'') =>
       simp only [] at h_cf ⊢
-      obtain ⟨h_lt, h_i1, h_slice1, serialized, h_out_eq, h_ser_len, h_ser_encode⟩ := h_cf
-      have h_slice1_len : iter''.slice.val.length = iter'.slice.val.length := by rw [h_slice1]
-      rw [h_slice'] at h_ser_len h_ser_encode
-      constructor
-      · refine ⟨by rw [h_slice1]; exact h_slice',
-               by grind,
-               by grind,
-               fun j hj => ?_⟩
-        by_cases hj_lt : j < iter'.i
-        · grind
-        · grind
+      obtain ⟨h_lt, h_start1, h_end1, serialized, h_out_eq, h_ser_len, h_ser_encode⟩ := h_cf
+      have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
+      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+      by_cases hj_lt : j < iter'.start.val
+      · grind
       · grind
   · exact ⟨rfl, h_start_le, h_out_len, h_pre⟩
 
@@ -424,19 +429,8 @@ theorem into_pb_spec_bytes
   | Polys polys =>
     have h_overflow := h_overflow_polys polys h
     step*
-    simp only [core.slice.Slice.iter, bind_tc_ok]
-    step with into_pb_loop1.loop_spec by
-      first
-        | assumption
-        | scalar_tac
-        | omega
-        | (simp only [s_post])
-    · intros j hj
-      simp_all
-    · constructor
-      · grind
-      · simp_all
-        grind
+    simp only [Array.getElem!_Nat_eq] at *
+    grind
 
 /-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
 • The call always succeeds (no panic) under the sole hypothesis `2 * len + 2 ≤ Usize.max` on
@@ -460,6 +454,9 @@ theorem into_pb_spec
   refine ⟨h_idx, ?_⟩
   cases h : self.s with
   | Points points => grind
-  | Polys polys => grind
+  | Polys polys =>
+    simp only [h] at h_data ⊢
+    simp only [Array.getElem!_Nat_eq] at *
+    grind
 
 end spqr.encoding.polynomial.PolyEncoder
