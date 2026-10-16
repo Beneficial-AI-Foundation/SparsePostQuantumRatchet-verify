@@ -22,7 +22,7 @@ namespace Fips203
 
 /-! ## Packed-natural encoding
 
-The bridge `ntt (delta j) = nttSpec (delta j)` (in `RoundTrip.lean`) is proved by a
+The correspondence `ntt (delta j) = nttSpec (delta j)` (in `RoundTrip.lean`) is proved by a
 *verified computation*:
 
 1. a **packed-natural clone** of Algorithm 7 (`nttP`) operating on a single

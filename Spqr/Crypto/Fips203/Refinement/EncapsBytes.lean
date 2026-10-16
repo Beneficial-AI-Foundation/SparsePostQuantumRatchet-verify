@@ -7,7 +7,7 @@ module
 public import Aeneas
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Crypto.Fips203.KEM.EncapsIncremental
-public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
 public import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # FIPS 203 model of libcrux's incremental `encapsulate1`
@@ -54,7 +54,7 @@ noncomputable section
 
 open Aeneas Aeneas.Std
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 /-! ## Sizes -/
 
@@ -386,4 +386,4 @@ theorem pk2Valid_pk2Bytes (seed : Fin 64 → UInt8) :
 
 instance (pk2 : List U8) : Decidable (pk2Valid pk2) := Classical.dec _
 
-end Fips203.Bridge
+end Fips203.Refinement

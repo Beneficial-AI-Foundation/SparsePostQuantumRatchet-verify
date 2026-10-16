@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
+public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
 public import Spqr.Specs.Aeneas.ResultExpect
 /-! # Spec theorem for `incremental_mlkem768::encaps2`
 
@@ -23,8 +23,8 @@ The extracted body in `SrcTranslated/Funs.lean` proceeds in three steps:
 * call libcrux's incremental `encapsulate2` and copy the ciphertext into an owned `Vec`.
 
 **FIPS 203 value semantics** (Phase 7.3 of `doc/plan.md`, via Bridge 6.3
-`Spqr/Crypto/Fips203/Bridge/LibcruxEncaps2.lean`): the output is
-`Fips203.Bridge.ct2List st pk` — round 2 of FIPS 203 Algorithm 17
+`Spqr/Crypto/Fips203/Refinement/LibcruxEncaps2.lean`): the output is
+`Fips203.Refinement.ct2List st pk` — round 2 of FIPS 203 Algorithm 17
 (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `st` and the NTT-domain
 vector `t̂` decoded from `pk = ByteEncode₁₂(t̂)` — where `pk` holds the bytes of `ek` and `st`
 holds the bytes of the state actually consumed: the fixed state when the opaque endianness
@@ -43,7 +43,7 @@ Bridge 6.3 identify the output with `ct[960 : 1088]` of the monolithic
 
 open Aeneas Aeneas.Std Result
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 /-- `try_from` on a slice of exactly `N` elements succeeds with `Ok` of an array holding the
 slice's elements. -/
@@ -58,7 +58,7 @@ theorem tryFromSharedArraySlice_ok_spec {T : Type} (N : Usize) (s : Slice T)
   simp only [WP.spec_ok]
   exact ⟨_, rfl, Array.from_val _ _⟩
 
-end Fips203.Bridge
+end Fips203.Refinement
 
 namespace Spqr.IncrementalMlkem768
 
@@ -89,7 +89,7 @@ def Encaps2Post
       (pk : Array Std.U8 1152#usize),
       st.val = stBytes ∧
       pk.val = ek.val ∧
-      result.val = Fips203.Bridge.ct2List st pk
+      result.val = Fips203.Refinement.ct2List st pk
 
 end Spqr.IncrementalMlkem768
 
@@ -102,7 +102,7 @@ open Spqr.IncrementalMlkem768
 Assuming the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`), `encaps2` succeeds and
 returns the 128-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17
 (Bridge 6.3): there are fixed-size arrays `st` (the possibly fixed state the workaround
-selected) and `pk` (the bytes of `ek`) with `result = Fips203.Bridge.ct2List st pk`, i.e.
+selected) and `pk` (the bytes of `ek`) with `result = Fips203.Refinement.ct2List st pk`, i.e.
 `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))` on the decoded
 state `(ŷ, e₂, m)` and `t̂`.
 
@@ -123,7 +123,7 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
           (pk : Array Std.U8 1152#usize),
           st.val = stBytes ∧
           pk.val = ek.val ∧
-          result.val = Fips203.Bridge.ct2List st pk) ∧
+          result.val = Fips203.Refinement.ct2List st pk) ∧
       result.length = 128 ⦄ from h
   -- Resolve the endianness workaround to `none`.
   open _root_.incremental_mlkem768 in
@@ -157,13 +157,13 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
   rw [a_post, a1_post] at ct2_post1
   have h_s2 : result.slice = ct2.value.to_slice := by
     rw [← s2_post]; assumption
-  have h_result : result.val = Fips203.Bridge.ct2List a0 a := by
+  have h_result : result.val = Fips203.Refinement.ct2List a0 a := by
     rw [alloc.vec.Vec.val, h_s2, Array.val_to_slice, ct2_post1]
   refine ⟨⟨es.val, ?_, a0, a, ?_, ?_, h_result⟩, ?_⟩
   · simp [encaps2EffectiveState, h_eq, mf]
   · rw [r_post1, s_post, es1_post]
     simp only [o_post, mf, core.option.Option.unwrap_or_none]
   · rw [r1_post1, s1_post]
-  · simp only [alloc.vec.Vec.length, h_result, Fips203.Bridge.ct2List_length]
+  · simp only [alloc.vec.Vec.length, h_result, Fips203.Refinement.ct2List_length]
 
 end spqr.incremental_mlkem768

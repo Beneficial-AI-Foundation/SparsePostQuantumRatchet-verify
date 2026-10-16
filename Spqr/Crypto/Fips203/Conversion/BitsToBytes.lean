@@ -67,7 +67,7 @@ theorem packBitsAux_lt (bits : Fin 8 → Fin 2) (n : ℕ) (h : n ≤ 8) :
     have hprev := ih (by omega)
     omega
 
-/-- Bridge: the recursive `packByte` agrees with the `Finset.univ.sum` specification. -/
+/-- Correspondence: the recursive `packByte` agrees with the `Finset.univ.sum` specification. -/
 theorem packByte_eq_sum (bits : Fin 8 → Fin 2) :
     packByte bits =
       (Finset.univ.sum fun (j : Fin 8) => (bits j).val * 2 ^ (j : ℕ)).toUInt8 := by
@@ -102,7 +102,7 @@ def bitsToBytes {l : ℕ} (b : Fin (8 * l) → Fin 2) : Fin l → UInt8 :=
 /-! ## Elementary properties -/
 
 /-- Each output byte is bounded by `2^8 - 1 = 255` (trivially true for `UInt8`, but useful
-as a sanity-check lemma and for bridging to `Aeneas.Std.U8`). -/
+as a sanity-check lemma and for converting to `Aeneas.Std.U8`). -/
 theorem bitsToBytes_val_lt {l : ℕ} (b : Fin (8 * l) → Fin 2) (i : Fin l) :
     (bitsToBytes b i).toNat < 256 :=
   UInt8.toNat_lt (bitsToBytes b i)

@@ -12,7 +12,7 @@ public import Spqr.Crypto.Fips203.PKE.RoundTrip
 The deterministic round-trip
 bound `decompress_compress_error'` of `Conversion/Decompress.lean` is stated as a minimum of two
 mod-`q` distances.  The noise accounting of `PKE/RoundTrip.lean`, however, measures every noise
-term with the **centred absolute value** `absZq`.  This file bridges the two:
+term with the **centred absolute value** `absZq`.  This file relates the two:
 
 * `val_sub_eq` / `absZq_eq_min` — `(a − b).val` and `absZq` in terms of mod-`q` distances;
 * `absZq_decompress_compress` — the round-trip error in centred form:

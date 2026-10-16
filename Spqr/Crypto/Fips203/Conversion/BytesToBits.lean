@@ -89,7 +89,7 @@ theorem bytesToBits_ones (l : ℕ) :
   simp only [bytesToBits]
   exact extractBit_ff _
 
-/-! ## Bridge to `Finset.sum` -/
+/-! ## Correspondence with `Finset.sum` -/
 
 /-- `extractBit` agrees with the `Finset.sum` characterisation of bit decomposition:
 

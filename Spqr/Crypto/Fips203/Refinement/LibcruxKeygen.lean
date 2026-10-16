@@ -5,16 +5,16 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
+public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
 import all Aeneas.Std.Array.Array
 /-!
-# Bridge: FIPS 203 Algorithm 16 ↔ libcrux `KeyPairCompressedBytes::from_seed`
+# Refinement: FIPS 203 Algorithm 16 ↔ libcrux `KeyPairCompressedBytes::from_seed`
 
 The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed` is modelled in
-`SrcTranslated/FunsExternal.lean` by the FIPS 203 definition `Fips203.Bridge.keyPairArray`,
+`SrcTranslated/FunsExternal.lean` by the FIPS 203 definition `Fips203.Refinement.keyPairArray`,
 i.e. `ML-KEM.KeyGen_internal(seed[0:32], seed[32:64])` serialised as `dk ‖ ek ‖ H(ek) ‖ z`.
-This file states the bridge as equations between the Aeneas side and the FIPS 203 definitions
+This file states the refinement as equations between the Aeneas side and the FIPS 203 definitions
 (`Fips203.mlkemKeyGen`, Algorithm 16) and derives the value-level description of the three
 accessors `sk`, `pk2`, `pk1` that `spqr::incremental_mlkem768::generate` reads:
 
@@ -34,13 +34,14 @@ lines 240–285.
 
 open Aeneas Aeneas.Std Result
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 open libcrux_ml_kem.mlkem768.incremental
 
 /-! ## `from_seed` ↔ Algorithm 16 -/
 
-/-- **Bridge 6.1.** `from_seed seed` returns, without failure, the `KeyPairCompressedBytes` whose
+/-- **Refinement 6.1.**
+`from_seed seed` returns, without failure, the `KeyPairCompressedBytes` whose
 buffer is the FIPS 203 decapsulation key of `ML-KEM.KeyGen_internal(seed[0:32], seed[32:64])`. -/
 theorem from_seed_eq_mlkemKeyGen (seed : Array U8 64#usize) :
     KeyPairCompressedBytes.from_seed seed =
@@ -131,4 +132,4 @@ theorem from_seed_decodeDkPke (seed : Array U8 64#usize) :
       (kpkeKeyGen (seedD (seedOfArray seed)) mlkem768).dk :=
   decodeDkPke_mlkemKeyGen _ _ _
 
-end Fips203.Bridge
+end Fips203.Refinement

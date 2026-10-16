@@ -39,7 +39,7 @@ noncomputable section
 
 open Aeneas Aeneas.Std
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 /-! ## Seed split
 
@@ -187,4 +187,4 @@ theorem keyPairList_slice_pk1 (seed : Fin 64 → UInt8) :
     simp only [this]
     exact keyPairBytes_hash seed (i - 32) (by omega) _
 
-end Fips203.Bridge
+end Fips203.Refinement

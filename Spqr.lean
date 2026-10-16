@@ -9,13 +9,6 @@ public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.Vec
 public import Spqr.Auxiliary.SpecTags
-public import Spqr.Crypto.Fips203.Bridge.DecapsBytes
-public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
-public import Spqr.Crypto.Fips203.Bridge.KeyPairBytes
-public import Spqr.Crypto.Fips203.Bridge.LibcruxDecaps
-public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps1
-public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
-public import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
 public import Spqr.Crypto.Fips203.Conversion.BitsToBytes
 public import Spqr.Crypto.Fips203.Conversion.ByteDecode
 public import Spqr.Crypto.Fips203.Conversion.ByteEncode
@@ -55,6 +48,13 @@ public import Spqr.Crypto.Fips203.PKE.Encrypt
 public import Spqr.Crypto.Fips203.PKE.KeyGen
 public import Spqr.Crypto.Fips203.PKE.RoundTrip
 public import Spqr.Crypto.Fips203.Params
+public import Spqr.Crypto.Fips203.Refinement.DecapsBytes
+public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
+public import Spqr.Crypto.Fips203.Refinement.LibcruxDecaps
+public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps1
+public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
+public import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
 public import Spqr.Crypto.Fips203.Ring
 public import Spqr.Crypto.Fips203.Sampling.SampleNTT
 public import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD

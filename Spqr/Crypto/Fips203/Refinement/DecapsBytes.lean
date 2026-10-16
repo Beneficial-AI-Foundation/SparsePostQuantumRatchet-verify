@@ -7,13 +7,13 @@ module
 public import Aeneas
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Crypto.Fips203.KEM.Decaps
-public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
+public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
 /-!
 # FIPS 203 model of libcrux's incremental `decapsulate_compressed_key`
 
 libcrux-ml-kem 0.0.7 (`src/mlkem.rs`, `mlkem768::incremental::decapsulate_compressed_key`) takes
 the 2400-byte compressed key-pair buffer (the FIPS 203 decapsulation key
-`dk = dkPKE ‖ ek ‖ H(ek) ‖ z`, see `Bridge/KeyPairBytes.lean`), the 960-byte first ciphertext
+`dk = dkPKE ‖ ek ‖ H(ek) ‖ z`, see `Refinement/KeyPairBytes.lean`), the 960-byte first ciphertext
 half `c₁` and the 128-byte second half `c₂` — all as fixed-size arrays, so there are no error
 cases — reassembles the 1088-byte ciphertext `c = c₁ ‖ c₂` and runs `ML-KEM.Decaps_internal`
 (FIPS 203 Algorithm 18, `Fips203.mlkemDecaps`): decrypt, re-derive `(K', r') = G(m' ‖ h)`,
@@ -33,7 +33,7 @@ noncomputable section
 
 open Aeneas Aeneas.Std
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 /-! ## Reading the fixed-size inputs -/
 
@@ -93,4 +93,4 @@ def ssArray (dk : Array U8 2400#usize) (ct1 : Array U8 960#usize) (ct2 : Array U
     Array U8 32#usize :=
   Aeneas.Std.Array.make 32#usize (ssList dk ct1 ct2) (ssList_length dk ct1 ct2)
 
-end Fips203.Bridge
+end Fips203.Refinement

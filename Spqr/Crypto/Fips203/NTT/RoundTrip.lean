@@ -556,7 +556,7 @@ lemma simR_formulaP (j : Fin n) : simR (formulaP j.val) (nttSpec (delta j)) := b
   · rw [if_neg hpar, if_neg hpar]
     simp
 
-/-! ### The kernel verification and the basis-vector bridge -/
+/-! ### The kernel verification and the basis-vector correspondence -/
 
 /-- **Butterfly correctness on basis vectors**.  For each of the 256 standard
 basis vectors `δⱼ`, the imperative Cooley–Tukey butterfly network of
@@ -778,7 +778,7 @@ self-contained formalization roadmap:
    threaded zeta index `k` with `bitRev7Table`;
 4. base case: blocks of size 2 are exactly the `crtHom i` coordinates.
 
-Here it is proved from the basis-vector bridge `ntt_delta_eq_nttSpec_delta`
+Here it is proved from the basis-vector correspondence `ntt_delta_eq_nttSpec_delta`
 by decomposing `f = ∑ⱼ f(j)·δⱼ` and using linearity of both `ntt`
 (`ntt_sum`, `ntt_smul`) and `nttSpec` (`nttSpec_sum`, `nttSpec_smul`). -/
 lemma ntt_eq_nttSpec : (ntt : (Fin n → Zq) → Fin n → Zq) = nttSpec := by
@@ -803,7 +803,7 @@ lemma ntt_eq_nttSpec : (ntt : (Fin n → Zq) → Fin n → Zq) = nttSpec := by
 /-- **CRT isomorphism on basis vectors**.  For each pair of
 standard basis vectors `δⱼ, δₖ`, the NTT of their product in `R_q` equals the
 componentwise `MultiplyNTTs` product of their NTTs.  Proved from the
-butterfly-correctness bridge `ntt_eq_nttSpec` together with the fully proven
+butterfly-correctness lemma `ntt_eq_nttSpec` together with the fully proven
 CRT multiplicativity `nttSpec_toCoeffs_mul` and the coefficient round trip
 `toCoeffs_ofCoeffs` of `Spec.lean`:  the NTT realises the CRT isomorphism
 `R_q ≅ ∏ᵢ ℤ_q[X]/(X² − γᵢ)` under which ring multiplication corresponds to

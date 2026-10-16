@@ -5,25 +5,26 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Bridge.DecapsBytes
-public import Spqr.Crypto.Fips203.Bridge.LibcruxEncaps2
+public import Spqr.Crypto.Fips203.Refinement.DecapsBytes
+public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
 public import Spqr.Crypto.Fips203.KEM.RoundTrip
 /-!
-# Bridge: FIPS 203 Algorithm 18 ↔ libcrux `incremental::decapsulate_compressed_key`
+# Refinement: FIPS 203 Algorithm 18 ↔ libcrux `incremental::decapsulate_compressed_key`
 
 The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key` is modelled in
 `SrcTranslated/FunsExternal.lean` by `ML-KEM.Decaps_internal` (`Fips203.mlkemDecaps`,
 Algorithm 18) on the decapsulation key read from the 2400-byte compressed key-pair buffer
-(Bridge 6.1) and the reassembled ciphertext `c = c₁ ‖ c₂`.
+(Refinement 6.1) and the reassembled ciphertext `c = c₁ ‖ c₂`.
 
-This file states the bridge as equations between the Aeneas side and the FIPS 203 definitions:
+This file states the refinement as equations between the Aeneas side and the FIPS 203 definitions:
 
 | libcrux output | FIPS 203 value                                      |
 |----------------|------------------------------------------------------|
-| `ss`           | `mlkemDecaps dk (c₁ ‖ c₂)` (`Fips203.Bridge.ssBytes`) |
+| `ss`           | `mlkemDecaps dk (c₁ ‖ c₂)` (`Fips203.Refinement.ssBytes`) |
 
-and, when the inputs come from the other three bridges — `dk` from `from_seed` (6.1), `c₁` from
+and, when the inputs come from the other three refinement lemmas — `dk` from
+`from_seed` (6.1), `c₁` from
 `encapsulate1` (6.2), `c₂` from `encapsulate2` (6.3) — composes them into the end-to-end KEM
 round trip: under the K-PKE noise bound, the decapsulated secret equals the shared secret of the
 monolithic Algorithm 17 on that key's `ek`.
@@ -38,13 +39,13 @@ noncomputable section
 
 open Aeneas Aeneas.Std Result
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 open libcrux_ml_kem.mlkem768.incremental
 
 /-! ## `decapsulate_compressed_key` ↔ Algorithm 18 -/
 
-/-- **Bridge 6.4.**  `decapsulate_compressed_key` returns, without failure, the 32-byte shared
+/-- **Refinement 6.4.**  `decapsulate_compressed_key` returns, without failure, the 32-byte shared
 secret of Algorithm 18 on the decoded decapsulation key and the ciphertext `c₁ ‖ c₂`. -/
 theorem decapsulate_eq_mlkemDecaps (dk : Array U8 2400#usize)
     (ct1 : spqr.libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
@@ -61,7 +62,7 @@ theorem decapsulate_ss (dk : Array U8 2400#usize)
   rw [← h]
   rfl
 
-/-! ## Composition with Bridges 6.1–6.3
+/-! ## Composition with Refinements 6.1–6.3
 
 When `dk` is the buffer of `from_seed seed`, `c₁` the output of `encapsulate1` on that key's
 header and `c₂` the output of `encapsulate2` on the serialised round-1 state and `pk2`, the
@@ -69,8 +70,8 @@ reassembled ciphertext is byte-for-byte the ciphertext of the monolithic Algorit
 key's `ek`, and — under the K-PKE noise bound — decapsulation recovers the encapsulated
 secret. -/
 
-/-- The reassembled ciphertext of the three bridges is the ciphertext of Algorithm 17 on the
-generated key's `ek`. -/
+/-- The reassembled ciphertext of the three refinement lemmas is
+ the ciphertext of Algorithm 17 on the generated key's `ek`. -/
 theorem ctOfParts_ct1Array_ct2Array (seed : Fin 64 → UInt8)
     (h : 64 ≤ (toU8List (pk1Bytes seed)).length) (m : Fin 32 → UInt8) :
     ctOfParts (ct1Array (toU8List (pk1Bytes seed)) h m)
@@ -88,7 +89,7 @@ theorem ctOfParts_ct1Array_ct2Array (seed : Fin 64 → UInt8)
     simp only [ct2Array, Aeneas.Std.Array.make_val, ct2List]
     rw [toU8List_getElem, U8.toUInt8_ofUInt8]
 
-/-- **End-to-end KEM round trip across the four bridges.**  Decapsulating the ciphertext
+/-- **End-to-end KEM round trip across the four refinement lemmas.**  Decapsulating the ciphertext
 assembled by `encapsulate1`/`encapsulate2` with the key pair of `from_seed` recovers the shared
 secret of Algorithm 17 on the key's `ek`, under the K-PKE noise bound at the derived
 randomness. -/
@@ -104,4 +105,4 @@ theorem ssBytes_roundTrip (seed : Fin 64 → UInt8)
   rw [ssBytes, dkOfArray_keyPairArray, ctOfParts_ct1Array_ct2Array seed h m]
   exact mlkem_roundTrip_768 (seedD seed) (seedZ seed) m h_noise
 
-end Fips203.Bridge
+end Fips203.Refinement

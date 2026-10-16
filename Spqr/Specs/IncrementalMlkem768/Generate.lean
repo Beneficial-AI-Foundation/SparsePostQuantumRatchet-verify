@@ -6,7 +6,7 @@ Authors: Liao Zhang, Hoang Le Truong
 module
 public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
+public import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
 import all SrcTranslated.Funs
 import all SrcTranslated.FunsExternal
 
@@ -55,10 +55,10 @@ three outputs come, byte-for-byte, from `kp`'s one serialized buffer `kp.value`
 **FIPS 203 value semantics** (Phase 7.1 of `doc/plan.md`): beyond the layout facts, there is a
 64-byte seed (the one `fill_bytes` wrote) such that the three buffers are exactly the FIPS 203
 (Algorithm 16) values of `ML-KEM.KeyGen_internal(seed[0:32], seed[32:64])`:
-* `dk`  = `Fips203.Bridge.keyPairList seed` — the serialised decapsulation key
+* `dk`  = `Fips203.Refinement.keyPairList seed` — the serialised decapsulation key
   `ByteEncode₁₂(ŝ) ‖ ByteEncode₁₂(t̂) ‖ ρ ‖ H(ek) ‖ z`;
-* `ek`  = `Fips203.Bridge.pk2Bytes seed` — `ByteEncode₁₂(t̂)`, the serialised NTT public vector;
-* `hdr` = `Fips203.Bridge.pk1Bytes seed` — `ρ ‖ H(ek)`, the matrix seed and key hash.
+* `ek`  = `Fips203.Refinement.pk2Bytes seed` — `ByteEncode₁₂(t̂)`, the serialised NTT public vector;
+* `hdr` = `Fips203.Refinement.pk1Bytes seed` — `ρ ‖ H(ek)`, the matrix seed and key hash.
 
 Remaining future work (not expressible at this layer): distributional faithfulness of the seed
 (uniformity of `fill_bytes`) and game-based IND-CCA2 security. -/
@@ -68,9 +68,9 @@ theorem generate_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       rngInst.rand_core_1RngCoreInst.fill_bytes r s ⦃ fun _ => True ⦄) :
     generate rngInst cryptoInst rng ⦃ (result : Keys × R) =>
         (∃ seed : Fin 64 → UInt8,
-          result.1.dk.val  = Fips203.Bridge.keyPairList seed ∧
-          result.1.ek.val  = Fips203.Bridge.toU8List (Fips203.Bridge.pk2Bytes seed) ∧
-          result.1.hdr.val = Fips203.Bridge.toU8List (Fips203.Bridge.pk1Bytes seed)) ∧
+          result.1.dk.val  = Fips203.Refinement.keyPairList seed ∧
+          result.1.ek.val  = Fips203.Refinement.toU8List (Fips203.Refinement.pk2Bytes seed) ∧
+          result.1.hdr.val = Fips203.Refinement.toU8List (Fips203.Refinement.pk1Bytes seed)) ∧
         result.1.ek.val  = result.1.dk.val.slice mlkem768Params.encapsulationKeyBytes
         (2 * mlkem768Params.encapsulationKeyBytes) ∧
         result.1.hdr.val = result.1.dk.val.slice (2 * mlkem768Params.encapsulationKeyBytes)
@@ -89,14 +89,14 @@ theorem generate_spec {R : Type} (rngInst : rand_1.rng.Rng R)
     rw [alloc.vec.Vec.val, ← s4_post, ‹s4 = a2.to_slice›, Array.val_to_slice]
   have henc : mlkem768Params.encapsulationKeyBytes = 1152 := by decide
   have hhdr : headerBytes = 64 := by decide
-  refine ⟨⟨Fips203.Bridge.seedOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨⟨Fips203.Refinement.seedOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_⟩
   · rw [hv2, a2_post1, k_post1]
   · rw [hv1, a1_post1, k_post1]
     simp only [henc, Nat.reduceMul]
-    exact Fips203.Bridge.keyPairList_slice_pk2 _
+    exact Fips203.Refinement.keyPairList_slice_pk2 _
   · rw [hv, a_post, k_post1]
     simp only [henc, hhdr, Nat.reduceMul, Nat.reduceAdd]
-    exact Fips203.Bridge.keyPairList_slice_pk1 _
+    exact Fips203.Refinement.keyPairList_slice_pk1 _
   · rw [hv1, hv2, a1_post1, a2_post1]
   · rw [hv, hv2, a_post, a2_post1]
   · rw [alloc.vec.Vec.length, hv]; exact ‹a.length = headerBytes›

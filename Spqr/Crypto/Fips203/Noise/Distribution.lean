@@ -150,7 +150,8 @@ theorem bitSum_eq_sum_fin (B : ℕ → UInt8) (start η : ℕ) :
     bitSum B start η = ∑ j : Fin η, bits B (start + j.val) := by
   rw [bitSum, Finset.sum_range fun j => bits B (start + j)]
 
-/-- **Bridge to Algorithm 6**: the deterministic coefficient sampler `cbdCoeff` is the mod-`q`
+/-- **Correspondence with Algorithm 6**:
+the deterministic coefficient sampler `cbdCoeff` is the mod-`q`
 reduction of `cbdVal` applied to the input bits of coefficient `i`.  Hence, when the input bits
 are uniform, coefficient `i` of `samplePolyCBD` is distributed as `Zq.ofInt ∘ CBD_η`. -/
 theorem cbdCoeff_eq_ofInt_cbdVal (B : ℕ → UInt8) (η i : ℕ) :

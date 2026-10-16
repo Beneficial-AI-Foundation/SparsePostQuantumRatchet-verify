@@ -5,18 +5,18 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Bridge.EncapsBytes
-public import Spqr.Crypto.Fips203.Bridge.LibcruxKeygen
+public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+public import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
 /-!
-# Bridge: FIPS 203 Algorithm 17 (round 1) ↔ libcrux `incremental::encapsulate1`
+# Refinement: FIPS 203 Algorithm 17 (round 1) ↔ libcrux `incremental::encapsulate1`
 
 The Aeneas external
 `libcrux_ml_kem.mlkem768.incremental.encapsulate1` is modelled in `SrcTranslated/FunsExternal.lean`
 by round 1 of `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase1`, see
 `Spqr/Crypto/Fips203/KEM/EncapsIncremental.lean`) on the header `pk1 = ρ ‖ H(ek)` and the message
-`randomness`, serialised as in `Spqr/Crypto/Fips203/Bridge/EncapsBytes.lean`.
+`randomness`, serialised as in `Spqr/Crypto/Fips203/Refinement/EncapsBytes.lean`.
 
-This file states the bridge as equations between the Aeneas side and the FIPS 203 definitions:
+This file states the refinement as equations between the Aeneas side and the FIPS 203 definitions:
 
 | libcrux output                   | FIPS 203 value                                              |
 |----------------------------------|-------------------------------------------------------------|
@@ -24,7 +24,8 @@ This file states the bridge as equations between the Aeneas side and the FIPS 20
 | `state[0 : 2080]`                | `stateBytes (ŷ, e₂, m)`; decodes back to the state          |
 | `shared_secret[0 : 32]`          | `K = (mlkemEncapsPhase1 (ρ, h) m).ss`                       |
 
-and, when the header is the `pk1` of a key pair produced by `from_seed` (Bridge 6.1), connects the
+and, when the header is the `pk1` of a key pair produced by
+`from_seed` (Refinement 6.1), connects the
 outputs to the *monolithic* Algorithm 17 on that key's `ek`: `K = (mlkemEncaps ek m).ss` and
 `c₁ = (mlkemEncaps ek m).ct[0 : 960]`.
 
@@ -36,13 +37,13 @@ outputs to the *monolithic* Algorithm 17 on that key's `ek`: `K = (mlkemEncaps e
 
 open Aeneas Aeneas.Std Result
 
-namespace Fips203.Bridge
+namespace Fips203.Refinement
 
 open libcrux_ml_kem.mlkem768.incremental
 
 /-! ## `encapsulate1` ↔ round 1 of Algorithm 17 -/
 
-/-- **Bridge 6.2.**  Under the size preconditions, `encapsulate1` returns, without failure,
+/-- **Refinement 6.2.**  Under the size preconditions, `encapsulate1` returns, without failure,
 `Ok(c₁)` together with the two overwritten output buffers, all given by round 1 of
 Algorithm 17 on `(pk1[0:32], pk1[32:64])` and `randomness`. -/
 theorem encapsulate1_eq_mlkemEncapsPhase1 (pk1 : Slice U8) (randomness : Array U8 32#usize)
@@ -97,7 +98,7 @@ theorem encapsulate1_ss_take (pk1 : Slice U8) (randomness : Array U8 32#usize)
   exact overwritePrefix_take _ _
 
 /-- The written state decodes back to the FIPS 203 state `(ŷ, e₂, m)` of round 1: this is the
-value `encapsulate2` will read (Bridge 6.3). -/
+value `encapsulate2` will read (Refinement 6.3). -/
 theorem decodeEncapsState_stateOut (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) :
     decodeEncapsState (stateOut pk1 h m) = (encaps1Output pk1 h m).state :=
   decodeEncapsState_stateBytes _
@@ -110,9 +111,9 @@ theorem encapsulate1_short_header (pk1 : Slice U8) (randomness : Array U8 32#usi
       ok (.Err .InvalidInputLength, state, shared_secret) := by
   simp only [encapsulate1, dif_neg (Nat.not_le.mpr h_pk1)]
 
-/-! ## Composition with Bridge 6.1: the header of a generated key pair
+/-! ## Composition with Refinement 6.1: the header of a generated key pair
 
-When `pk1` is the header `ρ ‖ H(ek)` of `from_seed seed` (`pk1Bytes`, Bridge 6.1), round 1 is
+When `pk1` is the header `ρ ‖ H(ek)` of `from_seed seed` (`pk1Bytes`, Refinement 6.1), round 1 is
 round 1 of Algorithm 17 on that key's `ek`, so the outputs are those of the *monolithic*
 `ML-KEM.Encaps_internal(ek, m)`. -/
 
@@ -145,4 +146,4 @@ theorem stateOut_m (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8
   rw [decodeEncapsState_stateOut]
   rfl
 
-end Fips203.Bridge
+end Fips203.Refinement

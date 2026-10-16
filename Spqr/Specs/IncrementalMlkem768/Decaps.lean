@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Bridge.LibcruxDecaps
+public import Spqr.Crypto.Fips203.Refinement.LibcruxDecaps
 public import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.IncrementalMlkem768.Encaps2
 /-! # Spec theorem for `incremental_mlkem768::decaps`
@@ -23,8 +23,8 @@ The extracted body in `SrcTranslated/Funs.lean` proceeds in three steps:
 * copy the shared secret into an owned `Vec`.
 
 **FIPS 203 value semantics** (Phase 7.4 of `doc/plan.md`, via Bridge 6.4
-`Spqr/Crypto/Fips203/Bridge/LibcruxDecaps.lean`): the output is
-`Fips203.Bridge.ssList dk' ct1' ct2'` — `ML-KEM.Decaps_internal(dk, c₁ ‖ c₂)`
+`Spqr/Crypto/Fips203/Refinement/LibcruxDecaps.lean`): the output is
+`Fips203.Refinement.ssList dk' ct1' ct2'` — `ML-KEM.Decaps_internal(dk, c₁ ‖ c₂)`
 (`Fips203.mlkemDecaps`, FIPS 203 Algorithm 18) on the decapsulation key read from the key-pair
 buffer and the reassembled ciphertext — where `dk'`, `ct1'`, `ct2'` hold the bytes of the three
 inputs.
@@ -49,7 +49,7 @@ open libcrux_ml_kem.mlkem768.incremental
 Assuming the Rust `requires` (`dk.len() = 2400`, `ct1.len() = 960`, `ct2.len() = 128`), `decaps`
 succeeds and returns the 32-byte shared secret of FIPS 203 Algorithm 18 (Bridge 6.4): there are
 fixed-size arrays `dk'`, `ct1'`, `ct2'` holding the bytes of the three inputs with
-`result = Fips203.Bridge.ssList dk' ct1' ct2'`, i.e. the secret of
+`result = Fips203.Refinement.ssList dk' ct1' ct2'`, i.e. the secret of
 `ML-KEM.Decaps_internal(dk, c₁ ‖ c₂)` — the re-encryption check returns the decrypted secret
 `K'` or the implicit-rejection key `J(z ‖ c)`. -/
 theorem decaps_spec (dk ct1 ct2 : alloc.vec.Vec Std.U8)
@@ -58,7 +58,7 @@ theorem decaps_spec (dk ct1 ct2 : alloc.vec.Vec Std.U8)
       (∃ (dk' : Array Std.U8 2400#usize) (ct1' : Array Std.U8 960#usize)
           (ct2' : Array Std.U8 128#usize),
         dk'.val = dk.val ∧ ct1'.val = ct1.val ∧ ct2'.val = ct2.val ∧
-        result.val = Fips203.Bridge.ssList dk' ct1' ct2') ∧
+        result.val = Fips203.Refinement.ssList dk' ct1' ct2') ∧
       result.length = 32 ⦄ := by
   unfold decaps
   step*
@@ -96,6 +96,6 @@ theorem decaps_spec (dk ct1 ct2 : alloc.vec.Vec Std.U8)
   · rw [h_ct1_val, s_post]
   · rw [h_ct2_val, s1_post]
   · simp only [h_result, a3_post1, a2_post, a_post, a1_post]
-  · simp only [alloc.vec.Vec.length, h_result, a3_post1, Fips203.Bridge.ssList_length]
+  · simp only [alloc.vec.Vec.length, h_result, a3_post1, Fips203.Refinement.ssList_length]
 
 end spqr.incremental_mlkem768

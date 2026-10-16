@@ -22,7 +22,7 @@ in two rounds, so that the ciphertext can be started knowing only the *header*
 This file defines both rounds as pure functions of the FIPS 203 ingredients and proves that they
 compose to Algorithm 17 (`mlkemEncaps`): the shared secret of round 1 is `(mlkemEncaps ek m).ss`
 and `c₁ ‖ c₂` is `(mlkemEncaps ek m).ct`.  The byte-level serialisation of the state and the
-bridge to the Aeneas externals live in `Spqr/Crypto/Fips203/Bridge/`.
+refinement to the Aeneas externals live in `Spqr/Crypto/Fips203/Refinement/`.
 
 **Sources**: NIST FIPS 203, § 5.2 (Algorithm 14) and § 6.2 (Algorithm 17);
 libcrux-ml-kem 0.0.7, `src/ind_cca/incremental.rs` (`encapsulate1`, `encapsulate2`) and

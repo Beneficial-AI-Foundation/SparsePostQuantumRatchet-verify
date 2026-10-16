@@ -59,9 +59,9 @@ theorem ek_matches_header_spec (ek hdr : alloc.vec.Vec Std.U8) :
       (hdrSlice.length < 64 → result = false) ∧
       (64 ≤ hdrSlice.length → ekSlice.length < 1152 → result = false) ∧
       (64 ≤ hdrSlice.length → 1152 ≤ ekSlice.length →
-        Fips203.Bridge.pk2Valid ekSlice.val → result = true) ∧
+        Fips203.Refinement.pk2Valid ekSlice.val → result = true) ∧
       (64 ≤ hdrSlice.length → 1152 ≤ ekSlice.length →
-        ¬ Fips203.Bridge.pk2Valid ekSlice.val → result = false) ⦄ := by
+        ¬ Fips203.Refinement.pk2Valid ekSlice.val → result = false) ⦄ := by
   unfold ek_matches_header
   simp only [alloc.vec.Vec.deref]
   unfold libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
