@@ -216,6 +216,7 @@ import Spqr.Specs.Lib.DecodeState.CallOnce
 import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Lib.EmptyState
 import Spqr.Specs.Lib.Error.From
+import Spqr.Specs.Lib.InitInner
 import Spqr.Specs.Lib.MsgPreamble
 import Spqr.Specs.Lib.SecretOutput.Eq
 import Spqr.Specs.Lib.SecretOutput.Fmt
