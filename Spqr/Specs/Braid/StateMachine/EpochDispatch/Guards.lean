@@ -26,7 +26,11 @@ carry its tag. `recv_of_gt` does not, because of one departure from the spec:
 
 1. D2. In §2.5 every `Receive` function ignores a message with `msg.epoch > e`, apart from
    transition (13). The code returns `Err(EpochOutOfRange msg.epoch)` instead, so it is
-   stricter than the spec.
+   stricter than the spec: a message from a future epoch is reported as an error
+   instead of being dropped. D2 is the project's label for this departure. It is provisional:
+   `recv_of_gt` states what the code does, until Signal rules whether the spec or the code
+   changes. If the code adopts the spec's no-op, `recv_of_gt` no longer holds and must be
+   restated.
 
 ## References
 

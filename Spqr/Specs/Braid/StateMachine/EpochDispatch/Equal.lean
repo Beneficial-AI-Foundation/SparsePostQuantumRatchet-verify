@@ -24,31 +24,52 @@ module compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2
   when `specRecvEq` raises.
 
 `specRecvEq` transcribes the spec's `Receive` bodies at the level of state names and key
-presence. The fields of the successor and the key's value are not compared. A chunk that
-completes a decoder takes the transition if the completed message passes the state's check
-(`States.Accepts`) and raises if it does not pass (`States.Rejects`).
-Decoding and the check are stated with the code's own calls: `add_chunk` and `decoded_message`
-for the decoder, and `recv_ct2` (the spec's `Decaps` then `VfyCt`), `verify_hdr` (the spec's
-`VfyHdr`) and `ek_matches_header` for the check, on the message split with `take` / `drop`. The
-theorems relate the dispatch to the results of these calls. That the calls compute the spec's
-checks is not proved here.
+presence, plus the two departures listed below. A chunk that completes a decoder takes the
+transition if the completed message passes the state's check (`States.Accepts`) and raises if it
+does not pass (`States.Rejects`). Decoding and the check are stated with the code's own calls:
+`add_chunk` and `decoded_message` for the decoder, and `recv_ct2` (the spec's `Decaps` then
+`VfyCt`), `verify_hdr` (the spec's `VfyHdr`) and `ek_matches_header` for the check, on the
+message split with `take` / `drop`.
 
-`recv_of_eq_unexpected` is total. `recv_of_eq_refines` is in the "if it returns" form: it says
-nothing about calls that panic, and nothing about whether a completing chunk exists.
+Because `recv_of_eq_refines` covers every payload and `specRecvEq` is the §2.5 table with only
+D3 and D4 added, the theorem also shows that, at this level, D3 and D4 are the only places where
+the equal-epoch dispatch differs from §2.5.
 
 Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
 
+## What the theorems do not show
+
+* `recv_of_eq_unexpected` is total, but `recv_of_eq_refines` is in the "if it returns" form. It
+  constrains only the runs where `States.recv` returns, so an implementation that panics on
+  every expected payload also satisfies it. It is not stated as total because some handlers can
+  panic: for example, transition (2) calls `expect` on the new decoder, and transition (12)
+  runs the encapsulation. Ruling these panics out needs invariants on the state, which this
+  module does not prove.
+* The branches selected by `States.Accepts` and `States.Rejects` constrain the code only when
+  some chunk completes the decoder. This module does not prove that such a chunk exists.
+* The theorems relate the dispatch to the results of the code's checks. That `recv_ct2`,
+  `verify_hdr` and `ek_matches_header` compute the spec's `VfyCt`, `VfyHdr` and
+  `SHA3-256(ek_seed || ek_vector) = hek` is not proved here.
+* Only the successor's name and whether a key is emitted are compared. A successor with the
+  right name but a wrong epoch, authenticator, KEM material or decoder, or a wrong key value,
+  satisfies `recv_of_eq_refines`.
+
 ## Departures from §2.5
 
-`specRecvEq` follows the code where the code accepts more than the spec:
+The code accepts two messages that §2.5 ignores. `States.Expects` and `specRecvEq` follow the
+code. The labels D3 and D4 are the project's names for these departures, and `Guards.lean`
+describes D2. All three are provisional: the theorems state what the code does, until Signal
+rules whether the spec or the code changes.
 
 * D3. In `EkReceivedCt1Sampled`, §2.5 acts only on `EkCt1Ack`. The code also takes
-  transition (12) on `Ct1Ack true`, which the peer sends from `EkSentCt1Received`. §2.3 defines
-  `Ct1Ack`, but §2.5 never uses it. The extra acceptance tolerates a lost acknowledgement.
+  transition (12) on `Ct1Ack true`, which the peer sends from `EkSentCt1Received` where §2.5
+  sends nothing (`states.rs:175-186`, `states.rs:465-468`). §2.3 defines `Ct1Ack`, but §2.5
+  never uses it. The extra acceptance tolerates a lost acknowledgement. This module covers only
+  the receiving side. `Ct1Ack false` is never sent and stays a no-op.
 * D4. In `Ct1Acknowledged`, §2.5 acts only on `EkCt1Ack`. The code also feeds `Ek` chunks to
   the same decoder, for out-of-order delivery, and checks the completed key against the header
-  as in transition (11).
+  as in transition (11) (`states.rs:485-493`).
 
 ## References
 
