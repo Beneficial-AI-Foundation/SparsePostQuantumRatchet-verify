@@ -716,7 +716,10 @@ private theorem gcPost_of_loopPost (self : chain.KeyHistory) (current_key : U32)
       fun n₁ n₂ h1 h2 hl1 hl2 => hv12 n₁ n₂ h1 h2 (by simpa [IsExpired, h_th] using hl1)
         (by simpa [IsExpired, h_th] using hl2)⟩
 
-private theorem gc_spec_core (self : chain.KeyHistory) (current_key : U32)
+/-- Platform-independent core of `gc_spec` and `gc_spec_64`: the only facts the arithmetic
+needs are that `max_ooo * 11` fits in `u32` and that `trim_size * 36` fits in `usize`. Proving
+it once avoids running `step*` over `gc` separately for each platform variant. -/
+theorem gc_spec_core (self : chain.KeyHistory) (current_key : U32)
     (params : proto.pq_ratchet.ChainParams)
     (h_bound : self.data.length ≤ Usize.max)
     (h_data_aligned : self.data.length % 36 = 0)
