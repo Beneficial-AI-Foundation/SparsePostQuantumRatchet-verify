@@ -32,6 +32,15 @@ open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.mat
 
 namespace spqr.encoding.polynomial.PolyEncoder.into_pb_loop0_loop0
 
+/-- Appending a byte pair `[hi, lo]`: earlier bytes are unchanged and the pair sits at the end. -/
+private lemma vec_append_pair {v v1 : alloc.vec.Vec U8} {hi lo : U8}
+    (h : v1.val = v.val ++ [hi, lo]) :
+    v1.length = v.length + 2 ∧ (∀ p < v.length, v1[p]! = v[p]!) ∧
+      v1[v.length]! = hi ∧ v1[v.length + 1]! = lo := by
+  simp only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length, h, List.length_append,
+    List.getElem!_eq_getElem?_getD]
+  refine ⟨by simp, fun p hp => by rw [List.getElem?_append_left hp], by simp, by simp⟩
+
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.into_pb_loop0_loop0.body`**:
 
 One step of the inner serialization loop. Retrieves index `i` from the range iterator and either
@@ -60,15 +69,27 @@ theorem body_spec
     ⟨opt, iter1', h_none, h_some⟩
   by_cases h_lt : iter.start < iter.end
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
-    step*
-    obtain ⟨b0, b1, h_a_eq⟩ : ∃ b0 b1, a.val = [b0, b1] :=
-      match a.val, a.property with | [b0, b1], _ => ⟨b0, b1, rfl⟩
-    refine ⟨h_lt, h_start1, h_end1, b0, b1, ?_, ?_⟩
-    · simp_all [Array.to_slice]
-    · have e0 : (a[0]!).val = b0.val := by simp [Array.getElem!_Nat_eq, h_a_eq]
-      have e1 : (a[1]!).val = b1.val := by simp [Array.getElem!_Nat_eq, h_a_eq]
-      grind
-  · grind
+    rw [h_opt_eq]
+    step as ⟨pt, h_pt⟩
+    -- the two big-endian bytes of `pt.value`
+    obtain ⟨b0, b1, h_bytes⟩ : ∃ b0 b1, (core.num.U16.to_be_bytes pt.value).val = [b0, b1] :=
+      match (core.num.U16.to_be_bytes pt.value).val,
+        (core.num.U16.to_be_bytes pt.value).property with
+      | [b0, b1], _ => ⟨b0, b1, rfl⟩
+    have h_be : (core.num.U16.to_be_bytes pt.value).val =
+        pt.value.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8) := by
+      simpa only [lift, WP.spec_ok] using core.num.U16.to_be_bytes.step_spec pt.value
+    have h_enc : 256 * b0 + b1 = pt.value.val :=
+      Poly.serialize_loop.toBEBytes_pair pt.value b0 b1 (by rw [← h_bytes, h_be])
+    simp only [lift, bind_ok]
+    step as ⟨v1, h_v1⟩
+    refine ⟨h_lt, h_start1, h_end1, b0, b1, by rw [h_v1, Array.val_to_slice, h_bytes], ?_⟩
+    rw [h_enc, h_pt, alloc.vec.Vec.getElem!_Usize_eq]
+    exact congrArg (fun g : GF16 => g.value.val)
+      (List.Inhabited_getElem_eq_getElem! _ _ (by scalar_tac))
+  · obtain ⟨h_opt_eq, _⟩ := h_none h_lt
+    rw [h_opt_eq, WP.spec_ok]
+    exact ⟨rfl, h_lt⟩
 
 /-!# Spec theorem for `PolyEncoder::into_pb`: loop 1
 
@@ -101,16 +122,41 @@ theorem loop_spec
         p.2.length = 2 * p.1.start ∧
         (∀ (j : Nat), j < p.1.start →
             256 * p.2[2 * j]! + p.2[2 * j + 1]! = (pts[j]!).value.val))
-  · rintro ⟨iter', out'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
-    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
+  · rintro ⟨iter', out'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_start_le', h_out_len', h_pre'⟩ := hinv
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
-    have h_body := body_spec pts iter' out' (by grind) (by grind)
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done out'' => grind
-    | ControlFlow.cont (iter'', out'') => grind
-  · grind
+    have h_sl : iter'.start.val ≤ iter'.end.val := h_start_le'
+    have h_end_le' : iter.end.val ≤ pts.val.length := h_end_le
+    have h_overflow' : 2 * pts.val.length + 2 ≤ Usize.max := h_overflow
+    have h_out_len'' : out'.val.length = 2 * iter'.start.val := h_out_len'
+    apply WP.spec_mono (body_spec pts iter' out' (show iter'.end.val ≤ pts.val.length by omega)
+      (show out'.val.length + 2 ≤ Usize.max by omega))
+    rintro (⟨iter'', out''⟩ | out'') h_cf
+    · -- one more point serialized
+      obtain ⟨h_lt, h_start1, h_end1, hi, lo, h_out_eq, h_enc⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_start1' : iter''.start.val = iter'.start.val + 1 := h_start1
+      have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
+      obtain ⟨h_len, h_keep, h_hi, h_lo⟩ := vec_append_pair h_out_eq
+      have h_len' : out''.val.length = out'.val.length + 2 := h_len
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter''.start.val ≤ iter''.end.val by omega,
+        show out''.val.length = 2 * iter''.start.val by omega, fun j hj => ?_⟩,
+        show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val by omega⟩
+      by_cases hj_lt : j < iter'.start.val
+      · rw [h_keep _ (by omega), h_keep _ (by omega)]
+        exact h_pre' j hj_lt
+      · obtain rfl : j = iter'.start.val := by omega
+        rw [← h_out_len'', h_hi, h_lo]
+        exact h_enc
+    · -- range exhausted
+      obtain ⟨rfl, h_nlt⟩ := h_cf
+      have h_eq : iter'.start.val = iter.end.val := by
+        have : ¬ iter'.start.val < iter'.end.val := h_nlt
+        omega
+      exact ⟨by omega, fun j hj => h_pre' j (by omega)⟩
+  · exact ⟨rfl, h_start_le, h_out_len, h_pre⟩
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0_loop0
 
@@ -161,14 +207,19 @@ theorem body_spec
     rw [h_opt_eq]
     have h_j_lt : iter.start.val < points.val.length := by omega
     have h_inner := h_inner_overflow iter.start.val h_j_lt
-    step*
-    · simp_all
-      grind
-    · simp_all [alloc.vec.Vec.with_capacity]
-    · simp_all
-      grind
-    · simp_all
-      grind
+    step as ⟨p, h_p⟩
+    have h_p' : p = points.val[iter.start.val]! :=
+      h_p.trans (List.Inhabited_getElem_eq_getElem! _ _ h_j_lt)
+    step as ⟨i1, h_i1⟩
+    have h_wc : (alloc.vec.Vec.with_capacity U8 i1).length = 0 := by
+      simp [alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]
+    subst h_p'
+    step with into_pb_loop0_loop0.loop_spec as ⟨v2, h_v2_len, h_v2⟩
+    step as ⟨v3, h_v3⟩
+    refine ⟨h_lt, h_start1, h_end1, v2, h_v3, ?_, fun k hk => ?_⟩
+    · simpa [Array.getElem!_Usize_eq, alloc.vec.Vec.len] using h_v2_len
+    · simpa [Array.getElem!_Usize_eq, alloc.vec.Vec.len, alloc.vec.Vec.getElem!_Nat_eq] using
+        h_v2 k (by simpa [alloc.vec.Vec.len] using hk)
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
     simp [h_opt_eq, WP.spec_ok, h_lt]
 
@@ -183,6 +234,14 @@ each entry encoding the corresponding point's coefficients in big-endian.
 **Source**: spqr/src/encoding/polynomial.rs -/
 
 namespace spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
+
+/-- Pushing `x`: earlier entries are unchanged and `x` sits at the end. -/
+private lemma vec_push {α : Type} [Inhabited α] {v v1 : alloc.vec.Vec α} {x : α}
+    (h : v1.val = v.val ++ [x]) :
+    v1.val.length = v.val.length + 1 ∧ (∀ j < v.val.length, v1.val[j]! = v.val[j]!) ∧
+      v1.val[v.val.length]! = x := by
+  simp only [h, List.length_append, List.length_singleton, List.getElem!_eq_getElem?_getD]
+  exact ⟨trivial, fun j hj => by rw [List.getElem?_append_left hj], by simp⟩
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.into_pb_loop0`**:
 
@@ -226,29 +285,41 @@ theorem loop_spec
               k < (points[j]!).value.length →
                 256 * (p.2.val[j]!)[2 * k]!  + (p.2.val[j]!)[2 * k + 1]! =
                   ((points[j]!).value.val[k]!).value.val))
-  · rintro ⟨iter', out'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
-    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
+  · rintro ⟨iter', out'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_start_le', h_out_len', h_pre'⟩ := hinv
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
-    have h_body := body_spec points iter' out' (by grind) (by grind) h_inner_overflow
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done out'' => grind
-    | ControlFlow.cont (iter'', out'') =>
-      simp only [] at h_cf ⊢
+    have h_sl : iter'.start.val ≤ iter'.end.val := h_start_le'
+    have h_end_le' : iter.end.val ≤ points.val.length := h_end_le
+    have h_ov : points.val.length + 1 ≤ Usize.max := h_overflow
+    have h_len' : out'.val.length = iter'.start.val := h_out_len'
+    apply WP.spec_mono (body_spec points iter' out'
+      (show iter'.end.val ≤ points.val.length by omega)
+      (show out'.val.length + 1 ≤ Usize.max by omega) h_inner_overflow)
+    rintro (⟨iter'', out''⟩ | out'') h_cf
+    · -- one more point serialized
       obtain ⟨h_lt, h_start1, h_end1, serialized, h_out_eq, h_ser_len, h_ser_encode⟩ := h_cf
-      have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
-      have h_len : out'.val.length = iter'.start.val := h_out_len'
-      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_start1' : iter''.start.val = iter'.start.val + 1 := h_start1
+      have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
+      obtain ⟨h_len, h_keep, h_last⟩ := vec_push h_out_eq
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter''.start.val ≤ iter''.end.val by omega,
+        show out''.val.length = iter''.start.val by omega, fun j hj => ?_⟩,
+        show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val by omega⟩
       by_cases hj_lt : j < iter'.start.val
-      · grind
-      · have hj_eq : j = iter'.start.val := by omega
-        subst hj_eq
-        have h_get : out''.val[iter'.start.val]! = serialized := by grind
-        rw [h_get]
+      · rw [h_keep j (by omega)]
+        exact h_pre' j hj_lt
+      · obtain rfl : j = iter'.start.val := by omega
+        rw [h_len'] at h_last
+        rw [h_last]
         exact ⟨by simpa [Array.getElem!_Nat_eq] using h_ser_len,
           by simpa [Array.getElem!_Nat_eq] using h_ser_encode⟩
-  · grind
+    · -- range exhausted
+      obtain ⟨rfl, h_nlt⟩ := h_cf
+      have : ¬ iter'.start.val < iter'.end.val := h_nlt
+      exact ⟨by omega, fun j hj => h_pre' j (by omega)⟩
+  · exact ⟨rfl, h_start_le, h_out_len, h_pre⟩
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop0
 
@@ -357,22 +428,39 @@ theorem loop_spec
           ∀ k < (polys.val[j]!).degree,
             256 * (p.2[j]!)[2 * k]! + (p.2[j]!)[2 * k + 1]! =
             ((polys.val[j]!).coefficients[k]!).value.val))
-  · rintro ⟨iter', out'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
-    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
+  · rintro ⟨iter', out'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_start_le', h_out_len', h_pre'⟩ := hinv
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
-    have h_body := body_spec polys iter' out' (by grind) (by grind) h_ser_overflow
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done out'' => grind
-    | ControlFlow.cont (iter'', out'') =>
-      simp only [] at h_cf ⊢
+    have h_sl : iter'.start.val ≤ iter'.end.val := h_start_le'
+    have h_end_le' : iter.end.val ≤ polys.val.length := h_end_le
+    have h_ov : polys.val.length + 1 ≤ Usize.max := h_overflow
+    have h_len' : out'.val.length = iter'.start.val := h_out_len'
+    apply WP.spec_mono (body_spec polys iter' out' (show iter'.end.val ≤ polys.val.length by omega)
+      (show out'.val.length + 1 ≤ Usize.max by omega) h_ser_overflow)
+    rintro (⟨iter'', out''⟩ | out'') h_cf
+    · -- one more polynomial serialized
       obtain ⟨h_lt, h_start1, h_end1, serialized, h_out_eq, h_ser_len, h_ser_encode⟩ := h_cf
-      have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
-      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_start1' : iter''.start.val = iter'.start.val + 1 := h_start1
+      have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
+      obtain ⟨h_len, h_keep, h_last⟩ := into_pb_loop0.vec_push h_out_eq
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter''.start.val ≤ iter''.end.val by omega,
+        show out''.val.length = iter''.start.val by omega, fun j hj => ?_⟩,
+        show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val by omega⟩
+      simp only [alloc.vec.Vec.getElem!_Nat_eq] at h_pre' ⊢
       by_cases hj_lt : j < iter'.start.val
-      · grind
-      · grind
+      · rw [h_keep j (by omega)]
+        exact h_pre' j hj_lt
+      · obtain rfl : j = iter'.start.val := by omega
+        rw [h_len'] at h_last
+        rw [h_last]
+        exact ⟨h_ser_len, by simpa [alloc.vec.Vec.getElem!_Nat_eq] using h_ser_encode⟩
+    · -- range exhausted
+      obtain ⟨rfl, h_nlt⟩ := h_cf
+      have : ¬ iter'.start.val < iter'.end.val := h_nlt
+      exact ⟨by omega, fun j hj => h_pre' j (by omega)⟩
   · exact ⟨rfl, h_start_le, h_out_len, h_pre⟩
 
 end spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
@@ -418,19 +506,20 @@ theorem into_pb_spec_bytes
             256 * (result.polys[j]!)[2 * k ]! + (result.polys[j]!)[2 * k + 1]! =
               ((polys[j]!).coefficients[k]!).value.val ⦄ := by
   unfold into_pb
-  simp only [alloc.vec.Vec.with_capacity]
+  simp only [alloc.vec.Vec.with_capacity, lift, bind_ok]
+  have h_slen : ∀ {α : Type} (a : Std.Array α 16#usize), (Slice.len a.to_slice).val = 16 := by
+    intro α a; simp
   cases h : self.s with
   | Points points =>
     have h_overflow := h_overflow_points points h
-    step*
-    all_goals first
-      | assumption
-      | grind
+    step with into_pb_loop0.loop_spec as ⟨v2, h_len, h_v2⟩
+    refine ⟨by simp [alloc.vec.Vec.new], by rw [h_len, h_slen]; simp, fun j hj => ?_⟩
+    exact h_v2 j (by rw [h_slen]; simpa using hj)
   | Polys polys =>
     have h_overflow := h_overflow_polys polys h
-    step*
-    simp only [Array.getElem!_Nat_eq] at *
-    grind
+    step with into_pb_loop1.loop_spec as ⟨v2, h_len, h_v2⟩
+    refine ⟨by simp [alloc.vec.Vec.new], by rw [h_len, h_slen]; simp, fun j hj => ?_⟩
+    simpa [Array.getElem!_Nat_eq] using h_v2 j (by rw [h_slen]; simpa using hj)
 
 /-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
 • The call always succeeds (no panic) under the sole hypothesis `2 * len + 2 ≤ Usize.max` on
@@ -452,11 +541,21 @@ theorem into_pb_spec
   intro result h_post
   obtain ⟨h_idx, h_data⟩ := h_post
   refine ⟨h_idx, ?_⟩
+  -- the value equation, plus its images under `toGF216` and `natToBinaryPoly`
   cases h : self.s with
-  | Points points => grind
+  | Points points =>
+    simp only [h] at h_data ⊢
+    obtain ⟨h_polys, h_len, h_pts⟩ := h_data
+    refine ⟨h_polys, h_len, fun j hj => ⟨(h_pts j hj).1, fun k hk => ?_⟩⟩
+    have e := (h_pts j hj).2 k hk
+    exact ⟨e, by rw [e], by rw [e]⟩
   | Polys polys =>
     simp only [h] at h_data ⊢
-    simp only [Array.getElem!_Nat_eq] at *
-    grind
+    obtain ⟨h_pts, h_len, h_polys⟩ := h_data
+    refine ⟨h_pts, h_len, fun j hj => ?_⟩
+    simp only [Array.getElem!_Nat_eq] at h_polys ⊢
+    refine ⟨(h_polys j hj).1, fun k hk => ?_⟩
+    have e := (h_polys j hj).2 k hk
+    exact ⟨e, by rw [e], by rw [e]⟩
 
 end spqr.encoding.polynomial.PolyEncoder

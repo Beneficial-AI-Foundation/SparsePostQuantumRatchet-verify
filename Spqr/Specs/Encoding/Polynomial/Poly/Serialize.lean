@@ -56,7 +56,7 @@ private lemma extend_from_slice_U8_spec
 If the 2-byte big-endian encoding of a `u16` value `x` is `[b0, b1]`, then
 `b0.val * 256 + b1.val = x.val`.
 -/
-private lemma toBEBytes_pair (x : U16) (b0 b1 : U8)
+lemma toBEBytes_pair (x : U16) (b0 b1 : U8)
     (h : [b0, b1] = List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes) :
     256 * b0 + b1 = x.val := by
   have h0 : b0 = (List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes)[0]! := by rw [← h]; simp
