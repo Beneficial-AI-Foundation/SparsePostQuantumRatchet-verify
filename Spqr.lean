@@ -218,6 +218,7 @@ public import Spqr.Specs.Lib.DecodeState.CallOnce
 public import Spqr.Specs.Lib.Direction.Switch
 public import Spqr.Specs.Lib.EmptyState
 public import Spqr.Specs.Lib.Error.From
+public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.MsgPreamble
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
@@ -231,6 +232,7 @@ public import Spqr.Specs.Lib.Version.DISABLED
 public import Spqr.Specs.Lib.Version.MAX
 public import Spqr.Specs.Lib.Version.TryFrom
 public import Spqr.Specs.Lib.Version.U8.From
+public import Spqr.Specs.Proto.PqRatchet.Direction.From
 public import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
 public import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
 public import Spqr.Specs.Serialize.Error.Clone
