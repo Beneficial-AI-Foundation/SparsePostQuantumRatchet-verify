@@ -8,6 +8,7 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Math.Poly.ModByMonic
 public import Spqr.Math.Poly.Identities.Basic
+import Spqr.Auxiliary.Aeneas.Scalar
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 public import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
@@ -77,10 +78,10 @@ theorem body_spec
         (core.num.U16.to_be_bytes pt.value).property with
       | [b0, b1], _ => ⟨b0, b1, rfl⟩
     have h_be : (core.num.U16.to_be_bytes pt.value).val =
-        pt.value.bv.toBEBytes.map (@UScalar.mk UScalarTy.U8) := by
+        pt.value.bv.toBEBytes.map (UScalar.mk (ty := .U8)) := by
       simpa only [lift, WP.spec_ok] using core.num.U16.to_be_bytes.step_spec pt.value
     have h_enc : 256 * b0 + b1 = pt.value.val :=
-      Poly.serialize_loop.toBEBytes_pair pt.value b0 b1 (by rw [← h_bytes, h_be])
+      U16.toBEBytes_pair_val pt.value b0 b1 (by rw [← h_bytes, h_be])
     simp only [lift, bind_ok]
     step as ⟨v1, h_v1⟩
     refine ⟨h_lt, h_start1, h_end1, b0, b1, by rw [h_v1, Array.val_to_slice, h_bytes], ?_⟩
