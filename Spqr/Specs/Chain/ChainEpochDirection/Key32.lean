@@ -255,7 +255,7 @@ theorem key_loop_spec_32
               have hle : 36 * (i'.val - i.val) ≤ 36 * (at1.val - i.val) :=
                 Nat.mul_le_mul_left 36 (by omega)
               have hcap := h_kh_cap
-              vecOmega
+              simp only [alloc.vec.Vec.length] at *; omega
           exact ⟨⟨hvl, by omega, by omega, h_inv_at, h_inv_maxooo,
             by rw [hl]; omega, by omega, by rw [hl]; omega,
             h_cs, h_kh_s, fun _ => by omega, fun h => absurd h (by omega)⟩, by omega⟩
@@ -381,7 +381,7 @@ private theorem keyAdvanceTail_spec_32 (self : chain.ChainEpochDirection) (ats :
       omega
     · change s1.val = _
       rw [hs1, hv, hctr]
-    · exact le_trans (le_trans g2 hkh1_ub) (by vecOmega)
+    · exact le_trans (le_trans g2 hkh1_ub) (by simp only [alloc.vec.Vec.length] at *; omega)
     · rw [hkh1]
       exact iterKeyHistory_data_length_mod_36 _ _ _ _ _ _ h_kh_aligned
     · exact chain.keyPostGc_of_GcPost _ _ _ _ _ h_i4_val g2 g3 g4
