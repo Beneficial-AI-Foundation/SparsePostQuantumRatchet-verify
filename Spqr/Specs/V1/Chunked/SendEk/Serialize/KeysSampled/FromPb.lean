@@ -3,9 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::from_pb`
@@ -27,6 +31,8 @@ holds 16 even-length entries. Any other shape is a `PolynomialError`, which is m
 
 **Source:** "src/v1/chunked/send_ek/serialize.rs"
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 open spqr.encoding.polynomial

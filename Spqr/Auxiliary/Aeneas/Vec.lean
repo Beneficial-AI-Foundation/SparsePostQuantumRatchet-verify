@@ -3,9 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Oliver Butterley
 -/
-import Aeneas
+module
+
+public import Aeneas
+
 
 /-! # Staged for upstream to Aeneas `Std/Vec.lean` -/
+
+@[expose] public section
 -- https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/305
 
 open Aeneas Aeneas.Std

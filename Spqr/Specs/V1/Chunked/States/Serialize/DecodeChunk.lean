@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_chunk`
 
@@ -38,8 +40,10 @@ not from the proof: Aeneas models `core::fmt::Formatter` as an opaque type (`axi
 `native_decide` axiom is shared through the first extraction site,
 `chain.ChainEpochDirection.next_key_internal._proof_6`.
 
-**Source**: src/v1/chunked/states/serialize.rs (lines 190-202)
+**Source**: src/v1/chunked/states/serialize.rs (lines 141-153)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Error
 
@@ -73,7 +77,7 @@ They are what pins `n` down to a single value for a given buffer, so a future ro
 theorem against `encode_chunk` can identify the varint block it produced. -/
 @[step]
 theorem decode_chunk_spec
-    (from1 : alloc.vec.Vec Std.U8) (at1 : Std.Usize)
+    (from1 : Slice Std.U8) (at1 : Std.Usize)
     (hlen : from1.length + 32 ≤ Std.Usize.max) :
     decode_chunk from1 at1 ⦃ (p : (core.result.Result encoding.Chunk Error) × Std.Usize) =>
       at1.val ≤ p.2.val ∧

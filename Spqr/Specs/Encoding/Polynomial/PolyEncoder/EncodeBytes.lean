@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 
 /-!
 # Spec theorem for `{spqr::encoding::Encoder for PolyEncoder}::encode_bytes`
@@ -13,6 +15,8 @@ It validates that the message has even length ≤ 2¹⁶ × 16, splits it into 2
 big-endian GF(2¹⁶) elements, and distributes them round-robin across 16 `Point` value arrays.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 

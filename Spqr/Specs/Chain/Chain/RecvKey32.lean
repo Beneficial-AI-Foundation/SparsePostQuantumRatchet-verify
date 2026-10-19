@@ -3,9 +3,22 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Chain.Chain.RecvKey
+module
+
+public import Spqr.Specs.Chain.Chain.RecvKey
 import Spqr.Specs.Chain.ChainEpochDirection.Key32
-import Spqr.Specs.Chain.Chain.Defs
+public import Spqr.Specs.Chain.Chain.Defs
+import Spqr.Specs.Aeneas.CopyFromSlice
+import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Aeneas.SliceConcat
+import Spqr.Specs.Aeneas.TryFromSliceToArray
+import Spqr.Specs.Chain.ChainParams.MaxJumpOrDefault
+import Spqr.Specs.Chain.KeyHistory.Add
+import Spqr.Specs.Chain.KeyHistory.Clear
+import Spqr.Specs.Chain.KeyHistory.Gc
+import Spqr.Specs.Chain.KeyHistory.Get
+import Spqr.Specs.Kdf.HkdfToSlice
+
 /-! # 32-bit specialization of `recv_key_spec`
 
 On 32-bit platforms the GC trim threshold `(maxOoo * 11/10 + 1) * 36` must fit
@@ -17,6 +30,8 @@ This file provides `recv_key_spec_32`, which uses the same postcondition
 `recvKeyPre32` (constant `108458770`, no platform hypothesis).
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -43,9 +58,24 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
     recv_key self epoch index ⦃ (result :
         (core.result.Result (alloc.vec.Vec U8) Error) × chain.Chain) =>
       recvKeyPost self epoch index result.1 result.2 ⦄ := by
-  unfold recvKeyPost chainFrame recvKeyEpochPost
+  unfold recvKeyPost
   simp only [recvKeyPre32] at h_target
   unfold recv_key
+  by_cases h00 : epoch.val = 0 ∧ index.val = 0
+  · -- `epoch == 0 && index == 0`: early return of an empty key, chain unchanged
+    have he : epoch = 0#u64 := UScalar.eq_of_val_eq (by simp [h00.1])
+    have hi : index = 0#u32 := UScalar.eq_of_val_eq (by simp [h00.2])
+    simp only [if_pos he, if_pos hi, if_pos h00, WP.spec_ok, and_self]
+  -- Otherwise both branches of the `epoch == 0` test run the same body.
+  have hprog : ∀ {α : Type} (x y : α),
+      (if epoch = 0#u64 then (if index = 0#u32 then x else y) else y) = y := by
+    intro α x y
+    by_cases he : epoch = 0#u64
+    · have hi : ¬index = 0#u32 := fun hi => h00 ⟨by simp [he], by simp [hi]⟩
+      simp only [he, hi, ↓reduceIte]
+    · simp only [he, ↓reduceIte]
+  simp only [hprog, if_neg h00]
+  unfold recvKeyRangePost chainFrame recvKeyEpochPost
   step
   subst self1
   rcases r with idx | e

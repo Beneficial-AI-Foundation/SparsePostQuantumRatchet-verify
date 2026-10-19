@@ -3,11 +3,27 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
 import Spqr.Specs.Encoding.Polynomial.Poly.MultAssign
 import Spqr.Specs.Encoding.Polynomial.Poly.Clone
 import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Identities.Basic
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Specs.Aeneas.VecClone
+import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+import Spqr.Specs.Encoding.Gf.ParallelMult
 
 /-!
 # Spec theorem for `Poly::lagrange_sum`: loop body 0
@@ -16,6 +32,8 @@ Given points `pts` and parallel basis polynomials `polys`, it builds the GF(2¹�
 `out = Σ_i pts[i].y · polys[i]`, one term per loop step.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Polynomial
 

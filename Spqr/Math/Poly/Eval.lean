@@ -3,8 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Basic.Zero
-import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Polynomial evaluation bridge
@@ -18,6 +22,8 @@ import Spqr.Math.Poly.Coeff.Basic
 * `Poly.evalAt_zero_poly` — empty coefficient vector ⇒ evaluation is zero.
 * `listToGF216Poly_eval` — `Polynomial.eval` of `listToGF216Poly` as a coefficient sum.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf

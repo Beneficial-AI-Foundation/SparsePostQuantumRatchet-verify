@@ -3,8 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorems for `spqr::encoding::{Encoder for Option<T>}::next_chunk`
@@ -17,6 +22,8 @@ This file proves:
   • `next_chunk_spec_poly_encoder` — the `T = PolyEncoder` specialisation.
 
 **Source**: spqr/src/encoding.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial encoding.gf Polynomial
 

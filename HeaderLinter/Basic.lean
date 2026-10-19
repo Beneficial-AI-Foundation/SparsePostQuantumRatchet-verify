@@ -3,9 +3,13 @@ Copyright (c) 2024 Damiano Testa. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Michael Rothgang, Damiano Testa
 -/
-import Lean
-import Std.Sync.Mutex
-import Mathlib.Tactic.Linter.DirectoryDependency
+module
+
+public meta import Lean
+public meta import Std.Sync.Mutex
+public meta import Mathlib.Tactic.Linter.DirectoryDependency
+
+public meta section
 
 /-!
 # The "header" linter — vendored, with a configurable license statement

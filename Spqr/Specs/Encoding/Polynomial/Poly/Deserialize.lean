@@ -3,23 +3,30 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
-import Spqr.Math.Gf16.Field
+module
+
+public import Spqr.Math.List
+public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
-import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
 
 
 /-! # Spec theorem for `Poly::deserialize`: loop body 0
 
-One step of the coefficient deserialization loop. Calls `next` on the range iterator and either:
+One step of the coefficient deserialization `while i < serialized_len` loop. Either:
 
-  1. **Done**: iterator exhausted, `coefficients` returned unchanged.
-  2. **Continue**: reads two bytes at `serialized[2*i]` and `serialized[2*i+1]`, decodes them
-     as a big-endian `u16`, wraps as `GF16`, and pushes onto `coefficients`.
+  1. **Done**: `i ≥ serialized_len`, `coefficients` returned unchanged.
+  2. **Continue**: reads the two bytes `serialized[i]` and `serialized[i+1]`, decodes them
+     as a big-endian `u16`, wraps as `GF16`, pushes onto `coefficients` and advances `i` by 2.
 
-Loop invariant: `coefficients.len() == i`, with each coefficient satisfying
-  `coefficients[k].value.val = serialized[2*k].val * 256 + serialized[2*k+1].val`
-for all `k < iter.start`. -/
+Loop invariant: `i` is even, `coefficients.len() == i / 2`, with each coefficient satisfying
+  `coefficients[k].value.val = 256 * serialized[2*k].val + serialized[2*k+1].val`
+for all `k < i / 2`. -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf
 
@@ -34,34 +41,32 @@ private lemma GF16_new_value_spec (value : U16) :
 @[step]
 theorem body_spec
     (serialized : Slice Std.U8)
-    (iter : core.ops.range.Range Usize)
+    (serialized_len : Usize)
     (coefficients : alloc.vec.Vec GF16)
-    (h_end_le : 2 * iter.end ≤ serialized.length)
+    (i : Usize)
+    (h_len : serialized_len.val = serialized.length)
+    (h_even : serialized.length % 2 = 0)
+    (h_i_even : i.val % 2 = 0)
     (h_coeff_overflow : coefficients.length + 1 ≤ Usize.max) :
-    body serialized iter coefficients ⦃ (cf : ControlFlow (core.ops.range.Range Usize ×
-    alloc.vec.Vec GF16) (alloc.vec.Vec GF16)) =>
+    body serialized serialized_len coefficients i ⦃ (cf : ControlFlow (alloc.vec.Vec GF16 × Usize)
+    (alloc.vec.Vec GF16)) =>
       match cf with
       | ControlFlow.done coefficients' =>
-          coefficients' = coefficients ∧ ¬(iter.start.val < iter.end.val)
-      | ControlFlow.cont (iter1, coefficients1) =>
-          iter.start < iter.end ∧
-          iter1.start = iter.start.val + 1 ∧
-          iter1.end = iter.end ∧
+          coefficients' = coefficients ∧ ¬(i.val < serialized_len.val)
+      | ControlFlow.cont (coefficients1, i1) =>
+          i.val < serialized_len.val ∧
+          i1.val = i.val + 2 ∧
           ∃ (g : GF16),
             coefficients1 = coefficients ++ [g] ∧
-            g.value = 256 * (serialized[2 * iter.start.val]!).val  +
-              (serialized[2 * iter.start.val + 1]!).val ⦄ := by
+            g.value = 256 * (serialized[i.val]!).val + (serialized[i.val + 1]!).val ⦄ := by
   unfold body
-  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
-    ⟨opt, iter1', h_none, h_some⟩
-  by_cases h_lt : iter.start < iter.end
-  · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
-    rw [h_opt_eq]
-    have h_2i_lt : 2 * iter.start < serialized.length := by grind
-    have h_2i1_lt : 2 * iter.start + 1 < serialized.length := by grind
+  split
+  · have h_i1_lt : i.val + 1 < serialized.length := by scalar_tac
+    have h_i_lt : i.val < serialized.length := by omega
     step*
-    exact ⟨h_lt, h_start1, h_end1, g, ‹_›, by simp_all [Array.make, Nat.mul_comm]⟩
-  · grind
+    refine ⟨by scalar_tac, by scalar_tac, _, ‹_›, ?_⟩
+    simp_all [Array.make, Nat.mul_comm, getElem!_pos]
+  · simp_all
 
 end spqr.encoding.polynomial.Poly.deserialize_loop
 
@@ -72,15 +77,14 @@ The full deserialization loop that drives `deserialize_loop.body` to completion.
 reads a byte pair from `serialized`, decodes it as a big-endian `u16`, wraps it as `GF16`,
 and appends it to the coefficient vector.
 
-**Loop invariant** (after processing up to `iter'`):
-  * `coefficients'.val.length = iter'.start.val`
-  * `iter'.end = iter.end`
-  * For every `j < iter'.start.val`:
-(coefficients'.val[j]!).value.val = (serialized.val[2*j]!).val * 256 + (serialized.val[2*j+1]!).val`
+**Loop invariant** (at byte index `i'`):
+  * `i'` is even and `i' ≤ serialized_len`
+  * `coefficients'.length = i' / 2`
+  * For every `j < i' / 2`:
+    `(coefficients'[j]!).value.val = 256 * serialized[2*j]! + serialized[2*j+1]!`
 
 At termination, the coefficient vector contains the complete deserialization of all byte pairs.
-The proof lifts the body spec via `loop.spec_decr_nat` with measure
-`iter'.end.val − iter'.start.val`. -/
+The proof lifts the body spec via `loop.spec_decr_nat` with measure `serialized_len − i'`. -/
 
 
 namespace spqr.encoding.polynomial.Poly.deserialize_loop
@@ -88,33 +92,53 @@ namespace spqr.encoding.polynomial.Poly.deserialize_loop
 @[step]
 theorem loop_spec
     (serialized : Slice U8)
-    (iter : core.ops.range.Range Usize)
+    (serialized_len : Usize)
     (coefficients : alloc.vec.Vec GF16)
-    (h_end_le : 2 * iter.end ≤ serialized.length)
-    (h_coeff_len : coefficients.length = iter.start)
-    (h_start_le : iter.start ≤ iter.end)
-    (h_overflow : iter.end + 1 ≤ Usize.max)
-    (h_pre : ∀ j < iter.start.val,
+    (i : Usize)
+    (h_len : serialized_len.val = serialized.length)
+    (h_even : serialized.length % 2 = 0)
+    (h_i_even : i.val % 2 = 0)
+    (h_i_le : i.val ≤ serialized_len.val)
+    (h_coeff_len : coefficients.length = i.val / 2)
+    (h_pre : ∀ j < i.val / 2,
       (coefficients[j]!).value.val = 256 * serialized[2 * j]! + serialized[2 * j + 1]!) :
-    deserialize_loop iter serialized coefficients ⦃ (result : alloc.vec.Vec GF16) =>
-      result.length = iter.end ∧
-      ∀ j < iter.end.val,
+    deserialize_loop serialized serialized_len coefficients i ⦃ (result : alloc.vec.Vec GF16) =>
+      result.length = serialized.length / 2 ∧
+      ∀ j < serialized.length / 2,
         result[j]!.value.val = 256 * serialized[2 * j]! + serialized[2 * j + 1]! ⦄ := by
   unfold deserialize_loop
   apply loop.spec_decr_nat
-    (measure := fun (p : core.ops.range.Range Usize × alloc.vec.Vec GF16) => p.1.end - p.1.start)
-    (inv := fun (p : core.ops.range.Range Usize × alloc.vec.Vec GF16) =>
-        let iter' := p.1
-        let coefficients' := p.2
-        iter'.end = iter.end ∧
-        iter'.start ≤ iter'.end ∧
-        coefficients'.length = iter'.start ∧
-        (∀ j < iter'.start.val,
-          coefficients'[j]!.value.val = 256 * serialized[2 * j]! + serialized[2 * j + 1]!))
-  · rintro ⟨iter', coefficients'⟩ ⟨h_end', h_start_le', h_coeff_len', h_pre'⟩
-    have h_body := body_spec serialized iter' coefficients' (by grind) (by grind)
+    (measure := fun (p : alloc.vec.Vec GF16 × Usize) => serialized_len.val - p.2.val)
+    (inv := fun (p : alloc.vec.Vec GF16 × Usize) =>
+        p.2.val % 2 = 0 ∧
+        p.2.val ≤ serialized_len.val ∧
+        p.1.length = p.2.val / 2 ∧
+        (∀ j < p.2.val / 2,
+          p.1[j]!.value.val = 256 * serialized[2 * j]! + serialized[2 * j + 1]!))
+  · rintro ⟨coefficients', i'⟩ ⟨h_i_even', h_i_le', h_coeff_len', h_pre'⟩
+    have h_body := body_spec serialized serialized_len coefficients' i' h_len h_even h_i_even'
+      (by scalar_tac)
     apply WP.spec_mono h_body
-    grind
+    simp only at h_i_even' h_i_le' h_coeff_len' h_pre'
+    rintro (⟨coefficients1, i1⟩ | coefficients'') hcf
+    · obtain ⟨h_lt, h_i1, g, h_c1, h_g⟩ := hcf
+      simp only
+      have h_c1_len : coefficients1.length = coefficients'.length + 1 := by
+        simp [alloc.vec.Vec.length, h_c1]
+      refine ⟨⟨by omega, by omega, by omega, ?_⟩, by omega⟩
+      intro j hj
+      simp only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length] at h_pre' h_coeff_len' ⊢
+      rw [h_c1]
+      by_cases hjl : j < i'.val / 2
+      · rw [List.getElem!_append_left _ _ _ (by omega)]
+        exact h_pre' j hjl
+      · have h2j : 2 * j = i'.val := by omega
+        rw [List.getElem!_append_right _ _ _ (by omega), h2j,
+          show j - (↑coefficients' : List GF16).length = 0 by omega]
+        simpa using h_g
+    · obtain ⟨rfl, h_ge⟩ := hcf
+      have h_eq : i'.val = serialized.length := by omega
+      refine ⟨by omega, fun j hj => h_pre' j (by omega)⟩
   · grind
 
 end spqr.encoding.polynomial.Poly.deserialize_loop
@@ -152,12 +176,11 @@ on the shape of the input so that the error behaviour is pinned down rather than
       - `∀ j < serialized.length / 2`,
         `poly.coefficients[j]!.value.val = 256 * serialized[2*j]! + serialized[2*j+1]!`
 
-The only remaining precondition is the `Usize` non-overflow side condition
-`serialized.length / 2 + 1 ≤ Usize.max`, needed by the loop's `i + 1` range increment. -/
+There is no precondition: the `while i < serialized_len` loop advances `i` by 2 from an even
+start, so `i + 2 ≤ serialized_len` never overflows. -/
 @[step]
 theorem deserialize_spec
-    (serialized : Slice U8)
-    (h_overflow : serialized.length / 2 + 1 ≤ Usize.max) :
+    (serialized : Slice U8) :
     deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
       match result with
       | core.result.Result.Ok poly =>
@@ -171,8 +194,7 @@ theorem deserialize_spec
           (serialized.length = 0 ∨ serialized.length % 2 = 1) ⦄ := by
   unfold Poly.deserialize degree
   step*
-  · simp [alloc.vec.Vec.with_capacity]
-  · simp_all
+  simp [alloc.vec.Vec.with_capacity]
 
 /-- **Corollary (defect 16 witness)**: the byte string `Poly::serialize` produces for the zero
 polynomial — the empty slice — is rejected by `Poly::deserialize`. Hence `deserialize` is not a
@@ -182,7 +204,7 @@ theorem deserialize_empty_is_err
     (h_empty : serialized.length = 0) :
     deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
       result = core.result.Result.Err PolynomialError.SerializationInvalid ⦄ := by
-  apply WP.spec_mono (deserialize_spec serialized (by simp only [h_empty]; scalar_tac))
+  apply WP.spec_mono (deserialize_spec serialized)
   rintro (poly | e) h
   · exact absurd h_empty h.1
   · simp [h.1]

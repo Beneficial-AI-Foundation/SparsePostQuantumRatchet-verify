@@ -3,7 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Chain.Chain.SendKey
+public import Spqr.Specs.Chain.Chain.Defs
 /-! # 64-bit specialization of `send_key_spec`
 
 On 64-bit platforms (`System.Platform.numBits = 64`) the `h_diff_fits` precondition of
@@ -13,6 +16,8 @@ requires `≤ Usize.max`, it holds automatically.
 
 This file provides `send_key_spec_64`, which drops `h_diff_fits` entirely and assumes
 `System.Platform.numBits = 64` instead. -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 

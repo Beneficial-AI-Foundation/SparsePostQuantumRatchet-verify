@@ -3,9 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Coeff.ListOps
 import Spqr.Math.Poly.CharTwo.ToGF216
 import Spqr.Specs.Encoding.Gf.ParallelMult
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Poly.Coeff.Basic
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::mult_assign`
 
@@ -14,6 +21,8 @@ scalar multiplication by `C(m.toGF216)` in `GF216[X]`. Delegates directly to `pa
 the postcondition follows from `parallel_mult_spec`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf Polynomial
 

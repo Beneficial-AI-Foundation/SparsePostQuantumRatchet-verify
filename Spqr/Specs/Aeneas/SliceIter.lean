@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!# Spec theorem for `core::slice::{[@T]}::iter`
 
@@ -12,6 +14,8 @@ The Aeneas-extracted `core.slice.Slice.iter` pairs the input slice with index
 `0`, i.e. `ok ⟨s, 0⟩`. It never panics.
 
 **Postcondition**: `result.slice = s ∧ result.i = 0` -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

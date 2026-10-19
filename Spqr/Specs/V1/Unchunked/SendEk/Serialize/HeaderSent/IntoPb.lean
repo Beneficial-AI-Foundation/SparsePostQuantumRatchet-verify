@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang, Markus Dablander
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
-import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FunctionalModels
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ek::serialize::HeaderSent::into_pb`
@@ -21,6 +23,8 @@ conversions. The reverse direction is `from_pb`.
 
 **Source**: spqr/src/v1/unchunked/send_ek/serialize.rs
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 namespace spqr.v1.unchunked.send_ek.serialize.HeaderSent

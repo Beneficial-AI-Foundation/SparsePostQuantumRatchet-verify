@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 
@@ -19,6 +21,8 @@ the pure LEB128 byte encoding of `a` (between 1 and 10 bytes for a `u64`).  The 
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 139-149)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result ControlFlow
 

@@ -3,13 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.Defs
-import Spqr.Specs.Chain.KeyHistory.Defs
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.Defs
+public import Spqr.Specs.Chain.KeyHistory.Defs
 
 /-! # Chain definitions
 
 Auxiliary definitions for `spqr.chain.Chain` specifications. -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -296,10 +300,10 @@ def recvKeyEpochPost (self : chain.Chain) (index : U32)
   ce'.send = ce.send ∧
   cedKeyPost ce.recv index self.params result ce'.recv
 
-/-- Total postcondition for `recv_key`: either the epoch is out of range
-(error, chain unchanged) or the epoch is in range and the chain is updated
-at exactly one slot with `recvKeyEpochPost`. -/
-def recvKeyPost (self : chain.Chain) (epoch : U64) (index : U32)
+/-- Postcondition for `recv_key` outside the `epoch == 0 && index == 0` early return: either
+the epoch is out of range (error, chain unchanged) or the epoch is in range and the chain is
+updated at exactly one slot with `recvKeyEpochPost`. -/
+def recvKeyRangePost (self : chain.Chain) (epoch : U64) (index : U32)
     (result : core.result.Result (alloc.vec.Vec U8) Error)
     (self' : chain.Chain) : Prop :=
   let phys := self.links.head.val + recvKeyIdx self epoch
@@ -315,6 +319,16 @@ def recvKeyPost (self : chain.Chain) (epoch : U64) (index : U32)
      | some _, none => False
      | some ce, some ce' =>
        recvKeyEpochPost self index ce ce' result)
+
+/-- Total postcondition for `recv_key`: for `epoch = 0` and `index = 0` the call returns an
+empty key and leaves the chain unchanged (early return added in spqr v1.6.0); otherwise
+`recvKeyRangePost` holds. -/
+def recvKeyPost (self : chain.Chain) (epoch : U64) (index : U32)
+    (result : core.result.Result (alloc.vec.Vec U8) Error)
+    (self' : chain.Chain) : Prop :=
+  if epoch.val = 0 ∧ index.val = 0 then
+    result = core.result.Result.Ok (alloc.vec.Vec.new U8) ∧ self' = self
+  else recvKeyRangePost self epoch index result self'
 
 
 

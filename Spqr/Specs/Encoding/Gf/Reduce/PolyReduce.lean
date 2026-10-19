@@ -3,8 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Gf16.Field
+module
+
+public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
+public import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 **Spec theorem for `spqr::encoding::gf::reduce::poly_reduce`**:
@@ -86,6 +94,8 @@ This algebraic bridge is developed in `Spqr.Math.Gf16.Field` and used by `Mul.le
 
 **Source**: spqr/src/encoding/gf.rs (lines 489:4-498:5)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Polynomial spqr.encoding.gf.unaccelerated spqr.math.gf
 

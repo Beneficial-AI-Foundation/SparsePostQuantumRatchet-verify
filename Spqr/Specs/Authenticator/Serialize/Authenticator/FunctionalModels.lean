@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
-import SrcTranslated.Types
+module
+
+public import SrcTranslated.Types
 
 /-!
 # Functional models of `spqr::authenticator::serialize::Authenticator::{into_pb, from_pb}`
@@ -14,6 +16,8 @@ theorems in `IntoPb.lean` and `FromPb.lean` pin the extracted, monadic functions
 
 **Source**: spqr/src/authenticator/serialize.rs
 -/
+
+@[expose] public section
 
 namespace spqr.authenticator.serialize.Authenticator.FunctionalModels
 

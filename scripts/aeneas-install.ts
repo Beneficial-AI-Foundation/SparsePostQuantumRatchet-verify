@@ -14,7 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import chalk from "chalk";
 import ora from "ora";
-import { loadConfig } from "./lib/config.js";
+import { findProjectRoot, readLakefileAeneasTag } from "./lib/config.js";
 import { run } from "./lib/shell.js";
 import { findBinary } from "./lib/paths.js";
 import { syncLeanToolchain } from "./lib/lean-toolchain.js";
@@ -49,10 +49,10 @@ function getAssetName(): string {
   return asset;
 }
 
-function getAssetUrl(repo: string, tag: string, asset: string): string {
-  // https://github.com/AeneasVerif/aeneas.git -> https://github.com/AeneasVerif/aeneas
-  const base = repo.replace(/\.git$/, "");
-  return `${base}/releases/download/${tag}/${asset}`;
+const AENEAS_REPO_URL = "https://github.com/AeneasVerif/aeneas";
+
+function getAssetUrl(tag: string, asset: string): string {
+  return `${AENEAS_REPO_URL}/releases/download/${tag}/${asset}`;
 }
 
 // ── Version check ─────────────────────────────────────────────────────
@@ -146,8 +146,8 @@ async function downloadAndExtract(url: string, aeneasDir: string): Promise<void>
 async function main(): Promise<void> {
   console.log(chalk.bold("\nAeneas Install\n"));
 
-  const { config, root } = loadConfig();
-  const tag = config.aeneas.tag;
+  const root = findProjectRoot();
+  const tag = readLakefileAeneasTag(root);
   const aeneasDir = getAeneasDir(root);
 
   // Check if already installed at the correct release
@@ -160,7 +160,7 @@ async function main(): Promise<void> {
   await checkDependencies();
 
   const asset = getAssetName();
-  const url = getAssetUrl(config.aeneas.repo, tag, asset);
+  const url = getAssetUrl(tag, asset);
 
   console.log(chalk.bold(`\nDownloading ${tag} (${asset})...`));
   await downloadAndExtract(url, aeneasDir);

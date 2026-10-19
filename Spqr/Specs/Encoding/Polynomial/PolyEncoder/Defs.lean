@@ -3,10 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
-import Spqr.Math.Gf2Poly.Basic
-import Spqr.Math.Poly.Identities.Basic
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
+public import Spqr.Math.Gf2Poly.Basic
+public import Spqr.Math.Poly.Identities.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-! # Postcondition predicates for `PolyEncoder`
 
@@ -14,6 +20,8 @@ The named postconditions that the `PolyEncoder` spec theorems are stated against
 some pure lemmas relating them.
 
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 

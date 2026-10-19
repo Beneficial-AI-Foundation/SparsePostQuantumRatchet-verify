@@ -3,7 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Horner.Eval
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Horner.Defs
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Poly.CharTwo.Basic
+import Spqr.Math.Poly.Coeff.Basic
 
 /-!
 # Polynomial identity from loop 1 (lagrange_interpolate_complete)
@@ -16,6 +23,8 @@ listToGF216Poly coeffs` arising from the Horner-scheme loop in
 
 * `poly_identity_from_loop1` — the Horner-scheme division + scaling identity.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Polynomial
 open spqr.math.gf spqr.encoding.gf spqr.encoding.polynomial

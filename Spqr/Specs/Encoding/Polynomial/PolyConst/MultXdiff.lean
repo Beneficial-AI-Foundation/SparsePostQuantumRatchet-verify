@@ -3,11 +3,22 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Gf.GF16.ZERO
-import Spqr.Math.List
+module
+
+public import Spqr.Specs.Encoding.Gf.GF16.ZERO
+public import Spqr.Math.List
 import Spqr.Math.Poly.Identities.MultXdiff
 import Spqr.Specs.Encoding.Gf.GF16.ConstSub
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop body 0
 
@@ -20,9 +31,21 @@ and `dp` (scaled) arrays for computing `(x − difference) · self` in GF(2¹⁶
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
+@[expose] public section
+
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 
 namespace spqr.encoding.polynomial.PolyConst.mult_xdiff_loop0
+
+/-- Reading back the slot just written by `Array.set`. -/
+private lemma array_set_get_self {N : Usize} (arr : Array GF16 N) (k : Usize) (x : GF16)
+    (h : k.val < (arr.set k x).length) : (arr.set k x).val.get ⟨k.val, h⟩ = x := by
+  simp only [List.get_eq_getElem, Array.set_val_eq, List.getElem_set_self]
+
+/-- `Array.set` leaves all other slots unchanged. -/
+private lemma array_set_getElem?_ne {N : Usize} (arr : Array GF16 N) (k : Usize) (x : GF16)
+    (j : Nat) (hj : j ≠ k.val) : (arr.set k x).val[j]? = arr.val[j]? := by
+  rw [Array.set_val_eq, List.getElem?_set_ne (Ne.symm hj)]
 
 /-- **Spec theorem for `encoding.polynomial.PolyConst.mult_xdiff_loop0.body`**:
 
@@ -52,17 +75,38 @@ theorem body_spec
           (¬ i1 < i → xp1 = xp) ⦄ := by
   unfold body
   by_cases h_lt : i1.val < N.val
-  · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.get_eq_getElem, ne_eq, not_lt, true_and]
-    by_cases h_lt_i : i1 < i.val
-    · simp only [h_lt_i, ↓reduceIte, forall_const, isEmpty_Prop, not_le,
-        IsEmpty.forall_iff, and_true]
-      step*
-      all_goals simp_all
-    · simp only [h_lt_i, ↓reduceIte, IsEmpty.forall_iff, true_and]
-      step*
-      all_goals simp_all
-  · step*
+  · rw [if_pos (show i1 < N from h_lt)]
+    have h_alen : a.val.length = N.val := a.property
+    by_cases h_lt_i : i1.val < i.val
+    · rw [if_pos (show i1 < i from h_lt_i)]
+      step as ⟨g, h_g⟩
+      step as ⟨i2, h_i2⟩
+      step as ⟨xp1, h_xp1⟩
+      step as ⟨g', h_g'⟩
+      step as ⟨g1, h_g1⟩
+      step as ⟨a1, h_a1⟩
+      step as ⟨i3, h_i3⟩
+      have h_ag : a.val[i1.val]! = g' := by rw [h_g', getElem!_pos a.val _ (by omega)]
+      subst h_xp1 h_a1
+      refine ⟨h_lt, h_i3, fun h_idx => ?_, fun j hj => array_set_getElem?_ne _ _ _ j hj,
+        fun _ => ⟨fun h_idx => ?_, fun j hj => ?_⟩, fun h => absurd h_lt_i h⟩
+      · rw [array_set_get_self, h_g1, h_ag]
+      · simp only [← h_i2]
+        rw [array_set_get_self, h_g, getElem!_pos a.val _ (by omega)]
+      · exact array_set_getElem?_ne _ _ _ j (by omega)
+    · rw [if_neg (show ¬i1 < i from h_lt_i)]
+      simp only [bind_ok]
+      step as ⟨g', h_g'⟩
+      step as ⟨g1, h_g1⟩
+      step as ⟨a1, h_a1⟩
+      step as ⟨i3, h_i3⟩
+      have h_ag : a.val[i1.val]! = g' := by rw [h_g', getElem!_pos a.val _ (by omega)]
+      subst h_a1
+      refine ⟨h_lt, h_i3, fun h_idx => ?_, fun j hj => array_set_getElem?_ne _ _ _ j hj,
+        fun h => absurd h h_lt_i, fun _ => trivial⟩
+      rw [array_set_get_self, h_g1, h_ag]
+  · rw [if_neg (show ¬i1 < N from h_lt)]
+    exact (WP.spec_ok _).mpr ⟨rfl, rfl, h_lt⟩
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop 0
 
@@ -107,30 +151,48 @@ theorem loop_spec
             p.1.val.get ⟨j + 1, h_idx⟩ = a.val[j]!) ∧
         (∀ (j : Nat), ¬(0 < j ∧ j ≤ p.2.2 ∧ j ≤ i) →
           p.1.val[j]? = xp.val[j]?))
-  · rintro ⟨xp', dp', i1'⟩
-      ⟨h_i1_le, h_dp_proc, h_dp_rest, h_xp_shift, h_xp_rest⟩
-    simp only [] at h_i1_le h_dp_proc h_dp_rest h_xp_shift h_xp_rest ⊢
-    have h_body := body_spec i i1' a xp' dp' difference h_i_lt_N
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done (xp_r, dp_r) => grind
-    | ControlFlow.cont (xp1, dp1, i2) =>
-      obtain ⟨hlt, hi2, hdp, hdprest, hxpif, hxpelse⟩ := h_cf
+  · rintro ⟨xp', dp', i1'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_i1_le, h_dp_proc, h_dp_rest, h_xp_shift, h_xp_rest⟩ := hinv
+    have h_i1_le' : i1'.val ≤ N.val := h_i1_le
+    have h_iN : i.val < N.val := h_i_lt_N
+    have h_xlen : xp'.val.length = N.val := xp'.property
+    have h_dlen : dp'.val.length = N.val := dp'.property
+    apply WP.spec_mono (body_spec i i1' a xp' dp' difference h_i_lt_N)
+    rintro (⟨xp1, dp1, i2⟩ | ⟨xp_r, dp_r⟩) h_cf
+    · obtain ⟨hlt, hi2, hdp, hdprest, hxpif, hxpelse⟩ := h_cf
+      have hlt' : i1'.val < N.val := hlt
+      have h_xlen1 : xp1.val.length = N.val := xp1.property
+      have h_dlen1 : dp1.val.length = N.val := dp1.property
       dsimp only
-      refine ⟨⟨by grind, ?_, by grind, ?_, by grind⟩, by grind⟩
-      · intro j hj hj_len
-        rcases eq_or_lt_of_le (show j ≤ i1'.val by omega) with h | h
-        · subst h; exact hdp hj_len
-        · have := h_dp_proc j h; have := hdprest j (by omega); grind
-      · intro j hj hji h_idx
-        by_cases hii : i1' < i
-        · rcases eq_or_lt_of_le (show j ≤ i1'.val by omega) with h | h
-          · subst h; exact (hxpif hii).1 h_idx
-          · have := h_xp_shift j h hji; have := (hxpif hii).2 (j + 1) (by omega); grind
-        · have hxeq := hxpelse hii; subst hxeq
-          exact h_xp_shift j (by scalar_tac) hji h_idx
-  · grind
+      refine ⟨⟨show i2.val ≤ N.val by omega, fun j hj hj_len => ?_, fun j hj => ?_,
+        fun j hj hji h_idx => ?_, fun j hj => ?_⟩, show N.val - i2.val < N.val - i1'.val by omega⟩
+      · rcases Nat.lt_or_ge j i1'.val with h | h
+        · rw [list_get_of_getElem?_eq (hdprest j (by omega)) hj_len (by omega)]
+          exact h_dp_proc j h _
+        · obtain rfl : j = i1'.val := by omega
+          exact hdp hj_len
+      · rw [hdprest j (by omega)]
+        exact h_dp_rest j (by omega)
+      · by_cases hii : i1'.val < i.val
+        · rcases Nat.lt_or_ge j i1'.val with h | h
+          · rw [list_get_of_getElem?_eq ((hxpif hii).2 (j + 1) (by omega)) h_idx (by omega)]
+            exact h_xp_shift j h hji _
+          · obtain rfl : j = i1'.val := by omega
+            exact (hxpif hii).1 h_idx
+        · obtain rfl := hxpelse hii
+          exact h_xp_shift j (by omega) hji h_idx
+      · by_cases hii : i1'.val < i.val
+        · rw [(hxpif hii).2 j (by omega)]
+          exact h_xp_rest j (by omega)
+        · obtain rfl := hxpelse hii
+          exact h_xp_rest j (by omega)
+    · obtain ⟨rfl, rfl, hnlt⟩ := h_cf
+      have h_eq : i1'.val = N.val := by have : ¬i1'.val < N.val := hnlt; omega
+      exact ⟨fun j hj hjl => h_dp_proc j (by omega) hjl,
+        fun j hj h_idx => h_xp_shift j (by omega) hj h_idx,
+        fun j hj => h_xp_rest j (by omega)⟩
+  · exact ⟨h_i1_le_N, h_dp_inv, fun j _ => rfl, h_xp_inv, fun j _ => rfl⟩
 
 end spqr.encoding.polynomial.PolyConst.mult_xdiff_loop0
 
@@ -168,11 +230,21 @@ theorem body_spec
           (∀ (j : Nat), j ≠ i → xp'.val[j]? = xp.val[j]?) ⦄ := by
   unfold body
   by_cases h_lt : i.val < N.val
-  · simp only [UScalar.lt_equiv, h_lt, ↓reduceIte, not_true_eq_false, and_false,
-      List.get_eq_getElem, ne_eq, true_and]
-    step*
-    all_goals simp_all
-  · step*
+  · rw [if_pos (show i < N from h_lt)]
+    have h_xlen : xp.val.length = N.val := xp.property
+    have h_dlen : dp.val.length = N.val := dp.property
+    step as ⟨g, h_g⟩
+    step as ⟨g1, h_g1⟩
+    step as ⟨g2, h_g2⟩
+    step as ⟨a, h_a⟩
+    step as ⟨i1, h_i1⟩
+    subst h_a
+    refine ⟨h_lt, h_i1, fun h_idx => ?_,
+      fun j hj => mult_xdiff_loop0.array_set_getElem?_ne _ _ _ j hj⟩
+    rw [mult_xdiff_loop0.array_set_get_self, h_g2, h_g, h_g1, getElem!_pos xp.val _ (by omega),
+      getElem!_pos dp.val _ (by omega)]
+  · rw [if_neg (show ¬i < N from h_lt)]
+    exact (WP.spec_ok _).mpr ⟨rfl, h_lt⟩
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop 1
 
@@ -203,12 +275,38 @@ theorem loop_spec
           ∀ (hj : j < p.1.length),
             (p.1.val.get ⟨j, hj⟩).toGF216 = (xp.val[j]!).toGF216 - (dp.val[j]!).toGF216) ∧
         (∀ (j : Nat), ¬(i ≤ j ∧ j < p.2) → p.1.val[j]? = xp.val[j]?))
-  · rintro ⟨xp', i'⟩ ⟨h_i_le_i', h_i'_le_N, h_xp_proc, h_xp_rest⟩
-    simp only at h_i_le_i' h_i'_le_N h_xp_proc h_xp_rest ⊢
-    have h_body := body_spec dp xp' i'
-    apply WP.spec_mono h_body
-    grind
-  · grind
+  · rintro ⟨xp', i'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_i_le_i', h_i'_le_N, h_xp_proc, h_xp_rest⟩ := hinv
+    have h_i_le_i'' : i.val ≤ i'.val := h_i_le_i'
+    have h_i'_le_N' : i'.val ≤ N.val := h_i'_le_N
+    have h_xlen : xp'.val.length = N.val := xp'.property
+    have h_xlen0 : xp.val.length = N.val := xp.property
+    apply WP.spec_mono (body_spec dp xp' i')
+    rintro (⟨xp1, i1⟩ | xp_r) h_cf
+    · obtain ⟨hlt, hi1, hupd, hrest⟩ := h_cf
+      have hlt' : i'.val < N.val := hlt
+      have h_xlen1 : xp1.val.length = N.val := xp1.property
+      dsimp only
+      refine ⟨⟨show i.val ≤ i1.val by omega, show i1.val ≤ N.val by omega,
+        fun j hj1 hj2 hj => ?_, fun j hj => ?_⟩, show N.val - i1.val < N.val - i'.val by omega⟩
+      · rcases Nat.lt_or_ge j i'.val with h | h
+        · rw [list_get_of_getElem?_eq (hrest j (by omega)) hj (by omega)]
+          exact h_xp_proc j hj1 h _
+        · obtain rfl : j = i'.val := by omega
+          rw [hupd hj]
+          have h_eq := h_xp_rest i'.val (by omega)
+          rw [List.getElem?_eq_getElem (by omega), List.getElem?_eq_getElem (by omega)] at h_eq
+          rw [getElem!_pos xp'.val _ (by omega), getElem!_pos xp.val _ (by omega),
+            Option.some.inj h_eq]
+      · rw [hrest j (by omega)]
+        exact h_xp_rest j (by omega)
+    · obtain ⟨rfl, hnlt⟩ := h_cf
+      have h_eq : i'.val = N.val := by have : ¬i'.val < N.val := hnlt; omega
+      exact ⟨fun j hj hjl => h_xp_proc j hj.1 (by omega) hjl,
+        fun j hj => h_xp_rest j (by omega)⟩
+  · exact ⟨le_refl _, h_i_le_N, fun j hj1 hj2 => absurd hj2 (by dsimp only; omega),
+      fun j _ => rfl⟩
 
 end spqr.encoding.polynomial.PolyConst.mult_xdiff_loop1
 
@@ -248,10 +346,28 @@ theorem mult_xdiff_spec
   have h_leading_zero  := getElem!_value_val_eq_zero_of_natDegree_lt self.coefficients.val N
     h_N_pos h_deg
   unfold mult_xdiff
-  step*
-  · grind
-  apply @mult_xdiff_result_eq N (self.coefficients) diff i xp1 dp1 xp2 h_N_pos
-    (by scalar_tac)
-  all_goals simp_all
+  step as ⟨i, h_i, _⟩
+  step as ⟨g, h_g⟩
+  have h_clen : self.coefficients.val.length = N.val := self.coefficients.property
+  have h_g0 : g.value.val = 0 := by
+    rw [h_g, ← getElem!_pos self.coefficients.val i.val (by omega), h_i]
+    exact h_leading_zero
+  have h_assert : ¬(g.value != 0#u16) = true := by
+    simp only [bne_iff_ne, ne_eq, not_not]
+    exact UScalar.eq_of_val_eq h_g0
+  step
+  have h_iN : i < N := by change i.val < N.val; omega
+  step with mult_xdiff_loop0.loop_spec i 0#usize self.coefficients _ _ diff h_iN
+    (by change 0 ≤ N.val; omega) (fun j hj => absurd hj (Nat.not_lt_zero _))
+    (fun j hj => absurd hj (Nat.not_lt_zero _)) as ⟨xp1, dp1, h_loop0⟩
+  obtain ⟨h_dp, h_xp_shift, h_xp_unch⟩ := h_loop0
+  step with mult_xdiff_loop1.loop_spec xp1 dp1 0#usize (by change 0 ≤ N.val; omega) as
+    ⟨xp2, h_sub, _⟩
+  refine mult_xdiff_result_eq self.coefficients diff i xp1 dp1 xp2 h_N_pos h_i h_deg
+    (fun j hj hjl => ?_) (fun j hj h_idx => ?_) h_xp_unch (fun j hj => h_sub j hj.1 hj.2)
+  · rw [Array.getElem!_Nat_eq, getElem!_pos dp1.val j hjl, Array.getElem!_Nat_eq]
+    exact h_dp j hj hjl
+  · rw [Array.getElem!_Nat_eq, getElem!_pos xp1.val _ h_idx]
+    exact h_xp_shift j hj h_idx
 
 end spqr.encoding.polynomial.PolyConst

@@ -3,22 +3,42 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.ModByMonic
+module
+
+public import Spqr.Math.Poly.ModByMonic
 import Spqr.Specs.Aeneas.RangeIteratorNext
-import Spqr.Math.List
-import Spqr.Math.Gf16.Field
+import Spqr.Specs.Aeneas.SliceChunksExact
+public import Spqr.Math.List
+public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Auxiliary.Aeneas.Slice
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.EncodingError.From
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
+import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
+import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 
 /-! # Spec theorem for `PolyDecoder::from_pb`: loop body 1
 
-One step of the inner point-deserialization loop. Given `pts : Vec<u8>`, a sorted set `v`, and
-cursor `j`, the body either terminates (fewer than 4 bytes left) or reads a 4-byte big-endian
-chunk, deserializes it into a `Pt` over GF(2¹⁶), pushes the point onto `v`, and advances `j`
-by 4.
+One step of the inner point-deserialization loop `for pt in pts.chunks_exact(4)`. Given a
+`ChunksExact<u8>` iterator and a sorted set `v`, the body either terminates (no chunks left) or
+pops the next 4-byte chunk, deserializes it (big-endian) into a `Pt` over GF(2¹⁶), and pushes
+the point onto `v`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
@@ -50,21 +70,66 @@ theorem sortedInsert_always_ok (list : List Pt) (x : Pt) (i : Nat) :
       simp only [h_rec, bind_ok]
       exact ⟨idx', opt', a :: newList', rfl⟩
 
+/-- The postcondition of one `SortedSet::push` of the point `p` onto `v`, yielding `v1`,
+    as a case split mirroring the `SortedSet.push` definition. -/
+theorem push_chain_spec (v : sorted_vec.SortedSet Pt) (p : Pt)
+    (h_push_cap : v.length + 1 ≤ Usize.max) :
+    sorted_vec.SortedSet.push Pt.Insts.CoreCmpOrd v p ⦃ r =>
+      match v.val.getLast? with
+      | none => r.2.val = v.val ++ [p]
+      | some last =>
+        match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+        | .ok Ordering.gt => r.2.val = v.val ++ [p]
+        | .ok Ordering.eq => r.2.val = v.val.dropLast ++ [p]
+        | .ok Ordering.lt =>
+            ∃ (i : Nat),
+              i ≤ v.val.length ∧
+              (r.2.val = v.val.take i ++ [p] ++ v.val.drop i ∨
+               (i < v.val.length ∧
+                r.2.val = v.val.take i ++ [p] ++ v.val.drop (i + 1)))
+        | _ => False ⦄ := by
+  rcases hL : v.val.getLast? with _ | last
+  · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_empty Pt.Insts.CoreCmpOrd v p h_push_cap hL)
+    rintro ⟨⟨_, _⟩, _⟩ h
+    simp only at h ⊢
+    exact h.2.2
+  · rcases hc : compare p.x.value.val last.x.value.val
+    · obtain ⟨idx, opt, newList, h_si⟩ := sortedInsert_always_ok v.val p 0
+      obtain ⟨k, hk_idx, hk_le, hk_prop⟩ :=
+        sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd v.val p 0 h_si
+      have hbnd : newList.length ≤ Usize.max ∧ idx ≤ Usize.max := by
+        constructor
+        · rcases hk_prop with h_ins | ⟨_, h_rep⟩
+          · rw [h_ins]; simp only [List.length_append, List.length_take, List.length_drop]
+            grind
+          · rw [h_rep]; simp only [List.length_append, List.length_take, List.length_drop]
+            grind
+        · grind
+      apply WP.spec_mono (sorted_vec.SortedSet.push_spec_lt Pt.Insts.CoreCmpOrd v p h_push_cap
+        last hL (by rw [← hc]; exact cmp_eq p last) idx opt newList h_si hbnd)
+      rintro ⟨⟨_, _⟩, _⟩ h
+      simp only [cmp_eq, hc, Result.match.ok] at h ⊢
+      grind
+    · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_eq Pt.Insts.CoreCmpOrd v p h_push_cap
+        last hL (by rw [← hc]; exact cmp_eq p last))
+      rintro ⟨⟨_, _⟩, _⟩ h
+      simp only [cmp_eq, hc, Result.match.ok] at h ⊢
+      exact h.2.2
+    · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_gt Pt.Insts.CoreCmpOrd v p h_push_cap
+        last hL (by rw [← hc]; exact cmp_eq p last))
+      rintro ⟨⟨_, _⟩, _⟩ h
+      simp only [cmp_eq, hc, Result.match.ok] at h ⊢
+      exact h.2.2
+
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0_loop0.body`**:
 
-• Takes `pts : Vec<u8>` (the serialized byte vector for one channel), a sorted set accumulator
-  `v : SortedSet<Pt>` of already-deserialized points, and byte index `j : Usize`.
-• Checks whether `j + 4 ≤ pts.len()`.
-• If **false** (not enough bytes): returns `done v` — the set is unchanged.
-• If **true**: reads four consecutive bytes `pts[j], pts[j+1], pts[j+2], pts[j+3]`, builds a
-  `[u8; 4]` array, calls `Pt::deserialize` to reconstruct the GF(2¹⁶) point, and pushes the
-  point onto `v`.  The continuation advances `j` to `j + 4`.
+• Takes a `ChunksExact<u8>` iterator `iter` (all of whose chunks have length 4) and a sorted
+  set accumulator `v : SortedSet<Pt>` of already-deserialized points.
+• If the iterator is exhausted: returns `done v` — the set is unchanged.
+• Otherwise pops the next 4-byte chunk `c`, converts it to a `[u8; 4]`, calls
+  `Pt::deserialize` to reconstruct the GF(2¹⁶) point `p`, and pushes `p` onto `v`.
 
-The postcondition connects `cf`, `pts`, `v`, and `j`:
-
-• **done**: `v' = v ∧ ¬(j + 4 ≤ pts.length)`
-• **cont**: `j₁ = j + 4`, and there exists a point `p` satisfying the big-endian invariant.
-  The update to the sorted set mirrors the `SortedSet.push` definition:
+The update to the sorted set mirrors the `SortedSet.push` definition:
   - **Empty** (`v.val.getLast? = none`): `v₁.val = v.val ++ [p]`
   - **Greater** (`cmp p last = .gt`): `v₁.val = v.val ++ [p]`
   - **Equal** (`cmp p last = .eq`): `v₁.val = v.val.dropLast ++ [p]`
@@ -73,20 +138,19 @@ The postcondition connects `cf`, `pts`, `v`, and `j`:
     replacing (`v₁.val = v.val.take i ++ [p] ++ v.val.drop (i + 1)`) -/
 @[step]
 theorem body_spec
-    (pts : alloc.vec.Vec U8)
-    (v : sorted_vec.SortedSet Pt) (j : Usize)
-    (h_overflow : j + 4 ≤ Usize.max)
+    (iter : core.slice.iter.ChunksExact U8)
+    (v : sorted_vec.SortedSet Pt)
+    (h_chunks : ∀ c ∈ iter.chunks, c.val.length = 4)
     (h_push_cap : v.length + 1 ≤ Usize.max) :
-    body pts v j ⦃ cf =>
+    body iter v ⦃ cf =>
       match cf with
       | ControlFlow.done v' =>
-          v' = v ∧ ¬(j + 4 ≤ pts.length)
-      | ControlFlow.cont (v1, j1) =>
-          j + 4 ≤ pts.length ∧
-          j1 = j.val + 4 ∧
+          v' = v ∧ iter.chunks = []
+      | ControlFlow.cont (iter1, v1) =>
+          ∃ (c : Slice U8), iter.chunks = c :: iter1.chunks ∧
           ∃ (p : Pt),
-            p.x.value.val = (pts[j]!).val * 256 + (pts[j.val + 1]!).val ∧
-            p.y.value.val = (pts[j.val + 2]!).val * 256 + (pts[j.val + 3]!).val ∧
+            p.x.value.val = (c.val[0]!).val * 256 + (c.val[1]!).val ∧
+            p.y.value.val = (c.val[2]!).val * 256 + (c.val[3]!).val ∧
             match v.val.getLast? with
             | none => v1.val = v.val ++ [p]
             | some last =>
@@ -100,96 +164,50 @@ theorem body_spec
                      (i < v.val.length ∧
                       v1.val = v.val.take i ++ [p] ++ v.val.drop (i + 1)))
               | _ => False ⦄ := by
-  unfold body
-  step
-  split
-  · iterate 8 step
-    have h_bound : j.val + 4 ≤ pts.val.length := by scalar_tac
-    have h0 : j.val < pts.val.length := by scalar_tac
-    have h1 : j.val + 1 < pts.val.length := by scalar_tac
-    have h2 : j.val + 2 < pts.val.length := by scalar_tac
-    have h3 : j.val + 3 < pts.val.length := by scalar_tac
-    have hx : p.x.value.val = (pts[j]!).val * 256 + (pts[j.val + 1]!).val := by
-      simp_all [alloc.vec.Vec.getElem!_Nat_eq]
-    have hy : p.y.value.val = (pts[j.val + 2]!).val * 256 + (pts[j.val + 3]!).val := by
-      simp_all [alloc.vec.Vec.getElem!_Nat_eq]
-    rcases hL : v.val.getLast? with _ | last
-    · step with sorted_vec.SortedSet.push_spec_empty Pt.Insts.CoreCmpOrd v p h_push_cap hL
-      refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
-      simp_all
-    · rcases hc : compare p.x.value.val last.x.value.val
-      · obtain ⟨idx, opt, newList, h_si⟩ := sortedInsert_always_ok v.val p 0
-        obtain ⟨k, hk_idx, hk_le, hk_prop⟩ :=
-          sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd v.val p 0 h_si
-        have hbnd : newList.length ≤ Usize.max ∧ idx ≤ Usize.max := by
-          constructor
-          · rcases hk_prop with h_ins | ⟨_, h_rep⟩
-            · rw [h_ins]; simp only [List.length_append, List.length_take, List.length_drop]
-              grind
-            · rw [h_rep]; simp only [List.length_append, List.length_take, List.length_drop]
-              grind
-          · grind
-        step with sorted_vec.SortedSet.push_spec_lt Pt.Insts.CoreCmpOrd v p h_push_cap last hL
-          (by rw [← hc]; exact cmp_eq p last) idx opt newList h_si hbnd
-        refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
-        simp only [cmp_eq, hc, Result.match.ok]
-        grind
-      · step with sorted_vec.SortedSet.push_spec_eq Pt.Insts.CoreCmpOrd v p h_push_cap last hL
-          (by rw [← hc]; exact cmp_eq p last)
-        refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
-        simp_all [cmp_eq]
-      · step with sorted_vec.SortedSet.push_spec_gt Pt.Insts.CoreCmpOrd v p h_push_cap last hL
-          (by rw [← hc]; exact cmp_eq p last)
-        refine ⟨by scalar_tac, by scalar_tac, p, hx, hy, ?_⟩
-        simp_all [cmp_eq]
-  · simp_all
+  unfold body core.slice.iter.IteratorChunksExact.next
+  rcases h : iter.chunks with _ | ⟨c, rest⟩
+  · simp
+  · have hc : c.val.length = 4 := h_chunks c (by simp [h])
+    step as ⟨r, a0, hr0, ha0⟩
+    step as ⟨a, ha⟩
+    step as ⟨p, hpx, hpy⟩
+    step with push_chain_spec v p h_push_cap
+    have hac : a.val = c.val := by
+      rw [hr0] at ha
+      cases ha
+      exact ha0
+    refine ⟨c, rfl, p, ?_, ?_, ‹_›⟩
+    · simp [hpx, Array.getElem!_Nat_eq, hac]
+    · simp [hpy, Array.getElem!_Nat_eq, hac]
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0_loop0`**:
 
-• Takes `pts : Vec<u8>` (the serialized byte vector for one channel), a sorted set accumulator
-  `v : SortedSet<Pt>` of already-deserialized points, and byte index `j : Usize`.
-• Repeatedly reads 4-byte big-endian chunks from `pts[j..]`, deserializes each into a `Pt`,
-  pushes it onto `v` via `SortedSet::push`, and advances `j` by 4 — until `j + 4 > pts.len()`.
-• Returns the final sorted set containing all deserialized points from `pts[j..]` merged with
-  the initial accumulator `v`.
+• Takes a `ChunksExact<u8>` iterator `iter` (all of whose chunks have length 4) and a sorted
+  set accumulator `v : SortedSet<Pt>`.
+• For each remaining chunk, deserializes it into a `Pt` and pushes it onto the set.
+• Returns the final sorted set.
 
-The postcondition witnesses:
+The postcondition witnesses an intermediate sequence `vs : Nat → SortedSet Pt` with
+`vs 0 = v` and `vs n = v_result`, where `n = iter.chunks.length`, and for each `k < n` the
+point decoded from chunk `k` (big-endian) and the push step from `vs k` to `vs (k+1)`.
 
-1. **Iteration count** `n` and **intermediate sequence** `vs : Nat → SortedSet Pt` with
-   `vs 0 = v` and `vs n = v_result`.
-2. **Termination bounds**: `j + 4n ≤ pts.length < j + 4(n+1)`.
-3. **Per-step properties** (for each `k < n`):
-   - A point `p` with big-endian invariant:
-       `p.x.value.val = 256 * pts[j+4k] + pts[j+4k+1]`
-       `p.y.value.val = 256 * pts[j+4k+2] + pts[j+4k+3]`
-   - The sorted set update from `vs k` to `vs (k+1)` mirrors `body_spec`:
-     matching on `(vs k).val.getLast?` and `Pt.Insts.CoreCmpOrd.cmp`:
-       - **Empty/Greater**: append `[p]`
-       - **Equal**: replace last with `p`
-       - **Less**: sorted-insert/replace at some position `i`
-
-**Source**: spqr/src/encoding/polynomial.rs (lines 842:12-846:13)
+**Source**: spqr/src/encoding/polynomial.rs (lines 859:12-861:13)
 -/
 @[step]
 theorem loop_spec
-    (pts : alloc.vec.Vec U8)
+    (iter : core.slice.iter.ChunksExact U8)
     (v : sorted_vec.SortedSet Pt)
-    (j : Usize)
-    (h_j_overflow : j + 4 ≤ Usize.max)
-    (h_pts_overflow : pts.length + 4 ≤ Usize.max)
-    (h_j_le_pts : j ≤ pts.length)
-    (h_v_room : v.length + pts.length + 1 ≤ Usize.max) :
-    from_pb_loop0_loop0 pts v j ⦃ (v_result : sorted_vec.SortedSet Pt) =>
-      ∃ (n : Nat) (vs : Nat → sorted_vec.SortedSet Pt),
-        vs 0 = v ∧ vs n = v_result ∧
-        j + 4 * n ≤ pts.length ∧
-        pts.length < j + 4 * (n + 1) ∧
-        ∀ (k : Nat), k < n →
+    (h_chunks : ∀ c ∈ iter.chunks, c.val.length = 4)
+    (h_v_room : v.length + iter.chunks.length + 1 ≤ Usize.max) :
+    from_pb_loop0_loop0 iter v ⦃ (v_result : sorted_vec.SortedSet Pt) =>
+      ∃ (vs : Nat → sorted_vec.SortedSet Pt),
+        vs 0 = v ∧ vs iter.chunks.length = v_result ∧
+        ∀ (k : Nat), k < iter.chunks.length →
           ∃ (p : Pt),
-            p.x.value.val = 256 * (pts[j.val + 4 * k]!).val +
-              (pts[j.val + 4 * k + 1]!).val ∧
-            p.y.value.val = 256 * (pts[j.val + 4 * k + 2]!).val +
-              (pts[j.val + 4 * k + 3]!).val ∧
+            p.x.value.val = 256 * ((iter.chunks[k]!).val[0]!).val +
+              ((iter.chunks[k]!).val[1]!).val ∧
+            p.y.value.val = 256 * ((iter.chunks[k]!).val[2]!).val +
+              ((iter.chunks[k]!).val[3]!).val ∧
             match (vs k).val.getLast? with
             | none => (vs (k + 1)).val = (vs k).val ++ [p]
             | some last =>
@@ -206,25 +224,20 @@ theorem loop_spec
               | _ => False ⦄ := by
   unfold from_pb_loop0_loop0
   apply loop.spec_decr_nat
-    (measure := fun (p : sorted_vec.SortedSet Pt × Usize) =>
-                  pts.val.length + 4 - p.2.val)
-    (inv := fun (p : sorted_vec.SortedSet Pt × Usize) =>
-        let v' := p.1
-        let j' := p.2
-        j'.val + 4 ≤ Usize.max ∧
-        v'.val.length + (pts.val.length - j'.val) + 1 ≤ Usize.max ∧
-        (∃ (n : Nat) (vs : Nat → sorted_vec.SortedSet Pt),
-          vs 0 = v ∧ vs n = v' ∧
-          j'.val = j.val + 4 * n ∧
-          j'.val ≤ pts.val.length ∧
+    (measure := fun (x : core.slice.iter.ChunksExact U8 × sorted_vec.SortedSet Pt) =>
+                  x.1.chunks.length)
+    (inv := fun (x : core.slice.iter.ChunksExact U8 × sorted_vec.SortedSet Pt) =>
+        ∃ (n : Nat) (vs : Nat → sorted_vec.SortedSet Pt),
+          n ≤ iter.chunks.length ∧
+          x.1.chunks = iter.chunks.drop n ∧
+          vs 0 = v ∧ vs n = x.2 ∧
+          x.2.val.length ≤ v.val.length + n ∧
           ∀ (k : Nat), k < n →
             ∃ (p : Pt),
-              p.x.value.val =
-                (pts.val[j.val + 4 * k]!).val * 256 +
-                (pts.val[j.val + 4 * k + 1]!).val ∧
-              p.y.value.val =
-                (pts.val[j.val + 4 * k + 2]!).val * 256 +
-                (pts.val[j.val + 4 * k + 3]!).val ∧
+              p.x.value.val = 256 * ((iter.chunks[k]!).val[0]!).val +
+                ((iter.chunks[k]!).val[1]!).val ∧
+              p.y.value.val = 256 * ((iter.chunks[k]!).val[2]!).val +
+                ((iter.chunks[k]!).val[3]!).val ∧
               match (vs k).val.getLast? with
               | none => (vs (k + 1)).val = (vs k).val ++ [p]
               | some last =>
@@ -235,62 +248,76 @@ theorem loop_spec
                     ∃ (i : Nat),
                       i ≤ (vs k).val.length ∧
                       ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
-                      (i < (vs k).val.length ∧
+                       (i < (vs k).val.length ∧
                         (vs (k + 1)).val =
                           (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
-                | _ => False))
-  · rintro ⟨v', j'⟩ ⟨h_overflow', h_v_room', n, vs, h_v0, h_vn, h_jn, h_j_le, h_chain⟩
-    simp only  at h_overflow' h_v_room' h_v0 h_vn h_jn h_j_le h_chain ⊢
-    have h_body := body_spec pts v' j' (by omega) (by grind)
-    apply WP.spec_mono h_body
+                | _ => False)
+  · rintro ⟨iter', v'⟩ ⟨n, vs, h_n_le, h_drop, h_v0, h_vn, h_len, h_chain⟩
+    simp only at h_n_le h_drop h_v0 h_vn h_len h_chain ⊢
+    have h_chunks' : ∀ c ∈ iter'.chunks, c.val.length = 4 := by
+      rw [h_drop]
+      exact fun c hc => h_chunks c (List.mem_of_mem_drop hc)
+    apply WP.spec_mono
+      (body_spec iter' v' h_chunks' (by simp only [alloc.vec.Vec.length] at *; omega))
     intro cf h_cf
     match cf with
     | ControlFlow.done v_final =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_v_eq, h_not_enough⟩ := h_cf
-      subst h_v_eq
-      exact ⟨n, vs, h_v0, h_vn, by grind, by grind, by grind⟩
-    | ControlFlow.cont (v'', j'') =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_enough, h_j_eq, p, h_px, h_py, h_vpush⟩ := h_cf
-      refine ⟨⟨by grind, ?_,
-              n + 1,
-              Function.update vs (n + 1) v'',
-              ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
-      · have h_len : v''.val.length ≤ v'.val.length + 1 := by
-          split at h_vpush
-          · simp [h_vpush]
-          · split at h_vpush
-            · simp [h_vpush]
-            · simp only [h_vpush, List.length_append, List.length_dropLast, List.length_singleton]
+      obtain ⟨rfl, h_nil⟩ := h_cf
+      have hn : n = iter.chunks.length := by
+        rw [h_nil] at h_drop
+        have := congrArg List.length h_drop
+        simp only [List.length_nil, List.length_drop] at this
+        omega
+      subst hn
+      exact ⟨vs, h_v0, h_vn, h_chain⟩
+    | ControlFlow.cont (iter1, v1) =>
+      obtain ⟨c, h_cons, p, h_px, h_py, h_push⟩ := h_cf
+      rw [h_drop] at h_cons
+      have h_nlt : n < iter.chunks.length := by
+        have := congrArg List.length h_cons
+        simp only [List.length_drop, List.length_cons] at this
+        omega
+      have h_c : iter.chunks[n]! = c := by
+        rw [getElem!_pos iter.chunks n h_nlt]
+        have := congrArg (·[0]?) h_cons
+        simp only [List.getElem?_drop, Nat.add_zero, List.getElem?_cons_zero,
+          List.getElem?_eq_getElem h_nlt, Option.some.injEq] at this
+        exact this
+      have h_drop1 : iter1.chunks = iter.chunks.drop (n + 1) := by
+        rw [← List.drop_drop, h_cons]
+        rfl
+      refine ⟨⟨n + 1, Function.update vs (n + 1) v1, by omega, h_drop1, ?_, by simp, ?_, ?_⟩, ?_⟩
+      · rw [Function.update_of_ne (by omega)]
+        exact h_v0
+      · have h_len1 : v1.val.length ≤ v'.val.length + 1 := by
+          split at h_push
+          · simp [h_push]
+          · split at h_push
+            · simp [h_push]
+            · simp only [h_push, List.length_append, List.length_dropLast,
+                List.length_singleton]
               omega
-            · obtain ⟨i, hi, h | ⟨_, h⟩⟩ := h_vpush <;>
+            · obtain ⟨i, hi, h | ⟨_, h⟩⟩ := h_push <;>
                 simp only [h, List.length_append, List.length_take, List.length_drop,
                   List.length_singleton] <;> omega
-            · exact absurd h_vpush id
-        grind
-      · have h0 : (0 : Nat) ≠ n + 1 := by omega
-        simp_all
-      · simp
-      · omega
-      · grind
+            · exact absurd h_push id
+        simp only
+        omega
       · intro k hk
         by_cases hk_lt : k < n
         · obtain ⟨p', h_px', h_py', h_vpush'⟩ := h_chain k hk_lt
           refine ⟨p', h_px', h_py', ?_⟩
-          have h1 : k ≠ n + 1 := by omega
-          have h2 : k + 1 ≠ n + 1 := by omega
-          simp_all
+          rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)]
+          exact h_vpush'
         · have hk_eq : k = n := by omega
           subst hk_eq
-          refine ⟨p, by grind, by grind, ?_⟩
-          have hne : k ≠ k + 1 := by omega
-          simp only [Function.update_of_ne hne, Function.update_self, h_vn]
-          exact h_vpush
-      · omega
-  · refine ⟨by omega, by (simp only ; grind), 0, fun _ => v, rfl, rfl, by grind, by omega, ?_⟩
-    intro k hk
-    omega
+          refine ⟨p, by rw [h_c]; omega, by rw [h_c]; omega, ?_⟩
+          rw [Function.update_of_ne (by omega), Function.update_self, h_vn]
+          exact h_push
+      · simp only
+        rw [h_drop, h_cons]
+        simp
+  · exact ⟨0, fun _ => v, by omega, rfl, rfl, rfl, by simp, fun k hk => absurd hk (by omega)⟩
 
 end spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
 
@@ -305,44 +332,58 @@ or deserializes slot `i` by allocating a fresh `SortedSet`, running the inner 4-
 
 namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
 
+/-- Byte `r < 4` of the `k`-th 4-byte chunk `(l.drop (4 * k)).take 4` is `l[4 * k + r]!`. -/
+theorem chunk_getElem! (l : List U8) (k r : Nat) (hr : r < 4) :
+    ((l.drop (4 * k)).take 4)[r]! = l[4 * k + r]! := by
+  simp [List.getElem!_eq_getElem?_getD, hr, List.getElem?_drop]
+
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0.body`**:
 
-One step of the outer loop. Either terminates (iterator exhausted, `out_pts` unchanged) or
-deserializes `v[i]` via the inner 4-byte loop and stores the result into `out_pts[i]`.
+One step of the outer loop. Either terminates — because the iterator is exhausted (returning
+`Ok` of the decoder built from `out_pts`, `pts_needed` and `is_complete`) or because slot `i`
+has a length that is not a multiple of 4 (returning `Err SerializationInvalid`) — or
+deserializes `v[i]` via the inner 4-byte chunk loop and stores the result into `out_pts[i]`.
 
-The cont case provides a chain of append operations for the decoded points from
+The cont case provides a chain of push operations for the decoded points from
 `v[i]`, with big-endian 4-byte decoding of each `Pt`. -/
 @[step]
 theorem body_spec
-    (v : alloc.vec.Vec (alloc.vec.Vec U8))
+    (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8)) (b : Bool)
     (iter : core.ops.range.Range Usize)
     (out_pts : Array (sorted_vec.SortedSet Pt) 16#usize)
     (h_end_le_v : iter.end ≤ v.length)
     (h_end_le_16 : iter.end.val ≤ 16)
     (h_pts_overflow : ∀ (j : Nat), j < v.length → (v[j]!).length + 4 ≤ Usize.max) :
-    body v iter out_pts ⦃ cf =>
+    body i v b iter out_pts ⦃ cf =>
       match cf with
-      | ControlFlow.done out_pts' =>
-          out_pts' = out_pts ∧ ¬(iter.start < iter.end)
+      | ControlFlow.done r =>
+          (iter.start < iter.end →
+            (v[iter.start.val]!).length % 4 ≠ 0 ∧
+            r = core.result.Result.Err
+              encoding.polynomial.PolynomialError.SerializationInvalid) ∧
+          (¬(iter.start < iter.end) →
+            ∃ (d : PolyDecoder), r = core.result.Result.Ok d ∧
+              d.pts_needed.val = i.val ∧ d.pts = out_pts ∧ d.is_complete = b)
       | ControlFlow.cont (iter1, out_pts') =>
           iter.start < iter.end ∧
+          (v[iter.start.val]!).length % 4 = 0 ∧
           iter1.start.val = iter.start.val + 1 ∧
           iter1.end = iter.end ∧
+          (∀ (k : Nat), k ≠ iter.start →
+            out_pts'.val[k]! = out_pts.val[k]!) ∧
           ∃ (v_final : sorted_vec.SortedSet Pt) (n : Nat)
             (vs : Nat → sorted_vec.SortedSet Pt),
             out_pts'.val[iter.start.val]! = v_final ∧
-            (∀ (k : Nat), k ≠ iter.start →
-              out_pts'.val[k]! = out_pts.val[k]!) ∧
             vs n = v_final ∧
             (vs 0).val = [] ∧
-            4 * n ≤ (v[iter.start]!).length ∧
+            4 * n ≤ (v[iter.start.val]!).length ∧
             (v[iter.start.val]!).length < 4 * (n + 1) ∧
             ∀ (k : Nat), k < n →
               ∃ (p : Pt),
                 p.x.value.val =
-                  256 * ((v[iter.start.val]!)[4 * k]!) + (v[iter.start.val]!)[4 * k + 1]! ∧
+                  (v[iter.start.val]!)[4 * k]! * 256 + (v[iter.start.val]!)[4 * k + 1]! ∧
                 p.y.value.val =
-                  256 * (v[iter.start.val]!)[4 * k + 2]! + (v[iter.start.val]!)[4 * k + 3]! ∧
+                  (v[iter.start.val]!)[4 * k + 2]! * 256 + (v[iter.start.val]!)[4 * k + 3]! ∧
                 match (vs k).val.getLast? with
                 | none => (vs (k + 1)).val = (vs k).val ++ [p]
                 | some last =>
@@ -363,40 +404,74 @@ theorem body_spec
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    simp only [alloc.vec.Vec.len, UScalar.lt_equiv,
-      UScalar.ofNatCore_val_eq, not_lt, ↓existsAndEq,
-      List.getElem!_eq_getElem?_getD, ne_eq, exists_and_left, true_and]
-    have h_i_lt_v : iter.start.val < v.val.length := by grind
+    have h_i_lt_v : iter.start.val < v.val.length := by
+      simp only [alloc.vec.Vec.length] at h_end_le_v; omega
     have h_i_lt_16 : iter.start.val < 16 := by omega
     have h_pts_ov := h_pts_overflow iter.start.val h_i_lt_v
-    simp only [sorted_vec.SortedSet.with_capacity]
-    step*
-    · simp_all only [true_and]
-      grind
-    · simp_all only [true_and]
-      grind
-    · simp_all only [not_true_eq_false, reduceCtorEq,
-      false_and, implies_true, and_self, Usize.ofNatCore_val_eq,
-      zero_add, Array.set_val_eq,
-      List.set_getElem_self, Nat.not_eq, ne_eq, not_false_eq_true, lt_or_lt_iff_ne, true_or,
-      or_true, List.set_getElem?_neq, true_and]
-      refine ⟨n, vs, ?_, ?_, by grind, by grind, by grind⟩
-      · simp_all
-      · simp_all [alloc.vec.Vec.new]
+    simp only [sorted_vec.SortedSet.with_capacity, alloc.vec.Vec.len]
+    step as ⟨pts, h_pts⟩
+    have h_pts' : v[iter.start.val]! = pts := by
+      rw [h_pts, alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v.val _ h_i_lt_v]
+    step as ⟨i3, h_i3⟩
+    split
+    · simp only [WP.spec_ok]
+      refine ⟨fun _ => ⟨?_, trivial⟩, fun h => (h h_lt).elim⟩
+      rw [h_pts']
+      simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val] at *
+      scalar_tac
+    · step as ⟨i5, h_i5⟩
+      step with core.slice.Slice.chunks_exact_spec_with_content (alloc.vec.Vec.deref pts) 4#usize
+        (by decide) as ⟨iter2, h_c4, h_cn, _, h_content⟩
+      have h_mod : pts.val.length % 4 = 0 := by
+        simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, not_not] at *
+        scalar_tac
+      have h_deref : (alloc.vec.Vec.deref pts).val = pts.val := by simp [alloc.vec.Vec.deref]
+      rw [h_deref] at h_cn h_content
+      have h_pts_ov' : pts.val.length + 4 ≤ Usize.max := by
+        rw [← h_pts']; exact h_pts_ov
+      step with from_pb_loop0_loop0.loop_spec iter2 (alloc.vec.Vec.new Pt) h_c4
+        (by rw [h_cn]; simp [alloc.vec.Vec.new]; omega) as ⟨v2, vs, h_vs0, h_vsn, h_chain⟩
+      step*
+      rw [h_pts']
+      have h_len16 : out_pts.val.length = 16 := by simp
+      have h_a : a.val = out_pts.val.set iter.start.val v2 := by
+        rw [‹a = _›, ‹index_mut_back = _›]
+        simp
+      refine ⟨h_lt, h_mod, h_start1, h_end1, ?_, v2, iter2.chunks.length, vs, ?_, h_vsn,
+        by rw [h_vs0]; rfl, by rw [h_cn]; simp only [alloc.vec.Vec.length]; omega,
+        by rw [h_cn]; simp only [alloc.vec.Vec.length]; omega, ?_⟩
+      · intro k hk
+        rw [h_a, List.getElem!_eq_getElem?_getD, List.getElem!_eq_getElem?_getD,
+          List.getElem?_set_ne (Ne.symm hk)]
+      · rw [h_a, List.getElem!_eq_getElem?_getD, List.getElem?_set_self (by omega)]
+        rfl
+      · intro k hk
+        obtain ⟨p, hx, hy, hm⟩ := h_chain k hk
+        refine ⟨p, ?_, ?_, hm⟩
+        · rw [hx, h_content k hk, chunk_getElem! _ _ 0 (by omega),
+            chunk_getElem! _ _ 1 (by omega)]
+          simp only [alloc.vec.Vec.getElem!_Nat_eq, Nat.add_zero]
+          omega
+        · rw [hy, h_content k hk, chunk_getElem! _ _ 2 (by omega),
+            chunk_getElem! _ _ 3 (by omega)]
+          simp only [alloc.vec.Vec.getElem!_Nat_eq]
+          omega
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    simp [h_opt_eq, WP.spec_ok, h_lt]
+    rw [h_opt_eq]
+    step*
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.from_pb_loop0`**:
 
-Full outer loop. For every slot `j < iter.end.val`, the result array contains a sorted set
-produced by a chain of `n` decode-and-append steps consuming all complete 4-byte chunks from
-`v[j]`.
+Full outer loop. If some slot `j ∈ [iter.start, iter.end)` has a length that is not a
+multiple of 4 the result is `Err SerializationInvalid`; otherwise the result is `Ok decoder`
+where, for every slot `j < iter.end.val`, `decoder.pts[j]` is a sorted set produced by a
+chain of `n` decode-and-push steps consuming all complete 4-byte chunks from `v[j]`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 @[step]
 theorem loop_spec
     (iter : core.ops.range.Range Usize)
-    (v : alloc.vec.Vec (alloc.vec.Vec U8))
+    (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8)) (b : Bool)
     (out_pts : Array (sorted_vec.SortedSet Pt) 16#usize)
     (h_end_le_v : iter.end ≤ v.length)
     (h_end_le_16 : iter.end.val ≤ 16)
@@ -408,38 +483,11 @@ theorem loop_spec
           out_pts.val[j]! = v_final ∧
           vs n = v_final ∧
           (vs 0).val = [] ∧
-          4 * n ≤ (v.val[j]!).val.length ∧
-          (v.val[j]!).val.length < 4 * (n + 1) ∧
-          ∀ (k : Nat), k < n →
-            ∃ (p : Pt),
-              p.x.value.val = ((v[j]!)[4 * k]!) * 256 + ((v[j]!)[4 * k + 1]!) ∧
-              p.y.value.val = ((v[j]!)[4 * k + 2]!) * 256 + ((v[j]!)[4 * k + 3]!) ∧
-              match (vs k).val.getLast? with
-              | none => (vs (k + 1)).val = (vs k).val ++ [p]
-              | some last =>
-                match (Pt.Insts.CoreCmpOrd.cmp p last).match with
-                | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                | .ok Ordering.lt =>
-                    ∃ (i : Nat),
-                      i ≤ (vs k).val.length ∧
-                      ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
-                      (i < (vs k).val.length ∧
-                        (vs (k + 1)).val =
-                          (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
-                | _ => False) :
-    from_pb_loop0 iter v out_pts ⦃ (result : Array (sorted_vec.SortedSet Pt) 16#usize) =>
-      ∀ (j : Nat), j < iter.end →
-        ∃ (v_final : sorted_vec.SortedSet Pt) (n : Nat)
-          (vs : Nat → sorted_vec.SortedSet Pt),
-          result.val[j]! = v_final ∧
-          vs n = v_final ∧
-          (vs 0).val = [] ∧
           4 * n ≤ (v[j]!).length ∧
           (v[j]!).length < 4 * (n + 1) ∧
           ∀ (k : Nat), k < n →
             ∃ (p : Pt),
-              p.x.value.val = (v[j]!)[4 * k]! * 256 + (v[j]!).val[4 * k + 1]! ∧
+              p.x.value.val = (v[j]!)[4 * k]! * 256 + (v[j]!)[4 * k + 1]! ∧
               p.y.value.val = (v[j]!)[4 * k + 2]! * 256 + (v[j]!)[4 * k + 3]! ∧
               match (vs k).val.getLast? with
               | none => (vs (k + 1)).val = (vs k).val ++ [p]
@@ -454,78 +502,124 @@ theorem loop_spec
                       (i < (vs k).val.length ∧
                         (vs (k + 1)).val =
                           (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
-                | _ => False ⦄ := by
-  unfold from_pb_loop0
-  apply loop.spec_decr_nat
-    (measure := fun (p : core.ops.range.Range Usize ×
-                       Array (sorted_vec.SortedSet Pt) 16#usize) => p.1.end - p.1.start)
-    (inv := fun (p : core.ops.range.Range Usize ×
-                     Array (sorted_vec.SortedSet Pt) 16#usize) =>
-        p.1.end = iter.end ∧
-        iter.start.val ≤ p.1.start.val ∧
-        p.1.start.val ≤ p.1.end.val ∧
-        (∀ (j : Nat), j < p.1.start.val →
+                | _ => False) :
+    from_pb_loop0 iter i v b out_pts ⦃ (result : core.result.Result PolyDecoder
+        encoding.polynomial.PolynomialError) =>
+      match result with
+      | core.result.Result.Ok d =>
+        d.pts_needed.val = i.val ∧ d.is_complete = b ∧
+        (∀ (j : Nat), iter.start ≤ j → j < iter.end → (v[j]!).length % 4 = 0) ∧
+        ∀ (j : Nat), j < iter.end →
           ∃ (v_final : sorted_vec.SortedSet Pt) (n : Nat)
             (vs : Nat → sorted_vec.SortedSet Pt),
-            p.2.val[j]! = v_final ∧
+            d.pts.val[j]! = v_final ∧
             vs n = v_final ∧
             (vs 0).val = [] ∧
-            4 * n ≤ (v.val[j]!).val.length ∧
-            (v.val[j]!).val.length < 4 * (n + 1) ∧
+            4 * n ≤ (v[j]!).length ∧
+            (v[j]!).length < 4 * (n + 1) ∧
             ∀ (k : Nat), k < n →
               ∃ (p : Pt),
                 p.x.value.val = (v[j]!)[4 * k]! * 256 + (v[j]!)[4 * k + 1]! ∧
                 p.y.value.val = (v[j]!)[4 * k + 2]! * 256 + (v[j]!)[4 * k + 3]! ∧
-                              match (vs k).val.getLast? with
-              | none => (vs (k + 1)).val = (vs k).val ++ [p]
-              | some last =>
-                match (Pt.Insts.CoreCmpOrd.cmp p last).match with
-                | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
-                | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
-                | .ok Ordering.lt =>
-                    ∃ (i : Nat),
-                      i ≤ (vs k).val.length ∧
-                      ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
-                      (i < (vs k).val.length ∧
-                        (vs (k + 1)).val =
-                          (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
-                | _ => False ))
-  · rintro ⟨iter', out_pts'⟩ ⟨h_end', h_orig_le, h_start_le', h_inv'⟩
-    simp only  at h_end' h_orig_le h_start_le' h_inv' ⊢
+                match (vs k).val.getLast? with
+                | none => (vs (k + 1)).val = (vs k).val ++ [p]
+                | some last =>
+                  match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                  | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                  | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                  | .ok Ordering.lt =>
+                      ∃ (i : Nat),
+                        i ≤ (vs k).val.length ∧
+                        ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
+                        (i < (vs k).val.length ∧
+                          (vs (k + 1)).val =
+                            (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
+                  | _ => False
+      | core.result.Result.Err e =>
+        e = encoding.polynomial.PolynomialError.SerializationInvalid ∧
+        ∃ (j : Nat), iter.start ≤ j ∧ j < iter.end ∧ (v[j]!).length % 4 ≠ 0 ⦄ := by
+  unfold from_pb_loop0
+  apply loop.spec_decr_nat
+    (measure := fun (x : core.ops.range.Range Usize ×
+                       Array (sorted_vec.SortedSet Pt) 16#usize) => x.1.end - x.1.start)
+    (inv := fun (x : core.ops.range.Range Usize ×
+                     Array (sorted_vec.SortedSet Pt) 16#usize) =>
+        x.1.end = iter.end ∧
+        iter.start.val ≤ x.1.start.val ∧
+        x.1.start.val ≤ x.1.end.val ∧
+        (∀ (j : Nat), iter.start.val ≤ j → j < x.1.start.val → (v[j]!).length % 4 = 0) ∧
+        (∀ (j : Nat), j < x.1.start.val →
+            ∃ (v_final : sorted_vec.SortedSet Pt) (n : Nat)
+              (vs : Nat → sorted_vec.SortedSet Pt),
+              x.2.val[j]! = v_final ∧
+              vs n = v_final ∧
+              (vs 0).val = [] ∧
+              4 * n ≤ (v[j]!).length ∧
+              (v[j]!).length < 4 * (n + 1) ∧
+              ∀ (k : Nat), k < n →
+                ∃ (p : Pt),
+                  p.x.value.val = (v[j]!)[4 * k]! * 256 + (v[j]!)[4 * k + 1]! ∧
+                  p.y.value.val = (v[j]!)[4 * k + 2]! * 256 + (v[j]!)[4 * k + 3]! ∧
+                  match (vs k).val.getLast? with
+                  | none => (vs (k + 1)).val = (vs k).val ++ [p]
+                  | some last =>
+                    match (Pt.Insts.CoreCmpOrd.cmp p last).match with
+                    | .ok Ordering.gt => (vs (k + 1)).val = (vs k).val ++ [p]
+                    | .ok Ordering.eq => (vs (k + 1)).val = (vs k).val.dropLast ++ [p]
+                    | .ok Ordering.lt =>
+                        ∃ (i : Nat),
+                          i ≤ (vs k).val.length ∧
+                          ((vs (k + 1)).val = (vs k).val.take i ++ [p] ++ (vs k).val.drop i ∨
+                          (i < (vs k).val.length ∧
+                            (vs (k + 1)).val =
+                              (vs k).val.take i ++ [p] ++ (vs k).val.drop (i + 1)))
+                    | _ => False))
+  · rintro ⟨iter', out_pts'⟩ ⟨h_end', h_orig_le, h_start_le', h_mod', h_inv'⟩
+    simp only at h_end' h_orig_le h_start_le' h_mod' h_inv' ⊢
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
-    have h_end_le_v' : iter'.end.val ≤ v.val.length := by grind
-    have h_end_le_16' : iter'.end.val ≤ 16 := by omega
-    have h_body := body_spec v iter' out_pts' h_end_le_v' h_end_le_16' h_pts_overflow
+    have h_body := body_spec i v b iter' out_pts' (by rw [h_end']; exact h_end_le_v)
+      (by omega) h_pts_overflow
     apply WP.spec_mono h_body
     intro cf h_cf
     match cf with
-    | ControlFlow.done out_pts'' =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_out_eq, h_not_lt⟩ := h_cf
-      subst h_out_eq
-      intro j hj
-      exact h_inv' j (by grind)
+    | ControlFlow.done r =>
+      simp only at h_cf ⊢
+      obtain ⟨h_err, h_ok⟩ := h_cf
+      by_cases h_lt : iter'.start < iter'.end
+      · obtain ⟨h_bad, rfl⟩ := h_err h_lt
+        refine ⟨rfl, iter'.start.val, h_orig_le, ?_, h_bad⟩
+        have : iter'.start.val < iter'.end.val := h_lt
+        omega
+      · obtain ⟨d, rfl, h_pn, h_pts, h_ic⟩ := h_ok h_lt
+        have h_ge : iter'.end.val ≤ iter'.start.val := by
+          have : ¬ iter'.start.val < iter'.end.val := h_lt
+          omega
+        refine ⟨h_pn, h_ic, fun j hj1 hj2 => h_mod' j hj1 (by omega), fun j hj => ?_⟩
+        rw [h_pts]
+        exact h_inv' j (by omega)
     | ControlFlow.cont (iter'', out_pts'') =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_lt, h_start1, h_end1, v_final, n, vs,
-              h_slot, h_other, h_vs_n, h_vs0, h_n_lo, h_n_hi, h_chain⟩ := h_cf
+      simp only at h_cf ⊢
+      obtain ⟨h_lt, h_mod_s, h_start1, h_end1, h_other, v_final, n, vs,
+              h_slot, h_vs_n, h_vs0, h_n_lo, h_n_hi, h_chain⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
       have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
-      refine ⟨⟨by rw [h_end1]; exact h_end',
-              by omega,
-              by grind,
-              fun j hj => ?_⟩,
-              by grind⟩
-      by_cases hj_lt : j < iter'.start.val
-      · obtain ⟨vf, nn, vss, h_slot', h_vs_nn, h_vss0, h_nn_lo, h_nn_hi, h_chain'⟩ :=
-          h_inv' j hj_lt
-        refine ⟨vf, nn, vss, ?_, h_vs_nn, h_vss0, h_nn_lo, h_nn_hi, h_chain'⟩
-        have hj_ne : j ≠ iter'.start.val := by omega
-        rw [← h_slot']
-        grind
-      · have hj_eq : j = iter'.start.val := by omega
-        subst hj_eq
-        exact ⟨v_final, n, vs, h_slot, h_vs_n, h_vs0, h_n_lo, h_n_hi, by grind⟩
-  · exact ⟨rfl, le_refl _, h_start_le, h_pre⟩
+      refine ⟨⟨by rw [h_end1]; exact h_end', by omega, by omega, ?_, fun j hj => ?_⟩,
+              by omega⟩
+      · intro j hj1 hj2
+        by_cases hj : j < iter'.start.val
+        · exact h_mod' j hj1 hj
+        · have : j = iter'.start.val := by omega
+          subst this
+          exact h_mod_s
+      · by_cases hj_lt : j < iter'.start.val
+        · obtain ⟨vf, nn, vss, h_slot', h_rest⟩ := h_inv' j hj_lt
+          refine ⟨vf, nn, vss, ?_, h_rest⟩
+          rw [h_other j (by omega)]
+          exact h_slot'
+        · have hj_eq : j = iter'.start.val := by omega
+          subst hj_eq
+          exact ⟨v_final, n, vs, h_slot, h_vs_n, h_vs0, h_n_lo, h_n_hi, h_chain⟩
+  · exact ⟨rfl, le_refl _, h_start_le, fun j hj1 hj2 => absurd hj2 (by simp only; omega), h_pre⟩
 
 end spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
 
@@ -599,20 +693,30 @@ theorem from_pb_spec
                     | _ => False
         | core.result.Result.Err _ => False) ⦄ := by
   unfold from_pb
-  simp only [alloc.vec.Vec.len, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, Usize.ofNatCore_val_eq,
-    UScalar.ofNatCore_val_eq, alloc.vec.Vec.index_slice_index, sorted_vec.SortedSet.new,
-    ite_not, List.getElem!_eq_getElem?_getD, forall_exists_index, and_imp, ↓existsAndEq,
-    alloc.vec.Vec.length, alloc.vec.Vec.getElem!_Nat_eq, true_and]
-  step*
-  · simp_all only [alloc.vec.Vec.length, alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos,
-    Usize.ofNatCore_val_eq, ReduceNat.reduceNatEq, ↓existsAndEq, List.getElem!_eq_getElem?_getD,
-    true_and, not_true_eq_false, reduceCtorEq, imp_self, getElem?_pos, Option.getD_some, imp_false,
-    Decidable.not_not, UScalarTy.U32_numBits_eq, UScalarTy.Usize_numBits_eq,
-    System.Platform.le_numBits, UScalar.cast_val_mod_pow_greater_numBits_eq, implies_true, and_true]
-    refine ⟨fun x hx => ?_, fun _ => by simp⟩
-    interval_cases x <;> assumption
-  all_goals
-    refine ⟨fun _ => trivial, fun _ _ _ => trivial, fun h => ?_⟩
-    simp_all
+  simp only [alloc.vec.Vec.len, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val,
+    Usize.ofNatCore_val_eq, UScalar.ofNatCore_val_eq]
+  split
+  · simp only [WP.spec_ok]
+    exact ⟨fun _ => trivial, fun h => absurd h ‹_›, fun h => absurd h ‹_›⟩
+  · have h16 : pb.pts.val.length = 16 := by simpa using ‹¬¬_›
+    step as ⟨out_pts, h_out⟩
+    case l => exact List.replicate 16 (alloc.vec.Vec.new Pt)
+    case hl =>
+      apply core.array.from_fn_loop_const
+      · intro g i
+        simp [from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
+          sorted_vec.SortedSet.new]
+      · scalar_tac
+    case hlen => simp
+    step with from_pb_loop0.loop_spec { start := 0#usize, «end» := 16#usize } pb.pts_needed
+      pb.pts pb.is_complete out_pts (by simp [h16]) (by simp) (by simp) h_pts_overflow
+      (fun j hj => absurd hj (by simp)) as ⟨r, h_r⟩
+    simp only [alloc.vec.Vec.getElem!_Nat_eq] at h_r ⊢
+    rcases r with d | e
+    · obtain ⟨h_pn, h_ic, h_mod, h_ch⟩ := h_r
+      exact ⟨fun h => absurd h16 h, fun _ j hj hbad => absurd (h_mod j (Nat.zero_le _) hj) hbad,
+        fun _ _ => ⟨h_pn, h_ic, by simp, h_ch⟩⟩
+    · obtain ⟨rfl, j, _, hj, hbad⟩ := h_r
+      exact ⟨fun _ => rfl, fun _ _ _ _ => rfl, fun _ hall => absurd (hall j hj) hbad⟩
 
 end spqr.encoding.polynomial.PolyDecoder

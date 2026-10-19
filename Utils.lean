@@ -1,4 +1,6 @@
-import Utils.Config
-import Utils.Lib.Analysis
-import Utils.Lib.Translation
-import Utils.Status
+module  -- shake: keep-all --deprecated_module: ignore
+
+public import Utils.Config
+public import Utils.Lib.Analysis
+public import Utils.Lib.Translation
+public import Utils.Status

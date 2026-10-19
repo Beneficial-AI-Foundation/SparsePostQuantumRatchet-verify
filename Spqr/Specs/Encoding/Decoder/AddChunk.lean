@@ -3,8 +3,23 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Aeneas.GF16New
+import Spqr.Specs.Aeneas.VecExtendFromSlice
+import Spqr.Specs.Encoding.EncodingError.From
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
+import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
+import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 
 /-! # Spec theorems for `spqr::encoding::{Decoder for Option<T>}::add_chunk`
 
@@ -18,6 +33,8 @@ Two theorems:
   • `add_chunk_spec_poly_decoder` — instantiates the lift for `T = PolyDecoder`.
 
 **Source**: spqr/src/encoding.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr encoding.polynomial
 
