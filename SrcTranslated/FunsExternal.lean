@@ -819,15 +819,110 @@ theorem Slice.Insts.CoreCmpOrd.cmp_eq
     Slice.Insts.CoreCmpOrd.cmp cmpOrdInst s1 s2 =
       Slice.lexCmpAux cmpOrdInst s1.val s2.val := rfl
 
+/-- Implementation helper for `core.slice.Slice.binary_search`.
+
+Scans the (sorted) list from index `i`, comparing each element `a` with the
+target `x` via `cmp a x`:
+* `.lt` → keep scanning,
+* `.eq` → return `Ok i` (a matching element),
+* `.gt` → return `Err i` (the insertion point).
+On a sorted list this yields exactly the `Ok`/`Err` semantics of Rust's
+`binary_search` (returning the first matching index). -/
+def Slice.binarySearchAux {T : Type} (cmpOrdInst : core.cmp.Ord T) :
+    List T → T → Nat → Result (core.result.Result Nat Nat)
+  | [], _, i => ok (.Err i)
+  | a :: rest, x, i => do
+    let o ← cmpOrdInst.cmp a x
+    match o with
+    | .lt => Slice.binarySearchAux cmpOrdInst rest x (i + 1)
+    | .eq => ok (.Ok i)
+    | .gt => ok (.Err i)
+
 /-- [core::slice::{[T]}::binary_search]:
     Source: '/rustc/library/core/src/slice/mod.rs', lines 2934:4-2936:23
     Name pattern: [core::slice::{[@T]}::binary_search]
     On a match Rust returns the index of *some* equal element
     (which one is unspecified), and `Err` carries the insertion point. -/
 @[rust_fun "core::slice::{[@T]}::binary_search"]
-noncomputable opaque core.slice.Slice.binary_search
+def core.slice.Slice.binary_search
   {T : Type} (cmpOrdInst : core.cmp.Ord T) :
-  Slice T → T → Result (core.result.Result Std.Usize Std.Usize)
+  Slice T → T → Result (core.result.Result Std.Usize Std.Usize) :=
+  fun s x => do
+    let r ← Slice.binarySearchAux cmpOrdInst s.val x 0
+    match r with
+    | .Ok i => do
+      let i' ← UScalar.tryMk .Usize i
+      ok (.Ok i')
+    | .Err i => do
+      let i' ← UScalar.tryMk .Usize i
+      ok (.Err i')
+
+/-- `Slice.binarySearchAux cmpOrdInst list x i` always succeeds when `cmp` always
+succeeds, and the returned index `j` (offset by the start index `i`) satisfies
+`j < i + list.length` on a match and `j ≤ i + list.length` on a miss. -/
+theorem Slice.binarySearchAux_spec {T : Type} (cmpOrdInst : core.cmp.Ord T)
+    (h_cmp : ∀ a b, ∃ o, cmpOrdInst.cmp a b = ok o)
+    (list : List T) (x : T) (i : Nat) :
+    ∃ r, Slice.binarySearchAux cmpOrdInst list x i = ok r ∧
+      match r with
+      | .Ok j => j < i + list.length
+      | .Err j => j ≤ i + list.length := by
+  induction list generalizing i with
+  | nil => exact ⟨.Err i, rfl, by simp⟩
+  | cons a rest ih =>
+    obtain ⟨o, ho⟩ := h_cmp a x
+    simp only [Slice.binarySearchAux, ho, bind_ok]
+    cases o with
+    | lt =>
+      obtain ⟨r, hr, hr'⟩ := ih (i + 1)
+      refine ⟨r, hr, ?_⟩
+      cases r <;> simp_all <;> omega
+    | eq => exact ⟨.Ok i, rfl, by simp⟩
+    | gt => exact ⟨.Err i, rfl, by simp⟩
+
+/-- **Spec theorem for `[T]::binary_search`**: provided the `Ord` instance's `cmp`
+never fails, the search succeeds and returns either `Ok i` with `i < s.length`
+(an index of a matching element) or `Err i` with `i ≤ s.length` (the insertion
+point). -/
+@[step]
+theorem core.slice.Slice.binary_search_spec {T : Type} (cmpOrdInst : core.cmp.Ord T)
+    (s : Slice T) (x : T)
+    (h_cmp : ∀ a b, ∃ o, cmpOrdInst.cmp a b = ok o) :
+    core.slice.Slice.binary_search cmpOrdInst s x ⦃ (r : core.result.Result Std.Usize Std.Usize) =>
+      match r with
+        | .Ok i => i.val < s.length
+        | .Err i => i.val ≤ s.length ⦄ := by
+  unfold core.slice.Slice.binary_search
+  obtain ⟨r, hr, hr'⟩ := Slice.binarySearchAux_spec cmpOrdInst h_cmp s.val x 0
+  rw [hr]
+  have hs := s.length_ineq
+  cases r with
+  | Ok j =>
+    simp only [bind_ok, Nat.zero_add] at hr' ⊢
+    have := UScalar.tryMk_eq .Usize j
+    cases hm : (UScalar.tryMk .Usize j).match with
+    | ok y =>
+      rw [Result.match.isOk] at hm
+      rw [hm]
+      simp only [hm, Result.match.ok] at this
+      simp only [bind_ok, WP.spec_ok, this.1, Slice.length, hr']
+    | vis e k =>
+      rw [hm] at this
+      cases e; simp only [UScalar.inBounds] at this; scalar_tac
+    | div => rw [hm] at this; exact this.elim
+  | Err j =>
+    simp only [bind_ok, Nat.zero_add] at hr' ⊢
+    have := UScalar.tryMk_eq .Usize j
+    cases hm : (UScalar.tryMk .Usize j).match with
+    | ok y =>
+      rw [Result.match.isOk] at hm
+      rw [hm]
+      simp only [hm, Result.match.ok] at this
+      simp only [bind_ok, WP.spec_ok, this.1, Slice.length, hr']
+    | vis e k =>
+      rw [hm] at this
+      cases e; simp only [UScalar.inBounds] at this; scalar_tac
+    | div => rw [hm] at this; exact this.elim
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::index_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 660:4-660:51

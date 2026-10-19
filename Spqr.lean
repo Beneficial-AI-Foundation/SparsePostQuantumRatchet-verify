@@ -184,6 +184,10 @@ public import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallMut
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallOnce
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedMessage
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
