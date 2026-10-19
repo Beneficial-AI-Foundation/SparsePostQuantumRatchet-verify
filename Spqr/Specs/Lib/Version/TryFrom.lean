@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
+import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 /-! # Spec theorem for `spqr::{impl TryFrom<u8, String> for Version}::try_from`
 
 Converts `u8` to `Version`: `0 → V0`, `1 → V1`, else
@@ -50,8 +51,7 @@ theorem try_from_spec (value : U8) :
   · rename_i h0 h1
     have hv0 : value.val ≠ 0 := fun h => h0 (UScalar.eq_of_val_eq h)
     have hv1 : value.val ≠ 1 := fun h => h1 (UScalar.eq_of_val_eq h)
-    simp only [core.fmt.rt.Argument.new_display, core.fmt.Arguments.new, core.hint.must_use,
-      bind_ok]
+    simp only [core.hint.must_use, bind_ok]
     step*
     simp [hv0, hv1]
 

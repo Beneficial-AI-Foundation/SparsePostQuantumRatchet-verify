@@ -39,9 +39,9 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.HeaderReceived) :
       result = FunctionalModels.fromPb pb ⦄ := by
   unfold from_pb FunctionalModels.fromPb
   by_cases hl : pb.hdr.length = 64
-  · rw [if_pos (by scalar_tac : alloc.vec.Vec.len pb.hdr = 64#usize), hl]
+  · rw [ite_eq_left (by scalar_tac : alloc.vec.Vec.len pb.hdr = 64#usize), hl]
     rcases pb with ⟨_, _ | _, _⟩ <;> step* <;> simp_all
-  · rw [if_neg (by scalar_tac : ¬ alloc.vec.Vec.len pb.hdr = 64#usize)]
+  · rw [ite_eq_right (by scalar_tac : ¬ alloc.vec.Vec.len pb.hdr = 64#usize)]
     step*
     simp_all
 

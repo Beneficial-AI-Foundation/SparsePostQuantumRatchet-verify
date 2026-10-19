@@ -7,7 +7,7 @@ module
 
 public import Spqr.Math.Poly.Basic.Defs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 
@@ -66,7 +66,7 @@ lemma countNonSkip_skip (pi_x : GF16) (pts : List Pt) (start : Nat)
     (heq : pi_x.value = pts[start].x.value) :
     countNonSkip pi_x pts start = countNonSkip pi_x pts (start + 1) := by
   conv_lhs => unfold countNonSkip
-  rw [dif_pos h, if_pos heq]
+  rw [dite_eq_left h, ite_eq_left heq]
   simp
 
 lemma countNonSkip_accum (pi_x : GF16) (pts : List Pt) (start : Nat)
@@ -74,7 +74,7 @@ lemma countNonSkip_accum (pi_x : GF16) (pts : List Pt) (start : Nat)
     (hne : pi_x.value ≠ pts[start].x.value) :
     countNonSkip pi_x pts start = 1 + countNonSkip pi_x pts (start + 1) := by
   conv_lhs => unfold countNonSkip
-  rw [dif_pos h, if_neg hne]
+  rw [dite_eq_left h, ite_eq_right hne]
 
 lemma countNonSkip_le_length_sub (pi_x : GF16) (pts : List Pt) (start : Nat) :
     countNonSkip pi_x pts start ≤ pts.length - start := by

@@ -79,7 +79,7 @@ theorem Message.deserialize_spec
   step*
   -- The `is_empty` guard: turn `¬isEmpty` into `0 < length`.
   have hpos : 0 < from1.length := by
-    have : ¬from1.length = 0 := by rw [← ‹(b = true) = (from1.length = 0)›]; assumption
+    have : ¬from1.length = 0 := by rwa [← ‹(b = true) = (from1.length = 0)›]
     omega
   have h0 : (from1.val[0]!).val = i.val := by
     rw [getElem!_pos from1.val 0 (by scalar_tac), ‹i = _›]

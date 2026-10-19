@@ -11,7 +11,7 @@ import Spqr.Specs.Encoding.Gf.GF16.AddAssign
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
@@ -118,18 +118,18 @@ lemma poly_update_in_range
   have h_len' : self'.coefficients.val.length = self.coefficients.val.length := h_len_eq
   have h_lt' : i < self.coefficients.val.length := h_lt
   by_cases hm_lt : m < self.coefficients.val.length
-  · rw [dif_pos (show m < self'.coefficients.val.length by omega), dif_pos hm_lt]
+  · rw [dite_eq_left (show m < self'.coefficients.val.length by omega), dite_eq_left hm_lt]
     by_cases hm_eq : m = i
     · subst hm_eq
-      rw [if_pos rfl, mul_one]
+      rw [ite_eq_left rfl, mul_one]
       exact h_upd (by change m < self'.coefficients.val.length; omega)
-    · rw [if_neg hm_eq, mul_zero, add_zero]
+    · rw [ite_eq_right hm_eq, mul_zero, add_zero]
       have h_eq := h_other m hm_eq
       rw [alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos _ m (by omega),
         getElem!_pos _ m hm_lt] at h_eq
       rw [List.get_eq_getElem, List.get_eq_getElem, h_eq]
-  · rw [dif_neg (show ¬m < self'.coefficients.val.length by omega), dif_neg hm_lt,
-      if_neg (show m ≠ i by omega), mul_zero, add_zero]
+  · rw [dite_eq_right (show ¬m < self'.coefficients.val.length by omega), dite_eq_right hm_lt,
+      ite_eq_right (show m ≠ i by omega), mul_zero, add_zero]
 
 lemma poly_update_extension
     (self self' : Poly) (v : GF16)
@@ -169,7 +169,7 @@ lemma enumerate_sliceiter_next_some
     IteratorEnumerate.next,
     IteratorSliceIter.next]
   have h_lt' : iter.iter.i < (↑iter.iter.slice.len : Nat) := by scalar_tac
-  rw [dif_pos h_lt']
+  rw [dite_eq_left h_lt']
   have h_add_bound : iter.count.val + 1 ≤ Usize.max := by
     rw [h_count]
     omega

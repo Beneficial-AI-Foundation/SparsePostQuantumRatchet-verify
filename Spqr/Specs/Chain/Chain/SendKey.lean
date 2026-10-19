@@ -399,7 +399,7 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
       split
       next h_eq_ep =>
         have h_ei : sendKeyEi self epoch = idx.val := by
-          simp only [sendKeyEi, if_pos h_eq_ep, h_idx']
+          simp only [sendKeyEi, ite_eq_left h_eq_ep, h_idx']
         step as ⟨ce', index_mut_back, h_ce'⟩
         rw [h_ce] at h_ce'
         obtain ⟨h_ce_eq, h_back_fn⟩ := h_ce'
@@ -423,7 +423,7 @@ theorem send_key_spec (self : chain.Chain) (epoch : U64)
         · intro h1 h2; exact (sendKey_not_error_of_ge_le h_le h_back h1 h2).elim
       next h_ne =>
         have h_ei : sendKeyEi self epoch = min idx.val 1 := by
-          rw [sendKeyEi, if_neg h_ne, h_idx', chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH_spec]
+          rw [sendKeyEi, ite_eq_right h_ne, h_idx', chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH_spec]
           rfl
         step with send_key_loop0.send_key_loop0_spec self.links idx h_phys_lt (by omega)
           as ⟨vd, ei, h_loop0⟩

@@ -64,9 +64,8 @@ theorem new_with_poly_count_spec (len_bytes _polys : Std.Usize) :
     apply core.array.from_fn_loop_replicate_default
     · intro i
       open PolyDecoder.new_with_poly_count.closure.Insts in
-      simp [CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
-        sorted_vec.SortedSet.new]
-      rfl
+      simp only [CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut, sorted_vec.SortedSet.new]
+      exact (bind_ok _ _).trans rfl
     · scalar_tac
   case hlen => simp
   · split
