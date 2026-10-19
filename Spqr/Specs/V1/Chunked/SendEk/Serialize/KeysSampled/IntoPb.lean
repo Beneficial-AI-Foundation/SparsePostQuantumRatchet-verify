@@ -9,7 +9,6 @@ public import SrcTranslated.Funs
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::into_pb`

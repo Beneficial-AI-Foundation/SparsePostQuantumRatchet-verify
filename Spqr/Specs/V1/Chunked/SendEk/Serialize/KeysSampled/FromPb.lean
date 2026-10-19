@@ -6,10 +6,9 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::from_pb`
