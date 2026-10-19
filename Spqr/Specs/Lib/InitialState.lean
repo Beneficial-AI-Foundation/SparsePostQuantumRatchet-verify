@@ -58,35 +58,60 @@ theorem initial_state_spec_v0 (params : Params)
   rw [h_version]
   step*
 
+/-- Predicate: the V1 inner state is direction-appropriate.
+
+- **A→B** direction ⟹ inner state is `KeysUnsampled` (waiting to sample keys).
+- **B→A** direction ⟹ inner state is `NoHeaderReceived` (waiting for the first header). -/
+def V1InnerStateMatchesDirection
+    (dir : proto.pq_ratchet.Direction)
+    (vs : proto.pq_ratchet.V1State) : Prop :=
+  (dir = .A2B →
+    ∃ ku, vs.inner_state =
+      some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku)) ∧
+  (dir = .B2A →
+    ∃ nhr, vs.inner_state =
+      some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr))
+
+/-- Predicate: version-negotiation metadata matches the input parameters.
+
+Checks that:
+1. The auth key is cloned byte-for-byte from `params.auth_key`.
+2. The direction is encoded as protobuf `i32` (`A2B ↦ 0`, `B2A ↦ 1`).
+3. The minimum version is encoded as protobuf `i32` (`V0 ↦ 0`, `V1 ↦ 1`).
+4. Chain parameters are present (not `none`). -/
+def VersionNegotiationMatchesParams
+    (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
+    (params : Params) : Prop :=
+  vn.auth_key.val = params.auth_key.val ∧
+  vn.direction = (match params.direction with
+    | .A2B => 0#iscalar | .B2A => 1#iscalar) ∧
+  vn.min_version = (match params.min_version with
+    | .V0 => 0#iscalar | .V1 => 1#iscalar) ∧
+  vn.chain_params ≠ none
+
+/-- Predicate: a `PqRatchetState` is a well-formed V1 initial state for the given `params`.
+
+A well-formed V1 initial state has:
+1. **No chain** — `chain = none` (fresh session, no messages exchanged yet).
+2. **V1 inner state** — wraps a `V1State` whose sub-state is direction-appropriate
+   (see `V1InnerStateMatchesDirection`).
+3. **Version negotiation** — carries the auth key, direction, min version, and chain
+   params faithfully transcribed from `params` (see `VersionNegotiationMatchesParams`). -/
+def IsWellFormedV1InitialState
+    (st : proto.pq_ratchet.PqRatchetState)
+    (params : Params) : Prop :=
+  st.chain = none ∧
+  (∃ vs, st.inner = some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs) ∧
+    V1InnerStateMatchesDirection params.direction vs) ∧
+  (∃ vn, st.version_negotiation = some vn ∧
+    VersionNegotiationMatchesParams vn params)
+
 /-- **Spec theorem for `spqr.initial_state`** (V1 case):
 
-• When `params.version = V1`, the function clones `params.auth_key`, converts
-  `params.direction` and `params.min_version` to protobuf `i32` values, serialises
-  `params.chain_params` via `ChainParams.into_pb`, initialises the inner state via
-  `init_inner`, assembles a `PqRatchetState` protobuf message, and encodes it with
-  `encode_state_pb`.
-• Returns `Ok bytes` where `bytes` is a valid protobuf encoding that decodes back to
-  the assembled `PqRatchetState`.
-• Requires `auth_key.length + 32 ≤ Usize.max` (needed by `init_inner`) and
-  `pk1_len = ok 64` (needed by the B2A branch for ML-KEM-768 header size).
-• The function always succeeds (no panic) for valid V1 inputs.
-
-The result satisfies the strong encoding postcondition:
-
-  `∃ v, result = .Ok v ∧ ∃ st, decodesTo v st ∧
-    st.chain = none ∧
-    (∃ vs, st.inner = some (Inner.V1 vs)) ∧
-    (∃ vn, st.version_negotiation = some vn ∧
-      vn.auth_key.val = params.auth_key.val ∧
-      vn.chain_params ≠ none)`
-
-where `decodesTo` witnesses that the returned bytes can be decoded back to the ratchet state
-that was assembled and encoded, and the additional conjuncts assert that:
-
-1. `st.chain` is `none` (no chain state at initialisation),
-2. `st.inner` wraps a `V1` inner state (established by `init_inner`),
-3. `st.version_negotiation` is `some` and carries the cloned authentication key
-   (byte-equal to `params.auth_key`) and a non-`none` chain_params.
+• When `params.version = V1`, the function always succeeds and returns `Ok bytes`
+  where `bytes` is a valid protobuf encoding of a `PqRatchetState` that is a
+  well-formed V1 initial state for the given `params`.
+• Requires `auth_key.length + 32 ≤ Usize.max` and `pk1_len = ok 64`.
 
 **Source**: spqr/src/lib.rs (lines 219:0-242:1) -/
 @[step]
@@ -97,20 +122,19 @@ theorem initial_state_spec_v1 (params : Params)
     initial_state params ⦃ (result : core.result.Result (alloc.vec.Vec U8) Error) =>
       ∃ v : alloc.vec.Vec U8, result = .Ok v ∧
         ∃ st : proto.pq_ratchet.PqRatchetState, decodesTo v st ∧
-          st.chain = none ∧
-          (∃ vs, st.inner = some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs)) ∧
-          (∃ vn, st.version_negotiation = some vn ∧
-            vn.auth_key.val = params.auth_key.val ∧
-            vn.chain_params ≠ none) ⦄ := by
+          IsWellFormedV1InitialState st params ⦄ := by
+  unfold IsWellFormedV1InitialState VersionNegotiationMatchesParams V1InnerStateMatchesDirection
   unfold initial_state
   rw [h_version]
   step*
   exact ⟨v1, rfl, _,
     v1_post,
     rfl,
-    ⟨vs, o_post ▸ rfl⟩,
+    ⟨vs, o_post ▸ rfl, o_post1, o_post2⟩,
     ⟨⟨v, i, i1, some cp⟩, rfl,
       by simp only [alloc.vec.Vec.val] at v_post ⊢; exact congrArg _ v_post.symm,
+      i_post ▸ rfl,
+      i1_post ▸ rfl,
       by simp⟩⟩
 
 end spqr
