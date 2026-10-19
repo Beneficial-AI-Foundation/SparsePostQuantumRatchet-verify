@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.Result
 
 /-! # Spec theorem for `PolyDecoder::new_with_poly_count` closure `call_mut`
 
@@ -37,8 +38,7 @@ theorem call_mut_spec
       result.1 = alloc.vec.Vec.new Pt ∧
       result.2 = c ⦄ := by
   unfold call_mut sorted_vec.SortedSet.new
-  refine WP.spec_bind (Pₘ := fun ss => ss = alloc.vec.Vec.new Pt) ((WP.spec_ok _).mpr rfl) ?_
-  rintro ss rfl
+  apply WP.spec_bind_ok
   exact (WP.spec_ok _).mpr ⟨rfl, rfl⟩
 
 end Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt

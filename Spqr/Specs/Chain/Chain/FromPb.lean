@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.Result
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
 public import Spqr.Specs.Chain.Chain.FunctionalModels
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
@@ -85,15 +86,7 @@ private theorem into_iter_next_spec {T : Type} (it : alloc.vec.into_iter.IntoIte
       | [] => o = none ∧ it' = it
       | hd :: tl => o = some hd ∧ it'.val = tl ⦄ := by
   unfold alloc.vec.into_iter.IteratorIntoIter.next
-  split
-  next h =>
-    refine (WP.spec_ok _).mpr ?_
-    simp only [h]
-    exact ⟨rfl, rfl⟩
-  next hd tl h =>
-    refine (WP.spec_ok _).mpr ?_
-    simp only [h]
-    exact ⟨rfl, by simp⟩
+  split <;> refine (WP.spec_ok _).mpr ?_ <;> simp only [*] <;> exact ⟨rfl, by simp⟩
 
 /-- **Spec theorem for `spqr.chain.Chain.from_pb_loop.body`**. -/
 @[step]
@@ -217,9 +210,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.Chain) :
   · simp only [_root_.core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
       bind_ok, alloc.collections.vec_deque.VecDequeTGlobal.new,
       alloc.vec.IntoIteratorVec.into_iter]
-    -- `IntoIter T` is a plain `def` for `Vec T`, so `bind_ok` cannot fire on `ok pb.links`
-    refine WP.spec_bind (Pₘ := fun it => it = pb.links) ((WP.spec_ok _).mpr rfl) ?_
-    rintro _ rfl
+    apply WP.spec_bind_ok
     apply WP.spec_bind (from_pb_loop_spec pb.links _ (by simp) (by simp))
     rintro ⟨links1, err⟩ hpost
     rcases ht : FunctionalModels.traverseResult FunctionalModels.epochFromPb pb.links.val with

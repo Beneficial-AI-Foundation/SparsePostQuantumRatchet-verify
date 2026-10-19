@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.Poly.ModByMonic
+import Spqr.Auxiliary.Aeneas.Result
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceChunksExact
 public import Spqr.Math.List
@@ -420,9 +421,7 @@ theorem body_spec
       simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val] at *
       scalar_tac
     · step as ⟨i5, h_i5⟩
-      -- `SortedSet T` is a plain `def` for `Vec T`, so `bind_ok` cannot fire on this `ok`
-      refine WP.spec_bind (Pₘ := fun v1 => v1 = alloc.vec.Vec.new Pt) ((WP.spec_ok _).mpr rfl) ?_
-      rintro _ rfl
+      apply WP.spec_bind_ok
       step with core.slice.Slice.chunks_exact_spec_with_content (alloc.vec.Vec.deref pts) 4#usize
         (by decide) as ⟨iter2, h_c4, h_cn, _, h_content⟩
       have h_mod : pts.val.length % 4 = 0 := by
