@@ -16,7 +16,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
@@ -420,6 +420,9 @@ theorem body_spec
       simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val] at *
       scalar_tac
     · step as ⟨i5, h_i5⟩
+      -- `SortedSet T` is a plain `def` for `Vec T`, so `bind_ok` cannot fire on this `ok`
+      refine WP.spec_bind (Pₘ := fun v1 => v1 = alloc.vec.Vec.new Pt) ((WP.spec_ok _).mpr rfl) ?_
+      rintro _ rfl
       step with core.slice.Slice.chunks_exact_spec_with_content (alloc.vec.Vec.deref pts) 4#usize
         (by decide) as ⟨iter2, h_c4, h_cn, _, h_content⟩
       have h_mod : pts.val.length % 4 = 0 := by
@@ -704,10 +707,11 @@ theorem from_pb_spec
     case hl =>
       apply core.array.from_fn_loop_const
       · intro g i
-        simp [from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
+        simp only [from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
           sorted_vec.SortedSet.new]
+        exact bind_ok _ _
       · scalar_tac
-    case hlen => simp
+    case hlen => rfl
     step with from_pb_loop0.loop_spec { start := 0#usize, «end» := 16#usize } pb.pts_needed
       pb.pts pb.is_complete out_pts (by simp [h16]) (by simp) (by simp) h_pts_overflow
       (fun j hj => absurd hj (by simp)) as ⟨r, h_r⟩

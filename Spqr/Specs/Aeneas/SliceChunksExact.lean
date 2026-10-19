@@ -47,7 +47,7 @@ theorem List.toChunksExact_chunks_length_eq
     have h_drop : (l.drop n).length = l.length - n := List.length_drop
     rw [h_drop] at ih
     have hdiv : l.length / n = (l.length - n) / n + 1 := by
-      rw [Nat.div_eq l.length n]
+      rw [Nat.div_eq_ite l.length n]
       simp [hn, h]
     simp only [List.length_cons]
     omega
@@ -104,7 +104,7 @@ decreasing_by simp [List.length_drop]; omega
 
 /-- For a list `l` and any function `f` wrapping elements as Slices while preserving `.val`,
     `getElem!` on the mapped-attached list has `.val` equal to `getElem!` on the original. -/
-private theorem attach_map_getElem!_val {T : Type} [Inhabited T] [Inhabited (Slice T)]
+private theorem attach_map_getElem!_val {T : Type} [Inhabited (Slice T)]
     (l : List (List T))
     (f : {x // x ∈ l} → Slice T)
     (hf : ∀ x, (f x).val = x.val)
@@ -121,7 +121,7 @@ private theorem attach_map_getElem!_val {T : Type} [Inhabited T] [Inhabited (Sli
 
 /-- Stronger spec for `chunks_exact` including chunk content preservation. -/
 @[step]
-theorem chunks_exact_spec_with_content {T : Type} [Inhabited T]
+theorem chunks_exact_spec_with_content {T : Type}
     (s : Slice T) (chunk_size : Usize)
     (h : chunk_size.val > 0)
     [Inhabited (Slice T)] :
@@ -132,7 +132,7 @@ theorem chunks_exact_spec_with_content {T : Type} [Inhabited T]
       (∀ j, j < result.chunks.length →
         result.chunks[j]!.val = (s.val.drop (chunk_size.val * j)).take chunk_size.val) ⦄ := by
   unfold core.slice.Slice.chunks_exact
-  simp only [dif_pos h, WP.spec_ok]
+  simp only [dite_eq_left h, WP.spec_ok]
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro c hc
     simp only [List.mem_map, List.mem_attach, true_and, Subtype.exists] at hc

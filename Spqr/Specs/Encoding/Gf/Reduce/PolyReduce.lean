@@ -9,7 +9,7 @@ public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
 public import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
@@ -281,7 +281,6 @@ theorem poly_reduce_spec (v : U32) :
       natToBinaryPoly result = (natToBinaryPoly v) %ₘ polyGF2 ⦄ := by
   unfold poly_reduce spqr.encoding.gf.reduce.REDUCE_BYTES
   step*
-  · scalar_tac
   · simp only [Array.length_eq]
     rw [‹i21.val = (shifted_v &&& 255#usize).val›, UScalar.val_and]
     exact nat_and_255_lt_256 _

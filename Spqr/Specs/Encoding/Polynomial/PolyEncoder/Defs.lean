@@ -10,7 +10,7 @@ public import Spqr.Math.Gf16.Field
 public import Spqr.Math.Gf2Poly.Basic
 public import Spqr.Math.Poly.Identities.Basic
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 
@@ -149,7 +149,7 @@ lemma from_pb_new_implies_old_partial
   unfold FromPbPostCondOldPartial
   refine ⟨fun h_nil h_len => ?_, fun h_nil h_len => ?_⟩
   · have h_len' : pb.polys.length = 16 := h_len
-    rw [if_pos (show FromPbWellFormed pb from .inl ⟨h_nil, h_len', fun j hj =>
+    rw [ite_eq_left (show FromPbWellFormed pb from .inl ⟨h_nil, h_len', fun j hj =>
       ⟨h_polys_nonempty h_nil j (by omega), h_polys_even h_nil j (by omega)⟩⟩)] at h_total
     match result, h_total with
     | .Ok ⟨_, .Points _⟩, ⟨_, h_polys_nil, _⟩ => simp [h_polys_nil] at h_len
@@ -160,7 +160,7 @@ lemma from_pb_new_implies_old_partial
       refine ⟨by omega, fun k hk => ?_⟩
       obtain ⟨e1, e2, e3⟩ := h_co k (by omega)
       exact ⟨e1.symm, e2.symm, e3.symm⟩
-  · rw [if_pos (show FromPbWellFormed pb from .inr ⟨h_nil, h_len, fun j hj =>
+  · rw [ite_eq_left (show FromPbWellFormed pb from .inr ⟨h_nil, h_len, fun j hj =>
       h_pts_even h_nil j (by omega)⟩)] at h_total
     match result, h_total with
     | .Ok ⟨_, .Polys _⟩, ⟨_, h_pts_nil, _⟩ => simp [h_pts_nil] at h_len

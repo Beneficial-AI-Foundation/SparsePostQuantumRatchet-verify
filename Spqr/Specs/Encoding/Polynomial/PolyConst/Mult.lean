@@ -10,7 +10,7 @@ import Spqr.Specs.Encoding.Gf.GF16.ConstMul
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible

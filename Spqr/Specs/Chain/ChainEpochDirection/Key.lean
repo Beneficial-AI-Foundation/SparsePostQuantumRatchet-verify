@@ -86,7 +86,7 @@ private theorem iterChainSecret_succ (secret : List U8) (base n : Nat)
     iterChainSecret secret base (n + 1) =
       (nextKeyHkdfOutput (iterChainSecret secret base n)
         ⟨base + n + 1, by scalar_tac⟩).take 32 := by
-  rw [iterChainSecret, dif_pos hb]
+  rw [iterChainSecret, dite_eq_left hb]
 
 private theorem iterKeyHistoryData_succ (secret : List U8) (base target : Nat)
     (params : proto.pq_ratchet.ChainParams) (d : List U8) (n : Nat)
@@ -98,7 +98,7 @@ private theorem iterKeyHistoryData_succ (secret : List U8) (base target : Nat)
         iterKeyHistoryData secret base target params d n ++
           (core.num.U32.to_be_bytes ctr).val ++ okm.drop 32
       else iterKeyHistoryData secret base target params d n := by
-  rw [iterKeyHistoryData, dif_pos hb]
+  rw [iterKeyHistoryData, dite_eq_left hb]
 
 /-- A key history whose data is `iterKeyHistoryData … n` is `iterKeyHistory … n` (its data
 fits in `usize`, so `iterKeyHistory` is not in its junk branch). -/
@@ -109,7 +109,7 @@ private theorem eq_iterKeyHistory_of_data {secret : List U8} {base target : Nat}
   have hlen : (iterKeyHistoryData secret base target params kh.data.val n).length ≤
       Usize.max := h ▸ kh'.data.property
   obtain ⟨d⟩ := kh'
-  simp only [iterKeyHistory, dif_pos hlen, chain.KeyHistory.mk.injEq]
+  simp only [iterKeyHistory, dite_eq_left hlen, chain.KeyHistory.mk.injEq]
   exact alloc.vec.Vec.ext _ _ (by simpa [alloc.vec.Vec.from_val] using h)
 
 /-! ## The loop body -/
@@ -140,21 +140,21 @@ private theorem body_spec
   unfold body
   simp only [alloc.vec.Vec.deref_mut, lift, max_ooo_keys_or_default_eq, bind_ok]
   step as ⟨i1, h_i1⟩
-  rw [if_pos (show at1 > i1 from (by omega : i1.val < at1.val))]
+  rw [ite_eq_left (show at1 > i1 from (by omega : i1.val < at1.val))]
   have hvs : v.slice.length = 32 := h_v_len
   step as ⟨k, s1, i2, h_i2, h_k1, _, h_s1_len, h_s1, h_k2⟩
   step as ⟨i4, h_i4⟩
   by_cases hc : i.val + 1 + (chain.maxOoo params).val ≥ at1.val
-  · rw [if_pos (show i4 ≥ at1 from (by omega : at1.val ≤ i4.val))]
+  · rw [ite_eq_left (show i4 ≥ at1 from (by omega : at1.val ≤ i4.val))]
     step as ⟨kh1, h_kh1_len, h_kh1, _⟩
     have hk1 : k.1 = ⟨i.val + 1, by scalar_tac⟩ := UScalar.val_eq_imp _ _ (by rw [h_k1]; rfl)
     refine ⟨_, _, _, rfl, h_i2, h_s1_len.trans hvs, h_s1, ?_⟩
-    rw [if_pos hc]
+    rw [ite_eq_left hc]
     exact ⟨h_kh1_len, by rw [h_kh1, hk1, h_k2]; rfl⟩
-  · rw [if_neg (show ¬ i4 ≥ at1 from fun h => by have : at1.val ≤ i4.val := h; omega),
+  · rw [ite_eq_right (show ¬ i4 ≥ at1 from fun h => by have : at1.val ≤ i4.val := h; omega),
       WP.spec_ok]
     refine ⟨_, _, _, rfl, h_i2, h_s1_len.trans hvs, h_s1, ?_⟩
-    rw [if_neg hc]
+    rw [ite_eq_right hc]
 
 /-- **Spec for `key_loop.body`, done case** (`at1 ≤ i + 1`): the state is returned unchanged. -/
 private theorem body_done
@@ -164,7 +164,7 @@ private theorem body_done
     body at1 params i v kh ⦃ cf => cf = ControlFlow.done (i, v, kh) ⦄ := by
   unfold body
   step as ⟨i1, h_i1⟩
-  rw [if_neg (show ¬ at1 > i1 from fun h => by have : i1.val < at1.val := h; omega)]
+  rw [ite_eq_right (show ¬ at1 > i1 from fun h => by have : i1.val < at1.val := h; omega)]
   simp
 
 end key_loop
@@ -246,8 +246,8 @@ private theorem KeyLoopInv.step {at1 : U32} {params : proto.pq_ratchet.ChainPara
       rw [hn, iterKeyHistoryData_succ _ _ _ _ _ _ (by omega)]
       simp only [Nat.add_sub_cancel' h_le, ← hinv.v_val, ← hinv.kh_val]
       by_cases hc : i'.val + 1 + (chain.maxOoo params).val ≥ at1.val
-      · rw [if_pos hc] at h_kh'' ⊢; exact h_kh''.2
-      · rw [if_neg hc] at h_kh'' ⊢; rw [h_kh'']
+      · rw [ite_eq_left hc] at h_kh'' ⊢; exact h_kh''.2
+      · rw [ite_eq_right hc] at h_kh'' ⊢; rw [h_kh'']
     kh_lb := by omega
     kh_ub := by omega
     kh_cap := by omega }
@@ -444,13 +444,13 @@ private theorem cedKeyAdvancePost_of_tail (self : chain.ChainEpochDirection) (at
       apply alloc.vec.Vec.ext
       simpa [alloc.vec.Vec.length] using hlen
     subst hkh
-    simp only [gt_iff_lt, if_pos hc]
+    simp only [gt_iff_lt, ite_eq_left hc]
     have h7' : kh2.data.length ≤ 36 * (ats.val - self.ctr.val) := by
       simp only [alloc.vec.Vec.length] at h7 ⊢; simp at h7; omega
     exact ⟨⟨v1, rfl, h1, h2⟩, h3, h4, h5, h6, h7, by omega, fun _ => h7', h8, h9, h10, h11, h12⟩
   · have hkh := h_keep hc
     subst hkh
-    simp only [gt_iff_lt, if_neg hc]
+    simp only [gt_iff_lt, ite_eq_right hc]
     exact ⟨⟨v1, rfl, h1, h2⟩, h3, h4, h5, h6, h7, h7, fun h => absurd h hc, h8, h9, h10, h11, h12⟩
 
 /-- `KeyHistory::get`'s postcondition, lifted to `chain.cedKeyLessPost`. -/
@@ -562,15 +562,15 @@ private theorem key_spec_all_core (self : chain.ChainEpochDirection) (ats : U32)
     by_cases hj : (chain.maxJump params).val < ats.val - self.ctr.val
     · -- beyond the jump budget
       have : (chain.maxJump params).val < i.val := by omega
-      rw [if_pos (show i > chain.maxJump params from this), WP.spec_ok]
+      rw [ite_eq_left (show i > chain.maxJump params from this), WP.spec_ok]
       exact cedKeyPost_of_jump hgt hj
     -- within the jump budget: pick the starting key history, then run the shared tail
-    rw [if_neg (show ¬ i > chain.maxJump params from
+    rw [ite_eq_right (show ¬ i > chain.maxJump params from
       fun h => by have : (chain.maxJump params).val < i.val := h; omega)]
     step as ⟨i3, h_i3⟩
     have h_gt : ats > self.ctr := hgt
     by_cases hc : self.ctr.val + (chain.maxOoo params).val < ats.val
-    · rw [if_pos (show ats > i3 from (by omega : i3.val < ats.val))]
+    · rw [ite_eq_left (show ats > i3 from (by omega : i3.val < ats.val))]
       step as ⟨kh, h_kh⟩
       have : kh.data.length + 36 * (ats.val - self.ctr.val) ≤ Usize.max := by omega
       have : kh.data.length % 36 = 0 := by omega
@@ -579,7 +579,8 @@ private theorem key_spec_all_core (self : chain.ChainEpochDirection) (ats : U32)
       exact cedKeyPost_of_advance hgt (by omega) fun h_gt' =>
         cedKeyAdvancePost_of_tail self ats params kh kh2 i5 v1 v2 h_gt' (fun _ => h_kh)
           (fun h => absurd hc h) h_tail
-    · rw [if_neg (show ¬ ats > i3 from fun h => by have : i3.val < ats.val := h; omega), bind_ok]
+    · rw [ite_eq_right (show ¬ ats > i3 from fun h => by have : i3.val < ats.val := h; omega),
+        bind_ok]
       step with keyAdvanceTail_spec_core as ⟨kh2, i5, v1, v2, h_tail⟩
       exact cedKeyPost_of_advance hgt (by omega) fun h_gt' =>
         cedKeyAdvancePost_of_tail self ats params self.prev kh2 i5 v1 v2 h_gt'

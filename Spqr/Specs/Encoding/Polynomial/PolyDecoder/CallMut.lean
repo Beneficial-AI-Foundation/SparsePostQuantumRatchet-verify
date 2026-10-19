@@ -36,8 +36,10 @@ theorem call_mut_spec
     PolyDecoder.new_with_poly_count.closure) =>
       result.1 = alloc.vec.Vec.new Pt ∧
       result.2 = c ⦄ := by
-  unfold call_mut
-  simp [sorted_vec.SortedSet.new]
+  unfold call_mut sorted_vec.SortedSet.new
+  refine WP.spec_bind (Pₘ := fun ss => ss = alloc.vec.Vec.new Pt) ((WP.spec_ok _).mpr rfl) ?_
+  rintro ss rfl
+  exact (WP.spec_ok _).mpr ⟨rfl, rfl⟩
 
 end Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt
 end spqr.encoding.polynomial.PolyDecoder.new_with_poly_count.closure

@@ -13,7 +13,7 @@ import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Spqr.Specs.Aeneas.GF16New
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
@@ -90,7 +90,7 @@ theorem body_spec
       obtain ⟨c', hc', hval⟩ :=
         WP.spec_imp_exists (Usize.add_spec (x := iter.count) (y := 1#usize) (by scalar_tac))
       exact ⟨c', hc', by scalar_tac⟩
-    simp only [bind_tc_ok, hc_eq, bind_ok]
+    simp only [hc_eq, bind_ok]
     step as ⟨r, hr⟩
     have h_el : iter.iter.slice[iter.iter.i] = v[iter.iter.i]! := by
       rw [alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v.val _ h_i]
@@ -614,7 +614,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       · obtain ⟨h_idx, h_ok, h_st⟩ := h_r
         have h_wf : FromPbWellFormed pb :=
           Or.inl ⟨h_pts', h_len', fun j hj => h_ok j (by omega)⟩
-        rw [if_pos h_wf]
+        rw [ite_eq_left h_wf]
         cases st with
         | Points _ => exact h_st.elim
         | Polys out' =>
@@ -628,7 +628,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
           have h := h_coef k (by rw [← h_deg]; exact hk)
           exact ⟨h.symm, by rw [h], by rw [h]⟩
       · obtain ⟨rfl, j, hj, hbad⟩ := h_r
-        rw [if_neg]
+        rw [ite_eq_right]
         rintro (⟨-, -, h_el⟩ | ⟨h_nil, -, -⟩)
         · have := h_el j (by omega)
           omega
@@ -638,7 +638,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         rintro (⟨-, h16, -⟩ | ⟨-, h16, -⟩)
         · exact h_len (by scalar_tac)
         · simp [alloc.vec.Vec.length, h_pts'] at h16
-      simp only [WP.spec_ok, if_neg h_nwf]
+      simp only [WP.spec_ok, ite_eq_right h_nwf]
   next h_pts =>
     have h_pts' : pb.pts.val ≠ [] := by simpa [List.isEmpty_iff] using h_pts
     split
@@ -652,7 +652,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
           · exact h_pts' h_nil
           · simp only [bne_iff_ne, ne_eq] at h_ne
             exact h_ne (by scalar_tac)
-        simp only [WP.spec_ok, if_neg h_nwf]
+        simp only [WP.spec_ok, ite_eq_right h_nwf]
       next h_ne =>
         have h_len' : pb.pts.length = 16 := by
           simp only [bne_iff_ne, ne_eq, not_not] at h_ne
@@ -673,7 +673,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         · obtain ⟨h_idx, h_ok, h_st⟩ := h_r
           have h_wf : FromPbWellFormed pb :=
             Or.inr ⟨h_polys', h_len', fun j hj => h_ok j (by omega)⟩
-          rw [if_pos h_wf]
+          rw [ite_eq_left h_wf]
           cases st with
           | Polys _ => exact h_st.elim
           | Points out' =>
@@ -693,14 +693,14 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
             rintro (⟨h_nil, -, -⟩ | ⟨-, -, h_el⟩)
             · exact h_pts' h_nil
             · exact hbad (h_el j hj)
-          simp only [if_neg h_nwf]
+          simp only [ite_eq_right h_nwf]
     next h_polys =>
       have h_polys' : pb.polys.val ≠ [] := by simpa [List.isEmpty_iff] using h_polys
       have h_nwf : ¬ FromPbWellFormed pb := by
         rintro (⟨h_nil, -, -⟩ | ⟨h_nil, -, -⟩)
         · exact h_pts' h_nil
         · exact h_polys' h_nil
-      simp only [WP.spec_ok, if_neg h_nwf]
+      simp only [WP.spec_ok, ite_eq_right h_nwf]
 
 /-- The old spec theorem for `from_pb`, kept to establish that the refactor lost nothing: it is
 now a corollary of the generalised `from_pb_spec` via `WP.spec_mono. Not `@[step]` anymore, so that

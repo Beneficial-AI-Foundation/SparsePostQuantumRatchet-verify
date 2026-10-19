@@ -11,6 +11,7 @@ set_option linter.unusedVariables false
 set_option linter.style.whitespace false
 set_option linter.style.setOption false
 set_option linter.style.longLine false
+set_option linter.internalConstructors false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -25,7 +26,7 @@ namespace spqr
     Name pattern: [core::borrow::Borrow]
     Visibility: public -/
 @[rust_trait "core::borrow::Borrow"]
-structure core.borrow.Borrow (Self : Type) (Borrowed : Type) where
+structure core.borrow.Borrow (Self : Type _) (Borrowed : Type _) where
   borrow : Self → Result Borrowed
 
 /-- Trait declaration: [core::ops::arith::Add]
@@ -33,8 +34,8 @@ structure core.borrow.Borrow (Self : Type) (Borrowed : Type) where
     Name pattern: [core::ops::arith::Add]
     Visibility: public -/
 @[rust_trait "core::ops::arith::Add"]
-structure core.ops.arith.Add (Self : Type) (Rhs : Type) (Self_Output : Type)
-  where
+structure core.ops.arith.Add (Self : Type _) (Rhs : Type _) (Self_Output :
+  Type _) where
   add : Self → Rhs → Result Self_Output
 
 /-- Trait declaration: [core::ops::arith::Sub]
@@ -42,8 +43,8 @@ structure core.ops.arith.Add (Self : Type) (Rhs : Type) (Self_Output : Type)
     Name pattern: [core::ops::arith::Sub]
     Visibility: public -/
 @[rust_trait "core::ops::arith::Sub"]
-structure core.ops.arith.Sub (Self : Type) (Rhs : Type) (Self_Output : Type)
-  where
+structure core.ops.arith.Sub (Self : Type _) (Rhs : Type _) (Self_Output :
+  Type _) where
   sub : Self → Rhs → Result Self_Output
 
 /-- Trait declaration: [core::ops::arith::Mul]
@@ -51,8 +52,8 @@ structure core.ops.arith.Sub (Self : Type) (Rhs : Type) (Self_Output : Type)
     Name pattern: [core::ops::arith::Mul]
     Visibility: public -/
 @[rust_trait "core::ops::arith::Mul"]
-structure core.ops.arith.Mul (Self : Type) (Rhs : Type) (Self_Output : Type)
-  where
+structure core.ops.arith.Mul (Self : Type _) (Rhs : Type _) (Self_Output :
+  Type _) where
   mul : Self → Rhs → Result Self_Output
 
 /-- Trait declaration: [core::ops::arith::Div]
@@ -60,8 +61,8 @@ structure core.ops.arith.Mul (Self : Type) (Rhs : Type) (Self_Output : Type)
     Name pattern: [core::ops::arith::Div]
     Visibility: public -/
 @[rust_trait "core::ops::arith::Div"]
-structure core.ops.arith.Div (Self : Type) (Rhs : Type) (Self_Output : Type)
-  where
+structure core.ops.arith.Div (Self : Type _) (Rhs : Type _) (Self_Output :
+  Type _) where
   div : Self → Rhs → Result Self_Output
 
 /-- Trait declaration: [core::ops::arith::AddAssign]
@@ -69,7 +70,7 @@ structure core.ops.arith.Div (Self : Type) (Rhs : Type) (Self_Output : Type)
     Name pattern: [core::ops::arith::AddAssign]
     Visibility: public -/
 @[rust_trait "core::ops::arith::AddAssign"]
-structure core.ops.arith.AddAssign (Self : Type) (Rhs : Type) where
+structure core.ops.arith.AddAssign (Self : Type _) (Rhs : Type _) where
   add_assign : Self → Rhs → Result Self
 
 /-- Trait declaration: [core::ops::arith::SubAssign]
@@ -77,7 +78,7 @@ structure core.ops.arith.AddAssign (Self : Type) (Rhs : Type) where
     Name pattern: [core::ops::arith::SubAssign]
     Visibility: public -/
 @[rust_trait "core::ops::arith::SubAssign"]
-structure core.ops.arith.SubAssign (Self : Type) (Rhs : Type) where
+structure core.ops.arith.SubAssign (Self : Type _) (Rhs : Type _) where
   sub_assign : Self → Rhs → Result Self
 
 /-- Trait declaration: [core::ops::arith::MulAssign]
@@ -85,7 +86,7 @@ structure core.ops.arith.SubAssign (Self : Type) (Rhs : Type) where
     Name pattern: [core::ops::arith::MulAssign]
     Visibility: public -/
 @[rust_trait "core::ops::arith::MulAssign"]
-structure core.ops.arith.MulAssign (Self : Type) (Rhs : Type) where
+structure core.ops.arith.MulAssign (Self : Type _) (Rhs : Type _) where
   mul_assign : Self → Rhs → Result Self
 
 /-- Trait declaration: [core::ops::arith::DivAssign]
@@ -93,7 +94,7 @@ structure core.ops.arith.MulAssign (Self : Type) (Rhs : Type) where
     Name pattern: [core::ops::arith::DivAssign]
     Visibility: public -/
 @[rust_trait "core::ops::arith::DivAssign"]
-structure core.ops.arith.DivAssign (Self : Type) (Rhs : Type) where
+structure core.ops.arith.DivAssign (Self : Type _) (Rhs : Type _) where
   div_assign : Self → Rhs → Result Self
 
 /-- [core::ops::range::Bound]
@@ -101,7 +102,7 @@ structure core.ops.arith.DivAssign (Self : Type) (Rhs : Type) where
     Name pattern: [core::ops::range::Bound]
     Visibility: public -/
 @[discriminant isize, rust_type "core::ops::range::Bound"]
-inductive core.ops.range.Bound (T : Type) where
+inductive core.ops.range.Bound (T : Type _) where
 | Included : T → core.ops.range.Bound T
 | Excluded : T → core.ops.range.Bound T
 | Unbounded : core.ops.range.Bound T
@@ -111,7 +112,7 @@ inductive core.ops.range.Bound (T : Type) where
     Name pattern: [core::ops::range::RangeBounds]
     Visibility: public -/
 @[rust_trait "core::ops::range::RangeBounds"]
-structure core.ops.range.RangeBounds (Self : Type) (T : Type) where
+structure core.ops.range.RangeBounds (Self : Type _) (T : Type _) where
   start_bound : Self → Result (core.ops.range.Bound T)
   end_bound : Self → Result (core.ops.range.Bound T)
 
@@ -120,8 +121,8 @@ structure core.ops.range.RangeBounds (Self : Type) (T : Type) where
     Name pattern: [alloc::slice::Concat]
     Visibility: public -/
 @[rust_trait "alloc::slice::Concat"]
-structure alloc.slice.Concat (Self : Type) (Item : Type) (Self_Output : Type)
-  where
+structure alloc.slice.Concat (Self : Type _) (Item : Type _) (Self_Output :
+  Type _) where
   concat : Self → Result Self_Output
 
 /-- [libcrux_hmac::Algorithm]
@@ -176,7 +177,7 @@ def prost.error.UnknownEnumValue := Std.I32
     Name pattern: [rand_core#1::RngCore]
     Visibility: public -/
 @[rust_trait "rand_core#1::RngCore"]
-structure rand_core_1.RngCore (Self : Type) where
+structure rand_core_1.RngCore (Self : Type _) where
   next_u32 : Self → Result (Std.U32 × Self)
   next_u64 : Self → Result (Std.U64 × Self)
   fill_bytes : Self → Slice Std.U8 → Result (Self × (Slice Std.U8))
@@ -186,7 +187,7 @@ structure rand_core_1.RngCore (Self : Type) where
     Name pattern: [rand#1::rng::Rng]
     Visibility: public -/
 @[rust_trait "rand#1::rng::Rng" (parentClauses := ["rand_core_1RngCoreInst"])]
-structure rand_1.rng.Rng (Self : Type) where
+structure rand_1.rng.Rng (Self : Type _) where
   rand_core_1RngCoreInst : rand_core_1.RngCore Self
 
 /-- Trait declaration: [rand_core#1::CryptoRng]
@@ -194,7 +195,7 @@ structure rand_1.rng.Rng (Self : Type) where
     Name pattern: [rand_core#1::CryptoRng]
     Visibility: public -/
 @[rust_trait "rand_core#1::CryptoRng" (parentClauses := ["RngCoreInst"])]
-structure rand_core_1.CryptoRng (Self : Type) where
+structure rand_core_1.CryptoRng (Self : Type _) where
   RngCoreInst : rand_core_1.RngCore Self
 
 /-- [spqr::encoding::gf::GF16]
@@ -734,7 +735,7 @@ structure encoding.Chunk where
 /-- Trait declaration: [spqr::encoding::Encoder]
     Source: 'src/encoding.rs', lines 31:0-37:1
     Visibility: public -/
-structure encoding.Encoder (Self : Type) where
+structure encoding.Encoder (Self : Type _) where
   encode_bytes : Slice Std.U8 → Result (core.result.Result Self
     encoding.EncodingError)
   next_chunk : Self → Result (encoding.Chunk × Self)
@@ -760,7 +761,7 @@ def encoding.polynomial.PolyDecoder.from_pb.closure := Unit
 /-- Trait declaration: [spqr::encoding::Decoder]
     Source: 'src/encoding.rs', lines 40:0-47:1
     Visibility: public -/
-structure encoding.Decoder (Self : Type) where
+structure encoding.Decoder (Self : Type _) where
   new : Std.Usize → Result (core.result.Result Self encoding.EncodingError)
   add_chunk : Self → encoding.Chunk → Result Self
   decoded_message : Self → Result (Option (alloc.vec.Vec Std.U8))

@@ -33,7 +33,7 @@ lemma expectedTrailingPoly_coeff_eq_zero_of_lt
   induction k generalizing n with
   | zero =>
     simp only [expectedTrailingPoly_zero, coeff_C]
-    exact if_neg (by omega)
+    exact ite_eq_right (by omega)
   | succ k ih =>
     cases n with
     | zero => omega
@@ -44,7 +44,7 @@ lemma expectedTrailingPoly_coeff_eq_zero_of_lt
       have h1 := ih n' (by omega)
       have h2 := ih (n' + 1) (by omega)
       have : (C (p_coeffs[offset - (k + 1)]!.toGF216) : GF216[X]).coeff (n' + 1) = 0 := by
-        rw [coeff_C]; exact if_neg (by omega)
+        rw [coeff_C]; exact ite_eq_right (by omega)
       rw [h1, h2, this]; ring
 
 /--
