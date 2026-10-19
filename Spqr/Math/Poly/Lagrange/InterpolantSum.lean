@@ -68,7 +68,7 @@ lemma lagrangeInterpolantSum_coeff_high
   intro i hi
   rw [Finset.mem_range] at hi
   have hi' : i < pts.length := by omega
-  rw [dif_pos hi']
+  rw [dite_eq_left hi']
   exact Polynomial.coeff_eq_zero_of_natDegree_lt (by
     calc (C _ * lagrangeBasisPoly pts i).natDegree
         ≤ (lagrangeBasisPoly pts i).natDegree := Polynomial.natDegree_C_mul_le _ _

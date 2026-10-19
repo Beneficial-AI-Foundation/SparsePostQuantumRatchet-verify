@@ -14,7 +14,7 @@ public import Spqr.Math.Poly.ExpectedTrailing.Defs
 public import Spqr.Math.Poly.LinearFactors.Basic
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity

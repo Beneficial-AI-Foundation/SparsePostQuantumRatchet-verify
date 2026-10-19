@@ -11,7 +11,7 @@ import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
 public import Spqr.Math.Poly.Eval
 public import Spqr.Math.Poly.Lagrange.InterpolantSum
 public import SrcTranslated.Funs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 public import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
@@ -492,7 +492,7 @@ theorem lagrange_interpolate_spec
           show prodLinearFactors pts.val 0 i *
               prodLinearFactors pts.val (i + 1) pts.val.length =
               lagrangeBasisPoly pts.val i from by
-            unfold lagrangeBasisPoly; rw [if_pos hpi]] at h_id
+            unfold lagrangeBasisPoly; rw [ite_eq_left hpi]] at h_id
       have hne : (X : GF216[X]) - C (GF16.toGF216 (pts.val.get ⟨i, hpi⟩).x) ≠ 0 :=
         (Polynomial.monic_X_sub_C _).ne_zero
       have hp : pts[i]! = pts.val.get ⟨i, hpi⟩ := by
@@ -520,7 +520,7 @@ theorem lagrange_interpolate_spec
     · rw [degree] at hm
       have : (result.coefficients.val).get ⟨m, hm⟩ = (result.coefficients.val)[m]! := by
         rw [List.get_eq_getElem, getElem!_pos _ m hm]
-      rw [dif_pos hm, this, hws_coeff m hm, List.map_sum_eq_Finset_sum]
+      rw [dite_eq_left hm, this, hws_coeff m hm, List.map_sum_eq_Finset_sum]
       rw [Finset.sum_congr rfl (fun i _ => h_term_eq m i)]
       rw [lagrangeInterpolantSum_eq_finset_sum pts.val n (le_refl _)]
       rw [Polynomial.finsetSum_coeff]
@@ -541,9 +541,10 @@ theorem lagrange_interpolate_spec
         change ws.length = pts.val.length at hws_len
         omega
       change (C (lagrangeScaleGF216 pts[a.val]! pts.val) * _).coeff m = _
-      rw [dif_pos ha, Slice.getElem!_Nat_eq, getElem!_pos pts.val a.val ha, List.get_eq_getElem]
+      rw [dite_eq_left ha, Slice.getElem!_Nat_eq, getElem!_pos pts.val a.val ha,
+        List.get_eq_getElem]
     · rw [degree] at hm
-      rw [dif_neg hm]
+      rw [dite_eq_right hm]
       exact (lagrangeInterpolantSum_coeff_high pts n m (le_refl _)
         (by rw [degree] at h_rlen; rw [h_rlen] at hm; push Not at hm; omega)).symm
 

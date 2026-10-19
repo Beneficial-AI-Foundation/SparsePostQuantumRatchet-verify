@@ -15,7 +15,7 @@ public import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Math.Poly.Lagrange.DenomProd
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
@@ -195,13 +195,13 @@ private lemma listToGF216Poly_replicate_zero_set_one
   cases m
   · simp [h_N_pos, GF16.ONE_toGF216]
   · rename_i n
-    rw [if_neg (show n + 1 ≠ 0 from by omega)]
+    rw [ite_eq_right (show n + 1 ≠ 0 from by omega)]
     by_cases hlt : n + 1 < N
-    · rw [dif_pos hlt]
+    · rw [dite_eq_left hlt]
       simp only [ne_eq, Nat.right_eq_add, Nat.add_eq_zero_iff, one_ne_zero,
         and_false, not_false_eq_true, List.getElem_set_ne, List.getElem_replicate,
         GF16.ZERO_toGF216]
-    · rw [dif_neg hlt]
+    · rw [dite_eq_right hlt]
 
 /-- **Spec theorem for `spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt`**:
 

@@ -8,7 +8,7 @@ module
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 public import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 

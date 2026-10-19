@@ -13,7 +13,7 @@ import Spqr.Specs.Encoding.Gf.GF16.ConstMul
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
@@ -75,10 +75,10 @@ theorem body_spec
           (¬ i1 < i → xp1 = xp) ⦄ := by
   unfold body
   by_cases h_lt : i1.val < N.val
-  · rw [if_pos (show i1 < N from h_lt)]
+  · rw [ite_eq_left (show i1 < N from h_lt)]
     have h_alen : a.val.length = N.val := a.property
     by_cases h_lt_i : i1.val < i.val
-    · rw [if_pos (show i1 < i from h_lt_i)]
+    · rw [ite_eq_left (show i1 < i from h_lt_i)]
       step as ⟨g, h_g⟩
       step as ⟨i2, h_i2⟩
       step as ⟨xp1, h_xp1⟩
@@ -94,7 +94,7 @@ theorem body_spec
       · simp only [← h_i2]
         rw [array_set_get_self, h_g, getElem!_pos a.val _ (by omega)]
       · exact array_set_getElem?_ne _ _ _ j (by omega)
-    · rw [if_neg (show ¬i1 < i from h_lt_i)]
+    · rw [ite_eq_right (show ¬i1 < i from h_lt_i)]
       simp only [bind_ok]
       step as ⟨g', h_g'⟩
       step as ⟨g1, h_g1⟩
@@ -105,7 +105,7 @@ theorem body_spec
       refine ⟨h_lt, h_i3, fun h_idx => ?_, fun j hj => array_set_getElem?_ne _ _ _ j hj,
         fun h => absurd h h_lt_i, fun _ => trivial⟩
       rw [array_set_get_self, h_g1, h_ag]
-  · rw [if_neg (show ¬i1 < N from h_lt)]
+  · rw [ite_eq_right (show ¬i1 < N from h_lt)]
     exact (WP.spec_ok _).mpr ⟨rfl, rfl, h_lt⟩
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop 0
@@ -230,7 +230,7 @@ theorem body_spec
           (∀ (j : Nat), j ≠ i → xp'.val[j]? = xp.val[j]?) ⦄ := by
   unfold body
   by_cases h_lt : i.val < N.val
-  · rw [if_pos (show i < N from h_lt)]
+  · rw [ite_eq_left (show i < N from h_lt)]
     have h_xlen : xp.val.length = N.val := xp.property
     have h_dlen : dp.val.length = N.val := dp.property
     step as ⟨g, h_g⟩
@@ -243,7 +243,7 @@ theorem body_spec
       fun j hj => mult_xdiff_loop0.array_set_getElem?_ne _ _ _ j hj⟩
     rw [mult_xdiff_loop0.array_set_get_self, h_g2, h_g, h_g1, getElem!_pos xp.val _ (by omega),
       getElem!_pos dp.val _ (by omega)]
-  · rw [if_neg (show ¬i < N from h_lt)]
+  · rw [ite_eq_right (show ¬i < N from h_lt)]
     exact (WP.spec_ok _).mpr ⟨rfl, h_lt⟩
 
 /-! # Spec theorem for `PolyConst::mult_xdiff`: loop 1

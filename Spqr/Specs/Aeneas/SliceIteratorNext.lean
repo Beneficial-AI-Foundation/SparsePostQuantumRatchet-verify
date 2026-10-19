@@ -69,11 +69,11 @@ theorem next_spec {T : Type}
     exact hpost
   simp only [core.slice.iter.IteratorSliceIter.next]
   by_cases hlt : iter.i < iter.slice.len
-  · rw [dif_pos hlt]
+  · rw [dite_eq_left hlt]
     exact ⟨some (iter.slice[iter.i]),
            { iter with i := iter.i + 1 }, rfl,
            hlt, rfl, rfl⟩
-  · rw [dif_neg hlt]
+  · rw [dite_eq_right hlt]
     exact ⟨none, iter, rfl,
            hlt, rfl⟩
 
