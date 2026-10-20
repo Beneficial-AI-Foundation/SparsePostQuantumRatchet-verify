@@ -84,7 +84,7 @@ theorem poly_identity_from
     · have hm1_lt_c : m - 1 < coeffs.length := by omega
       have hm1_lt_v : m - 1 < v.length := by omega
       have hm_lt_v : m < v.length := by omega
-      rw [dif_pos hm1_lt_v, dif_pos hm_lt_v, dif_pos hm1_lt_c]
+      rw [dite_eq_left hm1_lt_v, dite_eq_left hm_lt_v, dite_eq_left hm1_lt_c]
       by_cases hm1_zero : m - 1 = 0
       · have hm_eq_1 : m = 1 := by omega
         subst hm_eq_1; simp only [Nat.sub_self]
@@ -116,10 +116,10 @@ theorem poly_identity_from
         have hm1_lt_c : coeffs.length - 1 < coeffs.length :=
           by omega
         have hm1_lt_v : coeffs.length - 1 < v.length := by omega
-        rw [dif_pos hm1_lt_v,
-            dif_neg (show ¬(coeffs.length < v.length) from
+        rw [dite_eq_left hm1_lt_v,
+            dite_eq_right (show ¬(coeffs.length < v.length) from
               by omega),
-            dif_pos hm1_lt_c]
+            dite_eq_left hm1_lt_c]
         rw [mul_zero, add_zero]
         have hH_last :=
           hornerAccum_unfold g coeffs (coeffs.length - 1) hm1_lt_c
@@ -142,9 +142,9 @@ theorem poly_identity_from
               (v.get ⟨0, by omega⟩).toGF216 from by rw [hv_eq]]
           rw [hv0_zero (by omega), h0, hH0, mul_zero]
       · have hm_gt : coeffs.length < m := by omega
-        rw [dif_neg (show ¬(m - 1 < v.length) from by omega),
-            dif_neg (show ¬(m < v.length) from by omega),
-            dif_neg (show ¬(m - 1 < coeffs.length) from by omega)]
+        rw [dite_eq_right (show ¬(m - 1 < v.length) from by omega),
+            dite_eq_right (show ¬(m < v.length) from by omega),
+            dite_eq_right (show ¬(m - 1 < coeffs.length) from by omega)]
         ring
 
 end spqr.encoding.polynomial

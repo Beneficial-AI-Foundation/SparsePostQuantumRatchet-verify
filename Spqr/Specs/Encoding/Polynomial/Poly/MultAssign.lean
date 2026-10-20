@@ -10,7 +10,7 @@ import Spqr.Math.Poly.CharTwo.ToGF216
 import Spqr.Specs.Encoding.Gf.ParallelMult
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Poly.Coeff.Basic
 

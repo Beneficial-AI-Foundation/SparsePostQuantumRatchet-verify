@@ -8,7 +8,7 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
@@ -142,7 +142,7 @@ theorem clmul_poly_eq_mul (a b : BinaryPoly) (n : Nat)
   | succ n ih =>
     dsimp [clmul_poly]
     by_cases hcoeff : b.coeff n ≠ 0
-    · rw [if_pos hcoeff]
+    · rw [ite_eq_left hcoeff]
       have hc1 : b.coeff n = 1 := by
         have hlt := (b.coeff n).isLt
         have hne : (b.coeff n).val ≠ 0 := fun h => hcoeff (Fin.ext h)
@@ -167,7 +167,7 @@ theorem clmul_poly_eq_mul (a b : BinaryPoly) (n : Nat)
               exact coeff_eq_zero_of_natDegree_lt (by omega)
           exact hlc this
         rw [ih (b - X ^ n) hdeg]; ring
-    · rw [if_neg hcoeff]; push Not at hcoeff
+    · rw [ite_eq_right hcoeff]; push Not at hcoeff
       rcases eq_or_ne b 0 with rfl | hb0
       · simp [clmul_poly_b_zero]
       · have hlt : b.natDegree < n := by
@@ -196,6 +196,12 @@ lemma poly_u16_eq_u32 (a : U16) (me : U32) (h : me = UScalar.cast UScalarTy.U32 
   congr 1
   subst h
   exact (UScalar.cast_val_mod_pow_greater_numBits_eq UScalarTy.U32 a (by simp)).symm
+
+/-- `x ↦ a ^^^ x` is injective on `Nat`. (Mathlib's `Nat.xor_right_inj` was removed.) -/
+private theorem nat_xor_right_inj {a b c : Nat} : a ^^^ b = a ^^^ c ↔ b = c := by
+  refine ⟨fun h => ?_, fun h => h ▸ rfl⟩
+  have := congrArg (a ^^^ ·) h
+  simpa only [← Nat.xor_assoc, Nat.xor_self, Nat.zero_xor] using this
 
 private theorem testBit_of_and_one_shiftLeft_ne_zero {n k : Nat}
     (h : n &&& (1 <<< k) ≠ 0) : n.testBit k = true := by
@@ -299,7 +305,7 @@ theorem poly_mul_loop_spec (b : Std.U16) (acc : Std.U32) (me : Std.U32)
           · simp only [UScalar.val_xor, shift1_post, clmul, this, ↓reduceIte]
             simp_all only [Nat.reducePow, UScalarTy.U16_numBits_eq, Bvify.U16.UScalar_bv,
             U16.ofNat_bv, UScalar.val_and, UScalarTy.U32_numBits_eq, Bvify.U32.UScalar_bv,
-            eq_iff_iff, iff_true, Nat.xor_right_inj]
+            eq_iff_iff, iff_true, nat_xor_right_inj]
             apply Nat.mod_eq_of_lt
             simp only [Nat.shiftLeft_eq]
             have : 2 ^ shift'.val ≤ 2 ^ 16 :=

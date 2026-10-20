@@ -8,7 +8,7 @@ module
 public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
 public import Spqr.Math.Gf16.Field
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Tactic.ComputeDegree
 

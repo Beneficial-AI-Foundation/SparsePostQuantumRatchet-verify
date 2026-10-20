@@ -53,7 +53,7 @@ theorem body_spec
   split
   · simp_all
   · have hidx : chain_links.head < chain_links.buf.length := by scalar_tac
-    simp only [dif_pos hidx]
+    simp only [dite_eq_left hidx]
     step*
     refine ⟨hidx, by scalar_tac, by scalar_tac, by scalar_tac, ?_⟩
     simp only [FunctionalModels.epochIntoPb, *]

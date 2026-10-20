@@ -21,7 +21,7 @@ public import Spqr.Math.Poly.Eval
 public import Spqr.Math.Poly.Horner.Defs
 public import Spqr.Math.Poly.Lagrange.BasisPoly
 public import SrcTranslated.Funs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 public import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Encoding.Gf.GF16.Mul
 import Spqr.Specs.Encoding.Gf.GF16.MulAssign
@@ -398,7 +398,7 @@ theorem lagrange_interpolate_complete_spec
   have h_bt : b = true := h_b.mpr (UScalar.eq_of_val_eq (by
     rw [h_lv0]
     simp only [GF16.ZERO, UScalar.ofNatCore_val_eq]))
-  rw [if_pos h_bt]
+  rw [ite_eq_left h_bt]
   have hscale_eq : scale.toGF216 = lagrangeScaleGF216 (pts[i]!) pts.val := by
     unfold lagrangeScaleGF216
     rw [h_scale, h_den, h_iter_sl, h_iter_i, GF16.ONE_toGF216, one_mul, hpi1, hpi]

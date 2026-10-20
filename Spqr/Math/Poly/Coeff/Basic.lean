@@ -77,15 +77,15 @@ lemma listToGF216Poly_cons
   cases m with
   | zero =>
     simp only [coeff_add, listToGF216Poly_coeff,
-               dif_pos (show 0 < (c :: cs).length from by simp)]
+               dite_eq_left (show 0 < (c :: cs).length from by simp)]
     simp only [List.get_eq_getElem, List.getElem_cons_zero,
                coeff_C_zero, coeff_X_mul_zero, add_zero]
   | succ n =>
     simp only [coeff_add, coeff_C_succ, zero_add, coeff_X_mul,
                listToGF216Poly_coeff]
     by_cases hlt : n + 1 < (c :: cs).length
-    · rw [dif_pos hlt, dif_pos (show n < cs.length from by simp at hlt; omega)]
+    · rw [dite_eq_left hlt, dite_eq_left (show n < cs.length from by simp at hlt; omega)]
       congr 1
-    · rw [dif_neg hlt, dif_neg (show ¬(n < cs.length) from by simp at hlt ⊢; omega)]
+    · rw [dite_eq_right hlt, dite_eq_right (show ¬(n < cs.length) from by simp at hlt ⊢; omega)]
 
 end spqr.encoding.polynomial

@@ -6,6 +6,7 @@ Authors: Liao Zhang
 module
 
 public import SrcTranslated.Funs
+import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<`
@@ -66,8 +67,7 @@ theorem try_from_spec (value : Std.U8) :
       exacts [h0 (UScalar.eq_of_val_eq h), h1 (UScalar.eq_of_val_eq h),
         h2 (UScalar.eq_of_val_eq h), h3 (UScalar.eq_of_val_eq h), h4 (UScalar.eq_of_val_eq h),
         h5 (UScalar.eq_of_val_eq h), h6 (UScalar.eq_of_val_eq h)]
-    simp only [core.fmt.rt.Argument.new_display, core.fmt.Arguments.new, core.hint.must_use,
-      bind_ok]
+    simp only [core.hint.must_use, bind_ok]
     step*
     split <;> first | omega | exact ⟨_, rfl⟩
   all_goals (simp only [WP.spec_ok]; exact trivial)

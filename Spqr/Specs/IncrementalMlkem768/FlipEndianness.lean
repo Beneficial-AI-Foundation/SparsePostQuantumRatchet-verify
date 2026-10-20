@@ -173,10 +173,10 @@ theorem loop_spec
         rw [h_start1] at hk
         by_cases hk0 : k = it'.iter.start.val
         · subst hk0
-          rw [h_swap0, if_pos h_even', h_suf' _ (by omega) (by omega)]
+          rw [h_swap0, ite_eq_left h_even', h_suf' _ (by omega) (by omega)]
         · by_cases hk1 : k = it'.iter.start.val + 1
           · subst hk1
-            rw [h_swap1, if_neg (by omega), h_suf' _ (by omega) (by omega)]
+            rw [h_swap1, ite_eq_right (by omega), h_suf' _ (by omega) (by omega)]
             simp
           · rw [h_frame k (by omega) hk0 hk1, h_pre' k (by omega)]
     · rintro ⟨h_out, h_done⟩
