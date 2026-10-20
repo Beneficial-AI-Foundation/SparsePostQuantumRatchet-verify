@@ -320,6 +320,7 @@ public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct2Sent.RecvNextEpoch
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
+public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.SendCt1
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
