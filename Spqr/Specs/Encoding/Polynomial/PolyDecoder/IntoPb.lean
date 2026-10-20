@@ -12,7 +12,7 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec theorem for `PolyDecoder::into_pb`: loop body 1
@@ -227,10 +227,13 @@ theorem body_spec
     subst h_pts
     step as ⟨sv, h_sv⟩
     subst h_sv
-    step as ⟨v1, h_v1⟩
+    -- `SortedSet`/`SortedVec`/`Vec` are plain `def` synonyms: pass the argument explicitly
+    step with sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec _
+      a.val[iter.start.val]! as ⟨v1, h_v1⟩
     subst h_v1
     step as ⟨i2, h_i2⟩
-    step as ⟨v3, h_v3⟩
+    step with sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec _
+      a.val[iter.start.val]! as ⟨v3, h_v3⟩
     subst h_v3
     step with into_pb_loop0_loop0.loop_spec as ⟨v4, h_v4_len, h_v4⟩
     · rfl

@@ -9,7 +9,7 @@ import Spqr.Specs.Aeneas.TryFromSliceToArray
 public import Spqr.Specs.Aeneas.VecIndexRangeFull
 public import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
@@ -304,10 +304,10 @@ theorem loop_spec
               simp only [h_s] at h_match
               by_cases h_cache :
                   idx < (pts'[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2] at h_pts
                 exact h_adm' pts h_pts j hj
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 simp [h_pts] at h_match
             | Polys polys' =>
               simp only [h_s] at h_match
@@ -344,10 +344,10 @@ theorem loop_spec
             | Points pts_curr =>
               simp only [h_s] at h_match
               by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2]
                 exact h_pts_stable' pts_curr h_s
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 simp [h_pts_new] at h_match
             | Polys polys_curr =>
               simp only [h_s] at h_match
@@ -358,10 +358,10 @@ theorem loop_spec
             | Points pts_curr =>
               simp only [h_s] at h_match
               by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2] at h_polys_coeff
                 simp [h_s] at h_polys_coeff
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 simp only [h_polys_coeff] at h_match
                 exact h_match.2.1 j hj
             | Polys polys_curr =>
@@ -373,10 +373,10 @@ theorem loop_spec
             | Points pts_curr =>
               simp only [h_s] at h_match
               by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2] at h_polys_new
                 simp [h_s] at h_polys_new
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 have h_self'_eq := h_pts_stable' pts_curr h_s
                 subst h_self'_eq
                 have h_pts_eq : pts_curr = pts_init := by

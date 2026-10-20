@@ -9,7 +9,7 @@ public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
 public import Spqr.Specs.Encoding.Gf.Unaccelerated.PolyMul
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible

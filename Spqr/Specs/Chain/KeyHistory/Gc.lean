@@ -132,7 +132,7 @@ theorem body_spec
         (self.data.val.slice i1.val (i1.val + 4)) = ok .gt
     · -- the record at `i1` is expired: remove it
       rw [hcmp]
-      simp only [bind_ok, if_true]
+      simp only [bind_ok, ite_true]
       step as ⟨self1, h_len, h_pre, h_sw, h_tr⟩
       refine ⟨h_lt', h_len, h_aligned, by omega, self1.data.property, ?_, h_sw, h_tr,
         fun h => absurd rfl h⟩
@@ -146,7 +146,7 @@ theorem body_spec
       obtain rfl | rfl : o = .lt ∨ o = .eq := by cases o <;> simp_all
       all_goals
         dsimp only
-        rw [bind_ok, if_neg Bool.false_ne_true]
+        rw [bind_ok, ite_eq_right Bool.false_ne_true]
         step as ⟨i4, h_i4⟩
         have h_i4' : i4.val = i1.val + 36 := by rw [h_i4, h_i]; rfl
         refine ⟨h_lt', fun h => ?_, fun _ => ⟨h_i4', by omega, by omega, h_bound, h_data_aligned⟩⟩
@@ -548,17 +548,17 @@ theorem gc_loop_spec
             by_cases h2 : m₂ = k.val ∧ k.val + 36 < s.data.length
             · exact h1.1.trans h2.1.symm
             · have hfeq' : f_inv (s.data.length - 36) = f_inv m₂ := by
-                rw [if_pos h1, if_neg h2] at hfeq; exact hfeq
+                rw [ite_eq_left h1, ite_eq_right h2] at hfeq; exact hfeq
               have := hf_inj (s.data.length - 36) m₂
                 ⟨hlast_lt, hlast_al⟩ ⟨h_lt_s _ hm2l, hm2a⟩ hfeq'
               rw [hlen] at hm2l; omega
             · have hfeq' : f_inv m₁ = f_inv (s.data.length - 36) := by
-                rw [if_neg h1, if_pos h2] at hfeq; exact hfeq
+                rw [ite_eq_right h1, ite_eq_left h2] at hfeq; exact hfeq
               have := hf_inj m₁ (s.data.length - 36)
                 ⟨h_lt_s _ hm1l, hm1a⟩ ⟨hlast_lt, hlast_al⟩ hfeq'
               rw [hlen] at hm1l; omega
             · exact hf_inj m₁ m₂ ⟨h_lt_s _ hm1l, hm1a⟩ ⟨h_lt_s _ hm2l, hm2a⟩
-                (by rw [if_neg h1, if_neg h2] at hfeq; exact hfeq)
+                (by rw [ite_eq_right h1, ite_eq_right h2] at hfeq; exact hfeq)
         · let dst := fun n => if g_inv n = s.data.length - 36 ∧ k.val + 36 < s.data.length
             then k.val else g_inv n
           let g' : Nat → Nat := dst
@@ -615,11 +615,11 @@ theorem gc_loop_spec
             by_cases h2 : g_inv n₂ = s.data.length - 36 ∧ k.val + 36 < s.data.length
             · exact hg_inj n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live
                 (by rw [h1.1, h2.1])
-            · rw [if_pos h1, if_neg h2] at hgeq
+            · rw [ite_eq_left h1, ite_eq_right h2] at hgeq
               exact (g_ne_k n₂ hn2_lt hn2_al hn2_live hgeq.symm).elim
-            · rw [if_neg h1, if_pos h2] at hgeq
+            · rw [ite_eq_right h1, ite_eq_left h2] at hgeq
               exact (g_ne_k n₁ hn1_lt hn1_al hn1_live hgeq).elim
-            · rw [if_neg h1, if_neg h2] at hgeq
+            · rw [ite_eq_right h1, ite_eq_right h2] at hgeq
               exact hg_inj n₁ n₂ ⟨hn1_lt, hn1_al⟩ ⟨hn2_lt, hn2_al⟩ hn1_live hn2_live hgeq
         · rw [hkeq] at hib ⊢; rw [hlen] at hib ⊢; omega
       · obtain ⟨hself, hkeq, hal, hib, _hbnd, _hal2⟩ := hadv hcmp

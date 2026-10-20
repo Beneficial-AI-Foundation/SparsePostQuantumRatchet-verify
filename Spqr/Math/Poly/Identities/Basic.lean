@@ -8,7 +8,7 @@ module
 public import Spqr.Math.Poly.Coeff.Basic
 public import Spqr.Math.Poly.CharTwo.Basic
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 
@@ -48,7 +48,7 @@ theorem coeff_succ_C_add_X_sub_C_mul {R : Type*} [CommRing R]
     (a b : R) (P : R[X]) (n : ℕ) :
     (C a + (X - C b) * P).coeff (n + 1) = P.coeff n - b * P.coeff (n + 1) := by
   rw [sub_mul, coeff_add, coeff_sub, coeff_X_mul, coeff_C_mul]
-  have : (C a).coeff (n + 1) = 0 := by rw [coeff_C]; exact if_neg (by omega)
+  have : (C a).coeff (n + 1) = 0 := by rw [coeff_C]; exact ite_eq_right (by omega)
   rw [this]; ring
 
 /-! ## Advanced polynomial identity helpers -/

@@ -65,7 +65,7 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
   · -- `epoch == 0 && index == 0`: early return of an empty key, chain unchanged
     have he : epoch = 0#u64 := UScalar.eq_of_val_eq (by simp [h00.1])
     have hi : index = 0#u32 := UScalar.eq_of_val_eq (by simp [h00.2])
-    simp only [if_pos he, if_pos hi, if_pos h00, WP.spec_ok, and_self]
+    simp only [ite_eq_left he, ite_eq_left hi, ite_eq_left h00, WP.spec_ok, and_self]
   -- Otherwise both branches of the `epoch == 0` test run the same body.
   have hprog : ∀ {α : Type} (x y : α),
       (if epoch = 0#u64 then (if index = 0#u32 then x else y) else y) = y := by
@@ -74,7 +74,7 @@ theorem recv_key_spec_32 (self : chain.Chain) (epoch : U64) (index : U32)
     · have hi : ¬index = 0#u32 := fun hi => h00 ⟨by simp [he], by simp [hi]⟩
       simp only [he, hi, ↓reduceIte]
     · simp only [he, ↓reduceIte]
-  simp only [hprog, if_neg h00]
+  simp only [hprog, ite_eq_right h00]
   unfold recvKeyRangePost chainFrame recvKeyEpochPost
   step
   subst self1

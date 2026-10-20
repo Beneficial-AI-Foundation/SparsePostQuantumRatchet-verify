@@ -8,7 +8,7 @@ module
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 public import Mathlib.Data.Nat.BitIndices
 import Mathlib.RingTheory.Polynomial.Basic
 public import Mathlib.Algebra.Polynomial.Basic
@@ -101,7 +101,7 @@ lemma natToBinaryPoly_coeff (n m : ℕ) :
   simp only [Function.comp_def, coeff_X_pow]
   by_cases hm : n.testBit m = true
   · simp only [hm]
-    rw [List.sum_map_eq_nsmul_single _ _ fun _ ha _ => if_neg ha.symm]
+    rw [List.sum_map_eq_nsmul_single _ _ fun _ ha _ => ite_eq_right ha.symm]
     simp [mem_bitIndices_iff_testBit.mpr hm]
   · push Not at hm
     simp only [hm, Bool.false_eq_true]

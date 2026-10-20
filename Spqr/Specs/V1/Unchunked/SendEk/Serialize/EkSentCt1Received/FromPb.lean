@@ -40,14 +40,14 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
       result = FunctionalModels.fromPb pb ⦄ := by
   unfold from_pb FunctionalModels.fromPb
   by_cases hdk : pb.dk.length = 2400
-  · rw [if_pos (by scalar_tac : alloc.vec.Vec.len pb.dk = 2400#usize), hdk]
+  · rw [ite_eq_left (by scalar_tac : alloc.vec.Vec.len pb.dk = 2400#usize), hdk]
     by_cases hct1 : pb.ct1.length = 960
-    · rw [if_pos (by scalar_tac : alloc.vec.Vec.len pb.ct1 = 960#usize), hct1]
+    · rw [ite_eq_left (by scalar_tac : alloc.vec.Vec.len pb.ct1 = 960#usize), hct1]
       rcases pb with ⟨_, _ | _, _, _⟩ <;> step* <;> simp_all
-    · rw [if_neg (by scalar_tac : ¬ alloc.vec.Vec.len pb.ct1 = 960#usize)]
+    · rw [ite_eq_right (by scalar_tac : ¬ alloc.vec.Vec.len pb.ct1 = 960#usize)]
       step*
       simp_all
-  · rw [if_neg (by scalar_tac : ¬ alloc.vec.Vec.len pb.dk = 2400#usize)]
+  · rw [ite_eq_right (by scalar_tac : ¬ alloc.vec.Vec.len pb.dk = 2400#usize)]
     step*
     simp_all
 

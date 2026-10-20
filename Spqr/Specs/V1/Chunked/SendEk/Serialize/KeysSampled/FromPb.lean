@@ -6,10 +6,9 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
+import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::from_pb`
@@ -81,6 +80,8 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
         res = match r with | .Ok v => .Ok v | .Err _ => .Err Error.StateDecode ⦄ := by
     cases r <;> simp [from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError,
       from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once]
-  step* <;> grind [PolyEncoder.FromPbPostCond]
+  step* <;> grind [PolyEncoder.FromPbPostCond,
+    unchunked.send_ek.serialize.HeaderSent.FunctionalModels.fromPb,
+    authenticator.serialize.Authenticator.FunctionalModels.fromPb]
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled

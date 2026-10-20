@@ -14,7 +14,7 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
 public import Spqr.Math.Poly.Lagrange.CompletePoints
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 
 /-! # Specification for `Poly::from_complete_points`
@@ -83,7 +83,7 @@ private lemma EnumerateSliceIter_next_Pt_some
     IteratorEnumerate.next,
     IteratorSliceIter.next]
   have h_lt' : iter.iter.i < (↑iter.iter.slice.len : Nat) := by scalar_tac
-  rw [dif_pos h_lt']
+  rw [dite_eq_left h_lt']
   obtain ⟨count', h_add_eq, h_add_val⟩ := usize_checked_add_one_val iter.count h_bound
   exact ⟨{ iter := { iter.iter with i := iter.iter.i + 1 }, count := count' },
     by simp [h_add_eq]; rfl, rfl, rfl, h_add_val⟩
