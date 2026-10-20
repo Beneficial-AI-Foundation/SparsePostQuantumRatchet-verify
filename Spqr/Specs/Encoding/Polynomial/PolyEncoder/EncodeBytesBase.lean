@@ -13,7 +13,7 @@ public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.LinearFactors.Degree
@@ -78,7 +78,7 @@ private theorem body_spec_chunk
     have h_tl : tl = ctl := by have h := rest.symm.trans h_chunks; injection h
     subst h_hd; subst h_tl
     have h_hd_len : hd.length = 2 := h_chunks_len hd (by rw [h_chunks]; exact List.mem_cons_self ..)
-    simp only [bind_tc_eq, Std.bind_assoc, bind_ok]
+    simp only [bind_ok]
     step as ⟨count1, h_count1⟩
     simp only [lift, bind_ok]
     step as ⟨poly, h_poly⟩
@@ -372,7 +372,7 @@ theorem encode_bytes_base_spec (msg : Slice U8)
     simp only [show (16#usize).val = 16 from rfl, List.length_replicate]
   case hy => cases System.Platform.numBits_eq <;> simp_all
   case hmax =>
-    have h3 : i3.val = 65536 := by rw [← shift16_mod_usize_size]; assumption
+    have h3 : i3.val = 65536 := by rwa [← shift16_mod_usize_size]
     rw [h3]
     have := pow16_mul16_le_usize_max
     omega

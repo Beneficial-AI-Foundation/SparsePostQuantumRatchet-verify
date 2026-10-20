@@ -27,6 +27,12 @@ open Lean Elab Command
 private def isBuiltinAxiom (n : Name) : Bool :=
   n == ``propext || n == ``Classical.choice || n == ``Quot.sound
 
+/-- Axioms that trust native code (`native_decide`, `bv_decide`). Up to Lean v4.34 these all went
+through the single axiom `Lean.trustCompiler`; since v4.35 each use adds its own auxiliary axiom
+`<decl>._native.<tactic>.ax…`. Single backtick: `Lean.trustCompiler` no longer exists. -/
+private def isNativeAxiom (n : Name) : Bool :=
+  n == `Lean.trustCompiler || n.components.contains `_native
+
 run_cmd liftTermElabM do
   let env ← getEnv
   let moduleNames := env.header.moduleNames
@@ -111,14 +117,14 @@ run_cmd liftTermElabM do
     if nonBuiltin.size > 0 then
       specsResults := specsResults.push (nm, nonBuiltin)
     if usedAxioms.any (· == ``sorryAx) then specsSorry := true
-    if usedAxioms.any (· == ``Lean.trustCompiler) then specsTrust := true
+    if usedAxioms.any isNativeAxiom then specsTrust := true
     for h2 : j in [:nonBuiltin.size] do
       specsAllCustom := specsAllCustom.insert nonBuiltin[j]
 
   if specsSorry then logInfo m!"⚠  `sorry` found in specs!"
   else logInfo m!"✓  No `sorry` in specs."
-  if specsTrust then logInfo m!"⚠  `Lean.trustCompiler` found in specs."
-  else logInfo m!"✓  No `Lean.trustCompiler` in specs."
+  if specsTrust then logInfo m!"⚠  Native-code axiom (`native_decide`/`bv_decide`) found in specs."
+  else logInfo m!"✓  No native-code axioms (`native_decide`/`bv_decide`) in specs."
   logInfo m!"\nSpecs with non-builtin axioms: {specsResults.size} / {specsThms.size}"
 
   for h : i in [:specsResults.size] do
@@ -225,7 +231,7 @@ run_cmd liftTermElabM do
     let nonBuiltin := usedAxioms.filter fun a => !isBuiltinAxiom a
     if nonBuiltin.size > 0 then projNonBuiltinCount := projNonBuiltinCount + 1
     if usedAxioms.any (· == ``sorryAx) then projSorry := true
-    if usedAxioms.any (· == ``Lean.trustCompiler) then projTrust := true
+    if usedAxioms.any isNativeAxiom then projTrust := true
     for h2 : j in [:nonBuiltin.size] do
       projAllCustom := projAllCustom.insert nonBuiltin[j]
 
@@ -233,8 +239,8 @@ run_cmd liftTermElabM do
   logInfo m!"With non-builtin axioms: {projNonBuiltinCount} / {allProjectDecls.size}"
   if projSorry then logInfo m!"⚠  `sorry` found in project."
   else logInfo m!"✓  No `sorry` in project."
-  if projTrust then logInfo m!"⚠  `Lean.trustCompiler` found in project."
-  else logInfo m!"✓  No `Lean.trustCompiler` in project."
+  if projTrust then logInfo m!"⚠  Native-code axiom (`native_decide`/`bv_decide`) found in project."
+  else logInfo m!"✓  No native-code axioms (`native_decide`/`bv_decide`) in project."
   logInfo m!"\nTotal custom axioms: {projAllCustom.size}"
 
   -- ── SECTION 4: Machine-readable sorry manifest ──────────────────────────

@@ -12,7 +12,7 @@ public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Math.Gf16.Irreducible
@@ -61,7 +61,7 @@ private theorem u8_shl8_mod_u16_size (b : U8) :
 private theorem ite_or_of_neg_neg {a b : Prop} [Decidable a] [Decidable b] {P Q : Prop}
     (ha : ¬a) (hb : ¬b) (hq : Q) :
     (if a ∨ b then P else Q) :=
-  Eq.mpr (if_neg (by tauto)) hq
+  Eq.mpr (ite_eq_right (by tauto)) hq
 
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
@@ -277,7 +277,7 @@ theorem body_spec
       subst h_back
       rw [h_ss, h_ss_eq] at h_r
       refine ⟨h_lt, h_start1, h_end1, h_i_lt_16, { x := x, y := y }, h_px, h_py, ?_⟩
-      rw [if_pos (Or.inl h_c'), ← h_poly']
+      rw [ite_eq_left (Or.inl h_c'), ← h_poly']
       exact push_update _ _ _ _ h_plt h_r
     next h_c =>
       have h_c' : ¬ chunk.index.val < self.pts_needed.val / 16 +
@@ -299,7 +299,7 @@ theorem body_spec
         subst h_back
         rw [h_ss, h_ss_eq] at h_r
         refine ⟨h_lt, h_start1, h_end1, h_i_lt_16, { x := x, y := y }, h_px, h_py, ?_⟩
-        rw [if_pos (Or.inr h_c2'), ← h_poly']
+        rw [ite_eq_left (Or.inr h_c2'), ← h_poly']
         exact push_update _ _ _ _ h_plt h_r
       next h_c2 =>
         have h_c2' : ¬ ((self.pts.val)[iter.start.val]!).val.length < self.pts_needed.val / 16 +
@@ -327,12 +327,12 @@ private theorem body_pts_length_le
     (self1.pts.val[k]!).val.length ≤
       (self'.pts.val[k]!).val.length + 1 := by
   by_cases hc : cond
-  · rw [if_pos hc] at h_update
+  · rw [ite_eq_left hc] at h_update
     obtain ⟨h_frame, h_push⟩ := h_update
     by_cases hk : k = poly
     · subst hk; exact h_push.length_le
     · rw [h_frame k hk]; omega
-  · rw [if_neg hc] at h_update
+  · rw [ite_eq_right hc] at h_update
     subst h_update
     omega
 

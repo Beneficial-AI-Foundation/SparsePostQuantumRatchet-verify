@@ -15,7 +15,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Aeneas.IndexRangeFull
 
@@ -373,7 +373,11 @@ theorem body_spec
         polys.val[iter.start.val]'h_j_lt := by
       rw [← List.Inhabited_getElem_eq_getElem! (hi := h_j_lt)]
     have h_ser := h_ser_overflow iter.start.val h_j_lt
-    step*
+    step as ⟨p, h_p⟩
+    step as ⟨v1, h_len, _, _, h_enc⟩
+    step as ⟨v2, h_v2⟩
+    rw [h_getelem, ← h_p]
+    exact ⟨h_lt, h_start1, h_end1, v1, h_v2, h_len, h_enc⟩
   · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
     simp [h_opt_eq, WP.spec_ok, h_lt]
 

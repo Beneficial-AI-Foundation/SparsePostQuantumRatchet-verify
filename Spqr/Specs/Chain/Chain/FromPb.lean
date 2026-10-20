@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.Result
 import Spqr.Specs.Chain.ChainEpochDirection.FromPb
 public import Spqr.Specs.Chain.Chain.FunctionalModels
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom
@@ -77,6 +78,16 @@ private theorem traverseResult_epochFromPb_err (l : List proto.pq_ratchet.chain.
       · cases h; exact ih ‹_›
       · cases h
 
+/-- `IntoIter::next` on the Aeneas model (`IntoIter T` is a plain `def` for `Vec T`, so its
+equations do not simplify well; this states the two cases once). -/
+private theorem into_iter_next_spec {T : Type} (it : alloc.vec.into_iter.IntoIter T) :
+    alloc.vec.into_iter.IteratorIntoIter.next it ⦃ (o, it') =>
+      match it.val with
+      | [] => o = none ∧ it' = it
+      | hd :: tl => o = some hd ∧ it'.val = tl ⦄ := by
+  unfold alloc.vec.into_iter.IteratorIntoIter.next
+  split <;> refine (WP.spec_ok _).mpr ?_ <;> simp only [*] <;> exact ⟨rfl, by simp⟩
+
 /-- **Spec theorem for `spqr.chain.Chain.from_pb_loop.body`**. -/
 @[step]
 theorem from_pb_loop.body_spec
@@ -95,8 +106,10 @@ theorem from_pb_loop.body_spec
             FunctionalModels.epochFromPb link = .Ok ce ∧
             links'.buf.val = links.buf.val ++ [ce] ∧ links'.head = links.head ∧
             links'.length.val = links'.buf.val.length ⦄ := by
-  unfold from_pb_loop.body alloc.vec.into_iter.IteratorIntoIter.next
-  split
+  unfold from_pb_loop.body
+  apply WP.spec_bind (into_iter_next_spec iter)
+  rintro ⟨o, it'⟩ hnext
+  rcases hv : iter.val with _ | ⟨hd, tl⟩ <;> rw [hv] at hnext <;> obtain ⟨rfl, h_it'⟩ := hnext
   · simp_all
   · step*
     simp_all
@@ -197,6 +210,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.Chain) :
   · simp only [_root_.core.result.Result.map_err, core.result.Result.Insts.CoreOpsTry.branch,
       bind_ok, alloc.collections.vec_deque.VecDequeTGlobal.new,
       alloc.vec.IntoIteratorVec.into_iter]
+    apply WP.spec_bind_ok
     apply WP.spec_bind (from_pb_loop_spec pb.links _ (by simp) (by simp))
     rintro ⟨links1, err⟩ hpost
     rcases ht : FunctionalModels.traverseResult FunctionalModels.epochFromPb pb.links.val with

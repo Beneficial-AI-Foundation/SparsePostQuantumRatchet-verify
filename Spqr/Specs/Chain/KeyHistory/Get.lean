@@ -391,7 +391,7 @@ theorem get_spec (self : chain.KeyHistory) (at1 : U32)
   have hw : want.val = (core.num.U32.to_be_bytes at1).val := by
     have := core.num.U32.to_be_bytes.step_spec at1
     simp only [lift, WP.spec_ok] at this
-    rw [this]; assumption
+    rwa [this]
   rw [← hw]
   cases hp : p.1 with
   | Err e =>

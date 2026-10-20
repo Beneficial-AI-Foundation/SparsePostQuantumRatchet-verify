@@ -11,7 +11,7 @@ public import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Math.Poly.Eval
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 public import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Encoding.Gf.GF16.New
 import Spqr.Specs.Aeneas.RangeIteratorNext
@@ -57,7 +57,7 @@ private lemma enum_next_some
   have h_sn : core.slice.iter.IteratorSliceIter.next iter.iter =
       .ok (some (iter.iter.slice.val[iter.iter.i]),
         ⟨iter.iter.slice, iter.iter.i + 1⟩) := by
-    unfold core.slice.iter.IteratorSliceIter.next; rw [dif_pos (by simpa using h_lt)]; rfl
+    unfold core.slice.iter.IteratorSliceIter.next; rw [dite_eq_left (by simpa using h_lt)]; rfl
   simp [core.iter.adapters.enumerate.IteratorEnumerate.next, h_sn, h_add_eq]
 
 /-- `Enumerate<slice::Iter<GF16>>::next` once the slice is exhausted. -/
@@ -262,7 +262,7 @@ theorem body_spec
     | core.result.Result.Ok poly =>
       obtain ⟨h_all_valid, h_deg, h_sum⟩ := h_res
       simp only [core.result.Result.expect, massert, bind_ok]
-      rw [if_pos h_i_lt_16, bind_ok]
+      rw [ite_eq_left h_i_lt_16, bind_ok]
       step as ⟨p2, index_mut_back, h_p2, h_back⟩
       step as ⟨a, h_a⟩
       have h_pl : iter.start.val < polys.val.length := by rw [polys.property]; exact h_i_lt_16
@@ -458,7 +458,7 @@ theorem point_at_spec
     next h_lt =>
       step as ⟨g, h_g⟩
       have h_lt' : idx.val < (pts.val[poly.val]!).value.val.length := h_lt
-      rw [if_pos h_lt', h_g]
+      rw [ite_eq_left h_lt', h_g]
       exact List.Inhabited_getElem_eq_getElem! _ _ h_lt'
     next h_ge =>
       step as ⟨polys, h_polys⟩
@@ -484,7 +484,7 @@ theorem point_at_spec
       step as ⟨g, h_g⟩
       step as ⟨g1, h_g1⟩
       have h_ge' : ¬ idx.val < (pts.val[poly.val]!).value.val.length := h_ge
-      rw [if_neg h_ge']
+      rw [ite_eq_right h_ge']
       refine ⟨fun j hj => ?_, fun j hj => (h_polys1' j hj).1, ?_⟩
       · simpa [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq] using (h_polys1' j hj).2
       · rw [h_g1, Poly.evalAt, h_g, h_i2_val, h_p1', Array.getElem!_Usize_eq]

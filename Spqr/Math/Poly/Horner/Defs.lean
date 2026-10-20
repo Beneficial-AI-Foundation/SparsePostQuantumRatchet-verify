@@ -7,7 +7,7 @@ module
 
 public import Spqr.Math.Poly.Basic.Defs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 
@@ -61,7 +61,7 @@ lemma hornerAccum_unfold (g_x : spqr.encoding.gf.GF16)
       (coeffs.get ⟨pos, h⟩).toGF216 +
         g_x.toGF216 * hornerAccum g_x coeffs (pos + 1) := by
   conv_lhs => unfold hornerAccum
-  rw [dif_pos h]
+  rw [dite_eq_left h]
 
 /--
 Shifting lemma: evaluating `hornerAccum` on `c :: cs` at position `pos + 1` is the same as

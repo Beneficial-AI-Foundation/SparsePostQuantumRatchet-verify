@@ -14,7 +14,7 @@ public import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Math.Poly.Identities.Basic
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Math.Gf16.Irreducible

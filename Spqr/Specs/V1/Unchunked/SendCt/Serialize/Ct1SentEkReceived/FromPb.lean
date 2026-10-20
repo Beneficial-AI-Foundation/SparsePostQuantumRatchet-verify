@@ -52,11 +52,11 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
       else result = .Err Error.StateDecode ⦄ := by
   unfold from_pb
   by_cases hes : pb.es.length = 2080
-  · rw [if_pos (by scalar_tac : alloc.vec.Vec.len pb.es = 2080#usize)]
+  · rw [ite_eq_left (by scalar_tac : alloc.vec.Vec.len pb.es = 2080#usize)]
     by_cases hct : pb.ct1.length = 960
-    · rw [if_pos (by scalar_tac : alloc.vec.Vec.len pb.ct1 = 960#usize)]
+    · rw [ite_eq_left (by scalar_tac : alloc.vec.Vec.len pb.ct1 = 960#usize)]
       by_cases hek : pb.ek.length = 1152
-      · rw [if_pos (by scalar_tac : alloc.vec.Vec.len pb.ek = 1152#usize)]
+      · rw [ite_eq_left (by scalar_tac : alloc.vec.Vec.len pb.ek = 1152#usize)]
         simp only [hes, hct, hek, and_self, reduceIte]
         match pb.auth with
         | none =>
@@ -69,11 +69,11 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
             core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
           step*
           simp_all [authenticator.serialize.Authenticator.FunctionalModels.fromPb]
-      · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.ek = 1152#usize)]
+      · rw [ite_eq_right (by scalar_tac : ¬alloc.vec.Vec.len pb.ek = 1152#usize)]
         simp [hek, WP.spec_ok]
-    · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.ct1 = 960#usize)]
+    · rw [ite_eq_right (by scalar_tac : ¬alloc.vec.Vec.len pb.ct1 = 960#usize)]
       simp [hct, WP.spec_ok]
-  · rw [if_neg (by scalar_tac : ¬alloc.vec.Vec.len pb.es = 2080#usize)]
+  · rw [ite_eq_right (by scalar_tac : ¬alloc.vec.Vec.len pb.es = 2080#usize)]
     simp [hes, WP.spec_ok]
 
 end spqr.v1.unchunked.send_ct.serialize.Ct1SentEkReceived

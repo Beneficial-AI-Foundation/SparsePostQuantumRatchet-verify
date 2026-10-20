@@ -988,7 +988,7 @@ equal length (Rust panics otherwise); when the element `Clone` instance acts as 
 theorem clone_from_slice_spec {T : Type} (cloneCloneInst : core.clone.Clone T) (dst src : Slice T)
     (hlen : dst.length = src.length) (h : ∀ x ∈ src.val, cloneCloneInst.clone x = ok x) :
     clone_from_slice cloneCloneInst dst src ⦃ (r : Slice T) => src = r ⦄ := by
-  simpa [clone_from_slice, if_pos hlen] using Slice.clone_spec h
+  simpa [clone_from_slice, ite_eq_left hlen] using Slice.clone_spec h
 
 /-- `clone_from_slice` for `u8` copies the source slice into the destination, returning a slice
 whose contents and length equal those of the source. Requires the destination and source to have
@@ -1170,7 +1170,7 @@ theorem alloc.collections.vec_deque.VecDeque.push_back_spec
       self'.head = self.head ∧
       self'.length = self.length.val + 1 ⦄ := by
   unfold alloc.collections.vec_deque.VecDeque.push_back
-  simp only [dif_pos hbuf]
+  simp only [dite_eq_left hbuf]
   step*
 
 /-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::new]:
@@ -1276,7 +1276,7 @@ theorem alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.in
                (res.2 x).length = self.length
         | none => False ⦄ := by
   unfold alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.index_mut
-  simp only [if_pos hidx, dif_pos hphys]
+  simp only [ite_eq_left hidx, dite_eq_left hphys]
   simp only [List.getElem?_eq_getElem hphys, WP.spec_ok]
   simp
 
@@ -1413,7 +1413,7 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
   simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq]
   step with h sv.val as ⟨l, h_l⟩
   unfold Slice.listToVec
-  rw [dif_pos (h_l ▸ hlen)]
+  rw [dite_eq_left (h_l ▸ hlen)]
   simp only [WP.spec_ok, alloc.vec.Vec.from_val, h_l]
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
@@ -1463,7 +1463,7 @@ theorem Str.Insts.AllocBorrowToOwnedString.to_owned_spec (s : String)
       (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
     simp only [toStr, Slice.from_val, List.map_map, Function.comp_def, UScalar.val,
       BitVec.toNat_ofFin, UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
-  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
+  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dite_eq_left]
   step*
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::truncate]:
@@ -1912,8 +1912,8 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k
       ⦃ (r : Array Std.U8 2400#usize) =>
       r.length = mlkem768Params.decapsulationKeyBytes ∧ r.val = k.value.val ⦄ := by
-  simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk, WP.spec_ok]
-  exact ⟨Array.length_eq _, rfl⟩
+  unfold libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
+  exact (WP.spec_ok _).mpr ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
@@ -2121,7 +2121,8 @@ theorem sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec
     (s : sorted_vec.SortedVec T) :
     sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref corecmpOrdInst s
       ⦃ (v : alloc.vec.Vec T) => v = s ⦄ := by
-  simp [sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref]
+  unfold sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+  exact (WP.spec_ok _).mpr rfl
 
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::new]:
@@ -2144,7 +2145,8 @@ theorem sorted_vec.SortedSet.new_spec
     {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
     sorted_vec.SortedSet.new corecmpOrdInst ⦃ (s : sorted_vec.SortedSet T) =>
       s = alloc.vec.Vec.new T ⦄ := by
-  simp [sorted_vec.SortedSet.new]
+  unfold sorted_vec.SortedSet.new
+  exact (WP.spec_ok _).mpr rfl
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::with_capacity]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 351:2-351:49
@@ -2170,7 +2172,8 @@ theorem sorted_vec.SortedSet.with_capacity_spec
     {T : Type} (corecmpOrdInst : core.cmp.Ord T) (n : Std.Usize) :
     sorted_vec.SortedSet.with_capacity corecmpOrdInst n
       ⦃ (s : sorted_vec.SortedSet T) => s = alloc.vec.Vec.new T ⦄ := by
-  simp [sorted_vec.SortedSet.with_capacity]
+  unfold sorted_vec.SortedSet.with_capacity
+  exact (WP.spec_ok _).mpr rfl
 
 /-- Helper: sorted insertion into a sorted list, modelling `SortedVec::replace`
     (sorted-vec 0.8.6, `src/lib.rs`, lines 362-376).
@@ -2348,14 +2351,15 @@ theorem sorted_vec.SortedSet.push_spec_empty
       o = none ∧
       s'.val = s.val ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none =>
     have he : s.val = [] := by
       cases hs : s.val with
       | nil => rfl
       | cons _ _ => simp [hs, List.getLast?] at h_none
-    simp [he, WP.spec_ok]
+    simp only [he, List.nil_append, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
   · next last h_some => simp [h_some] at hempty
 
 /-- **Spec theorem for `SortedSet::push` (greater case)**:
@@ -2376,7 +2380,7 @@ theorem sorted_vec.SortedSet.push_spec_gt
       o = none ∧
       s'.val = s.val ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none => simp [h_none] at hlast
   · next last' h_some =>
@@ -2406,7 +2410,7 @@ theorem sorted_vec.SortedSet.push_spec_eq
       o = some last ∧
       s'.val = s.val.dropLast ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none => simp [h_none] at hlast
   · next last' h_some =>
@@ -2441,7 +2445,7 @@ theorem sorted_vec.SortedSet.push_spec_lt
       o = opt ∧
       s'.val = newList ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none => simp [h_none] at hlast
   · next last' h_some =>
@@ -2449,8 +2453,9 @@ theorem sorted_vec.SortedSet.push_spec_lt
       have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
     subst this
     simp only [hcmp, bind_ok, hsorted]
-    simp [hbnd, WP.spec_ok]
-    rfl
+    simp only [UScalarTy.Usize_numBits_eq, uncurry_apply_pair, hbnd, and_true, ↓reduceDIte,
+      WP.spec_ok]
+    exact ⟨rfl, rfl, by simp⟩
 
 /-- **Spec theorem for `SortedSet::push` (Greater / empty combined)**:
     when the set is either empty or the new element compares as `Greater`
@@ -2478,14 +2483,15 @@ theorem sorted_vec.SortedSet.push_spec
       o = none ∧
       s'.val = s.val ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next hlast =>
     have he : s.val = [] := by
       cases hs : s.val with
       | nil => rfl
       | cons _ _ => simp [hs, List.getLast?] at hlast
-    simp [he, WP.spec_ok]
+    simp only [he, List.nil_append, List.length_nil, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
   · next last hlast =>
     simp only [hcmp last hlast, bind_ok, WP.spec_ok]
     refine ⟨rfl, rfl, ?_⟩
@@ -2515,7 +2521,8 @@ theorem sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref_spec
     (s : sorted_vec.SortedSet T) :
     sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref corecmpOrdInst s
       ⦃ (v : sorted_vec.SortedVec T) => v = s ⦄ := by
-  simp [sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref]
+  unfold sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+  exact (WP.spec_ok _).mpr rfl
 
 /-- [thiserror::display::{thiserror::display::AsDisplay<'a, &'a (T)> for &1 (T)}::as_display]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.12/src/display.rs', lines 20:4-20:43

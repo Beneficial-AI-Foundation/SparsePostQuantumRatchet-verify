@@ -62,7 +62,7 @@ noncomputable def lagrangeBasisPoly
 lemma natDegree_lagrangeBasisPoly_le
     (pts : List Pt) (i : Nat) (hi : i < pts.length) (hn : 0 < pts.length) :
     (lagrangeBasisPoly pts i).natDegree ≤ pts.length - 1 := by
-  simp only [lagrangeBasisPoly, if_pos hi]
+  simp only [lagrangeBasisPoly, ite_eq_left hi]
   calc (prodLinearFactors pts 0 i * prodLinearFactors pts (i + 1) pts.length).natDegree
       ≤ (prodLinearFactors pts 0 i).natDegree +
           (prodLinearFactors pts (i + 1) pts.length).natDegree :=
