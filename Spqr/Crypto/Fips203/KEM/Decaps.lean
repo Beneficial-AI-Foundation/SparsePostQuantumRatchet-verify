@@ -87,7 +87,7 @@ theorem mlkemDecaps_of_reencrypt_eq (p : ParamSet) (dk : Fin p.dkSize → UInt8)
     mlkemDecaps prims p dk c =
       sharedKey prims (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk) := by
   unfold mlkemDecaps
-  rw [if_pos h_eq]
+  rw [ite_eq_left h_eq]
 
 /-- When the re-encryption check fails, `Decaps` returns the implicit-rejection key. -/
 theorem mlkemDecaps_of_reencrypt_ne (p : ParamSet) (dk : Fin p.dkSize → UInt8)
@@ -96,6 +96,6 @@ theorem mlkemDecaps_of_reencrypt_ne (p : ParamSet) (dk : Fin p.dkSize → UInt8)
       (encRandomness prims (kpkeDecrypt p (decodeDkPke dk) c) (decodeDkH dk))).ct) :
     mlkemDecaps prims p dk c = rejectionKey prims (decodeDkZ dk) c := by
   unfold mlkemDecaps
-  rw [if_neg h_ne]
+  rw [ite_eq_right h_ne]
 
 end Fips203

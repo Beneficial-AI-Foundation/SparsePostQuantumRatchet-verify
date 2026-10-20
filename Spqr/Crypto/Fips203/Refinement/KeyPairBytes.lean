@@ -125,33 +125,38 @@ theorem keyPairBytes_dkPke (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 1152)
     keyPairBytes seed ⟨i, h⟩ =
       (kpkeKeyGen stdPrimitives (seedD seed) mlkem768).dk
         ⟨i, by simp only [mlkem768_k]; omega⟩ := by
-  simp only [keyPairBytes, mlkemKeyGen_dk, encodeMlkemDk, mlkem768_k]
-  rw [dif_pos (by omega)]
+  simp only [keyPairBytes, mlkemKeyGen_dk, encodeMlkemDk]
+  rw [dite_eq_left (by simp only [mlkem768_k]; omega)]
 
 /-- `value[1152 + i] = ek[i]` for `i < 1184`. -/
 theorem keyPairBytes_ek (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 1184)
     (h : 1152 + i < mlkem768.dkSize) :
     keyPairBytes seed ⟨1152 + i, h⟩ =
       ekBytes seed ⟨i, by simp only [mlkem768_k]; omega⟩ := by
-  simp only [keyPairBytes, ekBytes, mlkemKeyGen_dk, mlkemKeyGen_ek, encodeMlkemDk, mlkem768_k]
-  rw [dif_neg (by omega), dif_pos (by omega)]
-  exact congrArg _ (Fin.ext (by simp only; omega))
+  simp only [keyPairBytes, ekBytes, mlkemKeyGen_dk, mlkemKeyGen_ek, encodeMlkemDk]
+  rw [dite_eq_right (by simp only [mlkem768_k]; omega),
+    dite_eq_left (by simp only [mlkem768_k]; omega)]
+  exact congrArg _ (Fin.ext (by simp only [mlkem768_k]; omega))
 
 /-- `value[2336 + i] = H(ek)[i]` for `i < 32`. -/
 theorem keyPairBytes_hash (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 32)
     (h : 2336 + i < mlkem768.dkSize) :
     keyPairBytes seed ⟨2336 + i, h⟩ = hashEk stdPrimitives (ekBytes seed) ⟨i, hi⟩ := by
-  simp only [keyPairBytes, ekBytes, mlkemKeyGen_dk, mlkemKeyGen_ek, encodeMlkemDk, mlkem768_k]
-  rw [dif_neg (by omega), dif_neg (by omega), dif_pos (by omega)]
-  exact congrArg _ (Fin.ext (by simp only; omega))
+  simp only [keyPairBytes, ekBytes, mlkemKeyGen_dk, mlkemKeyGen_ek, encodeMlkemDk]
+  rw [dite_eq_right (by simp only [mlkem768_k]; omega),
+    dite_eq_right (by simp only [mlkem768_k]; omega),
+    dite_eq_left (by simp only [mlkem768_k]; omega)]
+  exact congrArg _ (Fin.ext (by simp only [mlkem768_k]; omega))
 
 /-- `value[2368 + i] = z[i]` for `i < 32`. -/
 theorem keyPairBytes_z (seed : Fin 64 → UInt8) (i : ℕ) (hi : i < 32)
     (h : 2368 + i < mlkem768.dkSize) :
     keyPairBytes seed ⟨2368 + i, h⟩ = seedZ seed ⟨i, hi⟩ := by
-  simp only [keyPairBytes, mlkemKeyGen_dk, encodeMlkemDk, mlkem768_k]
-  rw [dif_neg (by omega), dif_neg (by omega), dif_neg (by omega)]
-  exact congrArg _ (Fin.ext (by simp only; omega))
+  simp only [keyPairBytes, mlkemKeyGen_dk, encodeMlkemDk]
+  rw [dite_eq_right (by simp only [mlkem768_k]; omega),
+    dite_eq_right (by simp only [mlkem768_k]; omega),
+    dite_eq_right (by simp only [mlkem768_k]; omega)]
+  exact congrArg _ (Fin.ext (by simp only [mlkem768_k]; omega))
 
 /-! ## Slice facts used by the external `pk1`/`pk2`/`sk` specs -/
 
@@ -179,11 +184,11 @@ theorem keyPairList_slice_pk1 (seed : Fin 64 → UInt8) :
   simp only [keyPairList, toU8List_getElem, pk1Bytes]
   apply congrArg U8.ofUInt8
   by_cases hi : i < 32
-  · rw [dif_pos hi]
+  · rw [dite_eq_left hi]
     have : 2304 + i = 1152 + (1152 + i) := by omega
     simp only [this]
     exact keyPairBytes_ek seed (1152 + i) (by omega) _
-  · rw [dif_neg hi]
+  · rw [dite_eq_right hi]
     have : 2304 + i = 2336 + (i - 32) := by omega
     simp only [this]
     exact keyPairBytes_hash seed (i - 32) (by omega) _

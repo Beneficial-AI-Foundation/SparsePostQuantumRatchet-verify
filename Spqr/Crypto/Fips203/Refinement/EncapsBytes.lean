@@ -85,10 +85,10 @@ theorem headerOfList_pk1Bytes (seed : Fin 64 → UInt8) (h : 64 ≤ (toU8List (p
   simp only [headerOfList, headerOfEk, toU8List_getElem, U8.toUInt8_ofUInt8, pk1Bytes]
   congr 1
   · funext i
-    rw [dif_pos i.isLt]
+    rw [dite_eq_left i.isLt]
     simp only [decodeEkRho, mlkem768_k]
   · funext i
-    rw [dif_neg (by omega)]
+    rw [dite_eq_right (by omega)]
     exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-! ## Coefficient serialisation: little-endian `i16` -/
@@ -126,7 +126,7 @@ theorem polyOfBytes_polyBytes (f : Fin n → Zq) : polyOfBytes (polyBytes f) = f
   funext i
   have hi : i.val < 256 := i.isLt
   simp only [polyOfBytes, polyBytes]
-  rw [if_pos (by omega), if_neg (by omega)]
+  rw [ite_eq_left (by omega), ite_eq_right (by omega)]
   have h1 : (⟨2 * i.val / 2, by omega⟩ : Fin n) = i := Fin.ext (by simp only; omega)
   have h2 : (⟨(2 * i.val + 1) / 2, by omega⟩ : Fin n) = i := Fin.ext (by simp only; omega)
   rw [h1, h2, coeffLo_toNat, coeffHi_toNat, Nat.mod_add_div (f i).val]
@@ -158,7 +158,7 @@ theorem stateBytes_yHat (st : EncapsState mlkem768) (i : Fin 3) (b : Fin 512)
   have hi : i.val < 3 := i.isLt
   have hb := b.isLt
   simp only [stateBytes]
-  rw [dif_pos (by omega)]
+  rw [dite_eq_left (by omega)]
   have e1 : (⟨(512 * i.val + b.val) / 512, by change (512 * i.val + b.val) / 512 < 3; omega⟩ :
       Fin mlkem768.k) = i := Fin.ext (by simp only; omega)
   have e2 : (⟨(512 * i.val + b.val) % 512, Nat.mod_lt _ (by omega)⟩ : Fin 512) = b :=
@@ -171,7 +171,7 @@ theorem stateBytes_e2 (st : EncapsState mlkem768) (b : Fin 512)
     stateBytes st ⟨1536 + b.val, h⟩ = polyBytes st.e2 b := by
   have hb := b.isLt
   simp only [stateBytes]
-  rw [dif_neg (by omega), dif_pos (by omega)]
+  rw [dite_eq_right (by omega), dite_eq_left (by omega)]
   exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-- `stateBytes` at `2048 + i` reads `m`. -/
@@ -180,7 +180,7 @@ theorem stateBytes_m (st : EncapsState mlkem768) (i : Fin 32)
     stateBytes st ⟨2048 + i.val, h⟩ = st.m i := by
   have hi := i.isLt
   simp only [stateBytes]
-  rw [dif_neg (by omega), dif_neg (by omega)]
+  rw [dite_eq_right (by omega), dite_eq_right (by omega)]
   exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-- **State round-trip.**  Decoding the serialised state recovers `(ŷ, e₂, m)`. -/
@@ -250,7 +250,7 @@ def ct1List (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) : Lis
 
 theorem ct1List_length (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) :
     (ct1List pk1 h m).length = 960 := by
-  simp only [ct1List, toU8List_length, ct1Size]
+  rw [ct1List, toU8List_length, ct1Size]
 
 /-- The first ciphertext half as an Aeneas `Array U8 960`. -/
 def ct1Array (pk1 : List U8) (h : 64 ≤ pk1.length) (m : Fin 32 → UInt8) : Array U8 960#usize :=
@@ -319,7 +319,7 @@ def ct2List (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : List U8 :=
 
 theorem ct2List_length (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) :
     (ct2List st pk2).length = 128 := by
-  simp only [ct2List, toU8List_length, ct2Size]
+  rw [ct2List, toU8List_length, ct2Size]
 
 /-- The second ciphertext half as an Aeneas `Array U8 128`. -/
 def ct2Array (st : Array U8 2080#usize) (pk2 : Array U8 1152#usize) : Array U8 128#usize :=
@@ -421,7 +421,7 @@ theorem ekOfParts_pk1Bytes_pk2Bytes (seed : Fin 64 → UInt8)
   simp only [ekOfParts, toU8List_getElem, U8.toUInt8_ofUInt8, pk2Bytes, pk1Bytes]
   split
   · rfl
-  · rw [dif_pos (by have := i.isLt; simp only [mlkem768_k] at this; omega)]
+  · rw [dite_eq_left (by have := i.isLt; simp only [mlkem768_k] at this; omega)]
     exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-- For validly generated keys, the hash check always passes. -/

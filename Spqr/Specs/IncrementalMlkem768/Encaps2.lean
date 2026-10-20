@@ -57,7 +57,7 @@ theorem tryFromSharedArraySlice_ok_spec {T : Type} (N : Usize) (s : Slice T)
       ⦃ (r : core.result.Result (Array T N) core.array.TryFromSliceError) =>
       ∃ a : Array T N, r = core.result.Result.Ok a ∧ a.val = s.val ⦄ := by
   simp only [core.array.TryFromSharedArraySlice.try_from]
-  rw [dif_pos (by scalar_tac)]
+  rw [dite_eq_left (by scalar_tac)]
   simp only [WP.spec_ok]
   exact ⟨_, rfl, Array.from_val _ _⟩
 
@@ -162,7 +162,7 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
   step*
   rw [a_post, a1_post] at ct2_post1
   have h_s2 : result.slice = ct2.value.to_slice := by
-    rw [← s2_post]; assumption
+    rwa [← s2_post]
   have h_result : result.val = Fips203.Refinement.ct2List a0 a := by
     rw [alloc.vec.Vec.val, h_s2, Array.val_to_slice, ct2_post1]
   refine ⟨⟨mf.elim es.val (fun fixed => fixed.val), ?_, a0, a, ?_, ?_, h_result⟩, ?_⟩

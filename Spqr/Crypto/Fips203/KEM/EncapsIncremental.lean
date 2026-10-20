@@ -121,7 +121,7 @@ theorem mlkemEncapsPhase1_ct1 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt
         have := i.isLt; unfold ParamSet.ctSizeEnc; omega⟩ := by
   simp only [mlkemEncapsPhase1, headerOfEk, mlkemEncaps, kpkeEncrypt, encodeCiphertext,
     encapsU]
-  rw [dif_pos i.isLt]
+  rw [dite_eq_left i.isLt]
 
 /-- Round 2 on the state of round 1 is the `c₂` part of the ciphertext of
 `ML-KEM.Encaps_internal(ek, m)`. -/
@@ -133,7 +133,7 @@ theorem mlkemEncapsPhase2_ct2 (p : ParamSet) (ek : Fin (384 * p.k + 32) → UInt
         have := i.isLt; unfold ParamSet.ctSizeEnc; omega⟩ := by
   simp only [mlkemEncapsPhase2, mlkemEncapsPhase1, headerOfEk, mlkemEncaps, kpkeEncrypt,
     encodeCiphertext]
-  rw [dif_neg (by omega)]
+  rw [dite_eq_right (by omega)]
   exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-- **Composition.**  `c₁ ‖ c₂` of the two rounds is exactly the ciphertext of Algorithm 17. -/
@@ -148,8 +148,8 @@ theorem mlkemEncaps_ct_eq_phases (p : ParamSet) (ek : Fin (384 * p.k + 32) → U
           ⟨idx.val - 32 * p.compressionU * p.k, by
             have := idx.isLt; unfold ParamSet.ctSizeEnc at this; omega⟩ := by
   by_cases h : idx.val < 32 * p.compressionU * p.k
-  · rw [dif_pos h, mlkemEncapsPhase1_ct1]
-  · rw [dif_neg h, mlkemEncapsPhase2_ct2]
+  · rw [dite_eq_left h, mlkemEncapsPhase1_ct1]
+  · rw [dite_eq_right h, mlkemEncapsPhase2_ct2]
     exact congrArg _ (Fin.ext (by simp only; omega))
 
 /-- For ML-KEM-768, `c₁` has `960` bytes and `c₂` has `128` bytes. -/

@@ -82,7 +82,8 @@ theorem toCoeffs_ofCoeffs (f : Fin n → Zq) :
   rw [Finset.sum_eq_single j]
   · simp
   · intro i _ hij
-    rw [coeff_C_mul, coeff_X_pow, if_neg (by simpa [Fin.ext_iff, eq_comm] using hij), mul_zero]
+    rw [coeff_C_mul, coeff_X_pow, ite_eq_right (by simpa [Fin.ext_iff, eq_comm] using hij),
+      mul_zero]
   · simp
 
 /-- **Round trip 2**: `ofCoeffs (toCoeffs r) = r`. -/
@@ -270,7 +271,7 @@ theorem nttSpec_odd (f : Fin n → Zq) (i : Fin 128)
   have hfin : (⟨(2 * i.val + 1) / 2, by omega⟩ : Fin 128) = i :=
     Fin.ext (show (2 * i.val + 1) / 2 = i.val by omega)
   simp only [nttSpec, hmod]
-  rw [if_neg (by omega : ¬(1 = 0)), hfin]
+  rw [ite_eq_right (by omega : ¬(1 = 0)), hfin]
 
 /-! ## The multiplicative homomorphism for `nttSpec` -/
 

@@ -85,8 +85,9 @@ theorem ek_matches_header_generated (seed : Fin 64 → UInt8)
   simp only [alloc.vec.Vec.deref]
   unfold libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   simp only [core.result.Result.is_ok, Slice.from_val, Slice.length, hek, hhdr]
-  rw [if_neg (by simp), if_neg (not_not.mpr (Fips203.Refinement.pk1HashValid_pk1Bytes seed)),
-    if_neg (not_not.mpr (Fips203.Refinement.pk2Valid_pk2Bytes seed))]
+  rw [ite_eq_right (by simp),
+    ite_eq_right (not_not.mpr (Fips203.Refinement.pk1HashValid_pk1Bytes seed)),
+    ite_eq_right (not_not.mpr (Fips203.Refinement.pk2Valid_pk2Bytes seed))]
   simp [WP.spec_ok]
 
 end spqr.incremental_mlkem768

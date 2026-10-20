@@ -83,10 +83,10 @@ theorem ctOfParts_ct1Array_ct2Array (seed : Fin 64 → UInt8)
   rw [ct_eq_ct1Bytes_append_ct2Bytes seed h m idx]
   unfold ctOfParts
   by_cases hlt : idx.val < ct1Size
-  · rw [dif_pos hlt, dif_pos hlt]
+  · rw [dite_eq_left hlt, dite_eq_left hlt]
     simp only [ct1Array, Aeneas.Std.Array.make_val, ct1List]
     rw [toU8List_getElem, U8.toUInt8_ofUInt8]
-  · rw [dif_neg hlt, dif_neg hlt]
+  · rw [dite_eq_right hlt, dite_eq_right hlt]
     simp only [ct2Array, Aeneas.Std.Array.make_val, ct2List]
     rw [toU8List_getElem, U8.toUInt8_ofUInt8]
 

@@ -92,7 +92,7 @@ theorem decodeDkPke_encodeMlkemDk {p : ParamSet} (dkPke : Fin (384 * p.k) → UI
     decodeDkPke (encodeMlkemDk dkPke ek h z) = dkPke := by
   funext i
   unfold decodeDkPke encodeMlkemDk
-  rw [dif_pos i.isLt]
+  rw [dite_eq_left i.isLt]
 
 /-- `decodeDkEk` inverts `encodeMlkemDk`. -/
 theorem decodeDkEk_encodeMlkemDk {p : ParamSet} (dkPke : Fin (384 * p.k) → UInt8)
@@ -101,8 +101,8 @@ theorem decodeDkEk_encodeMlkemDk {p : ParamSet} (dkPke : Fin (384 * p.k) → UIn
   funext i
   have hi := i.isLt
   unfold decodeDkEk encodeMlkemDk
-  rw [dif_neg (by change ¬ (384 * p.k + i.val < 384 * p.k); omega),
-    dif_pos (by change 384 * p.k + i.val < 768 * p.k + 32; omega)]
+  rw [dite_eq_right (by change ¬ (384 * p.k + i.val < 384 * p.k); omega),
+    dite_eq_left (by change 384 * p.k + i.val < 768 * p.k + 32; omega)]
   congr 1
   exact Fin.ext (by change 384 * p.k + i.val - 384 * p.k = i.val; omega)
 
@@ -113,9 +113,9 @@ theorem decodeDkH_encodeMlkemDk {p : ParamSet} (dkPke : Fin (384 * p.k) → UInt
   funext i
   have hi := i.isLt
   unfold decodeDkH encodeMlkemDk
-  rw [dif_neg (by change ¬ (768 * p.k + 32 + i.val < 384 * p.k); omega),
-    dif_neg (by change ¬ (768 * p.k + 32 + i.val < 768 * p.k + 32); omega),
-    dif_pos (by change 768 * p.k + 32 + i.val < 768 * p.k + 64; omega)]
+  rw [dite_eq_right (by change ¬ (768 * p.k + 32 + i.val < 384 * p.k); omega),
+    dite_eq_right (by change ¬ (768 * p.k + 32 + i.val < 768 * p.k + 32); omega),
+    dite_eq_left (by change 768 * p.k + 32 + i.val < 768 * p.k + 64; omega)]
   congr 1
   exact Fin.ext (by change 768 * p.k + 32 + i.val - (768 * p.k + 32) = i.val; omega)
 
@@ -126,9 +126,9 @@ theorem decodeDkZ_encodeMlkemDk {p : ParamSet} (dkPke : Fin (384 * p.k) → UInt
   funext i
   have hi := i.isLt
   unfold decodeDkZ encodeMlkemDk
-  rw [dif_neg (by change ¬ (768 * p.k + 64 + i.val < 384 * p.k); omega),
-    dif_neg (by change ¬ (768 * p.k + 64 + i.val < 768 * p.k + 32); omega),
-    dif_neg (by change ¬ (768 * p.k + 64 + i.val < 768 * p.k + 64); omega)]
+  rw [dite_eq_right (by change ¬ (768 * p.k + 64 + i.val < 384 * p.k); omega),
+    dite_eq_right (by change ¬ (768 * p.k + 64 + i.val < 768 * p.k + 32); omega),
+    dite_eq_right (by change ¬ (768 * p.k + 64 + i.val < 768 * p.k + 64); omega)]
   congr 1
   exact Fin.ext (by change 768 * p.k + 64 + i.val - (768 * p.k + 64) = i.val; omega)
 

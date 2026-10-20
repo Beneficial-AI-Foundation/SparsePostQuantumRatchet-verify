@@ -355,12 +355,12 @@ lemma nttSpec_delta (j idx : Fin n) :
           AdjoinRoot.of (gammaPoly i) (0 : Zq) * AdjoinRoot.root (gammaPoly i) := by
       rw [himg, hj, pow_zero, mul_one, h0, zero_mul, add_zero]
     by_cases hidx : idx.val % 2 = 0
-    · rw [if_pos (by omega)]
+    · rw [ite_eq_left (by omega)]
       simp only [nttSpec, hidx, reduceIte]
       rw [← hi, himg', quadCoeff0_repr]
-    · rw [if_neg (by omega)]
+    · rw [ite_eq_right (by omega)]
       simp only [nttSpec]
-      rw [if_neg hidx, ← hi, himg', quadCoeff1_repr]
+      rw [ite_eq_right hidx, ← hi, himg', quadCoeff1_repr]
   · -- `j` odd: the image is `0 + γ^{j/2}·X`.
     have himg' : crtHom i (Rq.ofCoeffs (delta j)) =
         AdjoinRoot.of (gammaPoly i) (0 : Zq) +
@@ -368,12 +368,12 @@ lemma nttSpec_delta (j idx : Fin n) :
             AdjoinRoot.root (gammaPoly i) := by
       rw [himg, show j.val % 2 = 1 by omega, pow_one, h0, zero_add]
     by_cases hidx : idx.val % 2 = 0
-    · rw [if_neg (by omega)]
+    · rw [ite_eq_right (by omega)]
       simp only [nttSpec, hidx, reduceIte]
       rw [← hi, himg', quadCoeff0_repr]
-    · rw [if_pos (by omega)]
+    · rw [ite_eq_left (by omega)]
       simp only [nttSpec]
-      rw [if_neg hidx, ← hi, himg', quadCoeff1_repr]
+      rw [ite_eq_right hidx, ← hi, himg', quadCoeff1_repr]
 
 /-! ### Simulation relation between packed naturals and coefficient vectors -/
 
@@ -505,7 +505,7 @@ lemma simR_deltaP (j : Fin n) : simR (deltaP j.val) (delta j) := by
   intro i
   unfold deltaP delta getP
   rcases lt_trichotomy i.val j.val with h | h | h
-  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+  · rw [ite_eq_right (Fin.val_ne_iff.mp (by omega))]
     have hdvd : (4096 : ℕ) ^ j.val / 4096 ^ i.val = 4096 ^ (j.val - i.val) :=
       Nat.pow_div (by omega) (by norm_num)
     rw [hdvd]
@@ -515,9 +515,9 @@ lemma simR_deltaP (j : Fin n) : simR (deltaP j.val) (delta j) := by
   · have hij : i = j := Fin.ext h
     have hdiv : (4096 : ℕ) ^ j.val / 4096 ^ i.val = 1 := by
       rw [h, Nat.div_self (Nat.pow_pos (show 0 < 4096 by norm_num))]
-    rw [if_pos hij, hdiv]
+    rw [ite_eq_left hij, hdiv]
     exact ⟨by norm_num, by norm_num⟩
-  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+  · rw [ite_eq_right (Fin.val_ne_iff.mp (by omega))]
     have hlt : (4096 : ℕ) ^ j.val < 4096 ^ i.val :=
       Nat.pow_lt_pow_right (by norm_num) h
     rw [Nat.div_eq_of_lt hlt]
@@ -544,7 +544,7 @@ lemma simR_formulaP (j : Fin n) : simR (formulaP j.val) (nttSpec (delta j)) := b
   rw [nttSpec_delta]
   unfold formulaCell
   by_cases hpar : i.val % 2 = j.val % 2
-  · rw [if_pos hpar, if_pos hpar, cast_mod_3329]
+  · rw [ite_eq_left hpar, ite_eq_left hpar, cast_mod_3329]
     have hbr : brN (i.val / 2)
         = (bitRev7Table ⟨i.val / 2, by have h : i.val < 256 := i.isLt; omega⟩).val :=
       brN_eq_bitRev7 ⟨i.val / 2, by have h : i.val < 256 := i.isLt; omega⟩
@@ -553,7 +553,7 @@ lemma simR_formulaP (j : Fin n) : simR (formulaP j.val) (nttSpec (delta j)) := b
     rw [← pow_mul]
     push_cast
     rfl
-  · rw [if_neg hpar, if_neg hpar]
+  · rw [ite_eq_right hpar, ite_eq_right hpar]
     simp
 
 /-! ### The kernel verification and the basis-vector correspondence -/
@@ -682,7 +682,7 @@ lemma simR_128_deltaP (j : Fin n) :
     ((getP (128 * deltaP j.val) i.val : ℕ) : Zq) = 128 * (if i = j then 1 else 0)
   unfold deltaP getP
   rcases lt_trichotomy i.val j.val with h | h | h
-  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+  · rw [ite_eq_right (Fin.val_ne_iff.mp (by omega))]
     set d := j.val - i.val - 1 with hd
     have h1 : j.val = d + 1 + i.val := by omega
     have hdvd : 128 * (4096 : ℕ) ^ j.val / 4096 ^ i.val = 128 * 4096 ^ d * 4096 := by
@@ -693,9 +693,9 @@ lemma simR_128_deltaP (j : Fin n) :
   · have hij : i = j := Fin.ext h
     have hdiv : 128 * (4096 : ℕ) ^ j.val / 4096 ^ i.val = 128 := by
       rw [h]; exact Nat.mul_div_cancel _ (Nat.pow_pos (by norm_num))
-    rw [if_pos hij, hdiv]
+    rw [ite_eq_left hij, hdiv]
     exact ⟨by norm_num, by norm_num⟩
-  · rw [if_neg (Fin.val_ne_iff.mp (by omega))]
+  · rw [ite_eq_right (Fin.val_ne_iff.mp (by omega))]
     have hlt : 128 * (4096 : ℕ) ^ j.val < 4096 ^ i.val := by
       calc 128 * (4096 : ℕ) ^ j.val < 4096 * 4096 ^ j.val :=
             Nat.mul_lt_mul_of_pos_right (by norm_num) (Nat.pow_pos (by norm_num))

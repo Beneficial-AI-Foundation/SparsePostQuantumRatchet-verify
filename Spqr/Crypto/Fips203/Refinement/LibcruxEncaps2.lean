@@ -44,9 +44,14 @@ open libcrux_ml_kem.mlkem768.incremental
 
 /-! ## Byte vectors as fixed-size Aeneas arrays -/
 
+/-- `encapsStateSize` as the value of the Aeneas size literal `2080#usize`. -/
+theorem encapsStateSize_eq_usize : encapsStateSize = (2080#usize).val := by
+  simp only [encapsStateSize]; rfl
+
 /-- A 2080-byte state vector as an Aeneas `Array U8 2080`. -/
 def stateArray (b : Fin encapsStateSize → UInt8) : Array U8 2080#usize :=
-  Aeneas.Std.Array.make 2080#usize (toU8List b) (toU8List_length b)
+  Aeneas.Std.Array.make 2080#usize (toU8List b)
+    ((toU8List_length b).trans encapsStateSize_eq_usize)
 
 /-- An 1152-byte `pk2` vector as an Aeneas `Array U8 1152`. -/
 def pk2Array (b : Fin 1152 → UInt8) : Array U8 1152#usize :=
@@ -127,8 +132,8 @@ theorem ct_eq_ct1Bytes_append_ct2Bytes (seed : Fin 64 → UInt8)
             mlkem768CompressionV, mlkem768_k] at this
             simp only [ct1Size, ct2Size]; omega⟩ := by
   by_cases hlt : idx.val < ct1Size
-  · rw [dif_pos hlt, ct1Bytes_pk1Bytes]
-  · rw [dif_neg hlt, ct2Bytes_stateOut_pk2Bytes]
+  · rw [dite_eq_left hlt, ct1Bytes_pk1Bytes]
+  · rw [dite_eq_right hlt, ct2Bytes_stateOut_pk2Bytes]
     refine congrArg _ (Fin.ext ?_)
     simp only [ct1Size] at hlt ⊢
     omega

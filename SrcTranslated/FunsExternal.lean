@@ -2045,8 +2045,8 @@ theorem libcrux_ml_kem.mlkem768.incremental.encapsulate1_spec
         (Fips203.Refinement.ssOut pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness)) ∧
       r.2.1.length = state.length ∧
       r.2.2.length = shared_secret.length ⦄ := by
-  simp only [Slice.from_val, Slice.length, libcrux_ml_kem.mlkem768.incremental.encapsulate1, dif_pos h_pk1,
-    dif_neg (Nat.not_lt.mpr h_ss), dif_neg (Nat.not_lt.mpr h_state), WP.spec_ok]
+  simp only [Slice.from_val, Slice.length, libcrux_ml_kem.mlkem768.incremental.encapsulate1, dite_eq_left h_pk1,
+    dite_eq_right (Nat.not_lt.mpr h_ss), dite_eq_right (Nat.not_lt.mpr h_state), WP.spec_ok]
   refine ⟨trivial, trivial, trivial, ?_, ?_⟩
   · exact Fips203.Refinement.overwritePrefix_length _ _ h_state
   · exact Fips203.Refinement.overwritePrefix_length _ _ h_ss

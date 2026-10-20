@@ -56,8 +56,8 @@ theorem encapsulate1_eq_mlkemEncapsPhase1 (pk1 : Slice U8) (randomness : Array U
         Slice.from
           (overwritePrefix shared_secret.val (ssOut pk1.val h_pk1 (msgOfArray randomness))) (by
           rw [overwritePrefix_length _ _ h_ss]; exact shared_secret.length_ineq)) := by
-  simp only [encapsulate1, dif_pos h_pk1, dif_neg (Nat.not_lt.mpr h_ss),
-    dif_neg (Nat.not_lt.mpr h_state)]
+  simp only [encapsulate1, dite_eq_left h_pk1, dite_eq_right (Nat.not_lt.mpr h_ss),
+    dite_eq_right (Nat.not_lt.mpr h_state)]
 
 /-- The ciphertext half, as a byte list, is `c₁` of round 1. -/
 theorem encapsulate1_ct1 (pk1 : Slice U8) (randomness : Array U8 32#usize)
@@ -109,7 +109,7 @@ theorem encapsulate1_short_header (pk1 : Slice U8) (randomness : Array U8 32#usi
     (state shared_secret : Slice U8) (h_pk1 : pk1.length < 64) :
     encapsulate1 pk1 randomness state shared_secret =
       ok (.Err .InvalidInputLength, state, shared_secret) := by
-  simp only [encapsulate1, dif_neg (Nat.not_le.mpr h_pk1)]
+  simp only [encapsulate1, dite_eq_right (Nat.not_le.mpr h_pk1)]
 
 /-! ## Composition with Refinement 6.1: the header of a generated key pair
 
