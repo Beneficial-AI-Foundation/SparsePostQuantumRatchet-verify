@@ -9,6 +9,7 @@ public import SrcTranslated.Funs
 public import Spqr.Math.Poly.Lagrange.InterpolantSum
 public import Spqr.Math.Poly.Eval
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-!
@@ -34,7 +35,11 @@ out.push(y.value as u8);
 ## Main definitions
 
 * `lookupY` — model of `binary_search` on a list of `Pt` (whose `Ord` instance compares
-  `x` only): the `y` of the first point whose `x` equals the target, or `none`.
+  `x` only): the `y` of the first point whose `x` equals the target, or `none`.  Rust's
+  `binary_search` may return *any* matching index; on a `SlotSorted` list (the `SortedSet<Pt>`
+  invariant, see `PointsValid.lean`) the match is unique, so `lookupY` is faithful.  The
+  generic spec is `binary_search_Pt_spec_generic`; `binary_search_Pt_spec` derives the
+  `lookupY` form under `SlotSorted`.
 * `necessaryPoints` — `pts_needed / 16 + (if poly < pts_needed % 16 then 1 else 0)`.
 * `decodedValue` — the GF(2¹⁶) value decoded at index `k`.
 * `BytesDecode` — the byte pairs `(bs[2k], bs[2k+1])` encode `decodedValue … (lo + k)`.
@@ -126,27 +131,34 @@ theorem BytesDecode_append (a : Array (sorted_vec.SortedSet Pt) 16#usize) (pts_n
     subst hh1 hh2
     exact h_pair
 
-/-! ## `binary_search` on `Pt` lists computes `lookupY` -/
+/-! ## `binary_search` on `Pt` lists
 
-/-- `Slice.binarySearchAux` with the `Pt` ordering: `Ok j` means the point at
-position `j - i` has abscissa `x` and `lookupY` returns its ordinate; `Err _` means
-`lookupY` returns `none`. -/
-theorem binarySearchAux_Pt (l : List Pt) (g : GF16) (i : Nat) :
+Rust's `binary_search` only promises that, on a match, *some* index of an element comparing
+equal to the target is returned — which one is unspecified when several elements compare
+equal.  The generic model `binarySearchAux_Pt_generic` therefore only says:
+
+  • `Ok j` → `s[j].x = x` (any matching index);
+  • `Err _` → (on a `SlotSorted` list) no element has abscissa `x`.
+
+Under `SlotSorted` (strictly increasing abscissae, the `SortedSet<Pt>` invariant) the match is
+unique, so `lookupY` — which scans for the first match — is a faithful characterisation.  This
+is `binary_search_Pt_spec`, which requires `SlotSorted s.val`. -/
+
+/-- Generic characterisation of `Slice.binarySearchAux` with the `Pt` ordering: `Ok j`
+means the point at position `j - i` has abscissa `x`; `Err _` means (on a sorted list) no
+point has abscissa `x`.  Which matching index is returned is left unspecified. -/
+theorem binarySearchAux_Pt_generic (l : List Pt) (g : GF16) (i : Nat) :
     Slice.binarySearchAux Pt.Insts.CoreCmpOrd l { x := g, y := GF16.ZERO } i
       ⦃ (r : core.result.Result Nat Nat) =>
       match r with
       | .Ok j => i ≤ j ∧ ∃ (h : j - i < l.length),
-          lookupY l g.value.val = some (l[j - i]'h).y
-      | .Err j => j ≤ i + l.length ∧ lookupY l g.value.val = none ⦄ := by
+          (l[j - i]'h).x.value.val = g.value.val
+      | .Err j => j ≤ i + l.length ∧
+          (PolyDecoder.SlotSorted l → ∀ p ∈ l, p.x.value.val ≠ g.value.val) ⦄ := by
   induction l generalizing i with
-  | nil => simp [Slice.binarySearchAux, lookupY]
+  | nil => simp [Slice.binarySearchAux]
   | cons p rest ih =>
-    simp only [Slice.binarySearchAux]
-    have hcmp := spqr.encoding.polynomial.Pt.Insts.CoreCmpOrd.cmp_spec p { x := g, y := GF16.ZERO }
-    apply WP.spec_bind hcmp
-    intro o ho
-    simp only at ho
-    subst ho
+    simp only [Slice.binarySearchAux, Pt.Insts.CoreCmpOrd.cmp_eq_compare, bind_ok]
     rcases Nat.lt_trichotomy p.x.value.val g.value.val with hlt | heq | hgt
     · rw [Nat.compare_eq_lt.mpr hlt]
       apply WP.spec_mono (ih (i + 1))
@@ -155,22 +167,64 @@ theorem binarySearchAux_Pt (l : List Pt) (g : GF16) (i : Nat) :
       | Ok j =>
         obtain ⟨hij, hjl, hl⟩ := hr
         refine ⟨by omega, ?_⟩
-        simp only [lookupY, hlt, ite_true, List.length_cons]
+        simp only [List.length_cons]
         refine ⟨by omega, ?_⟩
-        rw [hl]
         have : j - i = (j - (i + 1)) + 1 := by omega
-        simp [this]
+        simp only [this, List.getElem_cons_succ]
+        exact hl
       | Err j =>
-        simp only [lookupY, hlt, ite_true, List.length_cons]
-        exact ⟨by omega, hr.2⟩
+        obtain ⟨hjl, hl⟩ := hr
+        refine ⟨by simp; omega, fun hs q hq => ?_⟩
+        rw [PolyDecoder.SlotSorted, List.pairwise_cons] at hs
+        simp only [List.mem_cons] at hq
+        rcases hq with rfl | hq
+        · exact Nat.ne_of_lt hlt
+        · exact hl hs.2 q hq
     · rw [Nat.compare_eq_eq.mpr heq]
       simp only [WP.spec_ok]
-      refine ⟨le_refl _, by simp, ?_⟩
-      simp [lookupY, heq]
+      exact ⟨le_refl _, by simp, by simpa using heq⟩
     · rw [Nat.compare_eq_gt.mpr hgt]
       simp only [WP.spec_ok]
-      refine ⟨by simp, ?_⟩
-      simp [lookupY, Nat.lt_asymm hgt, Nat.ne_of_gt hgt]
+      refine ⟨by simp, fun hs q hq => ?_⟩
+      rw [PolyDecoder.SlotSorted, List.pairwise_cons] at hs
+      simp only [List.mem_cons] at hq
+      rcases hq with rfl | hq
+      · exact Nat.ne_of_gt hgt
+      · exact Nat.ne_of_gt (lt_trans hgt (hs.1 q hq))
+
+/-- `lookupY` on a `SlotSorted` list returns the ordinate of *the* (unique) point with
+abscissa `x`, if any: for every index `j` with `l[j].x = x`, `lookupY l x = some l[j].y`. -/
+theorem lookupY_eq_of_sorted (l : List Pt) (x : Nat) (hs : PolyDecoder.SlotSorted l)
+    (j : Nat) (hj : j < l.length) (hx : (l[j]'hj).x.value.val = x) :
+    lookupY l x = some (l[j]'hj).y := by
+  induction l generalizing j with
+  | nil => simp at hj
+  | cons p rest ih =>
+    rw [PolyDecoder.SlotSorted, List.pairwise_cons] at hs
+    obtain ⟨hp, hrest⟩ := hs
+    cases j with
+    | zero =>
+      simp only [List.getElem_cons_zero] at hx ⊢
+      simp [lookupY, hx]
+    | succ j =>
+      simp only [List.getElem_cons_succ] at hx ⊢
+      have hlt : p.x.value.val < x := by
+        rw [← hx]; exact hp _ (List.getElem_mem _)
+      simp only [lookupY, hlt, ite_true]
+      exact ih hrest j (by simpa using hj) hx
+
+/-- `lookupY l x = none` when no point of `l` has abscissa `x`. -/
+theorem lookupY_eq_none_of_forall (l : List Pt) (x : Nat)
+    (h : ∀ p ∈ l, p.x.value.val ≠ x) : lookupY l x = none := by
+  induction l with
+  | nil => rfl
+  | cons p rest ih =>
+    have hne := h p (by simp)
+    simp only [lookupY, hne, ite_false]
+    split
+    · exact ih fun q hq => h q (by simp [hq])
+    · rfl
+
 
 /-- `UScalar.tryMk .Usize n` succeeds with value `n` whenever `n ≤ Usize.max`. -/
 theorem usize_tryMk_spec (n : Nat) (h : n ≤ Usize.max) :
@@ -187,17 +241,18 @@ theorem usize_tryMk_spec (n : Nat) (h : n ≤ Usize.max) :
     cases e; simp only [UScalar.inBounds] at this; scalar_tac
   | div => rw [hm] at this; exact this.elim
 
-/-- `[Pt]::binary_search(&Pt { x, ZERO })` on a slice with `x`-value `x`:
-on `Ok j`, `lookupY = some s[j].y`; on `Err _`, `lookupY = none`. -/
-theorem binary_search_Pt_spec (s : Slice Pt) (g : GF16) :
+/-- **Generic spec for `[Pt]::binary_search(&Pt { x, ZERO })`** (mirrors the Rust contract):
+on `Ok j`, `s[j]` is *some* point with abscissa `x` (which one is unspecified); on `Err _`
+and provided the slice is `SlotSorted`, no point has abscissa `x`. -/
+theorem binary_search_Pt_spec_generic (s : Slice Pt) (g : GF16) :
     core.slice.Slice.binary_search Pt.Insts.CoreCmpOrd s { x := g, y := GF16.ZERO }
       ⦃ (r : core.result.Result Usize Usize) =>
       match r with
-      | .Ok j => ∃ (h : j.val < s.length),
-          lookupY s.val g.value.val = some (s.val[j.val]'h).y
-      | .Err _ => lookupY s.val g.value.val = none ⦄ := by
+      | .Ok j => ∃ (h : j.val < s.length), (s.val[j.val]'h).x.value.val = g.value.val
+      | .Err _ => PolyDecoder.SlotSorted s.val →
+          ∀ p ∈ s.val, p.x.value.val ≠ g.value.val ⦄ := by
   unfold core.slice.Slice.binary_search
-  apply WP.spec_bind (binarySearchAux_Pt s.val g 0)
+  apply WP.spec_bind (binarySearchAux_Pt_generic s.val g 0)
   intro r hr
   have hs := s.length_ineq
   cases r with
@@ -215,5 +270,29 @@ theorem binary_search_Pt_spec (s : Slice Pt) (g : GF16) :
     intro j' _
     simp only [WP.spec_ok]
     exact hl
+
+/-- **`binary_search` on a `SlotSorted` slice computes `lookupY`**: on `Ok j`,
+`lookupY = some s[j].y`; on `Err _`, `lookupY = none`.
+
+This is the `lookupY` characterisation used by `decoded_message`.  It is *derived* from the
+generic spec `binary_search_Pt_spec_generic` (which allows any matching index) together with
+the uniqueness of the match under `SlotSorted` (`lookupY_eq_of_sorted`). -/
+theorem binary_search_Pt_spec (s : Slice Pt) (g : GF16)
+    (h_sorted : PolyDecoder.SlotSorted s.val) :
+    core.slice.Slice.binary_search Pt.Insts.CoreCmpOrd s { x := g, y := GF16.ZERO }
+      ⦃ (r : core.result.Result Usize Usize) =>
+      match r with
+      | .Ok j => ∃ (h : j.val < s.length),
+          lookupY s.val g.value.val = some (s.val[j.val]'h).y
+      | .Err _ => lookupY s.val g.value.val = none ⦄ := by
+  apply WP.spec_mono (binary_search_Pt_spec_generic s g)
+  intro r hr
+  cases r with
+  | Ok j =>
+    obtain ⟨hj, hx⟩ := hr
+    exact ⟨hj, lookupY_eq_of_sorted s.val g.value.val h_sorted j.val hj hx⟩
+  | Err j =>
+    exact lookupY_eq_none_of_forall s.val g.value.val (hr h_sorted)
+
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder

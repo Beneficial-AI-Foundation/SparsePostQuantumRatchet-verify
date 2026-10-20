@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Decoder for PolyDecoder}::new`
 
@@ -46,5 +47,43 @@ theorem new_spec (len_bytes : Std.Usize) :
   unfold new
   step*
   assumption
+
+/-! ## `new` establishes the `PointsValid` invariant -/
+
+/-- A point array all of whose slots are `default` (empty) satisfies `PointsValid`. -/
+theorem PointsValid_replicate_default (pts : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (h : pts.val = List.replicate 16 default) : PointsValid pts := by
+  apply PointsValid_of_forall_nil
+  intro s hs
+  rw [h, List.mem_replicate] at hs
+  rw [hs.2]
+  rfl
+
+/-- **`new_with_poly_count` establishes `PointsValid`**: on success the fresh decoder's 16
+slots are all empty, hence trivially sorted. -/
+theorem new_with_poly_count_spec_valid (len_bytes _polys : Std.Usize) :
+    new_with_poly_count len_bytes _polys ⦃ (result : core.result.Result
+        encoding.polynomial.PolyDecoder encoding.EncodingError) =>
+      match result with
+      | core.result.Result.Ok pd => PointsValid pd.pts
+      | core.result.Result.Err _ => True ⦄ := by
+  apply WP.spec_mono (new_with_poly_count_spec len_bytes _polys)
+  intro r hr
+  split at hr
+  · rcases r with pd | e
+    · exact PointsValid_replicate_default pd.pts hr.2.1
+    · exact trivial
+  · rw [hr]; exact trivial
+
+/-- **`new` establishes `PointsValid`**: on success every slot of the fresh decoder is
+empty, hence `SlotSorted`. -/
+theorem new_spec_valid (len_bytes : Std.Usize) :
+    new len_bytes ⦃ (result : core.result.Result
+        encoding.polynomial.PolyDecoder encoding.EncodingError) =>
+      match result with
+      | core.result.Result.Ok pd => PointsValid pd.pts
+      | core.result.Result.Err _ => True ⦄ := by
+  unfold new
+  exact new_with_poly_count_spec_valid len_bytes 16#usize
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder

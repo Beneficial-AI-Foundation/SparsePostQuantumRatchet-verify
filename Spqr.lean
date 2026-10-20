@@ -194,6 +194,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes

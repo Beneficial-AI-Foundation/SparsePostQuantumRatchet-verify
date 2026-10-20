@@ -11,6 +11,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolate
 import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
 import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 public import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
 public import SrcTranslated.Funs
@@ -297,6 +298,7 @@ theorem body_spec
     (h_i_bound : i.val ≤ Usize.max := by scalar_tac)
     (h_poly_bound : iter.start.val % 16 < 16 := by omega)
     (h_out_cap : out.length + 2 ≤ Usize.max := by scalar_tac)
+    (h_valid : PointsValid a)
     (h_enough : ∀ j (hj : j < 16),
       i.val / 16 + (if j < i.val % 16 then 1 else 0) ≤
         (a.val[j]'(by simp; omega)).length)
@@ -332,7 +334,10 @@ theorem body_spec
     simp_all
   rename_i i1
   step; step; step; step; step; step; step
-  step with binary_search_Pt_spec v.deref g as ⟨r, r_post⟩
+  have h_sorted : SlotSorted (alloc.vec.Vec.deref v).val := by
+    simp only [alloc.vec.Vec.deref, Slice.from_val, v_post, sv_post, ss_post]
+    exact h_valid.slot poly.val (by scalar_tac)
+  step with binary_search_Pt_spec v.deref g h_sorted as ⟨r, r_post⟩
   -- The iterator produced `some i1`, hence the range was non-empty and `i1 = iter.start`.
   have h_iter : iter.start.val < iter.end.val := by
     by_contra h
@@ -529,6 +534,7 @@ theorem decoded_message_loop1_spec
     (h_end : iter.end = i)
     (h_start_le : iter.start.val ≤ i.val)
     (h_out_cap : out.length + 2 * (i.val - iter.start.val) ≤ Usize.max)
+    (h_valid : PointsValid a)
     (h_enough : ∀ j (hj : j < 16),
       i.val / 16 + (if j < i.val % 16 then 1 else 0) ≤
         (a.val[j]'(by simp; omega)).length)
@@ -568,7 +574,7 @@ theorem decoded_message_loop1_spec
         have h1 : 2 * (i.val - iter'.start.val) ≥ 2 := by omega
         linarith
       have hspec := decoded_message_loop1.body_spec i a b iter' polys' out'
-        (by scalar_tac) (by omega) h_out_cap' h_enough h_polys' h_cache'
+        (by scalar_tac) (by omega) h_out_cap' h_valid h_enough h_polys' h_cache'
       apply WP.spec_mono hspec
       intro cf hcf
       match cf with
@@ -636,6 +642,7 @@ loop.
 -/
 @[step]
 theorem decoded_message_spec (self : encoding.polynomial.PolyDecoder)
+    (h_valid : PointsValid self.pts)
     (h_out_cap : 2 * self.pts_needed.val ≤ Usize.max) :
     decoded_message self ⦃ (result : Option (alloc.vec.Vec U8)) =>
       match result with
@@ -675,7 +682,8 @@ theorem decoded_message_spec (self : encoding.polynomial.PolyDecoder)
     intro j hj p hp; simp only [polys_post, List.getElem_replicate] at hp; cases hp
   have hspec := decoded_message_loop1_spec
     { start := 0#usize, «end» := self.pts_needed } self.pts_needed self.pts false polys
-    (alloc.vec.Vec.with_capacity U8 i1) rfl (by simp) (by rw [h_cap0]; simp; omega) h_enough'
+    (alloc.vec.Vec.with_capacity U8 i1) rfl (by simp) (by rw [h_cap0]; simp; omega) h_valid
+    h_enough'
     (fun j hj p hp => (h_polys_none j hj p hp).elim)
     (fun j hj p hp => (h_polys_none j hj p hp).elim)
   apply WP.spec_bind hspec
