@@ -43,7 +43,10 @@ full FIPS 203 / HKDF value semantics inherited from `encaps1_spec`, `hkdf_to_vec
 
 open Aeneas Aeneas.Std Result spqr crypto
 
-namespace spqr.v1.unchunked.send_ct.HeaderReceived
+/- Helper definitions live in a CamelCase namespace (mirroring `Spqr.IncrementalMlkem768` in
+`Encaps2.lean`) so that their full names satisfy the `defsWithUnderscore` linter; the spec
+theorem itself stays in the Rust-mirroring `spqr.v1.unchunked.send_ct.HeaderReceived` namespace. -/
+namespace Spqr.V1.Unchunked.SendCt
 
 /-- The 33-byte domain-separation label `b"Signal_PQCKA_V1_MLKEM768:SCKA Key"` used as the HKDF
 info prefix when deriving the epoch secret in `send_ct1` (and, symmetrically, in `recv_ct1`). -/
@@ -55,6 +58,12 @@ def sckaKeyLabel : List U8 :=
 
 @[simp, grind =]
 theorem sckaKeyLabel_length : sckaKeyLabel.length = 33 := by rfl
+
+end Spqr.V1.Unchunked.SendCt
+
+namespace spqr.v1.unchunked.send_ct.HeaderReceived
+
+open Spqr.V1.Unchunked.SendCt
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr.v1.unchunked.send_ct.HeaderReceived.send_ct1`**:
