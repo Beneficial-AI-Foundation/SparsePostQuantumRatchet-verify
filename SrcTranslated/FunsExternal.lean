@@ -4,6 +4,12 @@ public import SrcTranslated.Types
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
 -- Remove when https://github.com/AeneasVerif/aeneas/issues/1415 lands
 import all Aeneas.Std.String
+public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
+public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+public import Spqr.Crypto.Fips203.Refinement.DecapsBytes
+import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
+import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+import Spqr.Crypto.Fips203.Refinement.DecapsBytes
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
@@ -1776,7 +1782,16 @@ axiom libcrux_hmac.hmac_sha256_tag32_spec
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
     Name pattern: [libcrux_ml_kem::constants::SHARED_SECRET_SIZE] -/
 @[rust_const "libcrux_ml_kem::constants::SHARED_SECRET_SIZE"]
-noncomputable opaque libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize
+def libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize :=
+  -- `pub const SHARED_SECRET_SIZE: usize = 32;`
+  ok 32#usize
+
+/-- **Spec theorem for `libcrux_ml_kem::constants::SHARED_SECRET_SIZE`**: the constant is `32`. -/
+@[step]
+theorem libcrux_ml_kem.constants.SHARED_SECRET_SIZE_spec :
+    libcrux_ml_kem.constants.SHARED_SECRET_SIZE ⦃ (r : Std.Usize) => r.val = 32 ⦄ := by
+  simp only [libcrux_ml_kem.constants.SHARED_SECRET_SIZE, WP.spec_ok]
+  rfl
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}::fmt]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
@@ -1820,33 +1835,77 @@ noncomputable opaque libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Us
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 59:8-59:48
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encaps_state_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encaps_state_len"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize
+def libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize :=
+  -- `(RANK + 1) * PolynomialRingElement::num_bytes() + 32 = 4 * 512 + 32 = 2080`
+  ok 2080#usize
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encaps_state_len`**: the
+serialised encapsulation state has `2080` bytes. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encaps_state_len_spec :
+    libcrux_ml_kem.mlkem768.incremental.encaps_state_len ⦃ (r : Std.Usize) =>
+      r.val = Fips203.Refinement.encapsStateSize ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.encaps_state_len, WP.spec_ok]
+  rfl
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 407:8-407:111
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate2"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.encapsulate2
-  :
-  Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
-    (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
+noncomputable def libcrux_ml_kem.mlkem768.incremental.encapsulate2
+  (state : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
+  Result (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :=
+  -- Model: round 2 of FIPS 203 `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase2`): decode the
+  -- 2080-byte state `ŷ ‖ e₂ ‖ m` and `t̂` from `pk2 = ByteEncode₁₂(t̂)`, then output
+  -- `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))`.  Both inputs are
+  -- fixed-size arrays, so there are no error cases and the function never fails.
+  -- See `Spqr/Crypto/Fips203/Refinement/EncapsBytes.lean`.
+  ok { value := Fips203.Refinement.ct2Array state pk2 }
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encapsulate2`**
+
+- Never panics (both inputs are fixed-size arrays, so there are no length checks).
+- Returns the `128`-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17
+  (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `state` and the
+  NTT-domain vector `t̂` decoded from `pk2` (`Fips203.Refinement.ct2List`). -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encapsulate2_spec
+    (state : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
+    libcrux_ml_kem.mlkem768.incremental.encapsulate2 state pk2
+      ⦃ (r : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) =>
+      r.value.length = 128 ∧ r.value.val = Fips203.Refinement.ct2List state pk2 ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.encapsulate2, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed"]
-def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
-  (_seed : Array Std.U8 64#usize) : Result
+noncomputable def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
+  (seed : Array Std.U8 64#usize) : Result
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes :=
-  ok default
+  -- Model: FIPS 203 `ML-KEM.KeyGen_internal(d, z)` with `d = seed[0:32]`, `z = seed[32:64]`,
+  -- serialised as `dk = dkPKE ‖ ek ‖ H(ek) ‖ z` — byte-for-byte the libcrux layout
+  -- (`KeyPair::to_bytes_compressed`).  See `Spqr/Crypto/Fips203/Refinement/KeyPairBytes.lean`.
+  ok { value := Fips203.Refinement.keyPairArray (Fips203.Refinement.seedOfArray seed) }
 
--- TODO: add cryptographic properties of from_seed_spec
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::from_seed`**
+
+- Key generation from a 64-byte seed does not panic.
+- The returned buffer has the decapsulation-key length `2400`.
+- The buffer is exactly the FIPS 203 (Algorithm 16) decapsulation key
+  `ML-KEM.KeyGen_internal(seed[0:32], seed[32:64]).dk` (`Fips203.Refinement.keyPairList`), as libcrux
+  lays it out: `ByteEncode₁₂(ŝ) ‖ ByteEncode₁₂(t̂) ‖ ρ ‖ H(ek) ‖ z`. -/
 @[step]
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
     (seed : Array Std.U8 64#usize) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed
-      ⦃ fun kp => kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄
+      ⦃ (kp : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) =>
+      kp.value.length = mlkem768Params.decapsulationKeyBytes ∧
+      kp.value.val = Fips203.Refinement.keyPairList (Fips203.Refinement.seedOfArray seed) ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
@@ -1953,35 +2012,176 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes] -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]
+
+    Concrete model of Rust's `validate_pk_bytes(pk1, pk2)`
+    (`src/ind_cca/incremental.rs` lines 297–339, `validate_pk_bytes` + `validate_pk_parts`):
+    1. Length check: fails with `InvalidInputLength` unless `pk1.len() == 64` **and**
+       `pk2.len() == 1152` (exact equality; over-long inputs are rejected).
+    2. Hash check: rebuilds `ek = pk2 ‖ pk1[0..32]` and fails with `InvalidPublicKey` unless
+       `H(ek) == pk1[32..64]` (`Fips203.Refinement.pk1HashValid`).
+    3. Modulus check (FIPS 203 § 7.2): fails with `InvalidPublicKey` unless
+       `ByteEncode₁₂(ByteDecode₁₂(pk2)) == pk2` (`Fips203.Refinement.pk2Valid`).
+
+    The outer `Result` is always `ok` (the call never panics).
+
+    **Modelling note**: steps 2 and 3 are modelled via the predicates
+    `Fips203.Refinement.pk1HashValid` / `Fips203.Refinement.pk2Valid`; both always hold for keys
+    produced by `from_seed` (`pk1HashValid_pk1Bytes`, `pk2Valid_pk2Bytes`). -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+noncomputable def libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   :
   Slice Std.U8 → Slice Std.U8 → Result (core.result.Result Unit
-    libcrux_ml_kem.ind_cca.incremental.types.Error)
+    libcrux_ml_kem.ind_cca.incremental.types.Error) :=
+  fun pk1 pk2 =>
+    if pk1.length ≠ 64 ∨ pk2.length ≠ 1152 then
+      ok (.Err .InvalidInputLength)
+    else if ¬ Fips203.Refinement.pk1HashValid pk1.val pk2.val then
+      ok (.Err .InvalidPublicKey)
+    else if ¬ Fips203.Refinement.pk2Valid pk2.val then
+      ok (.Err .InvalidPublicKey)
+    else
+      ok (.Ok ())
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes`**:
+
+- The call never panics (the outer `Result` is always `ok`).
+- Returns `Err InvalidInputLength` if `pk1.len() ≠ 64` or `pk2.len() ≠ 1152`.
+- Otherwise returns `Err InvalidPublicKey` if the header hash check
+  `H(pk2 ‖ pk1[0..32]) = pk1[32..64]` (`Fips203.Refinement.pk1HashValid`) or the FIPS 203
+  modulus check (`Fips203.Refinement.pk2Valid`) fails.
+- Returns `Ok ()` iff the lengths are exact and both checks pass. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes_spec
+    (pk1 pk2 : Slice Std.U8) :
+    libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes pk1 pk2
+      ⦃ (r : core.result.Result Unit libcrux_ml_kem.ind_cca.incremental.types.Error) =>
+      (pk1.length ≠ 64 ∨ pk2.length ≠ 1152 → r = .Err .InvalidInputLength) ∧
+      (pk1.length = 64 → pk2.length = 1152 →
+        ¬ Fips203.Refinement.pk1HashValid pk1.val pk2.val → r = .Err .InvalidPublicKey) ∧
+      (pk1.length = 64 → pk2.length = 1152 →
+        ¬ Fips203.Refinement.pk2Valid pk2.val → r = .Err .InvalidPublicKey) ∧
+      (r = .Ok () ↔ pk1.length = 64 ∧ pk2.length = 1152 ∧
+        Fips203.Refinement.pk1HashValid pk1.val pk2.val ∧
+        Fips203.Refinement.pk2Valid pk2.val) ⦄ := by
+  unfold libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+  split
+  · rename_i h
+    simp only [WP.spec_ok]
+    refine ⟨fun _ => trivial, fun h1 h2 _ => ?_, fun h1 h2 _ => ?_, ?_⟩
+    · exact absurd h (by simp [h1, h2])
+    · exact absurd h (by simp [h1, h2])
+    · constructor
+      · intro hc; cases hc
+      · rintro ⟨h1, h2, -, -⟩; exact absurd h (by simp [h1, h2])
+  · rename_i h
+    rw [not_or, not_not, not_not] at h
+    obtain ⟨h1, h2⟩ := h
+    split <;> (try split) <;> simp_all [WP.spec_ok]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 344:8-349:39
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate1] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate1"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.encapsulate1
-  :
-  Slice Std.U8 → Array Std.U8 32#usize → Slice Std.U8 → Slice Std.U8 →
-    Result ((core.result.Result
+noncomputable def libcrux_ml_kem.mlkem768.incremental.encapsulate1
+  (pk1 : Slice Std.U8) (randomness : Array Std.U8 32#usize) (state : Slice Std.U8)
+  (shared_secret : Slice Std.U8) :
+  Result ((core.result.Result
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
     libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice
-    Std.U8))
+    Std.U8)) :=
+  -- Model: round 1 of FIPS 203 `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase1`) on the
+  -- header `pk1 = ρ ‖ H(ek)` and the message `randomness`, with libcrux's error behaviour:
+  -- `InvalidInputLength` if `pk1.len() < 64` (`PublicKey1::try_from`), `InvalidOutputLength` if
+  -- `shared_secret.len() < 32` or `state.len() < 2080` (`encapsulate1_serialized`,
+  -- `EncapsState::to_bytes`).  On success `state[0:2080] := ŷ ‖ e₂ ‖ m`, `shared_secret[0:32]
+  -- := K`, the remaining bytes are unchanged.  See `Spqr/Crypto/Fips203/Refinement/EncapsBytes.lean`.
+  if h : 64 ≤ pk1.length then
+    if h_ss : shared_secret.length < 32 then ok (.Err .InvalidOutputLength, state, shared_secret)
+    else if h_st : state.length < Fips203.Refinement.encapsStateSize then
+      ok (.Err .InvalidOutputLength, state, shared_secret)
+    else
+      let m := Fips203.Refinement.msgOfArray randomness
+      ok (.Ok { value := Fips203.Refinement.ct1Array pk1.val h m },
+        Slice.from (Fips203.Refinement.overwritePrefix state.val (Fips203.Refinement.stateOut pk1.val h m)) (by
+          rw [Fips203.Refinement.overwritePrefix_length _ _ (Nat.not_lt.mp h_st)]
+          exact state.length_ineq),
+        Slice.from (Fips203.Refinement.overwritePrefix shared_secret.val (Fips203.Refinement.ssOut pk1.val h m)) (by
+          rw [Fips203.Refinement.overwritePrefix_length _ _ (Nat.not_lt.mp h_ss)]
+          exact shared_secret.length_ineq))
+  else ok (.Err .InvalidInputLength, state, shared_secret)
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encapsulate1`**
+
+- Never panics.
+- Under the size preconditions `64 ≤ pk1.len()`, `32 ≤ shared_secret.len()`,
+  `2080 ≤ state.len()` it returns `Ok(ct1)` where, writing `m = randomness` and
+  `(K, c₁, (ŷ, e₂, m)) = mlkemEncapsPhase1 mlkem768 (ρ, h) m` for `pk1 = ρ ‖ h`
+  (round 1 of FIPS 203 Algorithm 17):
+  * `ct1.value = c₁` (`Fips203.Refinement.ct1List`), of length `960`;
+  * the output `state` has the input's length, its first `2080` bytes are the serialised
+    `ŷ ‖ e₂ ‖ m` (`Fips203.Refinement.stateOut`) and the rest is unchanged;
+  * the output `shared_secret` has the input's length, its first `32` bytes are `K`
+    (`Fips203.Refinement.ssOut`) and the rest is unchanged. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encapsulate1_spec
+    (pk1 : Slice Std.U8) (randomness : Array Std.U8 32#usize) (state : Slice Std.U8)
+    (shared_secret : Slice Std.U8) (h_pk1 : 64 ≤ pk1.length)
+    (h_ss : 32 ≤ shared_secret.length) (h_state : Fips203.Refinement.encapsStateSize ≤ state.length) :
+    libcrux_ml_kem.mlkem768.incremental.encapsulate1 pk1 randomness state shared_secret
+      ⦃ (r : (core.result.Result
+          (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+          libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice Std.U8)) =>
+      r.1 = core.result.Result.Ok (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.mk
+        (Fips203.Refinement.ct1Array pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness))) ∧
+      r.2.1.val = Fips203.Refinement.overwritePrefix state.val
+        (Fips203.Refinement.stateOut pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness)) ∧
+      r.2.2.val = Fips203.Refinement.overwritePrefix shared_secret.val
+        (Fips203.Refinement.ssOut pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness)) ∧
+      r.2.1.length = state.length ∧
+      r.2.2.length = shared_secret.length ⦄ := by
+  simp only [Slice.from_val, Slice.length, libcrux_ml_kem.mlkem768.incremental.encapsulate1, dite_eq_left h_pk1,
+    dite_eq_right (Nat.not_lt.mpr h_ss), dite_eq_right (Nat.not_lt.mpr h_state), WP.spec_ok]
+  refine ⟨trivial, trivial, trivial, ?_, ?_⟩
+  · exact Fips203.Refinement.overwritePrefix_length _ _ h_state
+  · exact Fips203.Refinement.overwritePrefix_length _ _ h_ss
 
 /-- [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
-  :
-  Array Std.U8 2400#usize →
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize →
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize → Result
-    (Array Std.U8 32#usize)
+noncomputable def libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
+  (key_pair : Array Std.U8 2400#usize)
+  (ciphertext1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+  (ciphertext2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
+  Result (Array Std.U8 32#usize) :=
+  -- Model: FIPS 203 `ML-KEM.Decaps_internal` (`Fips203.mlkemDecaps`, Algorithm 18) on the
+  -- decapsulation key read from the 2400-byte compressed key-pair buffer and the reassembled
+  -- ciphertext `c = c₁ ‖ c₂`.  All inputs are fixed-size arrays, so there are no error cases
+  -- and the function never fails.  Note that this is `Decaps_internal`, not `ML-KEM.Decaps`
+  -- (Algorithm 21): the FIPS 203 § 7.3 hash check `H(dk[1152:2336]) = dk[2336:2368]` is
+  -- not performed by libcrux's `decapsulate_compressed_key`, so the model admits any
+  -- 2400-byte `key_pair`.  See `Spqr/Crypto/Fips203/Refinement/DecapsBytes.lean`.
+  ok (Fips203.Refinement.ssArray key_pair ciphertext1.value ciphertext2.value)
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key`**
+
+- Never panics (all inputs are fixed-size arrays, so there are no length checks).
+- Returns the 32-byte shared secret of FIPS 203 Algorithm 18 (`Fips203.mlkemDecaps`) on the
+  decapsulation key stored in `key_pair` and the ciphertext `c₁ ‖ c₂`
+  (`Fips203.Refinement.ssList`). -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key_spec
+    (key_pair : Array Std.U8 2400#usize)
+    (ciphertext1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+    (ciphertext2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
+    libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key key_pair ciphertext1
+      ciphertext2
+      ⦃ (ss : Array Std.U8 32#usize) =>
+      ss.length = 32 ∧
+      ss.val = Fips203.Refinement.ssList key_pair ciphertext1.value ciphertext2.value ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [sorted_vec::{core::clone::Clone for sorted_vec::SortedSet<T>}::clone]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 38:9-38:14
@@ -2441,10 +2641,43 @@ noncomputable opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std
 end spqr.kdf
 
 /-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
-    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1 -/
+    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1
+
+    SPQR's own (not libcrux's) endianness workaround for libcrux issue #1275, marked
+    `#[hax_lib::opaque]` in the Rust source.  It scans the `error₂` region
+    `es[1536 .. 2048]` in 2-byte little-endian words:
+    * `0x0000` / `0xFFFF` are skipped (identical in both endiannesses);
+    * `0x0001` / `0x0002` / `0xFFFE` ⇒ the state is correctly encoded, return `None`;
+    * `0x0100` / `0x0200` / `0xFEFF` ⇒ the state is byte-swapped, return
+      `Some (flip_endianness_of_encapsulation_state es)`;
+    * any other word ⇒ "weird state", return `None`.
+
+    The function is kept **uninterpreted** here: on byte-swapped states it genuinely returns
+    `Some`, so any concrete stub (e.g. `fun _ => ok none`) would be an unsound model and would
+    let downstream specs claim `encaps2` consumes `es` itself on states the Rust repairs.  The
+    only property assumed is the hax contract (`potentially_fix_state_…_spec` below). -/
+@[rust_fun "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275"]
 noncomputable opaque
   incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
   : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8))
+
+/-- **Trusted spec axiom for `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`**:
+
+Exactly the hax contract from `src/incremental_mlkem768.rs`, lines 85-90:
+- **requires**: `es.len() == 2080`
+- **ensures**: `|result| if let Some(es) = result { es.len() == 2080 } else { true }`
+
+Under the length precondition the call succeeds (the only panic site is
+`assert_eq!(es.len(), 2080)`, discharged by `h_es`; `chunks(2)` on the 512-byte region and
+`try_into` on each 2-byte chunk cannot fail) and returns `mf : Option (Vec U8)` such that any
+`Some v` has `v.length = 2080` (`flip_endianness_of_encapsulation_state` preserves length, see
+`flip_endianness_of_encapsulation_state_spec`).  Nothing is assumed about *which* of
+`None` / `Some (flipped es)` is returned. -/
+@[step]
+axiom incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
+    (es : alloc.vec.Vec Std.U8) (h_es : es.length = 2080) :
+    incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 es
+      ⦃ (mf : Option (alloc.vec.Vec Std.U8)) => ∀ v ∈ mf, v.length = 2080 ⦄
 
 /- See `Spqr/Specs/Lib/StatePb.lean`: these wrap prost's `encode_to_vec`/`decode` for the ratchet
 state (translation patch `lib-state_pb.patch`). -/

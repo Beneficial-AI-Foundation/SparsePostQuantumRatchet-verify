@@ -39,9 +39,9 @@ independent of both Mathlib-specific algebra and Aeneas-extracted types.
 * `list_getElem?_getD_eq_getElem`: `xs[n]?.getD default = xs[n]` when `n < xs.length`.
 * `getElem?_append_of_lt`: `(l₁ ++ l₂)[i]? = l₁[i]?` when `i < l₁.length`.-/
 
-@[expose] public section
-
 /-! ## List indexing utilities -/
+
+@[expose] public section
 
 /-- If `xs[k]? = ys[k]?` and both `k` are in bounds, then `xs.get k = ys.get k`. -/
 theorem list_get_of_getElem?_eq {T : Type} {xs ys : List T}
