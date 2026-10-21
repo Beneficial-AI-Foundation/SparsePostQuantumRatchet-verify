@@ -3,107 +3,219 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-module
-
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Specs.Lib.DecodeState
-public import Spqr.Specs.Lib.CurrentVersion.CallOnce
+import Spqr.Specs.Lib.CurrentVersion.closure.CallOnce
 import Spqr.Specs.Proto.PqRatchet.Version.TryFrom
-public import Spqr.Specs.Lib.StatePb
-/-! # Spec theorem for `spqr::current_version`
+/-!
+# Spec theorem for `spqr::current_version`
 
-Deserializes a `SerializedState` via `decode_state`, then reads `inner` (`None` → V0,
-`Some` → V1) and `version_negotiation` (`None` → `NegotiationComplete`,
-`Some vn` → `try_from(vn.min_version)` yielding `StillNegotiating` or `Err StateDecode`).
-No panics; all errors surface as `Error::StateDecode`.
+`current_version` deserializes a `SerializedState` (a `Vec<u8>`) via `decode_state`, then inspects
+the resulting `PqRatchetState` to determine the current protocol version and negotiation status.
 
-**Source**: spqr/src/lib.rs -/
+The logic proceeds as follows:
 
-@[expose] public section
+  1. Call `decode_state(state)` to obtain a `PqRatchetState` (or propagate an error via `?`).
+
+  2. Determine the **version**:
+     - If `inner` is `None` → `Version::V0`
+     - If `inner` is `Some(_)` → `Version::V1`
+
+  3. Inspect the **version negotiation** field:
+     - If `version_negotiation` is `None` → return `CurrentVersion::NegotiationComplete(version)`
+     - If `version_negotiation` is `Some(vn)` → attempt to convert `vn.min_version` (an `i32`)
+       to a `Version` via `Version::try_from`, mapping any `UnknownEnumValue` error to
+       `Error::StateDecode`.  On success, return
+       `CurrentVersion::StillNegotiating(version, min_version)`.
+
+The function always succeeds at the monadic level (no panic); protobuf decode errors and unknown
+enum values are surfaced as `Error::StateDecode` inside the inner `Result`.
+
+**Source**: spqr/src/lib.rs (lines 249:0-262:1)
+-/
 
 open Aeneas Aeneas.Std Result
 
 namespace spqr
 
-/-- Version implied by the presence of the `inner` field:
-`none` → V0 (PQ ratchet disabled), `some _` → V1 (enabled). -/
-def innerVersion (st : proto.pq_ratchet.PqRatchetState) : proto.pq_ratchet.Version :=
-  match st.inner with
-  | none => proto.pq_ratchet.Version.V0
-  | some _ => proto.pq_ratchet.Version.V1
+/--
+**Spec theorem for `spqr.current_version`** (functional-correctness version):
 
-/-- Expected result of `current_version` for a successfully decoded state `st`:
-no `version_negotiation` means negotiation is complete at `innerVersion st`;
-otherwise `vn.min_version` is converted via `Version::try_from` — `0`/`1` give
-`StillNegotiating` at V0/V1, anything else is a `StateDecode` error. -/
-def negotiationOutcome (st : proto.pq_ratchet.PqRatchetState)
-    (result : core.result.Result CurrentVersion Error) : Prop :=
-  match st.version_negotiation with
-  | none =>
-      result = .Ok (CurrentVersion.NegotiationComplete (innerVersion st))
-  | some vn =>
-      (vn.min_version = 0#i32 →
-        result = .Ok
-          (CurrentVersion.StillNegotiating (innerVersion st) proto.pq_ratchet.Version.V0)) ∧
-      (vn.min_version = 1#i32 →
-        result = .Ok
-          (CurrentVersion.StillNegotiating (innerVersion st) proto.pq_ratchet.Version.V1)) ∧
-      (vn.min_version ≠ 0#i32 ∧ vn.min_version ≠ 1#i32 →
-        result = core.result.Result.Err Error.StateDecode)
+• Takes a serialized state `state` (a `Vec<u8>`).
+• Delegates to `decode_state` to obtain a `PqRatchetState`, propagating any decode error.
+• Determines `version` from `inner`: `none → V0`, `some _ → V1`.
+• Inspects `version_negotiation`:
+  - `none` → returns `Ok (NegotiationComplete version)`
+  - `some vn` → converts `vn.min_version` via `try_from`; on success returns
+    `Ok (StillNegotiating version min_version)`, on failure returns `Err StateDecode`.
 
-/-- **Spec theorem for `spqr.current_version`**:
+The postcondition uses a disjunction on `state.val = []` vs `state.val ≠ []`.
+For the non-empty case, a further disjunction separates the decode-error case
+(`result = Err StateDecode`) from the decode-success case, which introduces an
+existential `∃ st` with the roundtrip property from `decode_state_spec`.
+A nested `match` on `version_negotiation` and a disjunction on `vn.min_version`
+complete the case split.
 
-Splits on `state.val = []` vs `≠ []`. Empty → `Ok (NegotiationComplete V0)`.
-Non-empty → decode error gives `Err StateDecode`; decode success yields `∃ st`
-that prost decodes from `state` (`decodesTo`, see `Spqr/Specs/Lib/StatePb.lean`), then
-`version_negotiation = none` → `NegotiationComplete v`,
-`some vn` → `try_from vn.min_version` gives `StillNegotiating` or `Err StateDecode`. -/
+`decode_state` has two branches determined entirely by `state.val`:
+  - `state.val = []`  → always returns `Ok { version_negotiation := none, chain := none, inner := none }`
+  - `state.val ≠ []`  → delegates to the opaque protobuf `PqRatchetState.decode`, which may
+                         succeed with some `st` or fail (mapped to `Error.StateDecode`).
+
+**Case 1 — Empty state** (`state.val = []`):
+  The default `PqRatchetState` has `inner = none`, `version_negotiation = none`.
+  ⟹ `result = Ok (NegotiationComplete V0)`
+
+**Case 2 — Non-empty state, protobuf decode error**:
+  `state.val ≠ []` and the opaque protobuf decode of `state` fails.
+  ⟹ `result = Err StateDecode`
+
+**Case 3 — Non-empty state, decode success, `version_negotiation = none`**:
+  `state.val ≠ []` and the protobuf decode yields `st` with `st.version_negotiation = none`.
+  ⟹ `result = Ok (NegotiationComplete v)` where `v` is determined by `st.inner`
+
+**Case 4 — Non-empty state, decode success, `version_negotiation = some vn`,
+           `vn.min_version = 0`**:
+  ⟹ `result = Ok (StillNegotiating v V0)` where `v` is determined by `st.inner`
+
+**Case 5 — Non-empty state, decode success, `version_negotiation = some vn`,
+           `vn.min_version = 1`**:
+  ⟹ `result = Ok (StillNegotiating v V1)` where `v` is determined by `st.inner`
+
+**Case 6 — Non-empty state, decode success, `version_negotiation = some vn`,
+           `vn.min_version ∉ {0, 1}`**:
+  ⟹ `result = Err StateDecode`
+
+**Source**: spqr/src/lib.rs (lines 249:0-262:1)
+-/
 @[step]
 theorem current_version_spec (state : alloc.vec.Vec U8) :
     current_version state ⦃ (result : core.result.Result CurrentVersion Error) =>
+      -- Case 1: empty state, default PqRatchetState (all fields none), NegotiationComplete V0
       (state.val = [] →
         result = core.result.Result.Ok
           (CurrentVersion.NegotiationComplete proto.pq_ratchet.Version.V0)) ∧
+      -- Cases 2–6: non-empty state, determined by decode_state result
       (state.val ≠ [] →
+        -- Case 2: protobuf decode fails, StateDecode
         (result = core.result.Result.Err Error.StateDecode) ∨
+        -- Cases 3–6: decode succeeds with some st (whose re-encoding yields state)
         (∃ st : proto.pq_ratchet.PqRatchetState,
-          decodesTo state st ∧ negotiationOutcome st result)) ⦄ := by
-  simp only [decodesTo, negotiationOutcome, innerVersion]
+          proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_to_vec
+            st = ok state ∧
+          let v := match st.inner with
+            | none => proto.pq_ratchet.Version.V0
+            | some _ => proto.pq_ratchet.Version.V1
+          match st.version_negotiation with
+          | none =>
+              -- Case 3: no version negotiation, NegotiationComplete
+              result = .Ok (CurrentVersion.NegotiationComplete v)
+          | some vn =>
+              -- Case 4: min_version = 0
+              (vn.min_version = 0#i32 →
+                result = .Ok (CurrentVersion.StillNegotiating v proto.pq_ratchet.Version.V0)) ∧
+              -- Case 5: min_version = 1
+              (vn.min_version = 1#i32 →
+                result = .Ok (CurrentVersion.StillNegotiating v proto.pq_ratchet.Version.V1)) ∧
+              -- Case 6: unknown min_version
+              (vn.min_version ≠ 0#i32 ∧
+                vn.min_version ≠ 1#i32 →
+                result = core.result.Result.Err Error.StateDecode))) ⦄ := by
   unfold current_version
-  step with decode_state_spec as ⟨r, h_emp, h_ne⟩
-  cases r with
-  | Err e =>
-    step
-    subst ‹cf = _›
-    simp only
-    step with core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual.spec
-    simp_all
-  | Ok st =>
-    step*
-    obtain rfl : val = st := by simp_all
-    cases h1 : val.inner <;> cases h2 : val.version_negotiation <;> step*
-    case none.none =>
-      exact ⟨fun _ => trivial, fun hne => Or.inr ⟨val, h_ne hne, by simp [h1, h2]⟩⟩
-    case some.none =>
-      refine ⟨fun h => by cases h_emp h; simp at h1,
-        fun hne => Or.inr ⟨val, h_ne hne, by simp [h1, h2]⟩⟩
-    all_goals
-      obtain hr1 := ‹r1 = _›
-      split at hr1 <;> subst hr1
-      case h_3 =>
-        simp only [core.result.Result.map_err_Err]
-        step
-        step
-        subst ‹_ = core.ops.control_flow.ControlFlow.Break _›
-        simp only
-        step with core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual.spec
-        refine ⟨fun h => by cases h_emp h; simp at h2, fun _ => Or.inl (by simp_all)⟩
-      all_goals
-        simp only [core.result.Result.map_err_Ok]
-        step*
-        refine ⟨fun h => by cases h_emp h; simp at h2, fun hne => ?_⟩
-        exact Or.inr ⟨val, h_ne hne, by
-          simp_all [show (0#32#iscalar : I32).val = 0 from rfl,
-            show (1#32#iscalar : I32).val = 1 from rfl]⟩
+  step*
+  · match hr : r with
+    | core.result.Result.Err e => simp_all
+    | core.result.Result.Ok st =>
+      simp only at cf_post
+      rename_i h_eq
+      have : st = val := by grind
+      subst this
+      · split
+        · step*
+          constructor
+          · intro hemp
+            rename_i r_post1
+            grind
+          · intro hne
+            right
+            have henc := r_post2 hne
+            simp only at henc
+            exact ⟨st, henc, by simp_all⟩
+          · rename_i r1_post
+            split at r1_post
+            · simp_all only [core.result.Result.Ok.injEq, ne_eq, core.result.Result.map_err_Ok,
+              bind_tc_ok, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq]
+              step*
+              exact And.intro (by intro hemp; grind)
+                (by intro hne; right; exact ⟨st, r_post2 hne,
+                by simp_all only [IsEmpty.forall_iff,
+                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
+                  implies_true, core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq,
+                  reduceCtorEq, and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq,
+                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
+            · simp_all only [core.result.Result.Ok.injEq, ne_eq, core.result.Result.map_err_Ok,
+              bind_tc_ok, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq]
+              step*
+              exact And.intro (by intro hemp; grind)
+                (by intro hne; right; exact ⟨st, r_post2 hne,
+                by simp_all only [IsEmpty.forall_iff,
+                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
+                  core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq, reduceCtorEq,
+                  and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq, implies_true,
+                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
+            · simp_all only [core.result.Result.Ok.injEq, ne_eq, imp_false, IScalar.neq_to_neq_val,
+              core.result.Result.map_err_Err, bind_assoc, bind_tc_ok, IScalar.ofInt_val_eq]
+              constructor
+              · intro hemp; grind
+              · intro hne; left; simp_all
+        · step*
+          · simp_all only [core.result.Result.Ok.injEq, ne_eq,
+            CurrentVersion.NegotiationComplete.injEq, reduceCtorEq, imp_false,
+            IScalar.neq_to_neq_val, IScalar.ofInt_val_eq, Decidable.not_not, false_or]
+            constructor
+            · intro hemp
+              grind
+            · intro hne
+              exact ⟨st, r_post2 hne, by simp_all⟩
+          · simp_all only [core.result.Result.Ok.injEq, ne_eq, IScalar.neq_to_neq_val,
+            IScalar.ofInt_val_eq]
+            rename_i r1_post
+            split at r1_post
+            · simp_all only [core.result.Result.map_err_Ok, bind_tc_ok]
+              step*
+              exact And.intro (by intro hemp; grind)
+                (by intro hne; right; exact ⟨st, r_post2 hne,
+                by simp_all only [IsEmpty.forall_iff,
+                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
+                  implies_true, core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq,
+                  reduceCtorEq, and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq,
+                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
+            · simp_all only [core.result.Result.map_err_Ok, bind_tc_ok]
+              step*
+              exact And.intro (by intro hemp; grind)
+                (by intro hne; right; exact ⟨st, r_post2 hne,
+                by simp_all only [IsEmpty.forall_iff,
+                  not_false_eq_true, forall_const, core.ops.control_flow.ControlFlow.Continue.injEq,
+                  core.result.Result.Ok.injEq, CurrentVersion.StillNegotiating.injEq, reduceCtorEq,
+                  and_false, imp_false, IScalar.neq_to_neq_val, IScalar.ofInt_val_eq, implies_true,
+                  Decidable.not_not, true_and]; constructor <;> (simp [IScalar.val])⟩)
+            · simp_all only [imp_false, IScalar.neq_to_neq_val, core.result.Result.map_err_Err,
+              bind_assoc, bind_tc_ok]
+              constructor
+              · intro hemp
+                grind
+              · intro hne
+                left
+                simp_all
+  · match hr : r with
+    | core.result.Result.Ok st => simp_all
+    | core.result.Result.Err e =>
+      simp only at cf_post
+      subst cf_post
+      constructor
+      · intro hemp
+        grind
+      · intro hne
+        left
+        simp_all
 
 end spqr
