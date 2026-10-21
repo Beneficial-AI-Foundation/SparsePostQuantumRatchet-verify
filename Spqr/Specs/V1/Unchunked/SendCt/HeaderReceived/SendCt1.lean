@@ -79,7 +79,7 @@ The function always succeeds and returns `((st, ct1, es), rng')` where:
   `st.ct1 = ct1` (the clone of a byte vector is the vector itself).
 • **Ciphertext `ct1`** — has length `960` (the hax `ensures`).  Together with `st.es` and the
   epoch secret it is pinned to FIPS 203 Algorithm 17 round 1: there is a 32-byte message `m`
-  (the one `fill_bytes` wrote) such that, with `(K, c₁, (ŷ, e₂, m)) = mlkemEncapsPhase1 (ρ, h) m`
+  such that, with `(K, c₁, (ŷ, e₂, m)) = mlkemEncapsPhase1 (ρ, h) m`
   for `(ρ, h) = (hdr[0:32], hdr[32:64])`,
     `ct1.val   = ct1List hdr m`                       (serialised `c₁`),
     `st.es.val = toU8List (stateOut hdr m)`           (serialised `ŷ ‖ e₂ ‖ m`, 2080 bytes),
@@ -95,6 +95,7 @@ because of its `h_fill` hypothesis) and discharges the remaining chain of calls 
 
 **Source**: spqr/src/v1/unchunked/send_ct.rs (lines 120:4-148:5)
 -/
+@[step]
 theorem send_ct1_spec {R : Type} (rngInst : rand_1.rng.Rng R)
     (cryptoInst : rand_core_1.CryptoRng R) (self : HeaderReceived) (rng : R)
     (h_hdr : self.hdr.length = 64)

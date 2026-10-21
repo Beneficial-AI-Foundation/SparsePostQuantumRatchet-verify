@@ -160,16 +160,13 @@ theorem init_inner_spec_v1_b2a (auth_key : Slice Std.U8)
   `some (Inner.V1 vs)` for some `V1State` `vs`.
 • Requires `auth_key.length + 32 ≤ Usize.max` (needed by both A2B and B2A branches)
   and `pk1_len = ok 64` (needed by the B2A branch for ML-KEM-768 header size).
-• The postcondition asserts existence of the inner state **and** its direction-specific
-  shape:
-  - For `A2B`: the inner state is `KeysUnsampled`.
-  - For `B2A`: the inner state is `NoHeaderReceived`.
+• The postcondition is intentionally weak — it only asserts existence of the inner
+  state, not its shape. Callers that need the `KeysUnsampled` / `NoHeaderReceived`
+  distinction should use `init_inner_spec_v1_a2b` or `init_inner_spec_v1_b2a` directly.
 
 The result satisfies:
 
-  `∃ vs, result = some (Inner.V1 vs) ∧
-    (d = .A2B → ∃ ku, vs.inner_state = some (InnerState.KeysUnsampled ku)) ∧
-    (d = .B2A → ∃ nhr, vs.inner_state = some (InnerState.NoHeaderReceived nhr))`
+  `∃ vs, result = some (Inner.V1 vs)`
 
 This combined theorem is tagged `@[step]` so that `step*` can discharge `init_inner`
 calls in downstream proofs (e.g. `initial_state_spec_v1`) without case-splitting on
@@ -181,23 +178,15 @@ theorem init_inner_spec_v1 (d : proto.pq_ratchet.Direction) (auth_key : Slice St
     (h_pk1 : libcrux_ml_kem.mlkem768.incremental.pk1_len = ok 64#usize) :
     init_inner proto.pq_ratchet.Version.V1 d auth_key
     ⦃ (result : Option proto.pq_ratchet.pq_ratchet_state.Inner) =>
-      ∃ vs, result = some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs) ∧
-        (d = proto.pq_ratchet.Direction.A2B →
-          ∃ ku, vs.inner_state =
-            some (proto.pq_ratchet.v1_state.InnerState.KeysUnsampled ku)) ∧
-        (d = proto.pq_ratchet.Direction.B2A →
-          ∃ nhr, vs.inner_state =
-            some (proto.pq_ratchet.v1_state.InnerState.NoHeaderReceived nhr)) ⦄ := by
+      ∃ vs, result = some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs) ⦄ := by
   cases d with
   | A2B =>
     exact Aeneas.Std.WP.spec_mono (init_inner_spec_v1_a2b auth_key h_len) fun r hr =>
       match r, hr with
-      | some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), ⟨ku, hku⟩ =>
-        ⟨vs, rfl, fun _ => ⟨ku, hku⟩, nofun⟩
+      | some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), ⟨_, _⟩ => ⟨vs, rfl⟩
   | B2A =>
     exact Aeneas.Std.WP.spec_mono (init_inner_spec_v1_b2a auth_key h_len h_pk1) fun r hr =>
       match r, hr with
-      | some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), ⟨nhr, hnhr⟩ =>
-        ⟨vs, rfl, nofun, fun _ => ⟨nhr, hnhr⟩⟩
+      | some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), ⟨_, _⟩ => ⟨vs, rfl⟩
 
 end spqr
