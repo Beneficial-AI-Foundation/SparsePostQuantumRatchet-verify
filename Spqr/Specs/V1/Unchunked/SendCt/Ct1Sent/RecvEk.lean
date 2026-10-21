@@ -31,28 +31,37 @@ characterises the `Ok`/`Err` outcome exactly.
 
 open Aeneas Aeneas.Std Result spqr
 
-namespace spqr.v1.unchunked.send_ct.Ct1Sent
+/- Helper definitions live in a CamelCase namespace so that their full names satisfy the
+`defsWithUnderscore` linter; the spec theorem itself stays in the Rust-mirroring
+`spqr.v1.unchunked.send_ct.Ct1Sent` namespace. -/
+namespace Spqr.V1.Unchunked.SendCt.Ct1Sent
 
 /-- Condition under which `recv_ek` accepts `ek`, i.e. `ek_matches_header ek self.hdr = true`
 (see `ek_matches_header_spec`): `hdr` has 64 bytes, `ek` has 1152 bytes,
 `H(ek ‖ hdr[0..32]) = hdr[32..64]` (`pk1HashValid`) and `ek` passes the FIPS 203 § 7.2
 modulus check (`pk2Valid`). -/
-def ekAccepted (self : Ct1Sent) (ek : alloc.vec.Vec U8) : Prop :=
+def ekAccepted (self : spqr.v1.unchunked.send_ct.Ct1Sent) (ek : alloc.vec.Vec U8) : Prop :=
   self.hdr.length = 64 ∧ ek.length = 1152 ∧
     Fips203.Refinement.pk1HashValid self.hdr.val ek.val ∧
     Fips203.Refinement.pk2Valid ek.val
 
 /-- Postcondition of `recv_ek`: `Ok st` iff `ekAccepted self ek`, with `st` carrying `epoch`,
 `auth`, `es`, `ct1` over unchanged and storing `ek`; otherwise `Err ErroneousDataReceived`. -/
-def recvEkPost (self : Ct1Sent) (ek : alloc.vec.Vec U8)
-    (result : core.result.Result Ct1SentEkReceived Error) : Prop :=
+def recvEkPost (self : spqr.v1.unchunked.send_ct.Ct1Sent) (ek : alloc.vec.Vec U8)
+    (result : core.result.Result spqr.v1.unchunked.send_ct.Ct1SentEkReceived spqr.Error) : Prop :=
   match result with
   | core.result.Result.Ok st =>
       ekAccepted self ek ∧
       st.epoch = self.epoch ∧ st.auth = self.auth ∧ st.es = self.es ∧
       st.ek = ek ∧ st.ct1 = self.ct1
   | core.result.Result.Err e =>
-      ¬ ekAccepted self ek ∧ e = Error.ErroneousDataReceived
+      ¬ ekAccepted self ek ∧ e = spqr.Error.ErroneousDataReceived
+
+end Spqr.V1.Unchunked.SendCt.Ct1Sent
+
+namespace spqr.v1.unchunked.send_ct.Ct1Sent
+
+open Spqr.V1.Unchunked.SendCt.Ct1Sent
 
 /-- **Spec theorem for `spqr.v1.unchunked.send_ct.Ct1Sent.recv_ek`**:
 
