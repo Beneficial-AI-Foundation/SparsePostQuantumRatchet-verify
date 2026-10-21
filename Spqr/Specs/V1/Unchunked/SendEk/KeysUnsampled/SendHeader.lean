@@ -43,7 +43,7 @@ attribute [-step] authenticator.Authenticator.mac_hdr_spec
 -- Register `generate_spec` locally so `step*` can discharge the `generate` call.
 attribute [local step] incremental_mlkem768.generate_spec
 
-open List core.num.U64 authenticator.Authenticator incremental_mlkem768
+open List core.num.U64 authenticator.Authenticator
   libcrux_ml_kem.mlkem768.incremental Spqr.Mlkem in
 /-- **Spec theorem for `spqr.v1.unchunked.send_ek.KeysUnsampled.send_header`**:
 
