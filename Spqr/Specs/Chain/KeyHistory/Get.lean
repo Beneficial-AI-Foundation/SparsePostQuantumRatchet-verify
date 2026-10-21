@@ -3,11 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
-import Spqr.Specs.Chain.Defs
+public import Spqr.Specs.Chain.Defs
 import Spqr.Specs.Chain.KeyHistory.Remove
+import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-! # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::get`: loop body 0
 
 One iteration of the key-lookup loop in `KeyHistory::get`. Steps through `data` in 36-byte
@@ -16,6 +19,8 @@ One iteration of the key-lookup loop in `KeyHistory::get`. Steps through `data` 
 swap-removing the record) on match, or `cont` to advance on mismatch.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr
 
@@ -98,6 +103,7 @@ theorem body_spec
     · simp only [hb, ↓reduceIte]
       have h_s_want : s.val = want.val := hb_iff.1 hb
       rw [h_i]
+      step as ⟨sv, h_sv⟩
       step as ⟨i3, h_i3⟩
       step as ⟨s1, h_s1_val, h_s1_len⟩
       have h_clone : ∀ x ∈ s1.val, core.clone.CloneU8.clone x = ok x := by
@@ -113,7 +119,7 @@ theorem body_spec
       · have : (↑out : List U8) = ↑s1 := by simp [h_out, alloc.vec.Vec.val]
         rw [this]; simp only [Slice.length] at h_s1_len; scalar_tac
       · have : (↑out : List U8) = ↑s1 := by simp [h_out, alloc.vec.Vec.val]
-        rw [this, h_s1_val]; congr 1
+        rw [this, h_s1_val, h_sv]; congr 1
       · exact h_self1_len
       · omega
       · omega
@@ -385,7 +391,7 @@ theorem get_spec (self : chain.KeyHistory) (at1 : U32)
   have hw : want.val = (core.num.U32.to_be_bytes at1).val := by
     have := core.num.U32.to_be_bytes.step_spec at1
     simp only [lift, WP.spec_ok] at this
-    rw [this]; assumption
+    rwa [this]
   rw [← hw]
   cases hp : p.1 with
   | Err e =>

@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Chain.Chain.EpochIdx
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.ChainEpochDirection.Key
-import Spqr.Specs.Aeneas.VecDerefMut
-import Spqr.Specs.Chain.Chain.Defs
+public import Spqr.Specs.Aeneas.VecDerefMut
+public import Spqr.Specs.Chain.Chain.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::recv_key`
 
 `Chain::recv_key` retrieves (or derives) the receiving key for a given `Epoch` and message
@@ -15,6 +17,8 @@ counter `index`.  Unlike `send_key`, it does **not** advance the send epoch, tri
 clear chain secrets — it simply locates the correct `ChainEpoch` entry in the `links` deque
 and delegates to `ChainEpochDirection::key` on its `recv` direction.
 
+  0. If `epoch == 0 && index == 0` (early return added in spqr v1.6.0), `Ok(vec![])` is
+     returned and `self` is unchanged.
   1. `epoch_idx` is called (via `?`).  If it fails — the epoch is in the future or has already
      been garbage-collected — `Err (EpochOutOfRange epoch)` is propagated and `self` is
      unchanged.
@@ -27,6 +31,8 @@ indexing, stating that on success the `recv` field of the targeted `ChainEpoch` 
 while everything else in the chain is preserved.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr crypto
 
@@ -58,9 +64,24 @@ theorem recv_key_spec (self : chain.Chain) (epoch : U64) (index : U32)
     recv_key self epoch index ⦃ (result :
         (core.result.Result (alloc.vec.Vec U8) Error) × chain.Chain) =>
       recvKeyPost self epoch index result.1 result.2 ⦄ := by
-  unfold recvKeyPost chainFrame recvKeyEpochPost
+  unfold recvKeyPost
   simp only [recvKeyPre] at h_target
   unfold recv_key
+  by_cases h00 : epoch.val = 0 ∧ index.val = 0
+  · -- `epoch == 0 && index == 0`: early return of an empty key, chain unchanged
+    have he : epoch = 0#u64 := UScalar.eq_of_val_eq (by simp [h00.1])
+    have hi : index = 0#u32 := UScalar.eq_of_val_eq (by simp [h00.2])
+    simp only [ite_eq_left he, ite_eq_left hi, ite_eq_left h00, WP.spec_ok, and_self]
+  -- Otherwise both branches of the `epoch == 0` test run the same body.
+  have hprog : ∀ {α : Type} (x y : α),
+      (if epoch = 0#u64 then (if index = 0#u32 then x else y) else y) = y := by
+    intro α x y
+    by_cases he : epoch = 0#u64
+    · have hi : ¬index = 0#u32 := fun hi => h00 ⟨by simp [he], by simp [hi]⟩
+      simp only [he, hi, ↓reduceIte]
+    · simp only [he, ↓reduceIte]
+  simp only [hprog, ite_eq_right h00]
+  unfold recvKeyRangePost chainFrame recvKeyEpochPost
   step
   subst self1
   rcases r with idx | e

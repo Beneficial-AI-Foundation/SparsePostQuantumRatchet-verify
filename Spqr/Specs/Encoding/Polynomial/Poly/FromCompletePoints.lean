@@ -3,6 +3,8 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.ConstPolysToPolys
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeSum
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_1
@@ -11,6 +13,10 @@ import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_5
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_30
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_34
 import Spqr.Specs.Encoding.Polynomial.COMPLETE_POINTS_POLYS_36
+public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+
 /-! # Specification for `Poly::from_complete_points`
 
 This file verifies the Rust function `Poly::from_complete_points` from
@@ -30,6 +36,8 @@ This file verifies the Rust function `Poly::from_complete_points` from
    `p = Σⱼ pts[j].y · scaledLagrangeBasis(len, j)` in `GF(2¹⁶)[X]`.
 
 **Source**: `src/encoding/polynomial.rs` -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open core.iter.adapters.enumerate core.slice.iter
@@ -75,7 +83,7 @@ private lemma EnumerateSliceIter_next_Pt_some
     IteratorEnumerate.next,
     IteratorSliceIter.next]
   have h_lt' : iter.iter.i < (↑iter.iter.slice.len : Nat) := by scalar_tac
-  rw [dif_pos h_lt']
+  rw [dite_eq_left h_lt']
   obtain ⟨count', h_add_eq, h_add_val⟩ := usize_checked_add_one_val iter.count h_bound
   exact ⟨{ iter := { iter.iter with i := iter.iter.i + 1 }, count := count' },
     by simp [h_add_eq]; rfl, rfl, rfl, h_add_val⟩
@@ -115,7 +123,7 @@ This captures the three possible outcomes of one iteration of the
 
 - **`cont iter'`** — the current point passed validation (`pts[i].x.value = i`),
   the iterator advanced by one, and the loop continues. -/
-private abbrev bodyPost
+abbrev bodyPost
     (pts : Slice Pt) (iter : Enumerate (Iter Pt)) :
     ControlFlow (Enumerate (Iter Pt)) (core.result.Result Poly Unit) → Prop :=
   fun cf =>
@@ -173,10 +181,22 @@ private theorem body_spec_some_case
   have h_lt_pts : iter.iter.i < pts.val.length := by
     rw [← h_slice_eq]; exact h_in_bounds
   have h_cast_val := usize_cast_u16_val iter.count h_count
-  step*
-  · simp_all
-    grind
-  · grind
+  step as ⟨i1, h_i1⟩
+  have h_i1_val : i1.val = iter.count.val := by rw [h_i1, h_cast_val]
+  subst h_slice_eq
+  split
+  next h_ne =>
+    -- the point's x-coordinate is not its index: `Err ()`
+    rw [WP.spec_ok]
+    refine ⟨h_lt_pts, fun h_eq => ?_⟩
+    simp only [bne_iff_ne, ne_eq] at h_ne
+    exact h_ne (UScalar.eq_of_val_eq (by rw [h_i1_val]; exact h_eq))
+  next h_eq =>
+    -- valid point: advance
+    rw [WP.spec_ok]
+    simp only [bne_iff_ne, ne_eq, Decidable.not_not] at h_eq
+    exact ⟨h_lt_pts, (congrArg UScalar.val h_eq).trans h_i1_val, h_iter1_i, h_iter1_slice,
+      h_iter1_count⟩
 
 /-! ## Spec helpers: the `none` (computation) branch by size
 
@@ -212,12 +232,10 @@ private theorem body_spec_none_0
       simp only [hs, h_len_0]
       simp[UScalar.cast]
     simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]
-    step
-    unfold bodyPost
-    simp only [not_lt, List.getElem!_eq_getElem?_getD]
-    constructor
-    · grind
-    · simp_all
+    step as ⟨p, h_deg, h_sum⟩
+    -- both sums range over `pts.length = 0`
+    have h_len : pts.length = 0 := h0
+    exact ⟨h_not_lt, h_deg, by rw [h_sum, h_len, h0]; rfl⟩
 
 /-- For a single point, `scaledLagrangeBasis 1#usize 0` is the constant `1`.
 This is the base case: with only one evaluation point at `x = 0`, the
@@ -251,13 +269,47 @@ private lemma polys_basis {M : Usize} {a : Std.Array (PolyConst M) M}
     getElem!_pos (↑a : List (PolyConst M)) x (by scalar_tac)]
   exact h
 
-/-- Non-empty admissible sizes (`N ∈ {1, 3, 5, 30, 34, 36}`): when the
-iterator is exhausted, the code enters the `match pts.len() as u64`
-and selects the precomputed `COMPLETE_POINTS_POLYS_N`.  This theorem
-unfolds the `body`, applies `const_polys_to_polys` for the matched
-size, and verifies that the resulting `lagrange_sum` equals the
-mathematical Lagrange interpolation formula:
-  `p.toGF216Poly = Σⱼ C(pts[j].y.toGF216) * scaledLagrangeBasis(N, j)`. -/
+/-- One arm of the `match pts.len()`: load the precomputed basis `COMPLETE_POINTS_POLYS_M`
+(`constM`, whose `j`-th polynomial is the scaled Lagrange basis polynomial `j`), convert it with
+`const_polys_to_polys`, and take the Lagrange sum. -/
+private theorem arm_spec {M : Usize} (pts : Slice Pt) (iter : Enumerate (Iter Pt))
+    (constM : Result (Std.Array (PolyConst M) M))
+    (h_const : constM ⦃ a => ∀ j < M.val,
+      listToGF216Poly (a.val[j]!).coefficients.val = scaledLagrangeBasis M j ⦄)
+    (h_M : M.val ≤ 36)
+    (h_len : Slice.len pts = M)
+    (h_not_lt : ¬ iter.iter.i < pts.val.length) :
+    (do
+      let a ← constM
+      let polys ← const_polys_to_polys a
+      let p ← lagrange_sum pts (alloc.vec.Vec.deref polys)
+      ok (ControlFlow.done (core.result.Result.Ok p))) ⦃ bodyPost pts iter ⦄ := by
+  have h_lenN : pts.val.length = M.val := by rw [← h_len]; simp [Slice.len]
+  step with h_const as ⟨a, ha⟩
+  step with const_polys_to_polys_spec as ⟨polys, h_plen, h_polys⟩
+  have h_deref : (alloc.vec.Vec.deref polys).val = polys.val := by simp [alloc.vec.Vec.deref]
+  step with lagrange_sum_spec as ⟨p, h_deg, h_sum⟩
+  · intro i hi
+    have hi' : i < M.val := by simp only [Slice.length] at hi; omega
+    obtain ⟨h_coef, -⟩ := h_polys i hi' (by rw [h_plen]; exact hi') (by simpa using hi')
+    have h_degi : ((alloc.vec.Vec.deref polys)[i]!).degree = M.val := by
+      simp only [degree, Slice.getElem!_Nat_eq, h_deref]
+      rw [getElem!_pos polys.val i (by simp only [alloc.vec.Vec.length] at h_plen; omega)]
+      simpa using congrArg List.length h_coef
+    rw [h_degi]; scalar_tac
+  refine ⟨h_not_lt, h_deg, ?_⟩
+  rw [h_sum, h_len]
+  apply Finset.sum_congr rfl
+  intro x hx
+  simp only [Finset.mem_range] at hx
+  congr 1
+  · rw [Slice.getElem!_Nat_eq]
+  simp only [Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]
+  exact polys_basis h_polys ha h_plen (by simpa [Slice.length, h_lenN] using hx) h_deref
+
+/-- Non-empty admissible sizes (`N ∈ {1, 3, 5, 30, 34, 36}`): when the iterator is exhausted,
+the code matches on `pts.len()` and runs the arm for the precomputed `COMPLETE_POINTS_POLYS_N`
+(`arm_spec`). -/
 private theorem body_spec_none_N
     (N : Nat)
     (pts : Slice Pt)
@@ -279,161 +331,32 @@ private theorem body_spec_none_N
     have h_not_lt : ¬ (iter.iter.i < pts.val.length) := by
       have := EnumerateSliceIter_next_Pt_none iter iter1 hnext
       rw [h_slice_eq] at this; exact this
+    step as ⟨s, hs⟩
+    have hN36 : N ≤ 36 := by omega
+    have hs_val : s.val = N := by rw [hs, UScalar.cast_val_eq]; simp [Slice.len, hN]; omega
     rcases hN_admissible with rfl | rfl | rfl | rfl | rfl | rfl
-    · have h_len_N : Slice.len pts = 1#usize := by simp [Slice.len, hN, Usize.ofNatCore]
-      step as ⟨ s, hs⟩
-      have : s = 1#uscalar := by
-        apply UScalar.eq_of_val_eq; rw [hs, UScalar.cast_val_eq, h_len_N]; simp; rfl
-      simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]; step
-      unfold bodyPost
-      simp only [not_lt, List.getElem!_eq_getElem?_getD, ne_eq, List.get_eq_getElem]
-      step; step
-      · have : (polys.deref).val.length = (polys).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind
-      · intros i hi
-        have : (polys.deref.val[i]!.coefficients).val.length =
-          (polys.val[i]!.coefficients).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind [degree]
-      · constructor
-        · grind
-        · constructor
-          · grind
-          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-            rw [‹p.toGF216Poly = _›]; apply Finset.sum_congr rfl; intro x hx
-            simp only [Finset.mem_range] at hx
-            congr 1
-            apply polys_basis (x := x) <;> try first | assumption | (simp; done)
-            intro j hj
-            obtain rfl : j = 0 := by scalar_tac
-            rw [scaledLagrangeBasis_one_zero]
-            simpa [List.getElem!_eq_getElem?_getD] using ‹listToGF216Poly _ = 1›
-    · have h_len_N : Slice.len pts = 3#usize := by simp [Slice.len, hN, Usize.ofNatCore]
-      step as ⟨ s, hs⟩
-      have : s = 3#uscalar := by
-        apply UScalar.eq_of_val_eq; rw [hs, UScalar.cast_val_eq, h_len_N]; simp; rfl
-      simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]; step
-      unfold bodyPost
-      simp only [not_lt, List.getElem!_eq_getElem?_getD, ne_eq, List.get_eq_getElem]
-      step; step
-      · have : (polys.deref).val.length = (polys).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind
-      · intros i hi
-        have : (polys.deref.val[i]!.coefficients).val.length =
-          (polys.val[i]!.coefficients).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind [degree]
-      · constructor
-        · grind
-        · constructor
-          · grind
-          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-            rw [‹p.toGF216Poly = _›]; apply Finset.sum_congr rfl; intro x hx
-            simp only [Finset.mem_range] at hx
-            congr 1
-            apply polys_basis (x := x) <;> first | assumption | simp
-    · have h_len_N : Slice.len pts = 5#usize := by simp [Slice.len, hN, Usize.ofNatCore]
-      step as ⟨ s, hs⟩
-      have : s = 5#uscalar := by
-        apply UScalar.eq_of_val_eq; rw [hs, UScalar.cast_val_eq, h_len_N]; simp; rfl
-      simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]; step
-      unfold bodyPost
-      simp only [not_lt, List.getElem!_eq_getElem?_getD, ne_eq, List.get_eq_getElem]
-      step; step
-      · have : (polys.deref).val.length = (polys).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind
-      · intros i hi
-        have : (polys.deref.val[i]!.coefficients).val.length =
-          (polys.val[i]!.coefficients).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind [degree]
-      · constructor
-        · grind
-        · constructor
-          · grind
-          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-            rw [‹p.toGF216Poly = _›]; apply Finset.sum_congr rfl; intro x hx
-            simp only [Finset.mem_range] at hx
-            congr 1
-            apply polys_basis (x := x) <;> first | assumption | simp
-    · have h_len_N : Slice.len pts = 30#usize := by simp [Slice.len, hN, Usize.ofNatCore]
-      step as ⟨ s, hs⟩
-      have : s = 30#uscalar := by
-        apply UScalar.eq_of_val_eq; rw [hs, UScalar.cast_val_eq, h_len_N]; simp; rfl
-      simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]; step
-      unfold bodyPost
-      simp only [not_lt, List.getElem!_eq_getElem?_getD, ne_eq, List.get_eq_getElem]
-      step; step
-      · have : (polys.deref).val.length = (polys).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind
-      · intros i hi
-        have : (polys.deref.val[i]!.coefficients).val.length =
-          (polys.val[i]!.coefficients).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind [degree]
-      · constructor
-        · grind
-        · constructor
-          · grind
-          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-            rw [‹p.toGF216Poly = _›]; apply Finset.sum_congr rfl; intro x hx
-            simp only [Finset.mem_range] at hx
-            congr 1
-            apply polys_basis (x := x) <;> first | assumption | simp
-    · have h_len_N : Slice.len pts = 34#usize := by simp [Slice.len, hN, Usize.ofNatCore]
-      step as ⟨ s, hs⟩
-      have : s = 34#uscalar := by
-        apply UScalar.eq_of_val_eq; rw [hs, UScalar.cast_val_eq, h_len_N]; simp; rfl
-      simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]; step
-      unfold bodyPost
-      simp only [not_lt, List.getElem!_eq_getElem?_getD, ne_eq, List.get_eq_getElem]
-      step; step
-      · have : (polys.deref).val.length = (polys).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind
-      · intros i hi
-        have : (polys.deref.val[i]!.coefficients).val.length =
-          (polys.val[i]!.coefficients).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind [degree]
-      · constructor
-        · grind
-        · constructor
-          · grind
-          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-            rw [‹p.toGF216Poly = _›]; apply Finset.sum_congr rfl; intro x hx
-            simp only [Finset.mem_range] at hx
-            congr 1
-            apply polys_basis (x := x) <;> first | assumption | simp
-    · have h_len_N : Slice.len pts = 36#usize := by simp [Slice.len, hN, Usize.ofNatCore]
-      step as ⟨ s, hs⟩
-      have : s = 36#uscalar := by
-        apply UScalar.eq_of_val_eq; rw [hs, UScalar.cast_val_eq, h_len_N]; simp; rfl
-      simp only [this, BitVec.ofNat_eq_ofNat, UScalarTy.U64_numBits_eq]; step
-      unfold bodyPost
-      simp only [not_lt, List.getElem!_eq_getElem?_getD, ne_eq, List.get_eq_getElem]
-      step; step
-      · have : (polys.deref).val.length = (polys).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind
-      · intros i hi
-        have : (polys.deref.val[i]!.coefficients).val.length =
-          (polys.val[i]!.coefficients).val.length := by
-          simp [alloc.vec.Vec.deref]
-        grind [degree]
-      · constructor
-        · grind
-        · constructor
-          · grind
-          · rw [h_len_N]; simp only [alloc.vec.Vec.deref] at *; simp only [hN] at *
-            rw [‹p.toGF216Poly = _›]; apply Finset.sum_congr rfl; intro x hx
-            simp only [Finset.mem_range] at hx
-            congr 1
-            apply polys_basis (x := x) <;> first | assumption | simp
+    · rw [show s = 1#uscalar from UScalar.eq_of_val_eq hs_val]
+      refine arm_spec pts iter _ (WP.spec_mono COMPLETE_POINTS_POLYS_1_spec ?_) (by decide)
+        (by simp [Slice.len, hN, Usize.ofNatCore]) h_not_lt
+      rintro a ⟨-, -, h⟩ j hj
+      obtain rfl : j = 0 := by simp at hj; omega
+      rw [scaledLagrangeBasis_one_zero]
+      simpa [List.getElem!_eq_getElem?_getD] using h
+    · rw [show s = 3#uscalar from UScalar.eq_of_val_eq hs_val]
+      exact arm_spec pts iter _ COMPLETE_POINTS_POLYS_3_spec (by decide)
+        (by simp [Slice.len, hN, Usize.ofNatCore]) h_not_lt
+    · rw [show s = 5#uscalar from UScalar.eq_of_val_eq hs_val]
+      exact arm_spec pts iter _ COMPLETE_POINTS_POLYS_5_spec (by decide)
+        (by simp [Slice.len, hN, Usize.ofNatCore]) h_not_lt
+    · rw [show s = 30#uscalar from UScalar.eq_of_val_eq hs_val]
+      exact arm_spec pts iter _ COMPLETE_POINTS_POLYS_30_spec (by decide)
+        (by simp [Slice.len, hN, Usize.ofNatCore]) h_not_lt
+    · rw [show s = 34#uscalar from UScalar.eq_of_val_eq hs_val]
+      exact arm_spec pts iter _ COMPLETE_POINTS_POLYS_34_spec (by decide)
+        (by simp [Slice.len, hN, Usize.ofNatCore]) h_not_lt
+    · rw [show s = 36#uscalar from UScalar.eq_of_val_eq hs_val]
+      exact arm_spec pts iter _ COMPLETE_POINTS_POLYS_36_spec (by decide)
+        (by simp [Slice.len, hN, Usize.ofNatCore]) h_not_lt
 
 /-! ## Spec theorem: in-bounds body (no size restriction)
 
@@ -509,16 +432,14 @@ theorem body_spec
             iter'.iter.i = iter.iter.i + 1 ∧
             iter'.iter.slice = pts ∧
             iter'.count.val = iter.count.val + 1 ⦄ := by
-  by_cases h_in : iter.iter.i < iter.iter.slice.val.length
-  · exact body_spec_some_case pts iter h_count h_slice_eq h_in
-  · rcases h_len_ok with h | h | h | h | h | h | h
-    · exact body_spec_none_0 pts iter h_slice_eq h_in h
-    · grind [body_spec_none_N _ pts iter h_slice_eq h_in h]
-    · grind [body_spec_none_N _ pts iter h_slice_eq h_in h]
-    · grind [body_spec_none_N _ pts iter h_slice_eq h_in h]
-    · grind [body_spec_none_N _ pts iter h_slice_eq h_in h]
-    · grind [body_spec_none_N _ pts iter h_slice_eq h_in h]
-    · grind [body_spec_none_N _ pts iter h_slice_eq h_in h]
+  have h_body : body pts iter ⦃ bodyPost pts iter ⦄ := by
+    by_cases h_in : iter.iter.i < iter.iter.slice.val.length
+    · exact body_spec_some_case pts iter h_count h_slice_eq h_in
+    · rcases h_len_ok with h | h
+      · exact body_spec_none_0 pts iter h_slice_eq h_in h
+      · exact body_spec_none_N _ pts iter h_slice_eq h_in rfl (by simpa [Slice.length] using h)
+  apply WP.spec_mono h_body
+  rintro (iter' | (p | ⟨⟩)) h_post <;> exact h_post
 
 /-! # Spec theorem for `Poly::from_complete_points`: loop 0
 
@@ -562,12 +483,23 @@ theorem loop_spec
   · intro iter' ⟨h_slice', h_i_le', h_count', h_count_eq', h_pre'⟩
     have h_body := body_spec pts iter' h_count' h_slice' h_len_ok
     apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done (core.result.Result.Ok p) => grind
-    | ControlFlow.done (core.result.Result.Err ()) => grind
-    | ControlFlow.cont iter'' => grind
-  · grind
+    rintro (iter'' | (p | ⟨⟩)) h_cf
+    · -- the point at `iter'.i` is valid: the invariant extends by one index
+      obtain ⟨h_i, h_val, h_i'', h_slice'', h_count''⟩ := h_cf
+      have h_i' : iter'.iter.i < pts.val.length := h_i
+      have h_len' : pts.val.length ≤ UScalar.max .U16 := h_pts_len
+      refine ⟨⟨h_slice'', by omega, by omega, by omega, fun j hj hj_lt => ?_⟩, by omega⟩
+      by_cases hj' : j < iter'.iter.i
+      · exact h_pre' j hj' hj_lt
+      · obtain rfl : j = iter'.iter.i := by omega
+        exact h_val.trans h_count_eq'
+    · -- iterator exhausted: every index was checked
+      obtain ⟨h_ge, h_deg, h_sum⟩ := h_cf
+      exact ⟨fun j hj => h_pre' j (by omega) hj, h_deg, h_sum⟩
+    · -- invalid point at `iter'.i`
+      obtain ⟨h_i, h_ne⟩ := h_cf
+      exact ⟨iter'.iter.i, h_i, fun h => h_ne (h.trans h_count_eq'.symm)⟩
+  · exact ⟨h_slice_eq, h_i_le, h_count, h_count_eq ▸ rfl, h_pre⟩
 
 end spqr.encoding.polynomial.Poly.from_complete_points_loop
 
@@ -606,14 +538,15 @@ theorem from_complete_points_spec
           C ((pts.val[j]!).y.toGF216) * scaledLagrangeBasis (Slice.len pts) j
       | core.result.Result.Err () =>
           ∃ (j : Nat) (hj : j < pts.val.length), (pts[j]).x.value.val ≠ j ⦄ := by
-  have h_pts_len : pts.val.length ≤ UScalar.max .U16 := by grind
+  have h_pts_len : pts.val.length ≤ UScalar.max .U16 := by
+    simp only [Slice.length] at h_len_ok; scalar_tac
   unfold from_complete_points
   simp only [core.slice.Slice.iter,
              core.iter.traits.iterator.Iterator.enumerate.trait_default,
              core.iter.traits.iterator.Iterator.enumerate.default, bind_ok]
   exact from_complete_points_loop.loop_spec pts _
-    (by simp) (by simp) rfl (by grind) h_pts_len h_len_ok
-    (by intro j hj; grind)
+    (by simp) (by simp) rfl (by simp) h_pts_len h_len_ok
+    (by intro j hj; simp at hj)
 
 
 /-- **Spec theorem for `encoding.polynomial.Poly.from_complete_points` (error path)**:
@@ -655,20 +588,18 @@ theorem from_complete_points_spec_of_invalid_index
       (∃ (k : Nat), iter'.iter.i ≤ k ∧ k < pts.length ∧
         ∀ (hk : k < pts.length), (pts[k]).x.value.val ≠ k))
   · intro iter' ⟨h_slice', h_count', h_count_eq', h_pre', k, h_k_ge, h_k_lt, h_k_neq⟩
-    have h_in_bounds : iter'.iter.i < pts.length := by grind
+    have h_in_bounds : iter'.iter.i < pts.length := lt_of_le_of_lt h_k_ge h_k_lt
+    have h_k_lt' : k < pts.val.length := h_k_lt
+    have h_len' : pts.val.length ≤ UScalar.max .U16 := h_pts_len
     have h_body := from_complete_points_loop.body_spec_inbounds pts iter'
       h_count' h_slice' h_in_bounds
     apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done (core.result.Result.Ok _) => grind
-    | ControlFlow.done (core.result.Result.Err ()) => grind
-    | ControlFlow.cont iter'' =>
-      simp only  at h_cf ⊢
-      obtain ⟨h_val_eq, h_iter_i, h_iter_slice, h_iter_count⟩ := h_cf
+    rintro (iter'' | (_ | ⟨⟩)) h_cf
+    · obtain ⟨h_val_eq, h_iter_i, h_iter_slice, h_iter_count⟩ := h_cf
       constructor
       · refine ⟨h_iter_slice, ?_, ?_, ?_, ?_⟩
-        · grind
+        · show iter''.count.val ≤ UScalar.max .U16
+          omega
         · omega
         · intro j hj hj_lt
           by_cases hj' : j < iter'.iter.i
@@ -682,7 +613,10 @@ theorem from_complete_points_spec_of_invalid_index
             rw [h_count_eq'] at h_val_eq
             exact h_k_neq h_k_lt h_val_eq
           exact ⟨k, by omega, h_k_lt, h_k_neq⟩
-      · grind
+      · show pts.val.length - iter''.iter.i < pts.val.length - iter'.iter.i
+        omega
+    · exact h_cf.elim
+    · exact ⟨_, h_in_bounds, fun h => h_cf (h.trans h_count_eq'.symm)⟩
   · obtain ⟨j, hj, h_neq⟩ := h_exists
     refine ⟨rfl, by simp, by simp, ?_, j, ?_, hj, fun _ => h_neq⟩
     · intro j' hj'; simp at hj'

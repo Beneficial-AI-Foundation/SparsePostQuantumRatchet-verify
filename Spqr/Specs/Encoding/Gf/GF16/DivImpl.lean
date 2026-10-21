@@ -3,12 +3,18 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Math.Gf16.Field
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.GF16.Mul
-import Spqr.Auxiliary.Aeneas.StdNextStepUsize
-import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
+import Spqr.Specs.Encoding.Gf.Mul2U16
+public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::gf::{impl ops::Div for GF16}::div_impl`
 
@@ -20,16 +26,14 @@ integer; the `GF16` Rust type is the `u16` wrapper providing the field operation
 The extracted Lean body advances the `1..16` iterator by one step and, depending on whether the
 iterator is exhausted, either returns the accumulated `out` (loop exit) or computes the new
 `(square', out')` state for the next iteration:
-  1. `out1 ← MulAssignGF16.mul_assign out square` — in-place
-     `out *= square` delegating to the by-reference `MulAssign`
-     instance, which itself delegates to the software (unaccelerated)
-     carry-less multiplication `encoding.gf.unaccelerated.mul`.
-  2. `square1 ← MulGF16GF16.mul square square` — by-value
-     `square = square * square` delegating to the same software
-     multiplication kernel.
+  `(square', out') ← mul2_u16 square square out` — two GF(2¹⁶) products sharing the left operand
+  `square`, i.e. `square' = square · square` and `out' = square · out`, both computed by the
+  software (unaccelerated) carry-less multiplication `encoding.gf.unaccelerated.mul`.
 
 **Source**: spqr/src/encoding/gf.rs (lines 451:8-454:9)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result core.ops.range
 
@@ -75,6 +79,7 @@ theorem div_impl_loop_body_spec
           square'.toGF216 = square.toGF216 * square.toGF216 ⦄ := by
   unfold div_impl_loop.body
   step*
+  simp_all [GF16.toGF216, mul_comm]
 
 /-- **spec theorem for `encoding.gf.GF16.div_impl_loop`**:
 
@@ -108,8 +113,14 @@ theorem div_impl_loop_spec (iter : Range I32) (square out : GF16)
     have hk1 : (iter1.start.val - iter.start.val).toNat =
         (iter'.start.val - iter.start.val).toNat + 1 := by grind
     refine ⟨by grind, by grind, by grind, ?_, ?_, by grind⟩
-    · rw [square1_post, h_sq, ← pow_add, hk1]; grind
-    · rw [out1_post, h_sq, h_out, mul_assoc, ← pow_add]; grind
+    · simp only [GF16.toGF216] at h_sq ⊢
+      rw [‹Nat.toGF216 _ = (sq'.value.val).toGF216 * (sq'.value.val).toGF216›, h_sq, ← pow_add,
+        hk1]
+      grind
+    · simp only [GF16.toGF216] at h_sq h_out ⊢
+      rw [‹Nat.toGF216 _ = (sq'.value.val).toGF216 * (out'.value.val).toGF216›, h_sq, h_out,
+        mul_comm (_ ^ _), mul_assoc, ← pow_add]
+      grind
   · grind
 
 /-! # Spec theorem for `encoding.gf.GF16.div_impl` (Fermat-style division via iterated squaring)

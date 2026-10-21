@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Lagrange denominator product
@@ -20,6 +26,8 @@ import Spqr.Math.Poly.Basic.Defs
 * `lagrangeDenomProd_eq_one_of_le` — out-of-range index gives `1`.
 * `lagrangeDenomProd_skip`, `lagrangeDenomProd_accum` — one-step unfoldings.
 -/
+
+@[expose] public section
 
 namespace spqr.encoding.polynomial
 
@@ -60,7 +68,7 @@ lemma lagrangeDenomProd_skip (pi_x : spqr.encoding.gf.GF16)
     lagrangeDenomProd pi_x pts start =
       lagrangeDenomProd pi_x pts (start + 1) := by
   conv_lhs => unfold lagrangeDenomProd
-  rw [dif_pos h, if_pos heq]
+  rw [dite_eq_left h, ite_eq_left heq]
 
 /-- One-step unfolding when the current point differs from `pi_x`. -/
 lemma lagrangeDenomProd_accum (pi_x : spqr.encoding.gf.GF16)
@@ -71,6 +79,6 @@ lemma lagrangeDenomProd_accum (pi_x : spqr.encoding.gf.GF16)
       (pi_x.toGF216 - (pts.get ⟨start, h⟩).x.toGF216) *
         lagrangeDenomProd pi_x pts (start + 1) := by
   conv_lhs => unfold lagrangeDenomProd
-  rw [dif_pos h, if_neg hne]
+  rw [dite_eq_left h, ite_eq_right hne]
 
 end spqr.encoding.polynomial

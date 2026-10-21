@@ -3,10 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong, Markus Dablander
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
-import Spqr.Math.Gf2Poly.Basic
-import Spqr.Math.Poly.Identities.Basic
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
+public import Spqr.Math.Gf2Poly.Basic
+public import Spqr.Math.Poly.Identities.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-! # Postcondition predicates for `PolyEncoder`
 
@@ -14,6 +20,8 @@ The named postconditions that the `PolyEncoder` spec theorems are stated against
 some pure lemmas relating them.
 
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf
 
@@ -141,7 +149,7 @@ lemma from_pb_new_implies_old_partial
   unfold FromPbPostCondOldPartial
   refine ⟨fun h_nil h_len => ?_, fun h_nil h_len => ?_⟩
   · have h_len' : pb.polys.length = 16 := h_len
-    rw [if_pos (show FromPbWellFormed pb from .inl ⟨h_nil, h_len', fun j hj =>
+    rw [ite_eq_left (show FromPbWellFormed pb from .inl ⟨h_nil, h_len', fun j hj =>
       ⟨h_polys_nonempty h_nil j (by omega), h_polys_even h_nil j (by omega)⟩⟩)] at h_total
     match result, h_total with
     | .Ok ⟨_, .Points _⟩, ⟨_, h_polys_nil, _⟩ => simp [h_polys_nil] at h_len
@@ -152,7 +160,7 @@ lemma from_pb_new_implies_old_partial
       refine ⟨by omega, fun k hk => ?_⟩
       obtain ⟨e1, e2, e3⟩ := h_co k (by omega)
       exact ⟨e1.symm, e2.symm, e3.symm⟩
-  · rw [if_pos (show FromPbWellFormed pb from .inr ⟨h_nil, h_len, fun j hj =>
+  · rw [ite_eq_left (show FromPbWellFormed pb from .inr ⟨h_nil, h_len, fun j hj =>
       h_pts_even h_nil j (by omega)⟩)] at h_total
     match result, h_total with
     | .Ok ⟨_, .Polys _⟩, ⟨_, h_pts_nil, _⟩ => simp [h_pts_nil] at h_len

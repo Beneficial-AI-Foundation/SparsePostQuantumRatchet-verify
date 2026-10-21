@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 /-! # Spec theorem for
   `spqr::encoding::polynomial::{impl core::cmp::PartialOrd<Pt> for Pt}::partial_cmp`
 
@@ -11,6 +13,8 @@ Orders `Pt` values by comparing x-coordinate `u16` values via `OrdU16.cmp`; y-co
 ignored. Always returns `some _`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

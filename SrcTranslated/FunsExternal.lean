@@ -1,6 +1,15 @@
-import Aeneas
-import SrcTranslated.Types
-import Spqr.Auxiliary.Aeneas.SpecImpExists
+module
+public import Aeneas
+public import SrcTranslated.Types
+public import Spqr.Auxiliary.Aeneas.SpecImpExists
+-- Remove when https://github.com/AeneasVerif/aeneas/issues/1415 lands
+import all Aeneas.Std.String
+public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
+public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+public import Spqr.Crypto.Fips203.Refinement.DecapsBytes
+import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
+import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+import Spqr.Crypto.Fips203.Refinement.DecapsBytes
 
 set_option linter.style.headerAlt false
 set_option linter.dupNamespace false
@@ -10,26 +19,13 @@ set_option linter.style.longLine false
 set_option linter.style.setOption false
 set_option linter.style.whitespace false
 
+@[expose] public section
 open Aeneas Aeneas.Std Result ControlFlow Error
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
 open spqr
 open Spqr.Mlkem
-
-/-- [core::cmp::impls::{impl core::cmp::Eq for u8}::assert_fields_are_eq]:
-    Source: '/rustc/library/core/src/cmp.rs', lines 1906:12-1906:32
-    Name pattern: [core::cmp::impls::{core::cmp::Eq<u8>}::assert_fields_are_eq]
-    Visibility: public -/
-@[rust_fun "core::cmp::impls::{core::cmp::Eq<u8>}::assert_fields_are_eq"]
-axiom U8.Insts.CoreCmpEq.assert_fields_are_eq : Std.U8 → Result Unit
-
-/-- [core::cmp::impls::{impl core::cmp::Eq for usize}::assert_fields_are_eq]:
-    Source: '/rustc/library/core/src/cmp.rs', lines 1906:12-1906:32
-    Name pattern: [core::cmp::impls::{core::cmp::Eq<usize>}::assert_fields_are_eq]
-    Visibility: public -/
-@[rust_fun "core::cmp::impls::{core::cmp::Eq<usize>}::assert_fields_are_eq"]
-axiom Usize.Insts.CoreCmpEq.assert_fields_are_eq : Std.Usize → Result Unit
 
 /-- [core::iter::traits::iterator::Iterator::map]:
     Source: '/rustc/library/core/src/iter/traits/iterator.rs', lines 831:4-834:34
@@ -65,49 +61,6 @@ theorem core.iter.traits.iterator.Iterator.map.default_spec
       m.iter = self ∧ m.f = fn ⦄ := by
   simp [core.iter.traits.iterator.Iterator.map.default, WP.spec_ok]
 
-/-- [prost::encoding::bool::merge]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 268:12-268:130
-    Name pattern: [prost::encoding::bool::merge]
-    Visibility: public -/
-@[rust_fun "prost::encoding::bool::merge"]
-axiom prost.encoding.bool.merge
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  prost.encoding.wire_type.WireType → Bool → T0 →
-    prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × Bool × T0)
-
-/-- [prost::encoding::message::merge]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 796:4-804:15
-    Name pattern: [prost::encoding::message::merge]
-    Visibility: public -/
-@[rust_fun "prost::encoding::message::merge"]
-axiom prost.encoding.message.merge
-  {M : Type} {B : Type} (messageMessageInst : prost.message.Message M)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf B) :
-  prost.encoding.wire_type.WireType → M → B →
-    prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × M × B)
-
-/-- [prost::message::Message::encode_to_vec]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/message.rs', lines 61:4-63:20
-    Name pattern: [prost::message::Message::encode_to_vec]
-    Visibility: public -/
-@[rust_fun "prost::message::Message::encode_to_vec"]
-axiom prost.message.Message.encode_to_vec.default
-  {Self : Type} (MessageInst : prost.message.Message Self) :
-  Self → Result (alloc.vec.Vec Std.U8)
-
-/-- [prost::message::Message::decode]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/message.rs', lines 105:4-107:22
-    Name pattern: [prost::message::Message::decode]
-    Visibility: public -/
-@[rust_fun "prost::message::Message::decode"]
-axiom prost.message.Message.decode.default
-  {Self : Type} {T1 : Type} (MessageInst : prost.message.Message Self)
-  (coredefaultDefaultInst : core.default.Default Self) (bytesbufbuf_implBufInst
-  : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result Self prost.error.DecodeError)
-
 /-- Implementation helper for `Slice.Insts.CoreCmpPartialEqArray.eq`
 (`[core::array::equality::{core::cmp::PartialEq<[@T], [@U; @N]>}::eq]`,
 Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40).
@@ -115,7 +68,7 @@ Source: '/rustc/library/core/src/array/equality.rs', lines 48:4-48:40).
 Element-wise equality of two lists, delegating per-element to the `PartialEq`
 instance and short-circuiting on the first inequality; lists of different lengths
 are unequal. -/
-private def Slice.partialEqAux {T U : Type} (cmpPartialEqInst : core.cmp.PartialEq T U) :
+def Slice.partialEqAux {T U : Type} (cmpPartialEqInst : core.cmp.PartialEq T U) :
     List T → List U → Result Bool
   | [], [] => ok true
   | a :: xs, b :: ys => do
@@ -146,7 +99,7 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_eq
 
 /-- `Slice.partialEqAux` with a homogeneous `PartialEq` always succeeds, and for U8
     the result `b = true ↔ xs = ys`. -/
-private theorem partialEqAux_U8_spec :
+theorem partialEqAux_U8_spec :
     ∀ (xs ys : List Std.U8),
     ∃ b : Bool, Slice.partialEqAux core.cmp.PartialEqU8 xs ys = ok b ∧
       (b = true ↔ xs = ys) := by
@@ -191,7 +144,7 @@ theorem Slice.Insts.CoreCmpPartialEqArray.eq_U8_spec
     Builds the element list by calling the closure at indices
     `i, i+1, …, i+remaining-1`, threading the mutable closure state
     through each call. -/
-private def core.array.from_fn_loop
+def core.array.from_fn_loop
     {T F : Type}
     (fnMutInst : core.ops.function.FnMut F Std.Usize T) :
     F → Std.Usize → Nat → Result (List T)
@@ -408,7 +361,7 @@ end U32.Insts.CoreConvertTryFromU64TryFromIntError
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2466:4-2473:15
     Name pattern: [core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish] -/
 @[rust_fun "core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field2_finish"]
-axiom core.fmt.Formatter.debug_struct_field2_finish
+noncomputable opaque core.fmt.Formatter.debug_struct_field2_finish
   :
   core.fmt.Formatter → Str → Str → Dyn (fun _dyn => core.fmt.Debug _dyn)
     → Str → Dyn (fun _dyn => core.fmt.Debug _dyn) → Result
@@ -418,7 +371,7 @@ axiom core.fmt.Formatter.debug_struct_field2_finish
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2865:12-2865:58
     Name pattern: [core::fmt::{core::fmt::Display<&'0 @T>}::fmt] -/
 @[rust_fun "core::fmt::{core::fmt::Display<&'0 @T>}::fmt"]
-axiom Shared0T.Insts.CoreFmtDisplay.fmt
+noncomputable opaque Shared0T.Insts.CoreFmtDisplay.fmt
   {T : Type} (DisplayInst : core.fmt.Display T) :
   T → core.fmt.Formatter → Result ((core.result.Result Unit core.fmt.Error)
     × core.fmt.Formatter)
@@ -751,7 +704,7 @@ theorem core.option.Option.ok_or_spec {T E : Type} (o : Option T) (e : E) :
     Name pattern: [core::option::{core::clone::Clone<core::option::Option<@T>>}::clone] -/
 @[rust_fun
   "core::option::{core::clone::Clone<core::option::Option<@T>>}::clone"]
-axiom core.option.Option.Insts.CoreCloneClone.clone
+noncomputable opaque core.option.Option.Insts.CoreCloneClone.clone
   {T : Type} (cloneCloneInst : core.clone.Clone T) :
   Option T → Result (Option T)
 
@@ -760,7 +713,7 @@ axiom core.option.Option.Insts.CoreCloneClone.clone
     Name pattern: [core::option::{core::default::Default<core::option::Option<@T>>}::default] -/
 @[rust_fun
   "core::option::{core::default::Default<core::option::Option<@T>>}::default"]
-axiom core.option.Option.Insts.CoreDefaultDefault.default
+noncomputable opaque core.option.Option.Insts.CoreDefaultDefault.default
   (T : Type) : Result (Option T)
 
 /-- [core::option::{core::cmp::PartialEq<core::option::Option<T>> for core::option::Option<T>}::eq]:
@@ -808,15 +761,6 @@ theorem core.result.Result.is_ok_spec {T E : Type} (r : core.result.Result T E) 
       b = match r with | .Ok _ => true | .Err _ => false ⦄ := by
   rcases r with v | e <;> simp [core.result.Result.is_ok]
 
-/-- [core::result::{core::result::Result<T, E>}::map]:
-    Source: '/rustc/library/core/src/result.rs', lines 831:4-833:53
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::map] -/
-@[rust_fun "core::result::{core::result::Result<@T, @E>}::map"]
-axiom core.result.Result.map
-  {T : Type} {E : Type} {U : Type} {F : Type} (opsfunctionFnOnceFTupleTUInst :
-  core.ops.function.FnOnce F T U) :
-  core.result.Result T E → F → Result (core.result.Result U E)
-
 /-- [core::result::{core::result::Result<T, E>}::map_err]:
     Source: '/rustc/library/core/src/result.rs', lines 962:4-964:53
     Name pattern: [core::result::{core::result::Result<@T, @E>}::map_err] -/
@@ -845,27 +789,6 @@ theorem core.result.Result.map_err_Err
     {T E F O : Type} (inst : core.ops.function.FnOnce O E F) (e : E) (op : O) :
     core.result.Result.map_err (T := T) inst (.Err e) op =
       (do let f ← inst.call_once op e; ok (.Err f)) := rfl
-
-/-- [core::result::{core::result::Result<T, E>}::unwrap_or]:
-    Source: '/rustc/library/core/src/result.rs', lines 1590:4-1593:28
-    Name pattern: [core::result::{core::result::Result<@T, @E>}::unwrap_or] -/
-@[rust_fun "core::result::{core::result::Result<@T, @E>}::unwrap_or"]
-def core.result.Result.unwrap_or
-  {T : Type} {E : Type} : core.result.Result T E → T → Result T :=
-  fun r default =>
-    match r with
-    | .Ok v => ok v
-    | .Err _ => ok default
-
-/-- **Spec theorem for `Result::unwrap_or`**: returns the `Ok` payload, or the
-supplied default on `Err`. -/
-@[step]
-theorem core.result.Result.unwrap_or_spec {T E : Type}
-    (r : core.result.Result T E) (default : T) :
-    core.result.Result.unwrap_or r default ⦃ x =>
-      x = match r with | .Ok v => v | .Err _ => default ⦄ := by
-  rcases r with v | e <;> simp [core.result.Result.unwrap_or]
-
 
 /-- Implementation helper for `Slice.Insts.CoreCmpOrd.cmp`
 (`[core::slice::cmp::{core::cmp::Ord<[@T]>}::cmp]`,
@@ -901,6 +824,16 @@ theorem Slice.Insts.CoreCmpOrd.cmp_eq
     {T : Type} (cmpOrdInst : core.cmp.Ord T) (s1 s2 : Slice T) :
     Slice.Insts.CoreCmpOrd.cmp cmpOrdInst s1 s2 =
       Slice.lexCmpAux cmpOrdInst s1.val s2.val := rfl
+
+/-- [core::slice::{[T]}::binary_search]:
+    Source: '/rustc/library/core/src/slice/mod.rs', lines 2934:4-2936:23
+    Name pattern: [core::slice::{[@T]}::binary_search]
+    On a match Rust returns the index of *some* equal element
+    (which one is unspecified), and `Err` carries the insertion point. -/
+@[rust_fun "core::slice::{[@T]}::binary_search"]
+noncomputable opaque core.slice.Slice.binary_search
+  {T : Type} (cmpOrdInst : core.cmp.Ord T) :
+  Slice T → T → Result (core.result.Result Std.Usize Std.Usize)
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::index_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 660:4-660:51
@@ -940,28 +873,6 @@ theorem core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index_
     core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index r s
       ⦃ r' => r' = s ⦄ := by
   simp [core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.index]
-
-/-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_unchecked_mut]:
-    Source: '/rustc/library/core/src/slice/index.rs', lines 650:4-650:66
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked_mut] -/
-@[rust_fun
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked_mut"]
-axiom
-  core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_unchecked_mut
-  {T : Type} :
-  core.ops.range.RangeFull → MutRawPtr (Slice T) → Result (MutRawPtr (Slice
-    T))
-
-/-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_unchecked]:
-    Source: '/rustc/library/core/src/slice/index.rs', lines 645:4-645:66
-    Name pattern: [core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked] -/
-@[rust_fun
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFull, [@T], [@T]>}::get_unchecked"]
-axiom
-  core.ops.range.RangeFull.Insts.CoreSliceIndexSliceIndexSliceSlice.get_unchecked
-  {T : Type} :
-  core.ops.range.RangeFull → ConstRawPtr (Slice T) → Result (ConstRawPtr
-    (Slice T))
 
 /-- [core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFull}::get_mut]:
     Source: '/rustc/library/core/src/slice/index.rs', lines 640:4-640:57
@@ -1077,7 +988,7 @@ equal length (Rust panics otherwise); when the element `Clone` instance acts as 
 theorem clone_from_slice_spec {T : Type} (cloneCloneInst : core.clone.Clone T) (dst src : Slice T)
     (hlen : dst.length = src.length) (h : ∀ x ∈ src.val, cloneCloneInst.clone x = ok x) :
     clone_from_slice cloneCloneInst dst src ⦃ (r : Slice T) => src = r ⦄ := by
-  simpa [clone_from_slice, if_pos hlen] using Slice.clone_spec h
+  simpa [clone_from_slice, ite_eq_left hlen] using Slice.clone_spec h
 
 /-- `clone_from_slice` for `u8` copies the source slice into the destination, returning a slice
 whose contents and length equal those of the source. Requires the destination and source to have
@@ -1259,8 +1170,61 @@ theorem alloc.collections.vec_deque.VecDeque.push_back_spec
       self'.head = self.head ∧
       self'.length = self.length.val + 1 ⦄ := by
   unfold alloc.collections.vec_deque.VecDeque.push_back
-  simp only [dif_pos hbuf]
+  simp only [dite_eq_left hbuf]
   step*
+
+/-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::new]:
+    Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs'
+    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new]
+
+    Growing-list model: the empty deque (empty buffer, `head = 0`, `length = 0`). -/
+@[rust_fun
+  "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new"]
+def alloc.collections.vec_deque.VecDequeTGlobal.new
+  (T : Type) : Result (alloc.collections.vec_deque.VecDeque T Global) :=
+  ok { buf := alloc.vec.Vec.new T, head := 0#usize, length := 0#usize }
+
+/-- Spec: `new` returns the empty deque. -/
+@[step]
+theorem alloc.collections.vec_deque.VecDequeTGlobal.new_spec (T : Type) :
+    alloc.collections.vec_deque.VecDequeTGlobal.new T ⦃
+      (d : alloc.collections.vec_deque.VecDeque T Global) =>
+      d.buf.val = [] ∧ d.head = 0#usize ∧ d.length = 0#usize ⦄ := by
+  simp [alloc.collections.vec_deque.VecDequeTGlobal.new, alloc.vec.Vec.new, WP.spec_ok]
+
+/-- [core::hint::must_use]:
+    Source: '/rustc/library/core/src/hint.rs', lines 613:0-613:39
+    Name pattern: [core::hint::must_use]
+
+    The identity function (it only carries the `#[must_use]` lint). -/
+@[rust_fun "core::hint::must_use"]
+def core.hint.must_use {T : Type} (value : T) : Result T := ok value
+
+/-- [alloc::fmt::format]:
+    Source: '/rustc/library/alloc/src/fmt.rs', lines 651:0-651:52
+    Name pattern: [alloc::fmt::format]
+
+    Opaque: the formatted `String` (used only for error messages in spqr). No spec is assumed. -/
+@[rust_fun "alloc::fmt::format"]
+noncomputable opaque alloc.fmt.format : core.fmt.Arguments → Result String
+
+/-- **Trusted spec axiom for `alloc::fmt::format`**: formatting into a `String` always
+succeeds. The resulting string is left unspecified (the model of `alloc.fmt.format` is opaque);
+spqr only uses it to build error messages. -/
+@[step]
+axiom alloc.fmt.format_spec (args : core.fmt.Arguments) :
+    alloc.fmt.format args ⦃ (_ : String) => True ⦄
+
+/-- [alloc::string::{impl core::fmt::Debug for alloc::string::String}::fmt]:
+    Source: '/rustc/library/alloc/src/string.rs', lines 2793:4-2793:60
+    Name pattern: [alloc::string::{core::fmt::Debug<alloc::string::String>}::fmt]
+
+    Opaque: debug formatting (only reached through `expect` on a `Result<_, String>`). No spec
+    is assumed. -/
+@[rust_fun "alloc::string::{core::fmt::Debug<alloc::string::String>}::fmt"]
+noncomputable opaque alloc.string.String.Insts.CoreFmtDebug.fmt :
+  String → core.fmt.Formatter → Result ((core.result.Result Unit
+    core.fmt.Error) × core.fmt.Formatter)
 
 /-- [alloc::collections::vec_deque::{core::ops::index::IndexMut<usize, T> for alloc::collections::vec_deque::VecDeque<T, A>}::index_mut]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3634:4-3634:51
@@ -1312,7 +1276,7 @@ theorem alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.in
                (res.2 x).length = self.length
         | none => False ⦄ := by
   unfold alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.index_mut
-  simp only [if_pos hidx, dif_pos hphys]
+  simp only [ite_eq_left hidx, dite_eq_left hphys]
   simp only [List.getElem?_eq_getElem hphys, WP.spec_ok]
   simp
 
@@ -1449,7 +1413,7 @@ theorem Slice.Insts.AllocSliceConcatTVec.concat_shared_id_spec
   simp only [Slice.Insts.AllocSliceConcatTVec.concat_eq]
   step with h sv.val as ⟨l, h_l⟩
   unfold Slice.listToVec
-  rw [dif_pos (h_l ▸ hlen)]
+  rw [dite_eq_left (h_l ▸ hlen)]
   simp only [WP.spec_ok, alloc.vec.Vec.from_val, h_l]
 
 /-- [alloc::str::{alloc::borrow::ToOwned<alloc::string::String> for str}::to_owned]:
@@ -1499,7 +1463,7 @@ theorem Str.Insts.AllocBorrowToOwnedString.to_owned_spec (s : String)
       (⟨⟨(toStr s h).val.map (fun b => UInt8.ofNat b.val)⟩⟩ : ByteArray) = s.toByteArray := by
     simp only [toStr, Slice.from_val, List.map_map, Function.comp_def, UScalar.val,
       BitVec.toNat_ofFin, UInt8.ofNat_toNat, List.map_id', ByteArray.toList_eq_data_toList]
-  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dif_pos]
+  simp only [Str.Insts.AllocBorrowToOwnedString.to_owned, hbytes, s.isValidUTF8, dite_eq_left]
   step*
 
 /-- [alloc::vec::{alloc::vec::Vec<T>}::truncate]:
@@ -1661,35 +1625,11 @@ theorem alloc.vec.Vec.Insts.CoreDefaultDefault.default_spec (T : Type) :
     alloc.vec.Vec.Insts.CoreDefaultDefault.default T ⦃ v => v.val = [] ⦄ := by
   simp [alloc.vec.Vec.Insts.CoreDefaultDefault.default, alloc.vec.Vec.new]
 
-/-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::advance]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2901:4-2901:37
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::advance] -/
-@[rust_fun
-  "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::advance"]
-axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.advance
-  : Slice Std.U8 → Std.Usize → Result (Slice Std.U8)
-
-/-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::chunk]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2896:4-2896:28
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::chunk] -/
-@[rust_fun
-  "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::chunk"]
-axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.chunk
-  : Slice Std.U8 → Result (Slice Std.U8)
-
-/-- [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf for &0 ([u8])}::remaining]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bytes-1.10.1/src/buf/buf_impl.rs', lines 2891:4-2891:32
-    Name pattern: [bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining] -/
-@[rust_fun
-  "bytes::buf::buf_impl::{bytes::buf::buf_impl::Buf<&'0 [u8]>}::remaining"]
-axiom Shared0SliceU8.Insts.BytesBufBuf_implBuf.remaining
-  : Slice Std.U8 → Result Std.Usize
-
 /-- [libcrux_hmac::hmac]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-hmac-0.0.6/src/hmac.rs', lines 51:0-51:90
     Name pattern: [libcrux_hmac::hmac] -/
 @[rust_fun "libcrux_hmac::hmac"]
-axiom libcrux_hmac.hmac
+noncomputable opaque libcrux_hmac.hmac
   :
   libcrux_hmac.Algorithm → Slice Std.U8 → Slice Std.U8 → Option Std.Usize
     → Result (alloc.vec.Vec Std.U8)
@@ -1747,14 +1687,23 @@ axiom libcrux_hmac.hmac_sha256_tag32_spec
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/constants.rs', lines 14:0-14:35
     Name pattern: [libcrux_ml_kem::constants::SHARED_SECRET_SIZE] -/
 @[rust_const "libcrux_ml_kem::constants::SHARED_SECRET_SIZE"]
-axiom libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize
+def libcrux_ml_kem.constants.SHARED_SECRET_SIZE : Result Std.Usize :=
+  -- `pub const SHARED_SECRET_SIZE: usize = 32;`
+  ok 32#usize
+
+/-- **Spec theorem for `libcrux_ml_kem::constants::SHARED_SECRET_SIZE`**: the constant is `32`. -/
+@[step]
+theorem libcrux_ml_kem.constants.SHARED_SECRET_SIZE_spec :
+    libcrux_ml_kem.constants.SHARED_SECRET_SIZE ⦃ (r : Std.Usize) => r.val = 32 ⦄ := by
+  simp only [libcrux_ml_kem.constants.SHARED_SECRET_SIZE, WP.spec_ok]
+  rfl
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug for libcrux_ml_kem::ind_cca::incremental::types::Error}::fmt]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 13:9-13:14
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>}::fmt] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{core::fmt::Debug<libcrux_ml_kem::ind_cca::incremental::types::Error>}::fmt"]
-axiom libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFmtDebug.fmt
+noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFmtDebug.fmt
   :
   libcrux_ml_kem.ind_cca.incremental.types.Error → core.fmt.Formatter →
     Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
@@ -1764,7 +1713,7 @@ axiom libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFmtDebug.fmt
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len"]
-axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
+noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
   (LEN : Std.Usize) : Result Std.Usize
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<LEN>}::len]:
@@ -1772,52 +1721,96 @@ axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len"]
-axiom libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
+noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
   (LEN : Std.Usize) : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk1_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 26:8-26:39
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk1_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk1_len"]
-axiom libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize
+noncomputable opaque libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk2_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 31:8-31:39
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk2_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk2_len"]
-axiom libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
+noncomputable opaque libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encaps_state_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 59:8-59:48
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encaps_state_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encaps_state_len"]
-axiom libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize
+def libcrux_ml_kem.mlkem768.incremental.encaps_state_len : Result Std.Usize :=
+  -- `(RANK + 1) * PolynomialRingElement::num_bytes() + 32 = 4 * 512 + 32 = 2080`
+  ok 2080#usize
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encaps_state_len`**: the
+serialised encapsulation state has `2080` bytes. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encaps_state_len_spec :
+    libcrux_ml_kem.mlkem768.incremental.encaps_state_len ⦃ (r : Std.Usize) =>
+      r.val = Fips203.Refinement.encapsStateSize ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.encaps_state_len, WP.spec_ok]
+  rfl
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate2]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 407:8-407:111
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate2] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate2"]
-axiom libcrux_ml_kem.mlkem768.incremental.encapsulate2
-  :
-  Array Std.U8 2080#usize → Array Std.U8 1152#usize → Result
-    (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize)
+noncomputable def libcrux_ml_kem.mlkem768.incremental.encapsulate2
+  (state : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
+  Result (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :=
+  -- Model: round 2 of FIPS 203 `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase2`): decode the
+  -- 2080-byte state `ŷ ‖ e₂ ‖ m` and `t̂` from `pk2 = ByteEncode₁₂(t̂)`, then output
+  -- `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))`.  Both inputs are
+  -- fixed-size arrays, so there are no error cases and the function never fails.
+  -- See `Spqr/Crypto/Fips203/Refinement/EncapsBytes.lean`.
+  ok { value := Fips203.Refinement.ct2Array state pk2 }
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encapsulate2`**
+
+- Never panics (both inputs are fixed-size arrays, so there are no length checks).
+- Returns the `128`-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17
+  (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `state` and the
+  NTT-domain vector `t̂` decoded from `pk2` (`Fips203.Refinement.ct2List`). -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encapsulate2_spec
+    (state : Array Std.U8 2080#usize) (pk2 : Array Std.U8 1152#usize) :
+    libcrux_ml_kem.mlkem768.incremental.encapsulate2 state pk2
+      ⦃ (r : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) =>
+      r.value.length = 128 ∧ r.value.val = Fips203.Refinement.ct2List state pk2 ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.encapsulate2, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 240:12-240:80
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed] -/
 @[rust_fun
   "libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::from_seed"]
-def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
-  (_seed : Array Std.U8 64#usize) : Result
+noncomputable def libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed
+  (seed : Array Std.U8 64#usize) : Result
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes :=
-  ok default
+  -- Model: FIPS 203 `ML-KEM.KeyGen_internal(d, z)` with `d = seed[0:32]`, `z = seed[32:64]`,
+  -- serialised as `dk = dkPKE ‖ ek ‖ H(ek) ‖ z` — byte-for-byte the libcrux layout
+  -- (`KeyPair::to_bytes_compressed`).  See `Spqr/Crypto/Fips203/Refinement/KeyPairBytes.lean`.
+  ok { value := Fips203.Refinement.keyPairArray (Fips203.Refinement.seedOfArray seed) }
 
--- TODO: add cryptographic properties of from_seed_spec
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes::from_seed`**
+
+- Key generation from a 64-byte seed does not panic.
+- The returned buffer has the decapsulation-key length `2400`.
+- The buffer is exactly the FIPS 203 (Algorithm 16) decapsulation key
+  `ML-KEM.KeyGen_internal(seed[0:32], seed[32:64]).dk` (`Fips203.Refinement.keyPairList`), as libcrux
+  lays it out: `ByteEncode₁₂(ŝ) ‖ ByteEncode₁₂(t̂) ‖ ρ ‖ H(ek) ‖ z`. -/
 @[step]
-axiom libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
+theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed_spec
     (seed : Array Std.U8 64#usize) :
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed seed
-      ⦃ fun kp => kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄
+      ⦃ (kp : libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes) =>
+      kp.value.length = mlkem768Params.decapsulationKeyBytes ∧
+      kp.value.val = Fips203.Refinement.keyPairList (Fips203.Refinement.seedOfArray seed) ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.from_seed, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::{libcrux_ml_kem::mlkem768::incremental::KeyPairCompressedBytes}::pk1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 267:12-267:49
@@ -1919,78 +1912,188 @@ theorem libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk_spec
     libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk k
       ⦃ (r : Array Std.U8 2400#usize) =>
       r.length = mlkem768Params.decapsulationKeyBytes ∧ r.val = k.value.val ⦄ := by
-  simp only [libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk, WP.spec_ok]
-  exact ⟨Array.length_eq _, rfl⟩
+  unfold libcrux_ml_kem.mlkem768.incremental.KeyPairCompressedBytes.sk
+  exact (WP.spec_ok _).mpr ⟨Array.length_eq _, rfl⟩
 
 /-- [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 333:8-336:30
-    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes] -/
+    Name pattern: [libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes]
+
+    Concrete model of Rust's `validate_pk_bytes(pk1, pk2)`
+    (`src/ind_cca/incremental.rs` lines 297–339, `validate_pk_bytes` + `validate_pk_parts`):
+    1. Length check: fails with `InvalidInputLength` unless `pk1.len() == 64` **and**
+       `pk2.len() == 1152` (exact equality; over-long inputs are rejected).
+    2. Hash check: rebuilds `ek = pk2 ‖ pk1[0..32]` and fails with `InvalidPublicKey` unless
+       `H(ek) == pk1[32..64]` (`Fips203.Refinement.pk1HashValid`).
+    3. Modulus check (FIPS 203 § 7.2): fails with `InvalidPublicKey` unless
+       `ByteEncode₁₂(ByteDecode₁₂(pk2)) == pk2` (`Fips203.Refinement.pk2Valid`).
+
+    The outer `Result` is always `ok` (the call never panics).
+
+    **Modelling note**: steps 2 and 3 are modelled via the predicates
+    `Fips203.Refinement.pk1HashValid` / `Fips203.Refinement.pk2Valid`; both always hold for keys
+    produced by `from_seed` (`pk1HashValid_pk1Bytes`, `pk2Valid_pk2Bytes`). -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes"]
-axiom libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+noncomputable def libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
   :
   Slice Std.U8 → Slice Std.U8 → Result (core.result.Result Unit
-    libcrux_ml_kem.ind_cca.incremental.types.Error)
+    libcrux_ml_kem.ind_cca.incremental.types.Error) :=
+  fun pk1 pk2 =>
+    if pk1.length ≠ 64 ∨ pk2.length ≠ 1152 then
+      ok (.Err .InvalidInputLength)
+    else if ¬ Fips203.Refinement.pk1HashValid pk1.val pk2.val then
+      ok (.Err .InvalidPublicKey)
+    else if ¬ Fips203.Refinement.pk2Valid pk2.val then
+      ok (.Err .InvalidPublicKey)
+    else
+      ok (.Ok ())
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::validate_pk_bytes`**:
+
+- The call never panics (the outer `Result` is always `ok`).
+- Returns `Err InvalidInputLength` if `pk1.len() ≠ 64` or `pk2.len() ≠ 1152`.
+- Otherwise returns `Err InvalidPublicKey` if the header hash check
+  `H(pk2 ‖ pk1[0..32]) = pk1[32..64]` (`Fips203.Refinement.pk1HashValid`) or the FIPS 203
+  modulus check (`Fips203.Refinement.pk2Valid`) fails.
+- Returns `Ok ()` iff the lengths are exact and both checks pass. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes_spec
+    (pk1 pk2 : Slice Std.U8) :
+    libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes pk1 pk2
+      ⦃ (r : core.result.Result Unit libcrux_ml_kem.ind_cca.incremental.types.Error) =>
+      (pk1.length ≠ 64 ∨ pk2.length ≠ 1152 → r = .Err .InvalidInputLength) ∧
+      (pk1.length = 64 → pk2.length = 1152 →
+        ¬ Fips203.Refinement.pk1HashValid pk1.val pk2.val → r = .Err .InvalidPublicKey) ∧
+      (pk1.length = 64 → pk2.length = 1152 →
+        ¬ Fips203.Refinement.pk2Valid pk2.val → r = .Err .InvalidPublicKey) ∧
+      (r = .Ok () ↔ pk1.length = 64 ∧ pk2.length = 1152 ∧
+        Fips203.Refinement.pk1HashValid pk1.val pk2.val ∧
+        Fips203.Refinement.pk2Valid pk2.val) ⦄ := by
+  unfold libcrux_ml_kem.mlkem768.incremental.validate_pk_bytes
+  split
+  · rename_i h
+    simp only [WP.spec_ok]
+    refine ⟨fun _ => trivial, fun h1 h2 _ => ?_, fun h1 h2 _ => ?_, ?_⟩
+    · exact absurd h (by simp [h1, h2])
+    · exact absurd h (by simp [h1, h2])
+    · constructor
+      · intro hc; cases hc
+      · rintro ⟨h1, h2, -, -⟩; exact absurd h (by simp [h1, h2])
+  · rename_i h
+    rw [not_or, not_not, not_not] at h
+    obtain ⟨h1, h2⟩ := h
+    split <;> (try split) <;> simp_all [WP.spec_ok]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encapsulate1]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 344:8-349:39
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::encapsulate1] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::encapsulate1"]
-axiom libcrux_ml_kem.mlkem768.incremental.encapsulate1
-  :
-  Slice Std.U8 → Array Std.U8 32#usize → Slice Std.U8 → Slice Std.U8 →
-    Result ((core.result.Result
+noncomputable def libcrux_ml_kem.mlkem768.incremental.encapsulate1
+  (pk1 : Slice Std.U8) (randomness : Array Std.U8 32#usize) (state : Slice Std.U8)
+  (shared_secret : Slice Std.U8) :
+  Result ((core.result.Result
     (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
     libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice
-    Std.U8))
+    Std.U8)) :=
+  -- Model: round 1 of FIPS 203 `ML-KEM.Encaps_internal` (`Fips203.mlkemEncapsPhase1`) on the
+  -- header `pk1 = ρ ‖ H(ek)` and the message `randomness`, with libcrux's error behaviour:
+  -- `InvalidInputLength` if `pk1.len() < 64` (`PublicKey1::try_from`), `InvalidOutputLength` if
+  -- `shared_secret.len() < 32` or `state.len() < 2080` (`encapsulate1_serialized`,
+  -- `EncapsState::to_bytes`).  On success `state[0:2080] := ŷ ‖ e₂ ‖ m`, `shared_secret[0:32]
+  -- := K`, the remaining bytes are unchanged.  See `Spqr/Crypto/Fips203/Refinement/EncapsBytes.lean`.
+  if h : 64 ≤ pk1.length then
+    if h_ss : shared_secret.length < 32 then ok (.Err .InvalidOutputLength, state, shared_secret)
+    else if h_st : state.length < Fips203.Refinement.encapsStateSize then
+      ok (.Err .InvalidOutputLength, state, shared_secret)
+    else
+      let m := Fips203.Refinement.msgOfArray randomness
+      ok (.Ok { value := Fips203.Refinement.ct1Array pk1.val h m },
+        Slice.from (Fips203.Refinement.overwritePrefix state.val (Fips203.Refinement.stateOut pk1.val h m)) (by
+          rw [Fips203.Refinement.overwritePrefix_length _ _ (Nat.not_lt.mp h_st)]
+          exact state.length_ineq),
+        Slice.from (Fips203.Refinement.overwritePrefix shared_secret.val (Fips203.Refinement.ssOut pk1.val h m)) (by
+          rw [Fips203.Refinement.overwritePrefix_length _ _ (Nat.not_lt.mp h_ss)]
+          exact shared_secret.length_ineq))
+  else ok (.Err .InvalidInputLength, state, shared_secret)
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::encapsulate1`**
+
+- Never panics.
+- Under the size preconditions `64 ≤ pk1.len()`, `32 ≤ shared_secret.len()`,
+  `2080 ≤ state.len()` it returns `Ok(ct1)` where, writing `m = randomness` and
+  `(K, c₁, (ŷ, e₂, m)) = mlkemEncapsPhase1 mlkem768 (ρ, h) m` for `pk1 = ρ ‖ h`
+  (round 1 of FIPS 203 Algorithm 17):
+  * `ct1.value = c₁` (`Fips203.Refinement.ct1List`), of length `960`;
+  * the output `state` has the input's length, its first `2080` bytes are the serialised
+    `ŷ ‖ e₂ ‖ m` (`Fips203.Refinement.stateOut`) and the rest is unchanged;
+  * the output `shared_secret` has the input's length, its first `32` bytes are `K`
+    (`Fips203.Refinement.ssOut`) and the rest is unchanged. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.encapsulate1_spec
+    (pk1 : Slice Std.U8) (randomness : Array Std.U8 32#usize) (state : Slice Std.U8)
+    (shared_secret : Slice Std.U8) (h_pk1 : 64 ≤ pk1.length)
+    (h_ss : 32 ≤ shared_secret.length) (h_state : Fips203.Refinement.encapsStateSize ≤ state.length) :
+    libcrux_ml_kem.mlkem768.incremental.encapsulate1 pk1 randomness state shared_secret
+      ⦃ (r : (core.result.Result
+          (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+          libcrux_ml_kem.ind_cca.incremental.types.Error) × (Slice Std.U8) × (Slice Std.U8)) =>
+      r.1 = core.result.Result.Ok (libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.mk
+        (Fips203.Refinement.ct1Array pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness))) ∧
+      r.2.1.val = Fips203.Refinement.overwritePrefix state.val
+        (Fips203.Refinement.stateOut pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness)) ∧
+      r.2.2.val = Fips203.Refinement.overwritePrefix shared_secret.val
+        (Fips203.Refinement.ssOut pk1.val h_pk1 (Fips203.Refinement.msgOfArray randomness)) ∧
+      r.2.1.length = state.length ∧
+      r.2.2.length = shared_secret.length ⦄ := by
+  simp only [Slice.from_val, Slice.length, libcrux_ml_kem.mlkem768.incremental.encapsulate1, dite_eq_left h_pk1,
+    dite_eq_right (Nat.not_lt.mpr h_ss), dite_eq_right (Nat.not_lt.mpr h_state), WP.spec_ok]
+  refine ⟨trivial, trivial, trivial, ?_, ?_⟩
+  · exact Fips203.Refinement.overwritePrefix_length _ _ h_state
+  · exact Fips203.Refinement.overwritePrefix_length _ _ h_ss
 
 /-- [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 439:8-443:30
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key"]
-axiom libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
-  :
-  Array Std.U8 2400#usize →
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize →
-    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize → Result
-    (Array Std.U8 32#usize)
+noncomputable def libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key
+  (key_pair : Array Std.U8 2400#usize)
+  (ciphertext1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+  (ciphertext2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
+  Result (Array Std.U8 32#usize) :=
+  -- Model: FIPS 203 `ML-KEM.Decaps_internal` (`Fips203.mlkemDecaps`, Algorithm 18) on the
+  -- decapsulation key read from the 2400-byte compressed key-pair buffer and the reassembled
+  -- ciphertext `c = c₁ ‖ c₂`.  All inputs are fixed-size arrays, so there are no error cases
+  -- and the function never fails.  Note that this is `Decaps_internal`, not `ML-KEM.Decaps`
+  -- (Algorithm 21): the FIPS 203 § 7.3 hash check `H(dk[1152:2336]) = dk[2336:2368]` is
+  -- not performed by libcrux's `decapsulate_compressed_key`, so the model admits any
+  -- 2400-byte `key_pair`.  See `Spqr/Crypto/Fips203/Refinement/DecapsBytes.lean`.
+  ok (Fips203.Refinement.ssArray key_pair ciphertext1.value ciphertext2.value)
 
-/-- [prost::encoding::bool::encode]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 263:12-263:82
-    Name pattern: [prost::encoding::bool::encode] -/
-@[rust_fun "prost::encoding::bool::encode"]
-axiom prost.encoding.bool.encode
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  Std.U32 → Bool → T0 → Result T0
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::decapsulate_compressed_key`**
 
-/-- [prost::encoding::bool::encoded_len]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 294:12-294:73
-    Name pattern: [prost::encoding::bool::encoded_len] -/
-@[rust_fun "prost::encoding::bool::encoded_len"]
-axiom prost.encoding.bool.encoded_len : Std.U32 → Bool → Result Std.Usize
-
-/-- [prost::encoding::message::encode]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 787:4-789:19
-    Name pattern: [prost::encoding::message::encode] -/
-@[rust_fun "prost::encoding::message::encode"]
-axiom prost.encoding.message.encode
-  {M : Type} {T1 : Type} (messageMessageInst : prost.message.Message M)
-  (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T1) :
-  Std.U32 → M → T1 → Result T1
-
-/-- [prost::encoding::message::encoded_len]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/prost-0.14.1/src/encoding.rs', lines 845:4-847:19
-    Name pattern: [prost::encoding::message::encoded_len] -/
-@[rust_fun "prost::encoding::message::encoded_len"]
-axiom prost.encoding.message.encoded_len
-  {M : Type} (messageMessageInst : prost.message.Message M) :
-  Std.U32 → M → Result Std.Usize
+- Never panics (all inputs are fixed-size arrays, so there are no length checks).
+- Returns the 32-byte shared secret of FIPS 203 Algorithm 18 (`Fips203.mlkemDecaps`) on the
+  decapsulation key stored in `key_pair` and the ciphertext `c₁ ‖ c₂`
+  (`Fips203.Refinement.ssList`). -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key_spec
+    (key_pair : Array Std.U8 2400#usize)
+    (ciphertext1 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1 960#usize)
+    (ciphertext2 : libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2 128#usize) :
+    libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key key_pair ciphertext1
+      ciphertext2
+      ⦃ (ss : Array Std.U8 32#usize) =>
+      ss.length = 32 ∧
+      ss.val = Fips203.Refinement.ssList key_pair ciphertext1.value ciphertext2.value ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.decapsulate_compressed_key, WP.spec_ok]
+  exact ⟨Array.length_eq _, rfl⟩
 
 /-- [sorted_vec::{core::clone::Clone for sorted_vec::SortedSet<T>}::clone]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 38:9-38:14
     Name pattern: [sorted_vec::{core::clone::Clone<sorted_vec::SortedSet<@T>>}::clone] -/
 @[rust_fun
   "sorted_vec::{core::clone::Clone<sorted_vec::SortedSet<@T>>}::clone"]
-axiom sorted_vec.SortedSet.Insts.CoreCloneClone.clone
+noncomputable opaque sorted_vec.SortedSet.Insts.CoreCloneClone.clone
   {T : Type} (corecloneCloneInst : core.clone.Clone T) (corecmpOrdInst :
   core.cmp.Ord T) :
   sorted_vec.SortedSet T → Result (sorted_vec.SortedSet T)
@@ -2018,7 +2121,8 @@ theorem sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec
     (s : sorted_vec.SortedVec T) :
     sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref corecmpOrdInst s
       ⦃ (v : alloc.vec.Vec T) => v = s ⦄ := by
-  simp [sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref]
+  unfold sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
+  exact (WP.spec_ok _).mpr rfl
 
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::new]:
@@ -2041,7 +2145,8 @@ theorem sorted_vec.SortedSet.new_spec
     {T : Type} (corecmpOrdInst : core.cmp.Ord T) :
     sorted_vec.SortedSet.new corecmpOrdInst ⦃ (s : sorted_vec.SortedSet T) =>
       s = alloc.vec.Vec.new T ⦄ := by
-  simp [sorted_vec.SortedSet.new]
+  unfold sorted_vec.SortedSet.new
+  exact (WP.spec_ok _).mpr rfl
 
 /-- [sorted_vec::{sorted_vec::SortedSet<T>}::with_capacity]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 351:2-351:49
@@ -2067,7 +2172,8 @@ theorem sorted_vec.SortedSet.with_capacity_spec
     {T : Type} (corecmpOrdInst : core.cmp.Ord T) (n : Std.Usize) :
     sorted_vec.SortedSet.with_capacity corecmpOrdInst n
       ⦃ (s : sorted_vec.SortedSet T) => s = alloc.vec.Vec.new T ⦄ := by
-  simp [sorted_vec.SortedSet.with_capacity]
+  unfold sorted_vec.SortedSet.with_capacity
+  exact (WP.spec_ok _).mpr rfl
 
 /-- Helper: sorted insertion into a sorted list, modelling `SortedVec::replace`
     (sorted-vec 0.8.6, `src/lib.rs`, lines 362-376).
@@ -2245,14 +2351,15 @@ theorem sorted_vec.SortedSet.push_spec_empty
       o = none ∧
       s'.val = s.val ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none =>
     have he : s.val = [] := by
       cases hs : s.val with
       | nil => rfl
       | cons _ _ => simp [hs, List.getLast?] at h_none
-    simp [he, WP.spec_ok]
+    simp only [he, List.nil_append, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
   · next last h_some => simp [h_some] at hempty
 
 /-- **Spec theorem for `SortedSet::push` (greater case)**:
@@ -2273,7 +2380,7 @@ theorem sorted_vec.SortedSet.push_spec_gt
       o = none ∧
       s'.val = s.val ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none => simp [h_none] at hlast
   · next last' h_some =>
@@ -2303,7 +2410,7 @@ theorem sorted_vec.SortedSet.push_spec_eq
       o = some last ∧
       s'.val = s.val.dropLast ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none => simp [h_none] at hlast
   · next last' h_some =>
@@ -2338,7 +2445,7 @@ theorem sorted_vec.SortedSet.push_spec_lt
       o = opt ∧
       s'.val = newList ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next h_none => simp [h_none] at hlast
   · next last' h_some =>
@@ -2346,8 +2453,9 @@ theorem sorted_vec.SortedSet.push_spec_lt
       have := h_some.symm.trans hlast; simp only [Option.some.injEq] at this; exact this
     subst this
     simp only [hcmp, bind_ok, hsorted]
-    simp [hbnd, WP.spec_ok]
-    rfl
+    simp only [UScalarTy.Usize_numBits_eq, uncurry_apply_pair, hbnd, and_true, ↓reduceDIte,
+      WP.spec_ok]
+    exact ⟨rfl, rfl, by simp⟩
 
 /-- **Spec theorem for `SortedSet::push` (Greater / empty combined)**:
     when the set is either empty or the new element compares as `Greater`
@@ -2375,14 +2483,15 @@ theorem sorted_vec.SortedSet.push_spec
       o = none ∧
       s'.val = s.val ++ [x] ⦄ := by
   unfold sorted_vec.SortedSet.push
-  simp only [dif_pos h]
+  simp only [dite_eq_left h]
   split
   · next hlast =>
     have he : s.val = [] := by
       cases hs : s.val with
       | nil => rfl
       | cons _ _ => simp [hs, List.getLast?] at hlast
-    simp [he, WP.spec_ok]
+    simp only [he, List.nil_append, List.length_nil, WP.spec_ok]
+    exact ⟨rfl, rfl, rfl⟩
   · next last hlast =>
     simp only [hcmp last hlast, bind_ok, WP.spec_ok]
     refine ⟨rfl, rfl, ?_⟩
@@ -2412,1194 +2521,16 @@ theorem sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref_spec
     (s : sorted_vec.SortedSet T) :
     sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref corecmpOrdInst s
       ⦃ (v : sorted_vec.SortedVec T) => v = s ⦄ := by
-  simp [sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref]
+  unfold sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
+  exact (WP.spec_ok _).mpr rfl
 
 /-- [thiserror::display::{thiserror::display::AsDisplay<'a, &'a (T)> for &1 (T)}::as_display]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.12/src/display.rs', lines 20:4-20:43
     Name pattern: [thiserror::display::{thiserror::display::AsDisplay<'a, &'0 @T, &'a @T>}::as_display] -/
 @[rust_fun
   "thiserror::display::{thiserror::display::AsDisplay<'a, &'0 @T, &'a @T>}::as_display"]
-axiom Shared0T.Insts.ThiserrorDisplayAsDisplayASharedAT.as_display
+noncomputable opaque Shared0T.Insts.ThiserrorDisplayAsDisplayASharedAT.as_display
   {T : Type} (corefmtDisplayInst : core.fmt.Display T) : T → Result T
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
-    Visibility: public -/
-axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.PqRatchetState → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
-    Visibility: public -/
-axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.PqRatchetState → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.PqRatchetState × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
-    Visibility: public -/
-axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.PqRatchetState → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
-    Visibility: public -/
-axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.PqRatchetState → Result proto.pq_ratchet.PqRatchetState
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::PqRatchetState}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 25:27-25:43
-    Visibility: public -/
-axiom proto.pq_ratchet.PqRatchetState.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultPqRatchetStateInst : core.default.Default
-  proto.pq_ratchet.PqRatchetState) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.PqRatchetState
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.pq_ratchet_state.VersionNegotiation × T0)
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation → Result
-    proto.pq_ratchet.pq_ratchet_state.VersionNegotiation
-
-/-- [spqr::proto::pq_ratchet::pq_ratchet_state::{prost::message::Message for spqr::proto::pq_ratchet::pq_ratchet_state::VersionNegotiation}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 38:41-38:57
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultVersionNegotiationInst : core.default.Default
-  proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.pq_ratchet_state.VersionNegotiation
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1State.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultV1StateInst : core.default.Default
-  proto.pq_ratchet.V1State) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf
-  T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.V1State
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1State.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.V1State → Result proto.pq_ratchet.V1State
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1State.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.V1State → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1State.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.V1State → Std.U32 → prost.encoding.wire_type.WireType
-    → T0 → prost.encoding.DecodeContext → Result ((core.result.Result
-    Unit prost.error.DecodeError) × proto.pq_ratchet.V1State × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::V1State}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 98:37-98:53
-    Visibility: public -/
-axiom proto.pq_ratchet.V1State.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.V1State → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultChunkInst : core.default.Default
-  proto.pq_ratchet.Chunk) (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1)
-  :
-  T1 → Result (core.result.Result proto.pq_ratchet.Chunk
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.clear
-  : proto.pq_ratchet.Chunk → Result proto.pq_ratchet.Chunk
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.Chunk → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.Chunk → Std.U32 → prost.encoding.wire_type.WireType →
-    T0 → prost.encoding.DecodeContext → Result ((core.result.Result Unit
-    prost.error.DecodeError) × proto.pq_ratchet.Chunk × T0)
-
-/-- [spqr::proto::pq_ratchet::{prost::message::Message for spqr::proto::pq_ratchet::Chunk}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 55:37-55:53
-    Visibility: public -/
-axiom proto.pq_ratchet.Chunk.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.Chunk → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.KeysUnsampled × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.KeysUnsampled → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled → Result
-    proto.pq_ratchet.v1_state.unchunked.KeysUnsampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::KeysUnsampled}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 110:45-110:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultKeysUnsampledInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.KeysUnsampled) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.KeysUnsampled prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.HeaderSent × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.HeaderSent → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent → Result
-    proto.pq_ratchet.v1_state.unchunked.HeaderSent
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderSent}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 117:45-117:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultHeaderSentInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.HeaderSent) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.HeaderSent prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.EkSent → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.EkSent → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.EkSent × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.EkSent → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.EkSent → Result
-    proto.pq_ratchet.v1_state.unchunked.EkSent
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSent}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 128:45-128:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSent.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEkSentInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.EkSent) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.v1_state.unchunked.EkSent
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received → Result
-    proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkSentCt1Received}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 137:45-137:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEkSentCt1ReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.EkSentCt1Received
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived → Result
-    proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::NoHeaderReceived}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 149:45-149:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultNoHeaderReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.NoHeaderReceived
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.HeaderReceived × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.HeaderReceived → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived → Result
-    proto.pq_ratchet.v1_state.unchunked.HeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::HeaderReceived}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 156:45-156:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultHeaderReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.HeaderReceived) (bytesbufbuf_implBufInst
-  : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.HeaderReceived prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.EkReceived → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.EkReceived → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.EkReceived × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.EkReceived → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.EkReceived → Result
-    proto.pq_ratchet.v1_state.unchunked.EkReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::EkReceived}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 165:45-165:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.EkReceived.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEkReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.EkReceived) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.EkReceived prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.Ct1Sent × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.Ct1Sent → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent → Result
-    proto.pq_ratchet.v1_state.unchunked.Ct1Sent
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1Sent}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 176:45-176:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt1SentInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.Ct1Sent) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.v1_state.unchunked.Ct1Sent
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived → Result
-    proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct1SentEkReceived}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 189:45-189:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt1SentEkReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.unchunked.Ct1SentEkReceived
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.unchunked.Ct2Sent × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.unchunked.Ct2Sent → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent → Result
-    proto.pq_ratchet.v1_state.unchunked.Ct2Sent
-
-/-- [spqr::proto::pq_ratchet::v1_state::unchunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::unchunked::Ct2Sent}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 202:45-202:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt2SentInst : core.default.Default
-  proto.pq_ratchet.v1_state.unchunked.Ct2Sent) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.v1_state.unchunked.Ct2Sent
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultKeysUnsampledInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled → Result
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.KeysUnsampled → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.KeysUnsampled × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysUnsampled}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 215:45-215:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.KeysUnsampled → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultKeysSampledInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.KeysSampled) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.KeysSampled prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.KeysSampled → Result
-    proto.pq_ratchet.v1_state.chunked.KeysSampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.KeysSampled → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.KeysSampled → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.KeysSampled × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 220:45-220:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.KeysSampled.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.KeysSampled → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultHeaderSentInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.HeaderSent) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.HeaderSent prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.HeaderSent → Result
-    proto.pq_ratchet.v1_state.chunked.HeaderSent
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.HeaderSent → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.HeaderSent → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.HeaderSent × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderSent}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 227:45-227:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderSent.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.HeaderSent → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt1ReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.Ct1Received) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.Ct1Received prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.Ct1Received → Result
-    proto.pq_ratchet.v1_state.chunked.Ct1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.Ct1Received → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct1Received → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.Ct1Received × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Received}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 236:45-236:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Received.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct1Received → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEkSentCt1ReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received) (bytesbufbuf_implBufInst
-  : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received → Result
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.EkSentCt1Received → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.EkSentCt1Received × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkSentCt1Received}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 243:45-243:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.EkSentCt1Received → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultNoHeaderReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived) (bytesbufbuf_implBufInst
-  : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived → Result
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.NoHeaderReceived → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.NoHeaderReceived × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::NoHeaderReceived}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 251:45-251:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.NoHeaderReceived → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultHeaderReceivedInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived → Result
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.HeaderReceived → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.HeaderReceived × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::HeaderReceived}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 258:45-258:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.HeaderReceived → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt1SampledInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled → Result
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.Ct1Sampled → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.Ct1Sampled × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Sampled}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 265:45-265:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct1Sampled → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEkReceivedCt1SampledInst :
-  core.default.Default proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled)
-  (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
-    prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled → Result
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::EkReceivedCt1Sampled}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 274:45-274:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.EkReceivedCt1Sampled → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt1AcknowledgedInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged → Result
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct1Acknowledged}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 281:45-281:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct1Acknowledged → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultCt2SampledInst : core.default.Default
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled prost.error.DecodeError)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled → Result
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.v1_state.chunked.Ct2Sampled → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.v1_state.chunked.Ct2Sampled × T0)
-
-/-- [spqr::proto::pq_ratchet::v1_state::chunked::{prost::message::Message for spqr::proto::pq_ratchet::v1_state::chunked::Ct2Sampled}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 288:45-288:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.v1_state.chunked.Ct2Sampled → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::encode_raw]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.encode_raw
-  {T0 : Type} (bytesbufbuf_mutBufMutInst : bytes.buf.buf_mut.BufMut T0) :
-  proto.pq_ratchet.chain.epoch.EpochDirection → T0 → Result T0
-
-/-- [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::merge_field]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.merge_field
-  {T0 : Type} (bytesbufbuf_implBufInst : bytes.buf.buf_impl.Buf T0) :
-  proto.pq_ratchet.chain.epoch.EpochDirection → Std.U32 →
-    prost.encoding.wire_type.WireType → T0 → prost.encoding.DecodeContext
-    → Result ((core.result.Result Unit prost.error.DecodeError) ×
-    proto.pq_ratchet.chain.epoch.EpochDirection × T0)
-
-/-- [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::encoded_len]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.encoded_len
-  : proto.pq_ratchet.chain.epoch.EpochDirection → Result Std.Usize
-
-/-- [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::clear]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.clear
-  :
-  proto.pq_ratchet.chain.epoch.EpochDirection → Result
-    proto.pq_ratchet.chain.epoch.EpochDirection
-
-/-- [spqr::proto::pq_ratchet::chain::epoch::{prost::message::Message for spqr::proto::pq_ratchet::chain::epoch::EpochDirection}::decode]:
-    Source: '/home/oliver/Projects/SparsePostQuantumRatchet-verify/target/x86_64-unknown-linux-gnu/debug/build/spqr-3bc69fd6185dfe2e/out/signal.proto.pq_ratchet.rs', lines 350:45-350:61
-    Visibility: public -/
-axiom
-  proto.pq_ratchet.chain.epoch.EpochDirection.Insts.ProstMessageMessage.decode
-  {T1 : Type} (coredefaultDefaultEpochDirectionInst : core.default.Default
-  proto.pq_ratchet.chain.epoch.EpochDirection) (bytesbufbuf_implBufInst :
-  bytes.buf.buf_impl.Buf T1) :
-  T1 → Result (core.result.Result proto.pq_ratchet.chain.epoch.EpochDirection
-    prost.error.DecodeError)
 
 namespace spqr.kdf
 
@@ -3609,38 +2540,66 @@ RFC 5869. -/
 /-- [spqr::kdf::hkdf_to_slice]:
     Source: 'src/kdf.rs', lines 14:0-18:1
     Visibility: public -/
-opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
+noncomputable opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std.U8 → Slice Std.U8 →
     Result (Slice Std.U8)
 
 end spqr.kdf
 
-/-- [spqr::encoding::polynomial::{spqr::encoding::Decoder for spqr::encoding::polynomial::PolyDecoder}::decoded_message]:
-    Source: 'src/encoding/polynomial.rs', lines 911:4-963:5
-    Visibility: public -/
-axiom encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message
-  : encoding.polynomial.PolyDecoder → Result (Option (alloc.vec.Vec Std.U8))
-
 /-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
-    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1 -/
-axiom
+    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1
+
+    SPQR's own (not libcrux's) endianness workaround for libcrux issue #1275, marked
+    `#[hax_lib::opaque]` in the Rust source.  It scans the `error₂` region
+    `es[1536 .. 2048]` in 2-byte little-endian words:
+    * `0x0000` / `0xFFFF` are skipped (identical in both endiannesses);
+    * `0x0001` / `0x0002` / `0xFFFE` ⇒ the state is correctly encoded, return `None`;
+    * `0x0100` / `0x0200` / `0xFEFF` ⇒ the state is byte-swapped, return
+      `Some (flip_endianness_of_encapsulation_state es)`;
+    * any other word ⇒ "weird state", return `None`.
+
+    The function is kept **uninterpreted** here: on byte-swapped states it genuinely returns
+    `Some`, so any concrete stub (e.g. `fun _ => ok none`) would be an unsound model and would
+    let downstream specs claim `encaps2` consumes `es` itself on states the Rust repairs.  The
+    only property assumed is the hax contract (`potentially_fix_state_…_spec` below). -/
+@[rust_fun "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275"]
+noncomputable opaque
   incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
   : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8))
 
--- Axioms required by chain.Chain.into_pb / send (VecDeque iteration)
-/-- [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<A, E>> for core::result::Result<V, E>}::from_iter]:
-    Source: '/rustc/library/core/src/result.rs', lines 2155:4-2155:79
-    Name pattern: [core::result::{core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>}::from_iter] -/
-@[rust_fun
-  "core::result::{core::iter::traits::collect::FromIterator<core::result::Result<@V, @E>, core::result::Result<@A, @E>>}::from_iter"]
-axiom
-  core.result.Result.Insts.CoreIterTraitsCollectFromIteratorResult.from_iter
-  {A : Type} {E : Type} {V : Type} {I : Type} {Clause1_IntoIter : Type}
-  (itertraitscollectFromIteratorInst : core.iter.traits.collect.FromIterator V
-  A) (itertraitscollectIntoIteratorIResultClause1_IntoIterInst :
-  core.iter.traits.collect.IntoIterator I (core.result.Result A E)
-  Clause1_IntoIter) :
-  I → Result (core.result.Result V E)
+/-- **Trusted spec axiom for `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`**:
 
+Exactly the hax contract from `src/incremental_mlkem768.rs`, lines 85-90:
+- **requires**: `es.len() == 2080`
+- **ensures**: `|result| if let Some(es) = result { es.len() == 2080 } else { true }`
+
+Under the length precondition the call succeeds (the only panic site is
+`assert_eq!(es.len(), 2080)`, discharged by `h_es`; `chunks(2)` on the 512-byte region and
+`try_into` on each 2-byte chunk cannot fail) and returns `mf : Option (Vec U8)` such that any
+`Some v` has `v.length = 2080` (`flip_endianness_of_encapsulation_state` preserves length, see
+`flip_endianness_of_encapsulation_state_spec`).  Nothing is assumed about *which* of
+`None` / `Some (flipped es)` is returned. -/
+@[step]
+axiom incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
+    (es : alloc.vec.Vec Std.U8) (h_es : es.length = 2080) :
+    incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 es
+      ⦃ (mf : Option (alloc.vec.Vec Std.U8)) => ∀ v ∈ mf, v.length = 2080 ⦄
+
+/- See `Spqr/Specs/Lib/StatePb.lean`: these wrap prost's `encode_to_vec`/`decode` for the ratchet
+state (translation patch `lib-state_pb.patch`). -/
+
+/-- [spqr::encode_state_pb]:
+    Source: 'src/lib.rs', lines 50:0-52:1 -/
+noncomputable opaque encode_state_pb
+  : proto.pq_ratchet.PqRatchetState → Result (alloc.vec.Vec Std.U8)
+
+/-- [spqr::decode_state_pb]:
+    Source: 'src/lib.rs', lines 54:0-56:1 -/
+noncomputable opaque decode_state_pb
+  :
+  Slice Std.U8 → Result (core.result.Result proto.pq_ratchet.PqRatchetState
+    prost.error.DecodeError)
+
+-- Models for `VecDeque` iteration
 /-- [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<T> for alloc::collections::vec_deque::into_iter::IntoIter<T, A>}::next]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/into_iter.rs', lines 47:4-47:35
     Name pattern: [alloc::collections::vec_deque::into_iter::{core::iter::traits::iterator::Iterator<alloc::collections::vec_deque::into_iter::IntoIter<@T, @A>, @T>}::next] -/

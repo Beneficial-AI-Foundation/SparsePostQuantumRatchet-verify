@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 import Spqr.Specs.Chain.KeyHistory.New
 /-! # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::new`
 
@@ -11,6 +13,8 @@ Constructs a `ChainEpochDirection` from a byte slice `k` with `ctr = 0`,
 an empty `prev` history, and `next` cloned from `k`. Always succeeds.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

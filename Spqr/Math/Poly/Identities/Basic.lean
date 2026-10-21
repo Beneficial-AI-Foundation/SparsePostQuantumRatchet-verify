@@ -3,8 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.Basic
-import Spqr.Math.Poly.CharTwo.Basic
+module
+
+public import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Poly.CharTwo.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Miscellaneous polynomial identities and `Inhabited` instances
@@ -19,6 +25,8 @@ import Spqr.Math.Poly.CharTwo.Basic
 
 * `Inhabited Poly`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 open Polynomial
@@ -40,7 +48,7 @@ theorem coeff_succ_C_add_X_sub_C_mul {R : Type*} [CommRing R]
     (a b : R) (P : R[X]) (n : ℕ) :
     (C a + (X - C b) * P).coeff (n + 1) = P.coeff n - b * P.coeff (n + 1) := by
   rw [sub_mul, coeff_add, coeff_sub, coeff_X_mul, coeff_C_mul]
-  have : (C a).coeff (n + 1) = 0 := by rw [coeff_C]; exact if_neg (by omega)
+  have : (C a).coeff (n + 1) = 0 := by rw [coeff_C]; exact ite_eq_right (by omega)
   rw [this]; ring
 
 /-! ## Advanced polynomial identity helpers -/

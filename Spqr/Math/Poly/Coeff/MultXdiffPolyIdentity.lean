@@ -3,7 +3,16 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
+module
+
+public import Spqr.Math.List
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
 
 /-! # Polynomial identity for `mult_xdiff_assign_trailing`
 
@@ -11,6 +20,8 @@ Closed-form identity for the in-place recurrence `v[i−1] −= v[i] * d`
 used by `mult_xdiff_assign_trailing`.
 
 `listToGF216Poly rs = listToGF216Poly cs − C(d.toGF216) · X^(s−1) · listToGF216Poly (cs.drop s)`. -/
+
+@[expose] public section
 
 open Polynomial spqr.encoding.gf
 
@@ -29,16 +40,16 @@ theorem mult_xdiff_poly_identity (cs rs : List GF16) (s : Nat) (d : GF16) (h_s_p
         C d.toGF216 * (listToGF216Poly (cs.drop s) * X ^ (s - 1)) by ring,
       coeff_C_mul, coeff_mul_X_pow']
   by_cases hm : m < cs.length
-  · rw [dif_pos (by omega), dif_pos hm]
+  · rw [dite_eq_left (by omega), dite_eq_left hm]
     by_cases hs : s - 1 ≤ m
-    · rw [if_pos hs, listToGF216Poly_coeff]
+    · rw [ite_eq_left hs, listToGF216Poly_coeff]
       grind
     · grind
   · push Not at hm
-    rw [dif_neg (by omega), dif_neg (by omega)]
+    rw [dite_eq_right (by omega), dite_eq_right (by omega)]
     by_cases hs : s - 1 ≤ m
-    · rw [if_pos hs, listToGF216Poly_coeff,
-          dif_neg (by rw [List.length_drop]; omega), mul_zero]; ring
+    · rw [ite_eq_left hs, listToGF216Poly_coeff,
+          dite_eq_right (by rw [List.length_drop]; omega), mul_zero]; ring
     · grind
 
 end spqr.encoding.polynomial

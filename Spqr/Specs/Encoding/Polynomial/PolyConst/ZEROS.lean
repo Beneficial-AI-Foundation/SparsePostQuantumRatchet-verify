@@ -3,8 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Eval
+module
+
+public import Spqr.Math.Poly.Eval
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
 
 /-!
 # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::ZEROS`
@@ -12,6 +21,8 @@ import Spqr.Specs.Encoding.Gf.GF16.ZERO
 `ZEROS` is the zero polynomial in `PolyConst<N>`, with all `N` coefficients set to `GF16::ZERO`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.gf
 

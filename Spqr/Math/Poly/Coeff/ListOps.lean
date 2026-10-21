@@ -3,7 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Linking lemmas: `listToGF216Poly` and list operations
@@ -18,6 +22,8 @@ lists to polynomial operations in `GF216[X]`.
 * `listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one` — if the constant term is zero, divide by `X`.
 * `listToGF216Poly_eq_of_coeffs` — coefficient-matching characterization.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -39,8 +45,8 @@ lemma listToGF216Poly_append_singleton
   · -- m < cs.length < cs.length + 1: LHS = cs[m], RHS = cs[m] + 0
     have hm2 : m < (cs ++ [a]).length := by simp; omega
     have hm3 : m ≠ cs.length := by omega
-    rw [dif_pos hm2, dif_pos hm1]
-    simp only [hm3, if_false, mul_zero, add_zero]
+    rw [dite_eq_left hm2, dite_eq_left hm1]
+    simp only [hm3, ite_false, mul_zero, add_zero]
     congr 1
     simp [List.get_eq_getElem, List.getElem_append_left hm1]
   · push Not at hm1
@@ -49,14 +55,14 @@ lemma listToGF216Poly_append_singleton
       subst hm2
       have hlt : cs.length < (cs ++ [a]).length := by simp
       have hnotlt : ¬(cs.length < cs.length) := by omega
-      rw [dif_pos hlt, dif_neg hnotlt]
+      rw [dite_eq_left hlt, dite_eq_right hnotlt]
       simp only [ite_true, mul_one, zero_add]
       congr 1
       simp [List.get_eq_getElem, List.getElem_append_right (Nat.le_refl cs.length)]
     · -- m > cs.length: LHS = 0, RHS = 0 + 0
       have hm3 : ¬(m < cs.length) := by omega
       have hm4 : ¬(m < (cs ++ [a]).length) := by simp; omega
-      rw [dif_neg hm4, dif_neg hm3]
+      rw [dite_eq_right hm4, dite_eq_right hm3]
       simp [hm2]
 
 /--
@@ -76,7 +82,7 @@ lemma listToGF216Poly_add (cs ds : List spqr.encoding.gf.GF16)
   ext m
   simp only [listToGF216Poly_coeff, coeff_add]
   by_cases hm : m < cs.length
-  · simp only [hm, show m < ds.length from by omega, show m < rs.length from by omega, dif_pos]
+  · simp only [hm, show m < ds.length from by omega, show m < rs.length from by omega, dite_eq_left]
     exact hcoeff m hm
   · push Not at hm
     simp [show ¬(m < cs.length) from by omega,
@@ -101,13 +107,13 @@ lemma listToGF216Poly_eq_X_mul_listToGF216Poly_drop_one
     rw [coeff_X_mul, listToGF216Poly_coeff, listToGF216Poly_coeff]
     by_cases hn : n + 1 < cs.length
     · have hdn : n < (cs.drop 1).length := by rw [List.length_drop]; omega
-      rw [dif_pos hn, dif_pos hdn]
+      rw [dite_eq_left hn, dite_eq_left hdn]
       congr 1
       simp only [List.get_eq_getElem]
       simp only [List.getElem_drop]
       grind
     · have hdn : ¬(n < (cs.drop 1).length) := by rw [List.length_drop]; omega
-      rw [dif_neg hn, dif_neg hdn]
+      rw [dite_eq_right hn, dite_eq_right hdn]
 
 /--
 If all coefficients of a list, interpreted via `GF16.toGF216`, match those of a polynomial `q`

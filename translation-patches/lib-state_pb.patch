@@ -1,0 +1,28 @@
+Translation patch: spqr::encode_state_pb, spqr::decode_state_pb (new)
+
+Change: adds two private wrappers, `encode_state_pb` (`PqRatchetState::encode_to_vec`) and
+`decode_state_pb` (`PqRatchetState::decode`), through which all prost encoding and decoding of the
+ratchet state is routed (see the patches for `initial_state`, `send`, `recv`, `decode_state`).
+Why: both wrappers are opaque in the translation, so no translated code reaches the
+prost-derived `Message` impls, whose translation Aeneas gets wrong (#102, aeneas#1046).
+Behaviour: identical.
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 6bc0197..ec39ad3 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -47,6 +47,14 @@ pub fn empty_state() -> SerializedState {
+     SerializedState::new()
+ }
+ 
++fn encode_state_pb(state_pb: &pqrpb::PqRatchetState) -> Vec<u8> {
++    state_pb.encode_to_vec()
++}
++
++fn decode_state_pb(bytes: &[u8]) -> Result<pqrpb::PqRatchetState, prost::DecodeError> {
++    pqrpb::PqRatchetState::decode(bytes)
++}
++
+ pub struct EpochSecret {
+     pub epoch: Epoch,
+     pub secret: Secret,

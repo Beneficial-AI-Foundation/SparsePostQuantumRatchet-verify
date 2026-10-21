@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Conditional product of linear factors
@@ -27,6 +33,8 @@ evaluation point whose x-coordinate differs from the interpolation point.
 * `condProdLinearFactors_skip` — one-step skip unfolding.
 * `condProdLinearFactors_accum` — one-step accumulate unfolding.
 -/
+
+@[expose] public section
 
 open Polynomial spqr.encoding.gf
 
@@ -60,7 +68,7 @@ lemma condProdLinearFactors_skip (pi_x : GF16) (pts : List Pt) (start : Nat)
     condProdLinearFactors pi_x pts start =
       condProdLinearFactors pi_x pts (start + 1) := by
   conv_lhs => unfold condProdLinearFactors
-  rw [dif_pos h, if_pos heq]
+  rw [dite_eq_left h, ite_eq_left heq]
 
 lemma condProdLinearFactors_accum (pi_x : GF16) (pts : List Pt) (start : Nat)
     (h : start < pts.length)
@@ -69,6 +77,6 @@ lemma condProdLinearFactors_accum (pi_x : GF16) (pts : List Pt) (start : Nat)
       (X - C (pts[start].x.toGF216)) *
         condProdLinearFactors pi_x pts (start + 1) := by
   conv_lhs => unfold condProdLinearFactors
-  rw [dif_pos h, if_neg hne]
+  rw [dite_eq_left h, ite_eq_right hne]
 
 end spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop

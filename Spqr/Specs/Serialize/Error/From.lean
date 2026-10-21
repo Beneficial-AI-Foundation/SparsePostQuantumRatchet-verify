@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for
 `spqr::serialize::{impl core::convert::From<spqr::encoding::polynomial::PolynomialError>`
@@ -16,6 +18,8 @@ error is discarded: every polynomial error collapses to `EncodingDecoding`.
 
 **Source**: src/serialize.rs (lines 14:0-18:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

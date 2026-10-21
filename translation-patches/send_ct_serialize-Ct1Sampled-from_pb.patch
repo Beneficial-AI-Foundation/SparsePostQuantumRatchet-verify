@@ -1,0 +1,43 @@
+Translation patch: <spqr::v1::chunked::send_ct::Ct1Sampled>::from_pb
+
+Change: the check
+  `if let Some(..) = &pb.receiving_ek { if <cond> { return Err(Error::MsgDecode); } }`
+becomes
+  `if matches!(&pb.receiving_ek, Some(..) if <cond>) { return Err(Error::MsgDecode); }`.
+Why: Aeneas duplicates the rest of the function for the `None` case and emits a `none` literal
+whose type Lean cannot infer ("The type of pattern variable ... contains metavariables",
+aeneas#1018).
+Behaviour: identical (same condition, same error, same order of checks).
+
+diff --git a/src/v1/chunked/send_ct/serialize.rs b/src/v1/chunked/send_ct/serialize.rs
+index 1da63b4..0253c56 100644
+--- a/src/v1/chunked/send_ct/serialize.rs
++++ b/src/v1/chunked/send_ct/serialize.rs
+@@ -69,21 +69,23 @@ pub fn into_pb(self) -> pqrpb::v1_state::chunked::Ct1Sampled {
+     }
+ 
+     pub fn from_pb(pb: pqrpb::v1_state::chunked::Ct1Sampled) -> Result<Self, Error> {
+-        if let Some(d) = &pb.receiving_ek {
+-            if d.pts_needed as usize != crate::incremental_mlkem768::ENCAPSULATION_KEY_SIZE / 2 {
+-                return Err(Error::MsgDecode);
+-            }
++        if matches!(
++            &pb.receiving_ek,
++            Some(d) if d.pts_needed as usize
++                != crate::incremental_mlkem768::ENCAPSULATION_KEY_SIZE / 2
++        ) {
++            return Err(Error::MsgDecode);
+         }
+         Ok(Self {
+             uc: unchunked::send_ct::Ct1Sent::from_pb(pb.uc.ok_or(Error::StateDecode)?)?,
+             sending_ct1: polynomial::PolyEncoder::from_pb(
+                 pb.sending_ct1.ok_or(Error::StateDecode)?,
+             )
+             .map_err(|_| Error::StateDecode)?,
+             receiving_ek: polynomial::PolyDecoder::from_pb(
+                 pb.receiving_ek.ok_or(Error::StateDecode)?,
+             )
+             .map_err(|_| Error::StateDecode)?,
+         })
+     }
+ }

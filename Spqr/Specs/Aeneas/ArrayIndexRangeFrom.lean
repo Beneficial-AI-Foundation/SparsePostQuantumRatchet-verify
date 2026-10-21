@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for array indexing with `RangeFrom` (`a[start..]`)
@@ -13,6 +15,8 @@ the elements from index `start` to the end of the array.
 
 **Source**: core/src/slice/index.rs (`SliceIndex<RangeFrom<usize>, [T]>`)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

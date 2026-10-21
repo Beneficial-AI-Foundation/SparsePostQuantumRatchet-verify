@@ -126,7 +126,7 @@ impl ops::Sub<&GF16> for GF16 {
 impl ops::MulAssign<&GF16> for GF16 {
     fn mul_assign(&mut self, other: &Self) {
         #[cfg(all(
-            not(feature = "extraction"),
+            not(hax),
             any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
         ))]
         if check_accelerated::TOKEN.get() {
@@ -216,7 +216,6 @@ pub fn parallel_mult(a: GF16, into: &mut [GF16]) {
 fn mul2_u16(a: u16, b1: u16, b2: u16) -> (u16, u16) {
     #[cfg(all(
         not(hax),
-        not(feature = "extraction"),
         any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")
     ))]
     if check_accelerated::TOKEN.get() {
@@ -552,8 +551,7 @@ impl GF16 {
         let mut square = *other * *other;
         let mut out = *self;
         for _i in 1..16 {
-            out *= square;
-            square = square * square;
+            (square.value, out.value) = mul2_u16(square.value, square.value, out.value);
         }
         out
     }
@@ -593,8 +591,8 @@ impl GF16 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use galois_field_2pm::GaloisField;
     use galois_field_2pm::gf2::GFu16;
+    use galois_field_2pm::GaloisField;
     use rand::RngCore;
 
     // https://web.eecs.utk.edu/~jplank/plank/papers/CS-07-593/primitive-polynomial-table.txt

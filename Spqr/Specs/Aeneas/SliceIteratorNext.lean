@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorems for `core::slice::iter::{Iterator for Iter<'_, T>}::next`
@@ -27,6 +29,8 @@ Three equivalent formulations are provided:
 
 **Source**: core/src/slice/iter.rs (Iterator impl for Iter)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -65,11 +69,11 @@ theorem next_spec {T : Type}
     exact hpost
   simp only [core.slice.iter.IteratorSliceIter.next]
   by_cases hlt : iter.i < iter.slice.len
-  · rw [dif_pos hlt]
+  · rw [dite_eq_left hlt]
     exact ⟨some (iter.slice[iter.i]),
            { iter with i := iter.i + 1 }, rfl,
            hlt, rfl, rfl⟩
-  · rw [dif_neg hlt]
+  · rw [dite_eq_right hlt]
     exact ⟨none, iter, rfl,
            hlt, rfl⟩
 

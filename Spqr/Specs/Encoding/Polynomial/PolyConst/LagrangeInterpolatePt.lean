@@ -3,12 +3,27 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Gf.GF16.ConstDiv
 import Spqr.Specs.Encoding.Polynomial.PolyConst.Mult
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Polynomial.PolyConst.MultXdiff
-import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
-import Spqr.Math.Poly.Lagrange.CountNonSkip
+public import Spqr.Math.Poly.Lagrange.CondProdLinearFactors
+public import Spqr.Math.Poly.Lagrange.CountNonSkip
+public import Spqr.Math.Poly.Basic.Defs
+public import Spqr.Math.Poly.Lagrange.DenomProd
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.Identities.MultXdiff
+import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Specs.Encoding.Gf.GF16.ConstMul
+import Spqr.Specs.Encoding.Gf.GF16.ConstSub
 
 /-! # Spec theorem for `PolyConst::lagrange_interpolate_pt`: loop body 0
 
@@ -26,6 +41,8 @@ unfolding and bound lemmas) live in `Spqr.Math.Poly.Lagrange.CondProdLinearFacto
 and `Spqr.Math.Poly.Lagrange.CountNonSkip` respectively.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
@@ -178,13 +195,13 @@ private lemma listToGF216Poly_replicate_zero_set_one
   cases m
   · simp [h_N_pos, GF16.ONE_toGF216]
   · rename_i n
-    rw [if_neg (show n + 1 ≠ 0 from by omega)]
+    rw [ite_eq_right (show n + 1 ≠ 0 from by omega)]
     by_cases hlt : n + 1 < N
-    · rw [dif_pos hlt]
+    · rw [dite_eq_left hlt]
       simp only [ne_eq, Nat.right_eq_add, Nat.add_eq_zero_iff, one_ne_zero,
         and_false, not_false_eq_true, List.getElem_set_ne, List.getElem_replicate,
         GF16.ZERO_toGF216]
-    · rw [dif_neg hlt]
+    · rw [dite_eq_right hlt]
 
 /-- **Spec theorem for `spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt`**:
 

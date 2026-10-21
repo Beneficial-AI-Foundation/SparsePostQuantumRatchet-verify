@@ -3,10 +3,17 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.List
-import Spqr.Math.Gf16.Field
+module
+
+public import Spqr.Math.List
+public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-!
 # Spec theorem for `Poly::serialize`: loop body 0
@@ -16,6 +23,8 @@ unchanged) or the next coefficient is encoded as 2 big-endian bytes appended to 
 Invariant: `out.len() == 2 * i`, with `out[2*j] * 256 + out[2*j+1] = v[j].value.val` for `j < i`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf
 
@@ -36,26 +45,8 @@ private lemma extend_from_slice_U8_spec
       ∀ x ∈ s.val, core.clone.CloneU8.clone x = ok x := by
     intros _ _; rfl
   unfold alloc.vec.Vec.extend_from_slice
-  rw [dif_pos h]
+  rw [dite_eq_left h]
   step*
-
-/-! ## Helper: big-endian byte pair arithmetic -/
-
-/--
-**Big-endian byte-pair identity for `u16`**:
-
-If the 2-byte big-endian encoding of a `u16` value `x` is `[b0, b1]`, then
-`b0.val * 256 + b1.val = x.val`.
--/
-private lemma toBEBytes_pair (x : U16) (b0 b1 : U8)
-    (h : [b0, b1] = List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes) :
-    256 * b0 + b1 = x.val := by
-  have h0 : b0 = (List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes)[0]! := by rw [← h]; simp
-  have h1 : b1 = (List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes)[1]! := by rw [← h]; simp
-  subst h0 h1
-  simp only [Std.UScalar.val]
-  simp [BitVec.toBEBytes, BitVec.toLEBytes, Nat.shiftRight_eq_div_pow]
-  grind
 
 /-- **Spec theorem for `encoding.polynomial.Poly.serialize_loop.body`**:
 

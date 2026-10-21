@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Counting non-skip iterations in the Lagrange basis loop
@@ -30,6 +36,8 @@ which is the key loop invariant ensuring the polynomial fits in the `PolyConst N
 * `countNonSkip_add_one_le_of_skip` — strict bound when a skip index exists.
 * `countNonSkip_le_of_skip_exists` — bound when at least one skip exists in `[0, m)`.
 -/
+
+@[expose] public section
 open spqr.encoding.gf
 
 namespace spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop
@@ -58,7 +66,7 @@ lemma countNonSkip_skip (pi_x : GF16) (pts : List Pt) (start : Nat)
     (heq : pi_x.value = pts[start].x.value) :
     countNonSkip pi_x pts start = countNonSkip pi_x pts (start + 1) := by
   conv_lhs => unfold countNonSkip
-  rw [dif_pos h, if_pos heq]
+  rw [dite_eq_left h, ite_eq_left heq]
   simp
 
 lemma countNonSkip_accum (pi_x : GF16) (pts : List Pt) (start : Nat)
@@ -66,7 +74,7 @@ lemma countNonSkip_accum (pi_x : GF16) (pts : List Pt) (start : Nat)
     (hne : pi_x.value ≠ pts[start].x.value) :
     countNonSkip pi_x pts start = 1 + countNonSkip pi_x pts (start + 1) := by
   conv_lhs => unfold countNonSkip
-  rw [dif_pos h, if_neg hne]
+  rw [dite_eq_left h, ite_eq_right hne]
 
 lemma countNonSkip_le_length_sub (pi_x : GF16) (pts : List Pt) (start : Nat) :
     countNonSkip pi_x pts start ≤ pts.length - start := by

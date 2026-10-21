@@ -3,13 +3,22 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Coeff.ListOps
-import Spqr.Math.Poly.CharTwo.ToGF216
-import Spqr.Math.Poly.Eval
-import Spqr.Math.Poly.Lagrange.InterpolantSum
-import Spqr.Math.Poly.Horner.Eval
-import Spqr.Math.Poly.ExpectedTrailing.Basic
-import Spqr.Math.Poly.Identities.Basic
+module
+
+public import Spqr.Math.Poly.Coeff.ListOps
+public import Spqr.Math.Poly.CharTwo.ToGF216
+public import Spqr.Math.Poly.Eval
+public import Spqr.Math.Poly.Lagrange.InterpolantSum
+public import Spqr.Math.Poly.Horner.Eval
+public import Spqr.Math.Poly.ExpectedTrailing.Basic
+public import Spqr.Math.Poly.Identities.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.LinearFactors.Degree
 
 /-!
 # General-purpose utility results
@@ -30,9 +39,9 @@ independent of both Mathlib-specific algebra and Aeneas-extracted types.
 * `list_getElem?_getD_eq_getElem`: `xs[n]?.getD default = xs[n]` when `n < xs.length`.
 * `getElem?_append_of_lt`: `(l₁ ++ l₂)[i]? = l₁[i]?` when `i < l₁.length`.-/
 
-
-
 /-! ## List indexing utilities -/
+
+@[expose] public section
 
 /-- If `xs[k]? = ys[k]?` and both `k` are in bounds, then `xs.get k = ys.get k`. -/
 theorem list_get_of_getElem?_eq {T : Type} {xs ys : List T}

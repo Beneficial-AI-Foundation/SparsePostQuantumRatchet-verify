@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Lagrange.BasisPoly
+module
+
+public import Spqr.Math.Poly.Lagrange.BasisPoly
 
 /-!
 # Partial Lagrange interpolant sum
@@ -18,6 +20,8 @@ import Spqr.Math.Poly.Lagrange.BasisPoly
 * `lagrangeInterpolantSum_eq_finset_sum` — equivalent `Finset.sum` form.
 * `lagrangeInterpolantSum_coeff_high` — coefficients beyond degree vanish.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -64,7 +68,7 @@ lemma lagrangeInterpolantSum_coeff_high
   intro i hi
   rw [Finset.mem_range] at hi
   have hi' : i < pts.length := by omega
-  rw [dif_pos hi']
+  rw [dite_eq_left hi']
   exact Polynomial.coeff_eq_zero_of_natDegree_lt (by
     calc (C _ * lagrangeBasisPoly pts i).natDegree
         ≤ (lagrangeBasisPoly pts i).natDegree := Polynomial.natDegree_C_mul_le _ _

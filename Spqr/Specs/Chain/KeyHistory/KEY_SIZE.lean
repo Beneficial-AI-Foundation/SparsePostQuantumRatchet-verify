@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::KeyHistory}::KEY_SIZE`
 
@@ -11,6 +13,8 @@ import SrcTranslated.Funs
 Used to stride over the flat `Vec<u8>` backing store in `get_loop`, `add`, and `remove`.
 
 **Source**: spqr/src/chain.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std
 

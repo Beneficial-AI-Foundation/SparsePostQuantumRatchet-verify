@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Product of linear factors
@@ -21,6 +27,8 @@ import Spqr.Math.Poly.Basic.Defs
 * `prodLinearFactors_step` — left unfolding.
 * `prodLinearFactors_snoc` — right unfolding.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -46,7 +54,7 @@ termination_by stop - start
 lemma prodLinearFactors_eq_one_of_not_lt (pts : List Pt) (start stop : Nat)
     (h : ¬(start < stop ∧ start < pts.length)) :
     prodLinearFactors pts start stop = 1 := by
-  unfold prodLinearFactors; rw [dif_neg h]
+  unfold prodLinearFactors; rw [dite_eq_right h]
 
 /-- One-step unfolding of `prodLinearFactors` from the left. -/
 lemma prodLinearFactors_step (pts : List Pt) (start stop : Nat)
@@ -55,7 +63,7 @@ lemma prodLinearFactors_step (pts : List Pt) (start stop : Nat)
       (X - C ((pts.get ⟨start, h2⟩).x.toGF216)) *
         prodLinearFactors pts (start + 1) stop := by
   conv_lhs => unfold prodLinearFactors
-  rw [dif_pos ⟨h1, h2⟩]
+  rw [dite_eq_left ⟨h1, h2⟩]
 
 /-- One-step unfolding of `prodLinearFactors` from the right (snoc form). -/
 private lemma prodLinearFactors_snoc_aux (pts : List Pt) (stop : Nat)

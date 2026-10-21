@@ -1,0 +1,80 @@
+Translation patch: <PolyDecoder as Decoder>::decoded_message
+
+Change: drop `points_vecs: Vec<&[Pt]>`; the first loop only sets `ret_none`, and the slice
+`&self.pts[poly].as_slice()[..self.necessary_points(poly)]` is taken where it is interpolated.
+Why: Aeneas fails on the lazy interpolation block that reads `points_vecs[poly]`, a `Vec` of
+borrows into `self.pts` ("Internal error, please file an issue", polynomial.rs 961:16-967:17).
+Behaviour: identical (`points_vecs` is no longer allocated).
+Relies on: when the first loop does not return `None`, `points_vecs[i]` is exactly that slice of
+`self.pts[i]` for every `i`, and `necessary_points` is pure.
+
+diff --git a/src/encoding/polynomial.rs b/src/encoding/polynomial.rs
+index 65f33f8..2b7efa0 100644
+--- a/src/encoding/polynomial.rs
++++ b/src/encoding/polynomial.rs
+@@ -918,62 +918,56 @@ fn add_chunk(&mut self, chunk: &Chunk) {
+     #[hax_lib::requires(self.pts_needed < usize::MAX / 2)]
+     #[hax_lib::ensures(|res| match res {
+         Some(v) => v.len() / 2 == self.pts_needed,
+         None => true
+     })]
+     fn decoded_message(&self) -> Option<Vec<u8>> {
+         if self.is_complete {
+             return None;
+         }
+-        let mut points_vecs = Vec::with_capacity(self.pts.len());
+         let mut ret_none = false;
+         for i in 0..(self.pts.len()) {
+-            hax_lib::loop_invariant!(|i: usize| points_vecs.len() <= i);
+             let pts = &self.pts[i];
+             if pts.len() < self.necessary_points(i) {
+                 ret_none = true;
+-            } else {
+-                points_vecs.push(&pts.as_slice()[..self.necessary_points(i)]);
+             }
+         }
+         if ret_none {
+             return None;
+         }
+         // We may or may not need these vectors of points (only if we need
+         // to do a lagrange_interpolate call).  For now, we just create
+         // them regardless.  However, we could optimize to lazily create them
+         // only when it's proven necessary.
+         let mut polys: [Option<Poly>; 16] = core::array::from_fn(|_| None);
+         let mut out: Vec<u8> = Vec::with_capacity(self.pts_needed * 2);
+         for i in 0..self.pts_needed {
+             hax_lib::loop_invariant!(|i: usize| out.len() == i * 2);
+             let poly = i % 16;
+             let poly_idx = i / 16;
+             let pt = Pt {
+                 x: GF16::new(poly_idx as u16),
+                 y: GF16::ZERO,
+             };
+             let y = if let Ok(i) = self.pts[poly].binary_search(&pt) {
+                 hax_lib::assume!(i < self.pts[poly].len()); // TODO Needs a postcondition on binary_search
+                 self.pts[poly][i].y
+             } else {
+                 hax_lib::assume!(poly < polys.len());
+                 if polys[poly].is_none() {
+-                    hax_lib::assume!(poly < points_vecs.len());
+-                    hax_lib::assume!(
+-                        points_vecs[poly].len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1
+-                    );
+-                    polys[poly] = Some(Poly::lagrange_interpolate(points_vecs[poly]));
++                    let points = &self.pts[poly].as_slice()[..self.necessary_points(poly)];
++                    hax_lib::assume!(points.len() <= MAX_INTERMEDIATE_POLYNOMIAL_DEGREE_V1);
++                    polys[poly] = Some(Poly::lagrange_interpolate(points));
+                 }
+                 polys[poly]
+                     .as_ref()
+                     .expect("already computed lazily")
+                     .compute_at(pt.x)
+             };
+             out.push((y.value >> 8) as u8);
+             out.push(y.value as u8);
+         }
+         Some(out)
+     }
+ }
+ 
+ #[cfg(test)]

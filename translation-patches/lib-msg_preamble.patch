@@ -1,0 +1,43 @@
+Translation patch: spqr::msg_preamble
+
+Change: `remaining: b""` becomes `remaining: &msg[..]` in the empty-message branch.
+Why: Aeneas does not translate the `&'static` byte-string literal ("There should be no bottoms
+in the value").
+Behaviour: identical (`msg` is empty in that branch, so `&msg[..]` is an empty slice).
+
+diff --git a/src/lib.rs b/src/lib.rs
+index 6bc0197..99bc650 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -563,30 +563,30 @@ struct MsgPreamble<'a> {
+ fn msg_preamble<'a>(msg: &'a SerializedMessage) -> Result<MsgPreamble<'a>, Error> {
+     if msg.is_empty() {
+         return Ok(MsgPreamble {
+             version: 0,
+             epoch: 0,
+             index: 0,
+-            remaining: b"",
++            remaining: &msg[..],
+         });
+     }
+     let version = msg[0];
+     let mut at = 1usize;
+     let epoch = decode_varint(msg, &mut at)? as Epoch;
+     if epoch == 0 {
+         return Err(Error::MsgDecode);
+     }
+     let index: u32 = decode_varint(msg, &mut at)?
+         .try_into()
+         .map_err(|_| Error::MsgDecode)?;
+     if at > msg.len() {
+         return Err(Error::MsgDecode);
+     }
+     Ok(MsgPreamble {
+         version,
+         epoch,
+         index,
+         remaining: &msg[at..],
+     })
+ }
+ 
+ #[cfg(test)]

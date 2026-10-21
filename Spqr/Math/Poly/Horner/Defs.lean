@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Horner-scheme accumulator
@@ -18,6 +24,8 @@ import Spqr.Math.Poly.Basic.Defs
 * `hornerAccum_unfold` — one-step unfolding.
 * `hornerAccum_cons` — shifting lemma on a `cons` cell.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -53,7 +61,7 @@ lemma hornerAccum_unfold (g_x : spqr.encoding.gf.GF16)
       (coeffs.get ⟨pos, h⟩).toGF216 +
         g_x.toGF216 * hornerAccum g_x coeffs (pos + 1) := by
   conv_lhs => unfold hornerAccum
-  rw [dif_pos h]
+  rw [dite_eq_left h]
 
 /--
 Shifting lemma: evaluating `hornerAccum` on `c :: cs` at position `pos + 1` is the same as

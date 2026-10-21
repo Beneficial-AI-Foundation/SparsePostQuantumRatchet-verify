@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.ExpectedTrailing.Defs
-import Spqr.Math.Poly.LinearFactors.Basic
+module
+
+public import Spqr.Math.Poly.ExpectedTrailing.Defs
+public import Spqr.Math.Poly.LinearFactors.Basic
 
 /-!
 # Properties of `expectedTrailingPoly`
@@ -15,6 +17,8 @@ import Spqr.Math.Poly.LinearFactors.Basic
 * `expectedTrailingPoly_eq_prodLinearFactors` — collapse to `prodLinearFactors` under the
   leading-one / lower-zero hypothesis.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -29,7 +33,7 @@ lemma expectedTrailingPoly_coeff_eq_zero_of_lt
   induction k generalizing n with
   | zero =>
     simp only [expectedTrailingPoly_zero, coeff_C]
-    exact if_neg (by omega)
+    exact ite_eq_right (by omega)
   | succ k ih =>
     cases n with
     | zero => omega
@@ -40,7 +44,7 @@ lemma expectedTrailingPoly_coeff_eq_zero_of_lt
       have h1 := ih n' (by omega)
       have h2 := ih (n' + 1) (by omega)
       have : (C (p_coeffs[offset - (k + 1)]!.toGF216) : GF216[X]).coeff (n' + 1) = 0 := by
-        rw [coeff_C]; exact if_neg (by omega)
+        rw [coeff_C]; exact ite_eq_right (by omega)
       rw [h1, h2, this]; ring
 
 /--

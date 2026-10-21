@@ -3,9 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
-import Spqr.Specs.Aeneas.VecClone
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
+public import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state`
 
@@ -37,6 +39,8 @@ strong (non-saturating) iterator spec applies.
 
 **Source**: src/incremental_mlkem768.rs (lines 143:0-151:1)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 
@@ -169,10 +173,10 @@ theorem loop_spec
         rw [h_start1] at hk
         by_cases hk0 : k = it'.iter.start.val
         · subst hk0
-          rw [h_swap0, if_pos h_even', h_suf' _ (by omega) (by omega)]
+          rw [h_swap0, ite_eq_left h_even', h_suf' _ (by omega) (by omega)]
         · by_cases hk1 : k = it'.iter.start.val + 1
           · subst hk1
-            rw [h_swap1, if_neg (by omega), h_suf' _ (by omega) (by omega)]
+            rw [h_swap1, ite_eq_right (by omega), h_suf' _ (by omega) (by omega)]
             simp
           · rw [h_frame k (by omega) hk0 hk1, h_pre' k (by omega)]
     · rintro ⟨h_out, h_done⟩

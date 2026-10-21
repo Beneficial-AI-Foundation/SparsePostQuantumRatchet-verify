@@ -3,7 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.Result
 
 /-! # Spec theorem for `PolyDecoder::new_with_poly_count` closure `call_mut`
 
@@ -13,6 +16,8 @@ state is `Unit`. The extracted `call_mut` creates a new sorted set and returns
 it paired with the unchanged closure state.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial
 
@@ -32,8 +37,9 @@ theorem call_mut_spec
     PolyDecoder.new_with_poly_count.closure) =>
       result.1 = alloc.vec.Vec.new Pt ∧
       result.2 = c ⦄ := by
-  unfold call_mut
-  simp [sorted_vec.SortedSet.new]
+  unfold call_mut sorted_vec.SortedSet.new
+  apply WP.spec_bind_ok
+  exact (WP.spec_ok _).mpr ⟨rfl, rfl⟩
 
 end Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt
 end spqr.encoding.polynomial.PolyDecoder.new_with_poly_count.closure

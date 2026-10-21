@@ -3,12 +3,21 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-! # Spec theorem for `spqr::encoding::gf::reduce::reduce_bytes`
 
 Specifies and verifies `reduce_bytes`, which builds the 256-entry GF reduction lookup table. -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Polynomial spqr.math.gf
 
@@ -142,7 +151,7 @@ theorem reduceByteTable_eq_poly_full (k : Nat) (hk : k < 256) :
     rw [Polynomial.natDegree_lt_iff_degree_lt hne, Polynomial.degree_lt_iff_coeff_zero]
     intro m hm
     simp only [A, natToBinaryPoly_coeff]
-    exact if_neg (Bool.not_eq_true _ ▸ Nat.testBit_eq_false_of_lt
+    exact ite_eq_right (Bool.not_eq_true _ ▸ Nat.testBit_eq_false_of_lt
       (Nat.lt_of_lt_of_le (Nat.mod_lt _ (by norm_num)) (Nat.pow_le_pow_right (by norm_num) hm)))
   have hA_self : A %ₘ polyGF2 = A := by
     have : A /ₘ polyGF2 = 0 := (Polynomial.divByMonic_eq_zero_iff polyGF2_monic).mpr

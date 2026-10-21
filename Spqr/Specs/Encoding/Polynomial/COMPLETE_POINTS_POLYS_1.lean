@@ -3,7 +3,14 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+public import Mathlib.Tactic.ComputeDegree
+import Spqr.Specs.Encoding.Gf.GF16.ONE
 
 /-! # Spec theorem for `spqr::encoding::polynomial::COMPLETE_POINTS_POLYS_1`
 
@@ -12,6 +19,8 @@ import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
 constant polynomial `1 : GF216[X]`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std spqr.encoding.gf
 open spqr.encoding.polynomial.PolyConst.lagrange_interpolate_pt_loop

@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import SrcTranslated.FunsExternal
+module
+
+public import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # **Spec theorem for `Range<i32>` iterator `next`**:
 
@@ -16,6 +18,8 @@ level: on an `iter : Range I32`, `next` returns `(opt, iter')` where:
 * if `iter.start.val < iter.end.val` (the range still has an element), then `opt = some
   iter.start`, `iter'.start.val = iter.start.val + 1`, and `iter'.end = iter.end` (the upper bound
   is preserved). -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result core.ops.range core.iter.range
 
@@ -42,19 +46,19 @@ theorem IteratorRange_next_I32_spec
         iter1.start.val = iter.start.val + 1 ∧ iter1.end = iter.end ⦄ := by
   simp only [IteratorRange.next]
   unfold core.iter.range.StepI32 core.iter.range.IScalarStep
-  simp only [liftFun2, liftFun1, core.clone.impls.CloneI32.clone, bind_tc_ok]
+  simp only [liftFun2, liftFun1, core.clone.impls.CloneI32.clone, bind_ok]
   have h_lt_iff :
       (core.cmp.impls.PartialOrdI32.lt iter.start iter.end = true) =
       (iter.start.val < iter.end.val) := by
     simp [core.cmp.impls.PartialOrdI32.lt]
   simp only [h_lt_iff]
   by_cases hlt : iter.start.val < iter.end.val
-  · rw [if_pos hlt]
+  · rw [ite_eq_left hlt]
     have hfwd : iter.start.val + (1#usize).val ≤ IScalar.max .I32 := by scalar_tac
     simp only [core.iter.range.IScalarStep.forward_checked, hfwd, reduceDIte,
-      bind_tc_ok, WP.spec_ok]
+      bind_ok, WP.spec_ok]
     grind
-  · rw [if_neg hlt]
+  · rw [ite_eq_right hlt]
     grind
 
 end core.iter.range.IteratorRange

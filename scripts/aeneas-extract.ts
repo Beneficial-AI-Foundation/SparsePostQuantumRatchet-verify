@@ -1,15 +1,18 @@
 /**
- * Run the full extraction pipeline: Charon -> Aeneas -> Tweaks.
+ * Run the full extraction pipeline: patches -> Charon -> revert patches -> Aeneas -> Tweaks.
  *
- * All charon options come from aeneas-config.yml and are passed as CLI args.
+ * All charon options come from aeneas-config.yml and are passed as CLI args. The Rust translation
+ * patches in `patches_dir` are applied one by one before Charon and reverted (in reverse order)
+ * right after it, also on failure or interrupt, so the Rust sources stay upstream.
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import chalk from "chalk";
-import { loadConfig } from "./lib/config.js";
+import { loadConfig, readLakefileAeneasTag } from "./lib/config.js";
 import { findBinary } from "./lib/paths.js";
-import { runStreaming } from "./lib/shell.js";
+import { run, runStreaming } from "./lib/shell.js";
+import { applyPatches, listPatches, revertPatches } from "./lib/patches.js";
 import { applyTweaks, warnUnmatchedTweaks } from "./lib/tweaks.js";
 import { syncLeanToolchain } from "./lib/lean-toolchain.js";
 
@@ -27,6 +30,14 @@ async function main(): Promise<void> {
   }
   if (!aeneasBin) {
     throw new Error("Aeneas binary not found. Run 'npm run aeneas-install' first.");
+  }
+  const tag = readLakefileAeneasTag(root);
+  const installed = (await run(aeneasBin, ["-version"])).trim();
+  if (installed !== `aeneas ${tag}`) {
+    throw new Error(
+      `Installed '${installed}' does not match the pinned tag '${tag}' (lakefile.toml). ` +
+        "Run 'npm run aeneas-install' first.",
+    );
   }
 
   const llbcFile = `${config.crate.name}.llbc`;
@@ -57,12 +68,8 @@ async function main(): Promise<void> {
   if (config.charon.start_from_pub) {
     charonArgs.push("--start-from-pub");
   }
-  for (const item of config.charon.exclude) {
-    charonArgs.push("--exclude", item);
-  }
-  for (const item of config.charon.opaque) {
-    charonArgs.push("--opaque", item);
-  }
+  // `exclude`/`opaque` are read by `charon cargo` from the `[package.metadata.charon]` section of
+  // Cargo.toml.
 
   // Cargo args go after --
   if (config.charon.cargo_args.length > 0) {
@@ -76,10 +83,39 @@ async function main(): Promise<void> {
 
   fs.mkdirSync(logsDir, { recursive: true });
 
-  await runStreaming(charonBin, charonArgs, {
-    cwd: root,
-    logFile: path.join(logsDir, "charon.log"),
-  });
+  // The Rust sources must be unmodified (the patches are written against them). Tools such as
+  // rust-analyzer may rewrite Cargo.lock behind our back.
+  const rustSources = ["src", "build.rs", "Cargo.toml", "Cargo.lock"];
+  const dirty = (await run("git", ["diff", "--name-only", "--", ...rustSources], { cwd: root })).trim();
+  if (dirty) {
+    throw new Error(
+      `The Rust sources are modified in the working tree:\n${dirty}\n` +
+        `Restore them with: git checkout -- ${rustSources.join(" ")}`,
+    );
+  }
+
+  // Apply the translation patches only for the duration of the Charon run.
+  const patches = listPatches(path.join(root, config.patches_dir));
+  console.log(chalk.bold(`  Applying ${patches.length} translation patch(es)...`));
+  const applied = await applyPatches(root, patches);
+  const onInterrupt = (): void => {
+    revertPatches(root, applied)
+      .catch((err) => console.error(chalk.red(err.message)))
+      .finally(() => process.exit(130));
+  };
+  process.once("SIGINT", onInterrupt);
+  process.once("SIGTERM", onInterrupt);
+  try {
+    await runStreaming(charonBin, charonArgs, {
+      cwd: root,
+      logFile: path.join(logsDir, "charon.log"),
+    });
+  } finally {
+    process.removeListener("SIGINT", onInterrupt);
+    process.removeListener("SIGTERM", onInterrupt);
+    await revertPatches(root, applied);
+    console.log(chalk.bold(`  Reverted ${patches.length} translation patch(es).`));
+  }
 
   if (!fs.existsSync(llbcPath)) {
     throw new Error(`Failed to generate ${llbcFile}`);

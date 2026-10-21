@@ -3,8 +3,10 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
-import Spqr.Math.Gf16.Field
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Math.Gf16.Field
 
 /-! # Spec theorem for `spqr::encoding::gf::GF16::ONE`
 
@@ -23,6 +25,8 @@ natToBinaryPoly`) to the multiplicative identity `1 : GF216`.  This follows beca
 
 **Source**: spqr/src/encoding/gf.rs (lines 542:4-542:44)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.math.gf
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 /-!
 # Spec theorem for `Slice.listToVec`
@@ -11,6 +13,8 @@ import SrcTranslated.Funs
 `Slice.listToVec` packages a `List T` as a `Vec T`, succeeding exactly when the list
 length fits within `Usize.max`.
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result Aeneas.Std.WP
 
@@ -24,6 +28,6 @@ If the list length is at most `Usize.max`, then `listToVec` succeeds and returns
 theorem listToVec_spec {T : Type} (l : List T)
     (hlen : l.length ≤ Usize.max) :
     Slice.listToVec l ⦃ (v : alloc.vec.Vec T) => v.val = l ⦄ := by
-  simp [Slice.listToVec, dif_pos hlen, spec_ok]
+  simp [Slice.listToVec, dite_eq_left hlen, spec_ok]
 
 end Aeneas.Std.Slice

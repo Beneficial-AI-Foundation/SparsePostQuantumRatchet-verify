@@ -3,11 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Liao Zhang
 -/
-import SrcTranslated.Funs
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
-import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
-import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
-import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+module
+
+public import SrcTranslated.Funs
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
+public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
+public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::serialize`
@@ -30,6 +32,8 @@ byte `1`.
 
 **Source**: src/v1/chunked/states/serialize.rs (lines 221-245)
 -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result
 

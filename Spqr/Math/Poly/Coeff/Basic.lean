@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.Basic.Defs
+module
+
+public import Spqr.Math.Poly.Basic.Defs
 
 /-!
 # Coefficient characterization of `listToGF216Poly`
@@ -18,6 +20,8 @@ the in-range and out-of-range coefficients, the singleton and cons decomposition
 * `listToGF216Poly_singleton` — `listToGF216Poly [a] = C a.toGF216`.
 * `listToGF216Poly_cons` — Horner-like decomposition for a cons cell.
 -/
+
+@[expose] public section
 
 open Polynomial
 
@@ -73,15 +77,15 @@ lemma listToGF216Poly_cons
   cases m with
   | zero =>
     simp only [coeff_add, listToGF216Poly_coeff,
-               dif_pos (show 0 < (c :: cs).length from by simp)]
+               dite_eq_left (show 0 < (c :: cs).length from by simp)]
     simp only [List.get_eq_getElem, List.getElem_cons_zero,
                coeff_C_zero, coeff_X_mul_zero, add_zero]
   | succ n =>
     simp only [coeff_add, coeff_C_succ, zero_add, coeff_X_mul,
                listToGF216Poly_coeff]
     by_cases hlt : n + 1 < (c :: cs).length
-    · rw [dif_pos hlt, dif_pos (show n < cs.length from by simp at hlt; omega)]
+    · rw [dite_eq_left hlt, dite_eq_left (show n < cs.length from by simp at hlt; omega)]
       congr 1
-    · rw [dif_neg hlt, dif_neg (show ¬(n < cs.length) from by simp at hlt ⊢; omega)]
+    · rw [dite_eq_right hlt, dite_eq_right (show ¬(n < cs.length) from by simp at hlt ⊢; omega)]
 
 end spqr.encoding.polynomial

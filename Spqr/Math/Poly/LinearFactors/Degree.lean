@@ -3,7 +3,13 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Math.Poly.LinearFactors.Basic
+module
+
+public import Spqr.Math.Poly.LinearFactors.Basic
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
 
 /-!
 # Degree and structural properties of `prodLinearFactors`
@@ -16,6 +22,8 @@ import Spqr.Math.Poly.LinearFactors.Basic
 * `natDegree_prodLinearFactors_le` — degree bound.
 * `prodLinearFactors_coeff_eq_zero_high` — vanishing of high coefficients.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -107,7 +115,7 @@ lemma prodLinearFactors_coeff_eq_zero_high
     intro start stop m hd hm'
     have : ¬(start < stop ∧ start < pts.length) := by omega
     rw [prodLinearFactors_eq_one_of_not_lt _ _ _ this, coeff_one]
-    exact if_neg (by omega)
+    exact ite_eq_right (by omega)
   | succ n ih =>
     intro start stop m hd hm'
     by_cases h : start < stop ∧ start < pts.length
@@ -120,6 +128,6 @@ lemma prodLinearFactors_coeff_eq_zero_high
             ih (start + 1) stop m' (by omega) (by omega)]
         ring
     · rw [prodLinearFactors_eq_one_of_not_lt _ _ _ h, coeff_one]
-      exact if_neg (by omega)
+      exact ite_eq_right (by omega)
 
 end spqr.encoding.polynomial

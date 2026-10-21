@@ -3,8 +3,11 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+module
+
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
 import Spqr.Specs.Encoding.EncodingError.From
+public import SrcTranslated.Funs
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::new_with_poly_count`
 
 Builds a fresh `PolyDecoder` from `len_bytes` and an ignored `_polys` parameter.
@@ -16,6 +19,8 @@ Builds a fresh `PolyDecoder` from `len_bytes` and an ignored `_polys` parameter.
    pts := [SortedSet::new(); 16], is_complete := false })`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 
 open Aeneas Aeneas.Std Result spqr.encoding.polynomial
 
@@ -59,9 +64,8 @@ theorem new_with_poly_count_spec (len_bytes _polys : Std.Usize) :
     apply core.array.from_fn_loop_replicate_default
     · intro i
       open PolyDecoder.new_with_poly_count.closure.Insts in
-      simp [CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
-        sorted_vec.SortedSet.new]
-      rfl
+      simp only [CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut, sorted_vec.SortedSet.new]
+      exact (bind_ok _ _).trans rfl
     · scalar_tac
   case hlen => simp
   · split

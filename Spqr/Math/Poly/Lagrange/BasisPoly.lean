@@ -3,8 +3,12 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.LinearFactors.Degree
-import Spqr.Math.Poly.Lagrange.DenomProd
+public import Spqr.Math.Poly.Lagrange.DenomProd
+public import Spqr.Math.Poly.LinearFactors.Basic
+import Mathlib.Tactic.ComputeDegree
 
 /-!
 # Lagrange scaling factor and basis polynomial
@@ -18,6 +22,8 @@ import Spqr.Math.Poly.Lagrange.DenomProd
 
 * `natDegree_lagrangeBasisPoly_le` — degree bound for the basis polynomial.
 -/
+
+@[expose] public section
 
 open Polynomial
 open spqr.encoding.gf
@@ -56,7 +62,7 @@ noncomputable def lagrangeBasisPoly
 lemma natDegree_lagrangeBasisPoly_le
     (pts : List Pt) (i : Nat) (hi : i < pts.length) (hn : 0 < pts.length) :
     (lagrangeBasisPoly pts i).natDegree ≤ pts.length - 1 := by
-  simp only [lagrangeBasisPoly, if_pos hi]
+  simp only [lagrangeBasisPoly, ite_eq_left hi]
   calc (prodLinearFactors pts 0 i * prodLinearFactors pts (i + 1) pts.length).natDegree
       ≤ (prodLinearFactors pts 0 i).natDegree +
           (prodLinearFactors pts (i + 1) pts.length).natDegree :=

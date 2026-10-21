@@ -3,7 +3,9 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
-import SrcTranslated.Funs
+module
+
+public import SrcTranslated.Funs
 
 
 /-! # Spec Theorem for `Pt::deserialize`
@@ -26,6 +28,8 @@ ensures that the deserialized point faithfully represents the original bytes, an
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 38:4-43:5)
 -/
+
+@[expose] public section
 
 
 open Aeneas Aeneas.Std Result
@@ -68,46 +72,38 @@ This is the core byte-reconstruction lemma underlying `deserialize_spec`: it iso
 surrounding monadic plumbing.
 -/
 
+/-- Big-endian decoding of two bytes: `fromBEBytes [x, y]` has value `x * 256 + y`. -/
+private theorem fromBEBytes_two (x y : BitVec 8) :
+    (BitVec.fromBEBytes [x, y]).toNat = x.toNat * 256 + y.toNat := by
+  rw [BitVec.fromBEBytes, BitVec.toNat_cast]
+  -- `[x, y].reverse` reduces to `[y, x]`; `simp` cannot rewrite it under the dependent width
+  change (BitVec.fromLEBytes [y, x]).toNat = _
+  simp only [BitVec.fromLEBytes]
+  have hx := x.isLt
+  have hy := y.isLt
+  simp only [List.length_cons, List.length_nil, Nat.reduceAdd, Nat.reduceMul, BitVec.setWidth_eq,
+    Nat.mul_zero, zero_le, pow_zero, Order.lt_one_iff, BitVec.setWidth_ofNat_of_le_of_lt,
+    Std.le_refl, BitVec.shiftLeft_eq_zero, BitVec.or_zero, BitVec.toNat_or, BitVec.toNat_setWidth,
+    Nat.reducePow, BitVec.toNat_shiftLeft, Nat.shiftLeft_eq, Nat.mod_mul_mod]
+  rw [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega), Nat.or_comm, mul_comm,
+    show (256 : Nat) = 2 ^ 8 from rfl]
+  exact (Nat.two_pow_add_eq_or_of_lt hy _).symm
+
 @[step]
 theorem from_be_bytes_spec (a : Array Std.U8 2#usize) :
     lift (core.num.U16.from_be_bytes a) ⦃ result =>
       result.val = (a[0]!).val * 256 + (a[1]!).val ⦄ := by
-  simp  only [lift, core.num.U16.from_be_bytes, Std.UScalar.val]
   -- Decompose the 2-element array to expose list structure
   obtain ⟨a0, a1, hv⟩ : ∃ a0 a1, a.val = [a0, a1] := by
     have hlen : a.val.length = 2 := by simp
     rcases h : a.val with _ | ⟨a0, _ | ⟨a1, _ | ⟨_, _⟩⟩⟩ <;> simp_all
-  simp only [WP.spec_ok, BitVec.toNat_cast, Array.getElem!_Nat_eq]
-  rw [hv]
-  · simp only [List.map_cons, List.map_nil,
-    List.length_cons, List.length_nil, Nat.reduceAdd,
-    Nat.reduceMul, BitVec.fromBEBytes, List.reverse, List.reverseAux_cons,
-    List.reverseAux_nil, BitVec.fromLEBytes, BitVec.setWidth_eq,
-    Nat.mul_zero, zero_le, pow_zero, zero_lt_one,
-    BitVec.setWidth_ofNat_of_le_of_lt, le_refl, BitVec.shiftLeft_eq_zero,
-    BitVec.or_zero, BitVec.cast_eq,
-    UScalar.bv_toNat, UScalarTy.U8_numBits_eq,
-    zero_add, Nat.ofNat_pos,
-    getElem!_pos, List.getElem_cons_zero, Bvify.U8.UScalar_bv,
-    Nat.one_lt_ofNat, List.getElem_cons_succ]
-    -- Unfold UScalar.val coercion to expose BitVec.toNat
-    simp only [Std.UScalar.val]
-    rw [BitVec.toNat_or, BitVec.toNat_shiftLeft]
-    simp only [Nat.shiftLeft_eq]
-    have h0 : a0.bv.toNat < 2 ^ 8 := a0.bv.isLt
-    have h1 : a1.bv.toNat < 2 ^ 8 := a1.bv.isLt
-    simp only [BitVec.toNat_setWidth, UScalar.bv_toNat, Nat.reducePow, Nat.mod_mul_mod,
-    UScalarTy.U8_numBits_eq, Bvify.U8.UScalar_bv]
-    have h10 : a1.val < 65536 := by grind
-    have h11:=Nat.mod_eq_of_lt h10
-    rw [h11]
-    have h00 : a0.val * 256 < 65536 := by grind
-    have h01:=Nat.mod_eq_of_lt h00
-    rw [h01]
-    symm
-    rw[Nat.or_comm, mul_comm, (by grind : 256 = 2 ^ 8)]
-    apply Nat.two_pow_add_eq_or_of_lt
-    grind
+  step as ⟨r, hr⟩
+  have h_r : r.val = (BitVec.fromBEBytes (a.val.map U8.bv)).toNat := by
+    have h := congrArg BitVec.toNat hr
+    rw [BitVec.toNat_cast] at h
+    exact h
+  rw [h_r, hv, Array.getElem!_Nat_eq, Array.getElem!_Nat_eq, hv]
+  exact fromBEBytes_two a0.bv a1.bv
 
 /- **Spec for `<[T; N] as TryFrom<&[T]>>::try_from`**:
 When the input slice `s` has length exactly `N` and the type's `Copy` (clone) is the identity

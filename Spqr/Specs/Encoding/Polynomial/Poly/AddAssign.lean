@@ -3,9 +3,18 @@ Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
+module
+
 import Spqr.Math.Poly.Coeff.ListOps
-import Spqr.Math.Poly.Eval
+public import Spqr.Math.Poly.Eval
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Order.Int.ConditionallyCompleteOrder
+import Mathlib.Tactic.ComputeDegree
+import Spqr.Math.Gf16.Irreducible
+import Spqr.Math.Poly.Basic.Zero
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::add_assign`
 
@@ -13,6 +22,8 @@ Computes `self + other` in `GF216[X]` by iterating over `other`'s coefficients v
 `deref → iter → enumerate → add_assign_loop`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
+
+@[expose] public section
 open Aeneas Aeneas.Std Result ControlFlow spqr.encoding.gf Polynomial spqr.encoding.polynomial
 open  core.iter.adapters.enumerate core.slice.iter
 
@@ -104,15 +115,21 @@ lemma poly_update_in_range
   unfold Poly.toGF216Poly
   ext m
   simp only [listToGF216Poly_coeff, coeff_add, coeff_C_mul, coeff_X_pow]
-  by_cases hm_lt : m < self.coefficients.length
-  · have hm_lt' : m < self'.coefficients.length := by grind [degree]
+  have h_len' : self'.coefficients.val.length = self.coefficients.val.length := h_len_eq
+  have h_lt' : i < self.coefficients.val.length := h_lt
+  by_cases hm_lt : m < self.coefficients.val.length
+  · rw [dite_eq_left (show m < self'.coefficients.val.length by omega), dite_eq_left hm_lt]
     by_cases hm_eq : m = i
-    · grind
-    · rw [if_neg hm_eq, mul_zero, add_zero]
+    · subst hm_eq
+      rw [ite_eq_left rfl, mul_one]
+      exact h_upd (by change m < self'.coefficients.val.length; omega)
+    · rw [ite_eq_right hm_eq, mul_zero, add_zero]
       have h_eq := h_other m hm_eq
-      grind
-  · have hm_lt' : ¬(m < self'.coefficients.length) := by grind [degree]
-    grind
+      rw [alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos _ m (by omega),
+        getElem!_pos _ m hm_lt] at h_eq
+      rw [List.get_eq_getElem, List.get_eq_getElem, h_eq]
+  · rw [dite_eq_right (show ¬m < self'.coefficients.val.length by omega), dite_eq_right hm_lt,
+      ite_eq_right (show m ≠ i by omega), mul_zero, add_zero]
 
 lemma poly_update_extension
     (self self' : Poly) (v : GF16)
@@ -132,7 +149,7 @@ lemma step_invariant_preservation
   rw [h_step, h_prev]
   have h_take_succ : other.take (k + 1) = other.take k ++ [other[k]] := by simp
   rw [h_take_succ, listToGF216Poly_append_singleton]
-  have h_take_len : (other.take k).length = k := by grind [List.length_take]
+  have h_take_len : (other.take k).length = k := by rw [List.length_take]; omega
   rw [h_take_len, hv]
   ring
 
@@ -152,7 +169,7 @@ lemma enumerate_sliceiter_next_some
     IteratorEnumerate.next,
     IteratorSliceIter.next]
   have h_lt' : iter.iter.i < (↑iter.iter.slice.len : Nat) := by scalar_tac
-  rw [dif_pos h_lt']
+  rw [dite_eq_left h_lt']
   have h_add_bound : iter.count.val + 1 ≤ Usize.max := by
     rw [h_count]
     omega
@@ -224,6 +241,8 @@ theorem loop_spec
     add_assign_loop iter self ⦃ (result : Poly) =>
       result.degree = max self.degree other.length ∧
       result.toGF216Poly = self.toGF216Poly + listToGF216Poly other ⦄ := by
+  have h_other_len : other.length = iter.iter.slice.length := by
+    rw [← h_iter_data, h_start, List.drop_zero]
   unfold add_assign_loop
   apply loop.spec_decr_nat
     (measure := fun (p : Enumerate (Iter GF16) × Poly) => p.1.iter.slice.length - p.1.iter.i)
@@ -236,66 +255,73 @@ theorem loop_spec
         p.2.degree = max self.degree p.1.iter.i ∧
         p.2.toGF216Poly =
           self.toGF216Poly + listToGF216Poly (other.take (p.1.iter.i - iter.iter.i)))
-  · rintro ⟨iter', self'⟩ ⟨h_slice', h_ge', h_le_slice', h_count', h_len', h_coeff_len', h_poly'⟩
-    simp only  at h_slice' h_ge' h_le_slice' h_count' h_len' h_coeff_len' h_poly' ⊢
+  · rintro ⟨iter', self'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_slice', h_ge', h_le_slice', h_count', h_len', h_coeff_len', h_poly'⟩ := hinv
+    have h_slen : iter'.iter.slice.length = iter.iter.slice.length := by rw [h_slice']
     by_cases h_more : iter'.iter.i < iter'.iter.slice.length
-    · have h_self_len : self'.degree < Usize.max := by grind [degree]
-      have h_bound' : iter'.iter.slice.length ≤ Usize.max := by grind
-      have h_body := body_cont_spec iter' self' (by omega) h_more h_bound'
-      apply WP.spec_mono h_body
-      intro cf h_cf
-      match cf with
-      | ControlFlow.done result => exact h_cf.elim
-      | ControlFlow.cont (iter'', self'') =>
-        simp only at h_cf ⊢
-        obtain ⟨h_slice'', h_i_adv, h_count'', h_lt_slice, i, v, h_i_val, h_v_val,
-          h_in_range, h_extension⟩ := h_cf
-        have h_k : iter'.iter.i - iter.iter.i < other.length := by grind
-        have h_v_eq : other.get ⟨iter'.iter.i - iter.iter.i, h_k⟩ = v := by grind
-        have h_k_eq : iter'.iter.i - iter.iter.i = iter'.iter.i := by omega
+    · have h_bound' : iter'.iter.slice.length ≤ Usize.max := by
+        have := le_max_right self.degree other.length
+        omega
+      apply WP.spec_mono (body_cont_spec iter' self' (by rw [h_count']) h_more h_bound')
+      rintro (⟨iter'', self''⟩ | r) h_cf
+      · obtain ⟨h_slice'', h_i_adv, h_count'', _, i, v, rfl, h_v_val, h_in_range,
+          h_extension⟩ := h_cf
+        have h_k : iter'.iter.i - iter.iter.i < other.length := by omega
+        have h_v_eq : other[iter'.iter.i - iter.iter.i] = v := by
+          rw [h_v_val]
+          simp only [← h_iter_data, h_start, List.drop_zero, Nat.sub_zero, h_slice']
+          rfl
+        have h_deg_step : (self''.degree = self'.degree ∧ iter'.iter.i < self'.degree) ∨
+            (self''.degree = self'.degree + 1 ∧ self'.degree ≤ iter'.iter.i) := by
+          by_cases h_lt_coeff : iter'.iter.i < self'.degree
+          · exact Or.inl ⟨(h_in_range h_lt_coeff).1, h_lt_coeff⟩
+          · refine Or.inr ⟨?_, by omega⟩
+            change self''.coefficients.val.length = self'.coefficients.val.length + 1
+            rw [h_extension h_lt_coeff, List.length_append, List.length_singleton]
         have h_poly_step :
-          self''.toGF216Poly = self'.toGF216Poly + C (v.toGF216) * X ^ iter'.iter.i := by
-          simp only [h_i_val,  List.getElem!_eq_getElem?_getD, ne_eq, alloc.vec.Vec.getElem!_Nat_eq,
-            not_lt] at h_in_range h_extension
+            self''.toGF216Poly = self'.toGF216Poly + C (v.toGF216) * X ^ iter'.iter.i := by
           by_cases h_lt_coeff : iter'.iter.i < self'.degree
           · obtain ⟨h_len_eq, h_upd, h_other_k⟩ := h_in_range h_lt_coeff
-            apply poly_update_in_range self' self'' iter'.iter.i v
-            all_goals grind
-          · have : self'.degree ≤ iter'.iter.i := by grind
-            have h_ext := h_extension this
-            have h_len_eq_k : self'.degree = iter'.iter.i := by grind
-            have h_poly := poly_update_extension self' self'' v h_ext
-            grind
-        constructor
-        · simp [h_i_val] at h_in_range h_extension
-          refine ⟨?_, by omega, ?_, ?_, ?_, ?_, ?_⟩
-          · rw [h_slice'', h_slice']
-          · grind
-          · rw [h_i_adv, h_count'']
-          · have h_slice_len : iter''.iter.slice.length = iter'.iter.slice.length := by
-              rw [h_slice'']
-            by_cases h_lt_coeff : iter'.iter.i < self'.degree
-            · omega
-            · have : self''.degree = self'.degree + 1 := by grind [degree]
+            refine poly_update_in_range self' self'' iter'.iter.i v h_lt_coeff h_len_eq
+              (fun h => ?_) (fun k hk => ?_)
+            · rw [h_upd h, alloc.vec.Vec.getElem!_Nat_eq,
+                getElem!_pos self'.coefficients.val iter'.iter.i h_lt_coeff]
+              rfl
+            · rw [h_other_k k hk, alloc.vec.Vec.getElem!_Nat_eq]
+          · have h_eq : self'.degree = iter'.iter.i := by
+              have := h_coeff_len'
+              have := le_max_right self.degree iter'.iter.i
               omega
-          · by_cases h_lt_coeff : iter'.iter.i < self'.degree
-            · omega
-            · have : self''.degree = self'.degree + 1 := by grind[degree]
-              omega
-          · rw [h_i_adv]
-            have h_new_k :
-              iter'.iter.i + 1 - iter.iter.i = (iter'.iter.i - iter.iter.i) + 1 := by omega
-            rw [h_new_k]
-            exact step_invariant_preservation
-              self.toGF216Poly self' self'' other
-              (iter'.iter.i - iter.iter.i) v h_k h_v_eq h_poly'
-              (by rw [h_k_eq]; exact h_poly_step)
-        · grind
-    · have h_body := body_test_done_spec iter' self' h_more
-      apply WP.spec_mono h_body
-      grind
-  · refine ⟨rfl, le_refl _, ?_, h_count_eq, ?_, ?_, (by simp [List.take_zero])⟩
-    all_goals grind
+            rw [← h_eq]
+            exact poly_update_extension self' self'' v (h_extension h_lt_coeff)
+        have h_slen'' : iter''.iter.slice.length = iter'.iter.slice.length := by rw [h_slice'']
+        dsimp only
+        refine ⟨⟨h_slice''.trans h_slice', by omega, by omega, by rw [h_count'', h_i_adv], ?_, ?_,
+          ?_⟩, by omega⟩
+        · rw [h_i_adv]
+          rcases h_deg_step with ⟨h, _⟩ | ⟨h, _⟩ <;> omega
+        · rw [h_i_adv]
+          rcases h_deg_step with ⟨h, _⟩ | ⟨h, _⟩ <;> omega
+        · rw [h_i_adv, show iter'.iter.i + 1 - iter.iter.i = (iter'.iter.i - iter.iter.i) + 1 by
+            omega]
+          exact step_invariant_preservation self.toGF216Poly self' self'' other
+            (iter'.iter.i - iter.iter.i) v h_k h_v_eq h_poly'
+            (by rw [h_start, Nat.sub_zero]; exact h_poly_step)
+      · exact h_cf.elim
+    · apply WP.spec_mono (body_test_done_spec iter' self' h_more)
+      rintro (⟨_, _⟩ | r) h_cf
+      · exact h_cf.elim
+      · subst h_cf
+        have h_eq : iter'.iter.i = iter.iter.slice.length := by omega
+        refine ⟨by rw [h_coeff_len', h_eq, ← h_other_len], ?_⟩
+        rw [h_poly', h_eq, h_start, Nat.sub_zero, ← h_other_len, List.take_length]
+  · have := le_max_left self.degree other.length
+    have := le_max_right self.degree other.length
+    dsimp only
+    refine ⟨rfl, le_refl _, by rw [h_start]; exact Nat.zero_le _, h_count_eq,
+      by rw [h_start]; omega, by rw [h_start, Nat.max_zero], ?_⟩
+    rw [Nat.sub_self, List.take_zero, listToGF216Poly_nil, add_zero]
 
 end spqr.encoding.polynomial.Poly.add_assign_loop
 
