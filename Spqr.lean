@@ -337,3 +337,4 @@ public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FromPb
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.IntoPb
+public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.New
