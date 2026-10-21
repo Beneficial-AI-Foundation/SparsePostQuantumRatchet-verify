@@ -78,7 +78,8 @@ Checks that:
 1. The auth key is cloned byte-for-byte from `params.auth_key`.
 2. The direction is encoded as protobuf `i32` (`A2B ↦ 0`, `B2A ↦ 1`).
 3. The minimum version is encoded as protobuf `i32` (`V0 ↦ 0`, `V1 ↦ 1`).
-4. Chain parameters are present (not `none`). -/
+4. Chain parameters are exactly the protobuf conversion of `params.chain_params`
+   (via `chain.ChainParams.into_pb`). -/
 def VersionNegotiationMatchesParams
     (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
     (params : Params) : Prop :=
@@ -87,7 +88,8 @@ def VersionNegotiationMatchesParams
     | .A2B => 0#iscalar | .B2A => 1#iscalar) ∧
   vn.min_version = (match params.min_version with
     | .V0 => 0#iscalar | .V1 => 1#iscalar) ∧
-  vn.chain_params ≠ none
+  ∃ cp, vn.chain_params = some cp ∧
+    chain.ChainParams.into_pb params.chain_params = ok cp
 
 /-- Predicate: a `PqRatchetState` is a well-formed V1 initial state for the given `params`.
 
@@ -126,6 +128,12 @@ theorem initial_state_spec_v1 (params : Params)
   unfold IsWellFormedV1InitialState VersionNegotiationMatchesParams V1InnerStateMatchesDirection
   unfold initial_state
   rw [h_version]
+  step
+  step
+  step
+  obtain ⟨cp, h_cp, _⟩ := chain.ChainParams.into_pb_spec params.chain_params
+  rw [h_cp]
+  simp only [bind_tc_ok]
   step*
   exact ⟨v1, rfl, _,
     v1_post,
@@ -135,6 +143,6 @@ theorem initial_state_spec_v1 (params : Params)
       by simp only [alloc.vec.Vec.val] at v_post ⊢; exact congrArg _ v_post.symm,
       i_post ▸ rfl,
       i1_post ▸ rfl,
-      by simp⟩⟩
+      ⟨cp, rfl, h_cp⟩⟩⟩
 
 end spqr
