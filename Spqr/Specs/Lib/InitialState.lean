@@ -128,21 +128,22 @@ theorem initial_state_spec_v1 (params : Params)
   unfold IsWellFormedV1InitialState VersionNegotiationMatchesParams V1InnerStateMatchesDirection
   unfold initial_state
   rw [h_version]
+  step as ⟨v, v_post⟩
   step
   step
-  step
-  obtain ⟨cp, h_cp, _⟩ := chain.ChainParams.into_pb_spec params.chain_params
+  -- `step` would discard the `into_pb … = ok cp` equation, which the chain-params conjunct of
+  -- `VersionNegotiationMatchesParams` needs.  `into_pb` is total (two `if`s and a struct
+  -- literal), so obtain the equation directly and rewrite with it.
+  obtain ⟨cp, h_cp⟩ : ∃ cp, chain.ChainParams.into_pb params.chain_params = ok cp := by
+    unfold chain.ChainParams.into_pb
+    split <;> split <;> simp
   rw [h_cp]
-  simp only [bind_tc_ok]
   step*
-  exact ⟨v1, rfl, _,
-    v1_post,
-    rfl,
+  refine ⟨v1, rfl, _, v1_post, rfl,
     ⟨vs, o_post ▸ rfl, o_post1, o_post2⟩,
-    ⟨⟨v, i, i1, some cp⟩, rfl,
-      by simp only [alloc.vec.Vec.val] at v_post ⊢; exact congrArg _ v_post.symm,
-      i_post ▸ rfl,
-      i1_post ▸ rfl,
-      ⟨cp, rfl, h_cp⟩⟩⟩
+    ⟨⟨v, i, i1, some cp⟩, rfl, ?_, i_post ▸ rfl, i1_post ▸ rfl, ?_⟩⟩
+  · simp only [alloc.vec.Vec.val] at v_post ⊢
+    exact congrArg _ v_post.symm
+  · rfl
 
 end spqr
