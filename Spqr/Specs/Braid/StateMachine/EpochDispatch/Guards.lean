@@ -22,12 +22,28 @@ compares `msg.epoch` with `e`. When `msg.epoch ≠ e`, the arm decides without r
   [ML-KEM Braid] §2.5, marked in *Ct2Sampled.Receive* on p. 23.
 
 The theorems state the code. `recv_of_lt` and `recv_Ct2Sampled_next_epoch` agree with §2.5 and
-carry its tag. `recv_of_gt` does not, because the code departs from the spec there. In §2.5
-every `Receive` function ignores a message with `msg.epoch > e`, apart from transition (13). The
-code returns `Err(EpochOutOfRange msg.epoch)` instead, so it is stricter than the spec: a message
-from a later epoch is reported as an error instead of being dropped. `recv_of_gt` states what the
-code does. If the code adopts the spec's no-op, `recv_of_gt` no longer holds and must be
-restated.
+carry its tag. `recv_of_gt` does not, because it states Deviation 1 below.
+
+## Deviations from §2.5
+
+On the receive path, the code differs from §2.5 in three places, numbered here and in
+`Equal.lean`. Each deviation is marked "Deviation n" where it takes effect. The theorems state
+what the code does. If the code changes to follow the spec, the marked statements must change.
+
+1. A message from a later epoch (this module, `recv_of_gt`). In §2.5 every `Receive` function
+   ignores a message with `msg.epoch > e`, apart from transition (13). The code returns
+   `Err(EpochOutOfRange msg.epoch)` instead, so it is stricter than the spec: the message is
+   reported as an error instead of being dropped.
+2. `Ct1Ack true` in `EkReceivedCt1Sampled` (`Equal.lean`, `States.Expects` and `specRecvEq`).
+   §2.5 acts only on `EkCt1Ack` in this state. The code also takes transition (12) on
+   `Ct1Ack true`, which the peer sends from `EkSentCt1Received` where §2.5 sends nothing
+   (`states.rs:175-186`, `states.rs:465-468`). §2.3 defines `Ct1Ack`, but §2.5 never uses it.
+   The extra acceptance tolerates a lost acknowledgement. `Equal.lean` covers only the
+   receiving side. `Ct1Ack false` is never sent and stays a no-op.
+3. `Ek` in `Ct1Acknowledged` (`Equal.lean`, `States.Expects` and `specRecvEq`). §2.5 acts only
+   on `EkCt1Ack` in this state. The code also feeds `Ek` chunks to the same decoder, for
+   out-of-order delivery, and checks the completed key against the header as in
+   transition (11) (`states.rs:485-493`).
 
 ## References
 
@@ -66,7 +82,7 @@ theorem recv_of_lt (s : States) (msg : Message) (h : msg.epoch.val < s.epochOf.v
 
 /-- Let `e` be the epoch of `s`, let `msg.epoch > e`, and if `s` is `Ct2Sampled`, let
 `msg.epoch ≠ e + 1`. Then `States.recv s msg` returns `Err(EpochOutOfRange msg.epoch)`.
-§2.5 ignores such a message instead. -/
+§2.5 ignores such a message instead: Deviation 1 in the module doc. -/
 theorem recv_of_gt (s : States) (msg : Message) (h : s.epochOf.val < msg.epoch.val)
     (hnext : ∀ st, s = .Ct2Sampled st → msg.epoch.val ≠ st.uc.epoch.val + 1) :
     States.recv s msg = ok (.Err (Error.EpochOutOfRange msg.epoch)) := by
