@@ -56,8 +56,12 @@ what the code does. If the code changes to follow the spec, the marked statement
    receiving side. `Ct1Ack false` is never sent and stays a no-op.
 3. `Ek` in `Ct1Acknowledged` (`Equal.lean`, `States.Expects` and `specRecvEq`). §2.5 acts only
    on `EkCt1Ack` in this state (*Ct1Acknowledged.Receive*, pp. 21-22). The code also feeds `Ek`
-   chunks to the same decoder, for out-of-order delivery, and checks the completed key against
-   the header as in transition (11) (`states.rs:486-507`).
+   chunks to the same decoder and checks the completed key against the header as in
+   transition (11) (`states.rs:486-507`). An `Ek` chunk reaches this state when it is delayed
+   past the first `EkCt1Ack` chunk. Both payloads come from the peer's one `sending_ek` encoder
+   (`states.rs:150-172`), so the late chunk is a valid point of the same encoding. §2.5 drops
+   it and still completes, because the peer keeps sending `EkCt1Ack` chunks. The code uses it
+   and may complete `ek` with fewer messages. This is not proved here.
 
 ## References
 
