@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import Spqr.Crypto.Fips203.NTT.Packed
-public meta import Spqr.Crypto.Fips203.NTT.Packed
+meta import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT — kernel verification shard 3 (basis vectors 192–255)
 
@@ -15,7 +15,7 @@ four files so each compiles in well under 30 s and `lake` can run them in
 parallel.
 -/
 
-@[expose] public section
+public section
 
 namespace Fips203
 
