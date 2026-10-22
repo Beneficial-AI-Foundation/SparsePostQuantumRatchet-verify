@@ -31,19 +31,21 @@ On the receive path, the code differs from §2.5 in three places, numbered here 
 what the code does. If the code changes to follow the spec, the marked statements must change.
 
 1. A message from a later epoch (this module, `recv_of_gt`). In §2.5 every `Receive` function
-   ignores a message with `msg.epoch > e`, apart from transition (13). The code returns
-   `Err(EpochOutOfRange msg.epoch)` instead, so it is stricter than the spec: the message is
-   reported as an error instead of being dropped.
+   ignores a message with `msg.epoch > e` (for example *KeysUnsampled.Receive*, p. 11), apart
+   from transition (13) (p. 23). The code returns `Err(EpochOutOfRange msg.epoch)` instead, in
+   every arm (for example `states.rs:283-285`; the exception is `states.rs:514-526`), so it is
+   stricter than the spec: the message is reported as an error instead of being dropped.
 2. `Ct1Ack true` in `EkReceivedCt1Sampled` (`Equal.lean`, `States.Expects` and `specRecvEq`).
-   §2.5 acts only on `EkCt1Ack` in this state. The code also takes transition (12) on
-   `Ct1Ack true`, which the peer sends from `EkSentCt1Received` where §2.5 sends nothing
-   (`states.rs:175-186`, `states.rs:465-468`). §2.3 defines `Ct1Ack`, but §2.5 never uses it.
+   §2.5 acts only on `EkCt1Ack` in this state (*EkReceivedCt1Sampled.Receive*, p. 21). The code
+   also takes transition (12) on `Ct1Ack true` (`states.rs:465-474`), which the peer sends from
+   `EkSentCt1Received` (`states.rs:175-186`) where §2.5 sends nothing
+   (*EkSentCt1Received.Send*, p. 15). §2.3 defines `Ct1Ack`, but §2.5 never uses it.
    The extra acceptance tolerates a lost acknowledgement. `Equal.lean` covers only the
    receiving side. `Ct1Ack false` is never sent and stays a no-op.
 3. `Ek` in `Ct1Acknowledged` (`Equal.lean`, `States.Expects` and `specRecvEq`). §2.5 acts only
-   on `EkCt1Ack` in this state. The code also feeds `Ek` chunks to the same decoder, for
-   out-of-order delivery, and checks the completed key against the header as in
-   transition (11) (`states.rs:485-493`).
+   on `EkCt1Ack` in this state (*Ct1Acknowledged.Receive*, pp. 21-22). The code also feeds `Ek`
+   chunks to the same decoder, for out-of-order delivery, and checks the completed key against
+   the header as in transition (11) (`states.rs:486-507`).
 
 ## References
 
