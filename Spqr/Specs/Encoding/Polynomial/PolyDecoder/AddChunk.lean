@@ -9,6 +9,7 @@ import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
@@ -534,5 +535,154 @@ theorem add_chunk_spec
   have h := h5 j hj
   simp only [show (0#usize : Usize).val = 0 from rfl, Nat.zero_add] at h
   exact h
+
+end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
+
+/-! ## `add_chunk` preserves the `PointsValid` invariant
+
+Every point insertion goes through `SortedSet::push`, which preserves `SlotSorted`
+(`PolyDecoder.push_spec_sorted`); the other slots are untouched. -/
+
+namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
+
+/-- One iteration of `add_chunk_loop` preserves `PointsValid`. -/
+theorem body_spec_valid
+    (chunk : encoding.Chunk)
+    (iter : core.ops.range.Range Usize)
+    (self : PolyDecoder)
+    (h_end_le_16 : iter.end.val ≤ 16)
+    (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 →
+        (self.pts.val[k]!).val.length + 1 ≤ Usize.max)
+    (h_valid : PointsValid self.pts) :
+    body chunk iter self ⦃ cf =>
+      match cf with
+      | ControlFlow.done self' => PointsValid self'.pts
+      | ControlFlow.cont (_, self1) => PointsValid self1.pts ⦄ := by
+  unfold body
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨h_opt_eq, _, _⟩ := h_some h_lt
+    rw [h_opt_eq]
+    step as ⟨i1, h_i1⟩
+    step as ⟨i2, h_i2⟩
+    step as ⟨total_idx, h_total⟩
+    step as ⟨poly, h_poly⟩
+    step as ⟨poly_idx, _⟩
+    step as ⟨i3, _⟩
+    step as ⟨x, _⟩
+    step as ⟨i4, h_i4⟩
+    step as ⟨i5, _⟩
+    step as ⟨y1, _⟩
+    step as ⟨i6, h_i6⟩
+    step as ⟨i7, _⟩
+    step as ⟨y2, _⟩
+    step as ⟨i8, _, _⟩
+    step as ⟨i9, _⟩
+    step as ⟨y, _⟩
+    step as ⟨i10, _⟩
+    have h_i1v : i1.val = chunk.index.val := by rw [h_i1]; exact U16.cast_Usize_val_eq chunk.index
+    have h_poly' : poly.val = iter.start.val := by rw [h_poly, h_total, h_i2]; omega
+    have h_poly16 : poly.val < 16 := by omega
+    have h_cap : (self.pts.val[poly.val]!).val.length + 1 ≤ Usize.max :=
+      h_push_cap _ h_poly16
+    have h_ss_eq : self.pts.val[poly.val]'(by simp; omega) = self.pts.val[poly.val]! := by
+      rw [getElem!_pos (h := by simp; omega)]
+    have h_slot : SlotSorted (self.pts.val[poly.val]'(by simp; omega)).val :=
+      h_valid.slot poly.val h_poly16
+    split
+    · step as ⟨ss, back, h_ss, h_back⟩
+      step with PolyDecoder.push_spec_sorted ss _ (by rw [h_ss, h_ss_eq]; exact h_cap)
+        as ⟨_, ss1, h_r⟩
+      subst h_back
+      exact h_valid.set poly ss1 (h_r (h_ss ▸ h_slot))
+    · step as ⟨ss0, _⟩
+      step as ⟨sv, _⟩
+      step as ⟨v, _⟩
+      step as ⟨i12, _⟩
+      split
+      · step as ⟨ss, back, h_ss, h_back⟩
+        step with PolyDecoder.push_spec_sorted ss _ (by rw [h_ss, h_ss_eq]; exact h_cap)
+          as ⟨_, ss1, h_r⟩
+        subst h_back
+        exact h_valid.set poly ss1 (h_r (h_ss ▸ h_slot))
+      · simp only [WP.spec_ok]
+        exact h_valid
+  · obtain ⟨h_opt_eq, rfl⟩ := h_none h_lt
+    rw [h_opt_eq]
+    exact (WP.spec_ok _).mpr h_valid
+
+/-- `add_chunk_loop` preserves `PointsValid`.  The proof runs `body_spec` (for the length
+bookkeeping needed by the capacity side condition) and `body_spec_valid` side by side via
+`WP.spec_and`. -/
+theorem loop_spec_valid
+    (chunk : encoding.Chunk)
+    (iter : core.ops.range.Range Usize)
+    (self : PolyDecoder)
+    (h_end_le_16 : iter.end.val ≤ 16)
+    (h_start_le : iter.start ≤ iter.end)
+    (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 →
+        (self.pts[k]!).length + (iter.end - iter.start) + 1 ≤ Usize.max)
+    (h_valid : PointsValid self.pts) :
+    add_chunk_loop iter self chunk ⦃ (result : PolyDecoder) => PointsValid result.pts ⦄ := by
+  unfold add_chunk_loop
+  apply loop.spec_decr_nat
+    (measure := fun (x : core.ops.range.Range Usize × PolyDecoder) => x.1.end - x.1.start)
+    (inv := fun (x : core.ops.range.Range Usize × PolyDecoder) =>
+        x.1.end = iter.end ∧
+        iter.start.val ≤ x.1.start.val ∧
+        x.1.start.val ≤ x.1.end.val ∧
+        (∀ (k : Nat), k < 16 →
+          (x.2.pts.val[k]!).val.length + (x.1.end.val - x.1.start.val) + 1 ≤ Usize.max) ∧
+        PointsValid x.2.pts)
+  · rintro ⟨iter', self'⟩ ⟨h_end', h_orig_le, h_le', h_cap', h_valid'⟩
+    dsimp only at h_end' h_orig_le h_le' h_cap' h_valid' ⊢
+    have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_push_cap' : ∀ k, k < 16 →
+        (self'.pts.val[k]!).val.length + 1 ≤ Usize.max := by
+      intro k hk; have := h_cap' k hk; omega
+    apply WP.spec_mono (WP.spec_and
+      (body_spec chunk iter' self' (by rw [h_end_val]; exact h_end_le_16) h_overflow h_push_cap')
+      (body_spec_valid chunk iter' self' (by rw [h_end_val]; exact h_end_le_16) h_overflow
+        h_push_cap' h_valid'))
+    rintro (⟨iter1, self1⟩ | self_final) ⟨h_cf, h_v⟩
+    · obtain ⟨h_lt, h_start1, h_end1, _, _, _, _, p, _, _, h_update⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_end1' : iter1.end.val = iter'.end.val := by rw [h_end1]
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter.start.val ≤ iter1.start.val by omega,
+        show iter1.start.val ≤ iter1.end.val by omega, ?_, h_v⟩,
+        show iter1.end.val - iter1.start.val < iter'.end.val - iter'.start.val by omega⟩
+      intro k hk
+      have h_old := h_cap' k hk
+      have h_len_le := body_pts_length_le self1 self' p
+        ((chunk.index.val * 16 + iter'.start.val) % 16) _ h_update k
+      omega
+    · exact h_v
+  · refine ⟨rfl, le_refl _, h_start_le, ?_, h_valid⟩
+    intro k hk
+    have := h_push_cap k hk
+    simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.length] at this
+    omega
+
+end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
+
+namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
+
+/-- **`add_chunk` preserves `PointsValid`**: if every slot of `self.pts` has strictly
+increasing abscissae, so does every slot of the result. -/
+@[step]
+theorem add_chunk_spec_valid
+    (self : PolyDecoder) (chunk : encoding.Chunk)
+    (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 → (self.pts[k]!).length + 17 ≤ Usize.max)
+    (h_valid : PointsValid self.pts) :
+    add_chunk self chunk ⦃ (result : PolyDecoder) => PointsValid result.pts ⦄ := by
+  unfold add_chunk
+  exact add_chunk_loop.loop_spec_valid chunk { start := 0#usize, «end» := 16#usize } self
+    (by scalar_tac) (by scalar_tac) h_overflow
+    (by intro k hk; have := h_push_cap k hk; change _ + (16 - 0) + 1 ≤ _; omega) h_valid
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
