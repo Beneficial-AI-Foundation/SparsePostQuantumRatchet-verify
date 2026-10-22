@@ -97,12 +97,11 @@ theorem new_spec (auth_key : Slice U8)
       result.receiving_hdr.pts.val = replicate 16 default ∧
       result.receiving_hdr.is_complete = false ⦄ := by
   unfold new
+  rw [incremental_mlkem768.HEADER_SIZE_eq, bind_ok]
   step*
-  · have hi : i.val = 64 := «Spqr.Mlkem.headerBytes_post»
-    simp only [hi, authenticator.Authenticator.MACSIZE_spec]; scalar_tac
+  · simp only [authenticator.Authenticator.MACSIZE_spec]; scalar_tac
   · have h_i1 : i1.val = 96 := by
-      have hi : i.val = 64 := «Spqr.Mlkem.headerBytes_post»
-      simp only [i1_post, hi, authenticator.Authenticator.MACSIZE_spec]
+      simp only [i1_post, authenticator.Authenticator.MACSIZE_spec]
     simp only [h_i1, Nat.reduceMod, ↓reduceIte] at decoder_post
     cases decoder with
     | Err e => exact absurd decoder_post not_false
