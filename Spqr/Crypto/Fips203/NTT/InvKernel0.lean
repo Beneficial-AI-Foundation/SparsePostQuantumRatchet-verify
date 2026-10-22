@@ -26,6 +26,9 @@ set_option maxHeartbeats 400000 in
 /-- Inverse kernel verification for basis vectors `0 ≤ j < 64`. -/
 lemma invNttP_formulaP_eq_0 :
     ∀ j ∈ List.range 64, invNttP (formulaP (j + 0)) = 128 * deltaP (j + 0) := by
+  /- This goal closes with `decide +kernel`. However there are 8 similar files which often build in
+  parallel and can cause the runner to crash and so `native_decide` is used temporarily.
+  TODO: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/721 -/
   native_decide
 
 end Fips203

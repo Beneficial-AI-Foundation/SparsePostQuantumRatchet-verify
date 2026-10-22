@@ -26,6 +26,9 @@ set_option maxHeartbeats 400000 in
 /-- Kernel verification for basis vectors `0 ≤ j < 64`. -/
 lemma nttP_deltaP_eq_formulaP_0 :
     ∀ j ∈ List.range 64, nttP (deltaP (j + 0)) = formulaP (j + 0) := by
+  /- This goal closes with `decide +kernel`. However there are 8 similar files which often build in
+  parallel and can cause the runner to crash and so `native_decide` is used temporarily.
+  TODO: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/721 -/
   native_decide
 
 end Fips203
