@@ -13,67 +13,108 @@ public import Spqr.Specs.Braid.StateMachine.EpochDispatch.Guards
 
 /-! # `States::recv` on a message from the state's own epoch
 
-When `msg.epoch` equals the state's epoch, `States::recv` acts on the payload type in eight of
-the eleven states. `KeysUnsampled`, `HeaderReceived` and `Ct2Sampled` ignore the message. This
-module compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2.5.
+When `msg.epoch = States.epochOf s`, `States::recv` acts on the payload type in eight of the
+eleven states. `KeysUnsampled`, `HeaderReceived` and `Ct2Sampled` ignore the message. This module
+compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2.5. Transitions are
+numbered as in §2.5, Fig. 1 (p. 10).
 
-* `recv_of_eq_unexpected`: a payload type the state does not act on (`States.Expects`) leaves
-  the state unchanged and emits no key.
-* `recv_of_eq_refines`: for every payload, if `States.recv` returns, an `Ok` result has the
-  successor state name and key presence that `specRecvEq` gives, and an `Err` happens exactly
-  when `specRecvEq` is `none`.
+* `recv_of_eq_unexpected`: a payload type that the state does not act on (`States.Expects`)
+  leaves the state unchanged and emits no key. The theorem is total.
+* `recv_of_eq_refines`: if `States.recv` returns `Ok`, the next state's name and key presence
+  are the ones `specRecvEq` gives. The call returns `Err` exactly when `specRecvEq` is `none`.
 
-`specRecvEq` follows the branches of the spec's `Receive` bodies at the level of state names
-and key presence, plus Deviations 2 and 3 listed below. A chunk that completes a decoder takes
-the transition if the completed message passes the state's check (`States.Accepts`). It fails if
-the message does not pass (`States.Rejects`). Decoding and the check are stated with the code's
-own calls. The decoder is `add_chunk` and `decoded_message`. The checks are `recv_ct2` and
-`verify_hdr`, on the message split with `take` / `drop`, and `ek_matches_header`, on the whole
-message. `HeaderSent` has no check.
-
-`recv_of_eq_refines` covers every payload, and `specRecvEq` adds only Deviations 2 and 3 to the
-branches of §2.5. So, for calls that return, and with the code's decoder and checks taken as
-the spec's, these two are the only places where the equal-epoch dispatch differs from §2.5 in
-state names and key presence. That the code's decoder and checks compute the spec's is not
-proved here.
-
-Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
-(p. 10) and marked `# Transition (n)` in the pseudocode of that section.
+`specRecvEq` is the §2.5 `Receive` at the level of state names and key presence, plus
+Deviations 2 and 3. When a chunk completes a decoder, it takes the transition if the state's
+check passes on the completed message (`States.Accepts`), and it is `none` if the check fails
+(`States.Rejects`). The decoder and the checks are the code's calls: `add_chunk` and
+`decoded_message` for the decoder, `recv_ct2` for `Decaps`, `KDF_OK`, `Update` and `VfyCt`,
+`verify_hdr` for `VfyHdr`, and `ek_matches_header` for `SHA3-256(ek_seed || ek_vector) = hek`.
+`HeaderSent` has no check. That `specRecvEq` follows §2.5 is our reading of §2.5, not a
+theorem.
 
 ## What the theorems do not show
 
-* `recv_of_eq_unexpected` is total, but `recv_of_eq_refines` is in the "if it returns" form. It
-  constrains only the runs where `States.recv` returns, so an implementation that panics on
-  every expected payload also satisfies it. It is not stated as total because some handlers can
-  panic when the state's fields have the wrong sizes. For example, transition (2) calls
-  `expect` on `encode_bytes` of the state's `ek` (`src/v1/chunked/send_ek.rs:91-92`), which
-  fails when the length of `ek` is odd or too large (`src/encoding/polynomial.rs:692-695`).
-  Transition (12) calls `encaps2`, which calls `expect` on size conversions of the state's
-  encapsulation state and key (`src/incremental_mlkem768.rs:75-76`). Ruling these panics out
-  needs invariants on the state, and specifications of the opaque libcrux functions that the
-  handlers call. This module proves neither.
-* The branches selected by `States.Accepts` and `States.Rejects` constrain the code only when
-  some chunk completes the decoder. This module does not prove that such a chunk exists.
-* The theorems relate the dispatch to the results of the code's decoder and checks. That
-  `add_chunk` and `decoded_message` compute the spec's decoder is not proved here. That
-  the code's checks compute the spec's checks is not proved here either: `recv_ct2` for
-  `Decaps`, `KDF_OK`, `Update` and `VfyCt`, `verify_hdr` for `VfyHdr`, and
-  `ek_matches_header` for `SHA3-256(ek_seed || ek_vector) = hek`.
-* `recv_of_eq_refines` compares only the successor's name and whether a key is emitted. A
-  successor with the right name but a wrong epoch, authenticator, KEM material or decoder, or
-  a wrong key value, satisfies it. `recv_of_eq_unexpected` states the whole successor: it is
-  the input state.
+* `recv_of_eq_refines` holds only for calls that return. It is not total because some handlers
+  panic when state fields have the wrong size, for example transition (2) at
+  `src/v1/chunked/send_ek.rs:91-92` and transition (12) at `src/incremental_mlkem768.rs:75-76`.
+  Ruling this out needs state invariants and specifications of the opaque libcrux calls.
+* `States.Accepts` and `States.Rejects` constrain the code only when a chunk completes the
+  decoder. That such a chunk exists is not proved.
+* That the code's decoder and checks compute the spec's decoder and checks is not proved.
+* `recv_of_eq_refines` compares the next state's name and key presence, not the next state's
+  fields or the key's value. `recv_of_eq_unexpected` states the whole next state.
 
-## Departures from §2.5
+## Deviations 2 and 3
 
-The three deviations on the receive path are listed and numbered in the module doc of
-`Guards.lean`. Two of them concern this module, and `States.Expects` and `specRecvEq` follow the
-code on both:
+`Guards.lean` numbers the deviations and explains the four parts of each entry. Paths are
+relative to `src/` at `dd8e6b9`. Call the party that runs `recv` the receiver, and the other
+party the peer. A *normal run* satisfies two conditions:
 
-* Deviation 2: `Ct1Ack true` in `EkReceivedCt1Sampled` takes transition (12).
-* Deviation 3: `Ek` in `Ct1Acknowledged` feeds the decoder. When the decoder completes, the
-  code runs the check of transition (11), and when the check passes, it takes the step of
-  (11).
+1. Each party's successful calls form one chain: a call gets the state that the previous
+   successful call of that party returned.
+2. Every message that a party's `recv` gets is the output of the other party's `send` in this
+   session, possibly out of order.
+
+### Deviation 2: `Ct1Ack true` in `EkReceivedCt1Sampled`
+
+* §2.5: *EkReceivedCt1Sampled.Receive* acts only on `EkCt1Ack` (p. 21), and
+  *EkSentCt1Received.Send* sends a message of type `None` (p. 15). §2.3 defines `Ct1Ack`
+  (p. 8), but §2.5 does not use it.
+* Code: `EkSentCt1Received` sends `Ct1Ack(true)` (`v1/chunked/states.rs:175-186`), and
+  `EkReceivedCt1Sampled` takes transition (12) on it (`v1/chunked/states.rs:465-474`). The code
+  gives no reason. No sender builds `Ct1Ack(false)`, and the wire format cannot carry it: the
+  serializer drops the flag (`v1/chunked/states/serialize.rs:128`), and the deserializer always
+  gives `Ct1Ack(true)` (`v1/chunked/states/serialize.rs:208`).
+* Effect: in a normal run the arm is never reached. The peer enters `EkSentCt1Received` only on
+  a `Ct2` chunk (`v1/chunked/states.rs:338-344`), and only `Ct2Sampled` sends one
+  (`v1/chunked/states.rs:267`). No transition leads from `Ct2Sampled` back to
+  `EkReceivedCt1Sampled` at the same epoch. A lost `EkCt1Ack` does not need the arm either,
+  because `Ct1Received` sends an `EkCt1Ack` chunk on every `send`
+  (`v1/chunked/states.rs:162-173`).
+
+  Outside a normal run the arm can be reached. Three examples:
+  - (a) The peer, in `Ct1Received`, gets a `Ct2` chunk that the receiver did not send. The peer
+    checks no MAC or hash on this first chunk (`v1/chunked/send_ek.rs:165-180`, §2.5 p. 14).
+    It enters `EkSentCt1Received` and sends `Ct1Ack(true)`.
+  - (b) The receiver calls `recv` again with its earlier `EkReceivedCt1Sampled` state, while
+    the peer is in `EkSentCt1Received`. A caller can do this because `spqr::send` and
+    `spqr::recv` take the serialized state by reference (`lib.rs:264`, `lib.rs:355`).
+  - (c) The receiver gets a `Ct1Ack` message that the peer did not send.
+
+  In (a) and (b), assume also that no older message arrives. Then §2.5 stalls: the peer sends
+  `None`, and the receiver sends `Ct1` chunks, which the peer ignores (p. 15), and waits for
+  `EkCt1Ack` (p. 21). The code takes transition (12) instead. Whether the session then completes
+  is not analyzed. In (b), the new `ct2` encoder equals the first one, because `encaps2` and
+  `mac_ct` take no random input (`v1/unchunked/send_ct.rs:177-197`, `incremental_mlkem768.rs:71`,
+  `authenticator.rs:66`). It starts again at chunk index 0 (`encoding/polynomial.rs:709`).
+
+  §2.5 also takes transition (12) on any `EkCt1Ack` message with the receiver's epoch, without
+  reading its chunk (p. 21). This compares one transition. It is not a security result.
+* Proved: `recv_of_eq_refines` on `EkReceivedCt1Sampled` and `Ct1Ack true` gives `Ct2Sampled`
+  with no key. The theorems do not cover `send` or runs, so the claim that the arm is never
+  reached is not proved.
+
+### Deviation 3: an `Ek` chunk in `Ct1Acknowledged`
+
+* §2.5: *Ct1Acknowledged.Receive* acts only on `EkCt1Ack` (pp. 21-22).
+* Code: `Ek` chunks go to the same decoder as `EkCt1Ack` chunks. When the decoder completes,
+  the code runs the check of transition (11), and if the check passes, it takes the step of
+  (11) (`v1/chunked/states.rs:486-507`). The comment at `v1/chunked/states.rs:486-489` gives
+  the reason: messages can arrive out of order.
+* Effect: the receiver is in `Ct1Acknowledged` after an `EkCt1Ack` chunk that did not complete
+  its decoder (transition (8)). In a normal run, an `Ek` chunk that arrives now was sent before
+  that `EkCt1Ack` chunk, because it sends `Ek` chunks in `HeaderSent` and then `EkCt1Ack` chunks in
+  `Ct1Received` (`v1/chunked/states.rs:150-173`). Both come from one encoder, which
+  `v1/chunked/send_ek.rs:141` moves from `HeaderSent` into `Ct1Received`. §2.5 drops the late
+  chunk: its decoder keeps the chunks from `Ct1Sampled` (p. 20) and then adds only `EkCt1Ack`
+  chunks (pp. 21-22). The code adds it. If the late chunk has an index that the decoder lacks,
+  the code can complete `ek` with fewer `EkCt1Ack` chunks than §2.5 needs. Outside a normal
+  run, the code also adds an `Ek` chunk that the peer did not send. If the decoder then
+  completes with a key that fails the check, `recv` returns `Err`.
+* Proved: `recv_of_eq_refines` on `Ct1Acknowledged` and an `Ek` chunk. If no message completes,
+  the state stays. If the completed message passes `ek_matches_header`, the code moves to
+  `Ct2Sampled` with no key. If it does not pass, the result is `Err`. The claims under *Effect*
+  are not proved.
 
 ## References
 
