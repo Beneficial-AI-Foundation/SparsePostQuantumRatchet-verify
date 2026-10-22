@@ -229,12 +229,17 @@ public import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallMut
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallOnce
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedMessage
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
@@ -268,6 +273,7 @@ public import Spqr.Specs.Lib.Direction.Switch
 public import Spqr.Specs.Lib.EmptyState
 public import Spqr.Specs.Lib.Error.From
 public import Spqr.Specs.Lib.InitInner
+public import Spqr.Specs.Lib.InitialState
 public import Spqr.Specs.Lib.MsgPreamble
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
@@ -308,6 +314,8 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
+public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.IntoPb
