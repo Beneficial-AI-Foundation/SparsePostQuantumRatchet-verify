@@ -15,27 +15,16 @@ import Spqr.Specs.Aeneas.ResultExpect
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ct::{NoHeaderReceived}::new`
 
-`NoHeaderReceived::new` builds the very first state of the ciphertext-sending (B→A) side of the
-*chunked* V1 ratchet.  It wraps the unchunked state of the same name and adds the erasure-coding
-machinery needed to reassemble A's header out of fixed-size chunks:
+`NoHeaderReceived::new` builds the initial B→A state of the *chunked* V1 ratchet: the
+unchunked `NoHeaderReceived` (`uc`, epoch `1` with a fresh `Authenticator` from `auth_key`)
+plus a `PolyDecoder` (`receiving_hdr`) for the `HEADER_SIZE + MACSIZE = 64 + 32 = 96`-byte
+header.
 
-  1. `uc` — the unchunked `NoHeaderReceived` (epoch `1` plus a fresh `Authenticator` derived
-     from `auth_key`), obtained by `unchunked::NoHeaderReceived::new(auth_key)`;
-  2. `receiving_hdr` — a `PolyDecoder` sized for the incoming header, i.e. for
-     `HEADER_SIZE + MACSIZE = 64 + 32 = 96` bytes.
+`PolyDecoder::new` fails only on odd lengths; `96` is even, so the Rust `.expect` never
+panics and the decoder needs `48` points, starts with `16` empty polynomials, and is incomplete.
+`HEADER_SIZE = 64` comes from `HEADER_SIZE_spec`.
 
-`PolyDecoder::new(len)` only fails when `len` is odd (`Err MessageLengthEven`), since every
-GF(2¹⁶) point packs two bytes.  Because `96` is even, the `Result` is always `Ok` and the
-`.expect("should be able to decode header size")` in the Rust source can never panic; the
-resulting decoder needs `96 / 2 = 48` points, starts with all `16` polynomials empty, and is
-not yet complete.
-
-`HEADER_SIZE` is defined in the Rust source as `libcrux_ml_kem::mlkem768::incremental::pk1_len()`
-(`= 64`, the size of `ρ ‖ H(ek)`); its value is provided by `HEADER_SIZE_spec`.
-
-The only way the construction can fail is if `auth_key` prefixed by the 32-byte zero
-root key cannot fit in memory, hence the precondition `auth_key.length + 32 ≤ Usize.max`
-inherited from the unchunked constructor.
+The precondition `auth_key.length + 32 ≤ Usize.max` is inherited from the unchunked constructor.
 
 **Source**: spqr/src/v1/chunked/send_ct.rs (lines 71:4-79:5)
 -/
@@ -49,40 +38,19 @@ namespace spqr.v1.chunked.send_ct.NoHeaderReceived
 open List core.num.U64 authenticator.Authenticator in
 /-- **Spec theorem for `spqr.v1.chunked.send_ct.NoHeaderReceived.new`**:
 
-• Takes a byte slice `auth_key` (the shared authentication key agreed by both parties).
-• Computes `i1 = HEADER_SIZE + MACSIZE = 64 + 32 = 96` (no overflow: both are small constants).
-• Calls `PolyDecoder.Insts.SpqrEncodingDecoder.new 96`, which returns
-    `Ok { pts_needed := 48, pts := replicate 16 ∅, is_complete := false }`
-  because `96` is even.
-• Delegates to `unchunked.send_ct.NoHeaderReceived.new auth_key` for the inner state `nhr`.
-• Unwraps the decoder with `Result.expect`, which succeeds on `Ok`.
-• Returns `{ uc := nhr, receiving_hdr := pd }`.
+• Computes `i1 = HEADER_SIZE + MACSIZE = 96` (no overflow) and calls `PolyDecoder.new 96`,
+  which is `Ok` since `96` is even.
+• Builds the inner state via `unchunked.send_ct.NoHeaderReceived.new auth_key`, unwraps the
+  decoder with `Result.expect`, and returns `{ uc := nhr, receiving_hdr := pd }`.
+• Requires `auth_key.length + 32 ≤ Usize.max`; then the call never panics.
 
-• Requires that `auth_key` prefixed by the 32 zero bytes of the empty initial authenticator
-  state fits in memory: `auth_key.length + 32 ≤ Usize.max`.  Under this hypothesis the call
-  always succeeds (no panic).
+Postcondition: `uc.epoch = 1`, both authenticator keys have length `32` and their
+concatenation equals the `hkdf` derivation from the zero root key and `auth_key`;
+`receiving_hdr` needs `48` points, has `16` default polynomials, and is not complete.
 
-The result satisfies the postcondition:
-
-  `result.uc.epoch = 1`
-  `result.uc.auth.root_key.length = 32`
-  `result.uc.auth.mac_key.length = 32`
-  `result.uc.auth.root_key.val ++ result.uc.auth.mac_key.val =
-       hkdf (replicate 32 0#u8) (replicate 32 0#u8 ++ auth_key.val)
-         (updateLabel ++ to_be_bytes 1#u64) 64`
-  `result.receiving_hdr.pts_needed.val = 48`
-  `result.receiving_hdr.pts.val = replicate 16 default`
-  `result.receiving_hdr.is_complete = false`
-
-The proof unfolds `new` and runs `step*` (using the registered `HEADER_SIZE_spec` and the
-`new_spec`s for the decoder and the unchunked state).  The `HEADER_SIZE + MACSIZE` overflow
-side goal is closed with `MACSIZE_spec` and `scalar_tac`.  Knowing `i1 = 96` is even, the
-decoder's postcondition reduces to its `Ok` branch; case analysis on the `PolyDecoder::new`
-result rules out `Err`, `expect_ok_spec` unwraps the decoder, and the conjuncts are assembled
-from the collected postconditions (`pts_needed = 96 / 2 = 48` by `rfl`).
-
-**Source**: spqr/src/v1/chunked/send_ct.rs (lines 71:4-79:5)
--/
+Proof: unfold `new`, `step*`; close the overflow goal with `MACSIZE_spec`/`scalar_tac`;
+rewrite `i1 = 96` so the decoder postcondition reduces to the `Ok` branch, rule out `Err`,
+unwrap with `expect`, and assemble the conjuncts (`pts_needed = 48` by `rfl`). -/
 @[step]
 theorem new_spec (auth_key : Slice U8)
     (h : auth_key.length + 32 ≤ Usize.max) :
