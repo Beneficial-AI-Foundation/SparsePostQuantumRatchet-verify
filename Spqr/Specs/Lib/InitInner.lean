@@ -99,9 +99,9 @@ theorem init_inner_spec_v1_a2b (auth_key : Slice Std.U8)
 • When `v = Version.V1` and `d = Direction.B2A`, the function initialises party B's side of the
   ratchet via `States.init_b auth_key`, serialises the state via `States.into_pb`, and wraps the
   result in `some (Inner.V1 ·)`.
-• The function succeeds whenever `auth_key.length + 32 ≤ Usize.max` and the external
-  `pk1_len` axiom returns `64` (the ML-KEM-768 header size, assumed via `h_pk1` since
-  `pk1_len` is an opaque external axiom).
+• The function succeeds whenever `auth_key.length + 32 ≤ Usize.max`.  The ML-KEM-768
+  header size comes from `libcrux_ml_kem.mlkem768.incremental.pk1_len`, which is modelled
+  concretely in `SrcTranslated/FunsExternal.lean` as `ok 64`, so no extra hypothesis is needed.
 • The returned `V1State` contains a `NoHeaderReceived` inner state, reflecting the initial
   send-ciphertext phase for party B (awaiting a header from A).
 
@@ -113,8 +113,7 @@ The result satisfies:
 -/
 @[step]
 theorem init_inner_spec_v1_b2a (auth_key : Slice Std.U8)
-    (h_len : auth_key.length + 32 ≤ Usize.max)
-    (h_pk1 : libcrux_ml_kem.mlkem768.incremental.pk1_len = ok 64#usize) :
+    (h_len : auth_key.length + 32 ≤ Usize.max) :
     init_inner proto.pq_ratchet.Version.V1 proto.pq_ratchet.Direction.B2A auth_key
     ⦃ (result : Option proto.pq_ratchet.pq_ratchet_state.Inner) =>
       match result with
@@ -126,8 +125,7 @@ theorem init_inner_spec_v1_b2a (auth_key : Slice Std.U8)
     v1.chunked.send_ct.NoHeaderReceived.new
     v1.unchunked.send_ct.NoHeaderReceived.new
     v1.chunked.send_ct.serialize.NoHeaderReceived.into_pb
-  unfold incremental_mlkem768.HEADER_SIZE
-  rw [h_pk1]
+  unfold incremental_mlkem768.HEADER_SIZE libcrux_ml_kem.mlkem768.incremental.pk1_len
   step*
   · simp only [UScalar.ofNatCore_val_eq, authenticator.Authenticator.MACSIZE, Nat.reduceAdd]
     scalar_tac
@@ -158,8 +156,7 @@ theorem init_inner_spec_v1_b2a (auth_key : Slice Std.U8)
 
 • When `v = Version.V1`, the function succeeds for either direction and returns
   `some (Inner.V1 vs)` for some `V1State` `vs`.
-• Requires `auth_key.length + 32 ≤ Usize.max` (needed by both A2B and B2A branches)
-  and `pk1_len = ok 64` (needed by the B2A branch for ML-KEM-768 header size).
+• Requires `auth_key.length + 32 ≤ Usize.max` (needed by both A2B and B2A branches).
 • The postcondition asserts existence of the inner state **and** its direction-specific
   shape:
   - For `A2B`: the inner state is `KeysUnsampled`.
@@ -177,8 +174,7 @@ direction.
 -/
 @[step]
 theorem init_inner_spec_v1 (d : proto.pq_ratchet.Direction) (auth_key : Slice Std.U8)
-    (h_len : auth_key.length + 32 ≤ Usize.max)
-    (h_pk1 : libcrux_ml_kem.mlkem768.incremental.pk1_len = ok 64#usize) :
+    (h_len : auth_key.length + 32 ≤ Usize.max) :
     init_inner proto.pq_ratchet.Version.V1 d auth_key
     ⦃ (result : Option proto.pq_ratchet.pq_ratchet_state.Inner) =>
       ∃ vs, result = some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs) ∧
@@ -195,7 +191,7 @@ theorem init_inner_spec_v1 (d : proto.pq_ratchet.Direction) (auth_key : Slice St
       | some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), ⟨ku, hku⟩ =>
         ⟨vs, rfl, fun _ => ⟨ku, hku⟩, nofun⟩
   | B2A =>
-    exact Aeneas.Std.WP.spec_mono (init_inner_spec_v1_b2a auth_key h_len h_pk1) fun r hr =>
+    exact Aeneas.Std.WP.spec_mono (init_inner_spec_v1_b2a auth_key h_len) fun r hr =>
       match r, hr with
       | some (proto.pq_ratchet.pq_ratchet_state.Inner.V1 vs), ⟨nhr, hnhr⟩ =>
         ⟨vs, rfl, nofun, fun _ => ⟨nhr, hnhr⟩⟩
