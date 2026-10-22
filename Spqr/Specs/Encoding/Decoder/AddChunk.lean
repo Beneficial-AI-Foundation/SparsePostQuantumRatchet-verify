@@ -8,7 +8,7 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.LinearFactors.Degree

@@ -9,7 +9,7 @@ import Spqr.Specs.Aeneas.TryFromSliceToArray
 public import Spqr.Specs.Aeneas.VecIndexRangeFull
 public import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
@@ -97,28 +97,41 @@ theorem body_spec
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
     have h_i_lt_16 : iter.start.val < 16 := by omega
-    have h_mod : (idx.val * 16 + iter.start.val) % 16 = iter.start.val := by omega
-    have h_div : (idx.val * 16 + iter.start.val) / 16 = idx.val := by omega
-    have h_i_mod_self : iter.start.val % 16 = iter.start.val := by omega
-    step*
-    · grind
-    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, getElem!_pos,
-      List.length_eq_zero_iff, Order.add_one_le_iff,
-      not_true_eq_false, reduceCtorEq, false_and, implies_true, and_self,
-       Nat.mul_add_mod_self_right, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one,
-      Nat.reduceAdd, UScalarTy.U16_numBits_eq, UScalarTy.Usize_numBits_eq,
-      System.Platform.sixteen_le_numBits, UScalar.cast_val_mod_pow_greater_numBits_eq,
-      List.getElem!_eq_getElem?_getD, getElem?_pos, Option.getD_some, Bvify.U16.UScalar_bv,
-      List.append_assoc, List.cons_append, List.nil_append, List.append_cancel_left_eq,
-      List.cons.injEq, and_true, Array.getElem!_Usize_eq, alloc.vec.Vec.getElem!_Nat_eq, true_and,
-      and_assoc, exists_and_left, ↓existsAndEq, exists_eq_left']
-      have h_i_mod : iter.start.val % 16 = iter.start.val := by omega
-      refine ⟨g, ?_, ?_⟩
-      · simp only [UScalar.cast_val_eq, UScalarTy.U8_numBits_eq, Nat.reducePow,
-                  ‹i3.val = _›, Nat.shiftRight_eq_div_pow]
-        grind
-      · grind
-  · grind
+    step as ⟨i1, h_i1⟩
+    step as ⟨i2, h_i2⟩
+    step as ⟨total, h_total⟩
+    step as ⟨poly, h_poly⟩
+    step as ⟨poly_idx, h_pidx⟩
+    have h_i1_val : i1.val = idx.val := by rw [h_i1]; simp
+    have h_poly_eq : poly = iter.start :=
+      UScalar.eq_of_val_eq (by rw [h_poly, h_total, h_i2, h_i1_val]; omega)
+    have h_pidx_val : poly_idx.val = idx.val := by rw [h_pidx, h_total, h_i2, h_i1_val]; omega
+    subst h_poly_eq
+    step with point_at_spec as ⟨g, self1, h_pa⟩
+    obtain ⟨h_idx1, h_pa⟩ := h_pa
+    step as ⟨i3, h_i3, _⟩
+    step as ⟨i4, h_i4⟩
+    have : out.val.length < Usize.max := by
+      simp only [alloc.vec.Vec.length] at h_out_overflow; omega
+    step as ⟨out1, h_out1⟩
+    have : out1.val.length < Usize.max := by
+      rw [h_out1]; simp only [List.length_append, List.length_singleton]
+      simp only [alloc.vec.Vec.length] at h_out_overflow; omega
+    step as ⟨i5, h_i5⟩
+    step as ⟨out2, h_out2⟩
+    refine ⟨h_lt, h_start1, h_end1, g, i4, i5, by rw [h_out2, h_out1]; simp, ?_, h_idx1, ?_⟩
+    · -- `hi = g.value >>> 8` and `lo = g.value % 256` recombine to `g.value`
+      have hv : g.value.val < 2 ^ 16 := g.value.hBounds
+      rw [h_i4, h_i5, UScalar.cast_val_eq, UScalar.cast_val_eq, h_i3]
+      simp only [UScalarTy.U8_numBits_eq, Nat.shiftRight_eq_div_pow]
+      omega
+    · -- `point_at`'s postcondition, at `poly = iter.start` and `poly_idx = idx`
+      cases hs : self.s <;> cases hs1 : self1.s <;> simp only [hs, hs1] at h_pa ⊢ <;>
+        simpa [h_pidx_val, Array.getElem!_Usize_eq, Array.getElem!_Nat_eq,
+          alloc.vec.Vec.getElem!_Nat_eq] using h_pa
+  · obtain ⟨h_opt_eq, -⟩ := h_none h_lt
+    rw [h_opt_eq, WP.spec_ok]
+    exact ⟨rfl, rfl, h_lt⟩
 end spqr.encoding.polynomial.PolyEncoder.chunk_at_loop
 
 /-!
@@ -138,6 +151,18 @@ open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomi
 namespace spqr.encoding.polynomial.PolyEncoder.chunk_at_loop
 
 /-! ## Spec theorem for the chunk_at serialization loop -/
+
+/-- Appending a byte pair leaves the earlier bytes unchanged. -/
+private lemma getElem!_append_pair_of_lt {l : List U8} {hi lo : U8} {p : Nat}
+    (hp : p < l.length) : (l ++ [hi, lo])[p]! = l[p]! := by
+  rw [List.getElem!_eq_getElem?_getD, List.getElem!_eq_getElem?_getD,
+    List.getElem?_append_left hp]
+
+private lemma getElem!_append_pair_hi (l : List U8) (hi lo : U8) :
+    (l ++ [hi, lo])[l.length]! = hi := by simp
+
+private lemma getElem!_append_pair_lo (l : List U8) (hi lo : U8) :
+    (l ++ [hi, lo])[l.length + 1]! = lo := by simp
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.chunk_at_loop`**:
 
@@ -234,13 +259,19 @@ theorem loop_spec
     simp only at  h_pre' h_pts_stable' ⊢
     dsimp at h_poly_pre' h_coeff_inv' h_lagrange'
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    -- value-level forms of the invariant's scalar facts, for `omega`
+    have h_iter_ge'' : iter.start.val ≤ iter'.start.val := h_iter_ge
+    have h_start_le'' : iter'.start.val ≤ iter'.end.val := h_start_le'
+    have h_out_len'' : out'.val.length = out.val.length + 2 * (iter'.start.val - iter.start.val) :=
+      h_out_len'
+    have h_out_ovf : out.val.length + 2 * iter.end.val ≤ Usize.max := h_out_overflow
     have h_coeff' : ∀ polys, self'.s = .Polys polys →
         ∀ (j : Nat), j < 16 →
           (polys[j]!).coefficients.length + 1 ≤ Usize.max :=
       h_coeff_inv'
     by_cases h_iter_lt : iter'.start.val < iter'.end.val
     · have h_body := body_spec idx iter' self' out'
-        (by omega) h_idx_overflow (by grind) h_adm' h_coeff'
+        (by omega) h_idx_overflow (by simp only [alloc.vec.Vec.length]; omega) h_adm' h_coeff'
       apply WP.spec_mono h_body
       intro cf h_cf
       match cf with
@@ -251,12 +282,15 @@ theorem loop_spec
       | ControlFlow.cont (iter'', self'', out'') =>
         simp only [] at h_cf ⊢
         obtain ⟨h_lt, h_start1, h_end1, g, hi, lo, h_out_eq, h_encode, h_idx1, h_match⟩ := h_cf
+        have h_start1' : iter''.start.val = iter'.start.val + 1 := h_start1
+        have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
         constructor
         · refine ⟨by rw [h_end1]; exact h_end',
-                 by grind,
-                 by grind,
+                 show iter.start.val ≤ iter''.start.val by omega,
+                 show iter''.start.val ≤ iter''.end.val by omega,
                  h_idx1.trans h_idx',
-                 by rw [h_out_eq]; simp [h_out_len', h_start1]; grind,
+                 by rw [h_out_eq]; simp only [List.length_append, List.length_cons,
+                   List.length_nil]; omega,
                  ?_, ?_, fun j hj1 hj2 => ?_, fun polys h_polys j hj1 hj2 => ?_,
                  ?_, ?_, ?_⟩
           · intro polys h_polys
@@ -270,38 +304,50 @@ theorem loop_spec
               simp only [h_s] at h_match
               by_cases h_cache :
                   idx < (pts'[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2] at h_pts
-                exact h_adm' pts (by rw [h_s] at h_pts; grind) j hj
-              · simp only [if_neg h_cache] at h_match
+                exact h_adm' pts h_pts j hj
+              · simp only [ite_eq_right h_cache] at h_match
                 simp [h_pts] at h_match
             | Polys polys' =>
               simp only [h_s] at h_match
               rw [h_match.2] at h_pts
               simp [h_s] at h_pts
-          · by_cases hj_lt : j < iter'.start.val
-            · grind
-            · have hj_eq : j = iter'.start.val := by omega
-              subst hj_eq
-              grind
-          · by_cases hj_lt : j < iter'.start.val
+          · -- the bytes of entry `j`: unchanged for `j < iter'.start`, new for `j = iter'.start`
+            simp only [alloc.vec.Vec.length, h_out_eq]
+            by_cases hj_lt : j < iter'.start.val
+            · obtain ⟨g', hg'⟩ := h_pre' j hj1 hj_lt
+              refine ⟨g', ?_⟩
+              rw [getElem!_append_pair_of_lt (by omega), getElem!_append_pair_of_lt (by omega)]
+              simpa only [alloc.vec.Vec.length] using hg'
+            · obtain rfl : j = iter'.start.val := by omega
+              have h1 : out.val.length + 2 * (iter'.start.val - iter.start.val) = out'.val.length :=
+                h_out_len'.symm
+              refine ⟨g, ?_⟩
+              rw [h1, getElem!_append_pair_hi, getElem!_append_pair_lo]
+              exact h_encode
+          · simp only [alloc.vec.Vec.length, h_out_eq]
+            by_cases hj_lt : j < iter'.start.val
             · have := h_poly_pre' polys h_polys j hj1 hj_lt
-              grind
-            · have hj_eq : j = iter'.start.val := by omega
-              subst hj_eq
+              rw [getElem!_append_pair_of_lt (by omega), getElem!_append_pair_of_lt (by omega)]
+              simpa only [alloc.vec.Vec.length] using this
+            · obtain rfl : j = iter'.start.val := by omega
+              have h1 : out.val.length + 2 * (iter'.start.val - iter.start.val) = out'.val.length :=
+                h_out_len'.symm
               have h_self'_eq := h_stable' polys h_polys
               subst h_self'_eq
               simp only [h_polys] at h_match
-              rw [← h_match.1]; simp [GF16.toGF216]; congr 1; grind
+              rw [h1, getElem!_append_pair_hi, getElem!_append_pair_lo, h_encode, ← h_match.1]
+              simp [GF16.toGF216]
           · intro pts_new h_pts_new
             cases h_s : self'.s with
             | Points pts_curr =>
               simp only [h_s] at h_match
               by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2]
                 exact h_pts_stable' pts_curr h_s
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 simp [h_pts_new] at h_match
             | Polys polys_curr =>
               simp only [h_s] at h_match
@@ -312,10 +358,10 @@ theorem loop_spec
             | Points pts_curr =>
               simp only [h_s] at h_match
               by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2] at h_polys_coeff
                 simp [h_s] at h_polys_coeff
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 simp only [h_polys_coeff] at h_match
                 exact h_match.2.1 j hj
             | Polys polys_curr =>
@@ -327,10 +373,10 @@ theorem loop_spec
             | Points pts_curr =>
               simp only [h_s] at h_match
               by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
-              · simp only [if_pos h_cache] at h_match
+              · simp only [ite_eq_left h_cache] at h_match
                 rw [h_match.2] at h_polys_new
                 simp [h_s] at h_polys_new
-              · simp only [if_neg h_cache] at h_match
+              · simp only [ite_eq_right h_cache] at h_match
                 have h_self'_eq := h_pts_stable' pts_curr h_s
                 subst h_self'_eq
                 have h_pts_eq : pts_curr = pts_init := by
@@ -342,19 +388,22 @@ theorem loop_spec
               simp only [h_s] at h_match
               rw [h_match.2] at h_polys_new
               exact h_lagrange' pts_init h_pts_init polys_new h_polys_new j hj
-        · grind
+        · show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val
+          omega
     · unfold body
       step with core.iter.range.IteratorRange.next_Usize_spec' iter' as
         ⟨opt, iter1', h_none, h_some⟩
       obtain ⟨h_opt_eq, _⟩ := h_none h_iter_lt
       subst h_opt_eq
       dsimp
-      refine (WP.spec_ok _).mpr ⟨h_idx', ?_, fun j hj1 hj2 => h_pre' j hj1 (by grind), ?_⟩
-      · simp [h_out_len']; grind
+      have h_start_eq : iter'.start.val = iter.end.val := by omega
+      refine (WP.spec_ok _).mpr ⟨h_idx', ?_, fun j hj1 hj2 => h_pre' j hj1 (by omega), ?_⟩
+      · change out'.val.length = out.val.length + 2 * (iter.end.val - iter.start.val)
+        omega
       · cases h_s : self.s with
         | Polys polys =>
           exact ⟨h_stable' polys h_s, fun j hj1 hj2 =>
-            h_poly_pre' polys h_s j hj1 (by grind)⟩
+            h_poly_pre' polys h_s j hj1 (by omega)⟩
         | Points pts =>
           intro polys' h2 j hj
           exact h_lagrange' pts h_s polys' (by simpa using h2) j hj
@@ -439,16 +488,23 @@ theorem chunk_at_spec
                   C (((pts[j]!).value[k]!).toGF216) *
                     scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k ⦄ := by
   unfold chunk_at
-  step*
-  · simp [alloc.vec.Vec.with_capacity]
-    grind
-  · simp_all  [alloc.vec.Vec.with_capacity, alloc.vec.Vec.new,
-      List.length_nil]
-  simp only [core.result.Result.expect]
-  split
-  · split
-    · simp_all only [Array.getElem!_Nat_eq, bind_ok]; grind
-    · simp_all only [Array.getElem!_Nat_eq, bind_ok]; grind
-  · nomatch ‹core.result.Result.Err _ = core.result.Result.Ok _›
+  have h_wc : (alloc.vec.Vec.with_capacity U8 32#usize).length = 0 := by
+    simp [alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]
+  step with chunk_at_loop.loop_spec as ⟨self1, out1, h_idx1, h_len1, h_bytes1, h_match1⟩
+  simp only [h_wc, Nat.sub_zero, zero_add] at h_len1 h_match1
+  step as ⟨s, h_s⟩
+  step as ⟨r, arr, h_r, h_arr⟩
+  rw [h_r]
+  simp only [core.result.Result.expect, bind_ok, WP.spec_ok]
+  refine ⟨trivial, by simp, h_idx1, ?_⟩
+  cases hs : self.s with
+  | Polys polys =>
+    simp only [hs] at h_match1 ⊢
+    obtain ⟨h_eq, h_bytes⟩ := h_match1
+    refine ⟨h_eq, fun j hj => ?_⟩
+    simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_bytes j (Nat.zero_le _) hj
+  | Points pts =>
+    simp only [hs] at h_match1 ⊢
+    exact h_match1
 
 end spqr.encoding.polynomial.PolyEncoder

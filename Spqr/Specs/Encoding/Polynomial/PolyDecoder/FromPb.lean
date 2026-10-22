@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import Spqr.Math.Poly.ModByMonic
+import Spqr.Auxiliary.Aeneas.Result
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceChunksExact
 public import Spqr.Math.List
@@ -13,10 +14,11 @@ public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
@@ -420,6 +422,7 @@ theorem body_spec
       simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val] at *
       scalar_tac
     · step as ⟨i5, h_i5⟩
+      apply WP.spec_bind_ok
       step with core.slice.Slice.chunks_exact_spec_with_content (alloc.vec.Vec.deref pts) 4#usize
         (by decide) as ⟨iter2, h_c4, h_cn, _, h_content⟩
       have h_mod : pts.val.length % 4 = 0 := by
@@ -704,10 +707,11 @@ theorem from_pb_spec
     case hl =>
       apply core.array.from_fn_loop_const
       · intro g i
-        simp [from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
+        simp only [from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
           sorted_vec.SortedSet.new]
+        exact bind_ok _ _
       · scalar_tac
-    case hlen => simp
+    case hlen => rfl
     step with from_pb_loop0.loop_spec { start := 0#usize, «end» := 16#usize } pb.pts_needed
       pb.pts pb.is_complete out_pts (by simp [h16]) (by simp) (by simp) h_pts_overflow
       (fun j hj => absurd hj (by simp)) as ⟨r, h_r⟩
@@ -718,5 +722,228 @@ theorem from_pb_spec
         fun _ _ => ⟨h_pn, h_ic, by simp, h_ch⟩⟩
     · obtain ⟨rfl, j, _, hj, hbad⟩ := h_r
       exact ⟨fun _ => rfl, fun _ _ _ _ => rfl, fun _ hall => absurd (hall j hj) hbad⟩
+
+end spqr.encoding.polynomial.PolyDecoder
+
+/-! # `from_pb` establishes the `PointsValid` invariant
+
+Each slot is rebuilt from scratch (starting from the empty set) by a chain of
+`SortedSet::push` calls, each of which preserves `SlotSorted`
+(`PolyDecoder.push_spec_sorted`).  Hence every slot of the resulting decoder is
+`SlotSorted`, i.e. `PointsValid` holds. -/
+
+namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
+
+/-- One step of the inner loop preserves `SlotSorted`. -/
+theorem body_spec_sorted
+    (iter : core.slice.iter.ChunksExact U8)
+    (v : sorted_vec.SortedSet Pt)
+    (h_chunks : ∀ c ∈ iter.chunks, c.val.length = 4)
+    (h_push_cap : v.length + 1 ≤ Usize.max)
+    (h_sorted : SlotSorted v.val) :
+    body iter v ⦃ cf =>
+      match cf with
+      | ControlFlow.done v' => SlotSorted v'.val
+      | ControlFlow.cont (_, v1) => SlotSorted v1.val ⦄ := by
+  unfold body core.slice.iter.IteratorChunksExact.next
+  rcases h : iter.chunks with _ | ⟨c, rest⟩
+  · simpa
+  · have hc : c.val.length = 4 := h_chunks c (by simp [h])
+    step as ⟨r, a0, hr0, ha0⟩
+    step as ⟨a, ha⟩
+    step as ⟨p, hpx, hpy⟩
+    step with PolyDecoder.push_spec_sorted v p h_push_cap as ⟨_, v1, h_v1⟩
+    exact h_v1 h_sorted
+
+/-- The inner loop preserves `SlotSorted`. -/
+theorem loop_spec_sorted
+    (iter : core.slice.iter.ChunksExact U8)
+    (v : sorted_vec.SortedSet Pt)
+    (h_chunks : ∀ c ∈ iter.chunks, c.val.length = 4)
+    (h_v_room : v.length + iter.chunks.length + 1 ≤ Usize.max)
+    (h_sorted : SlotSorted v.val) :
+    from_pb_loop0_loop0 iter v ⦃ (v_result : sorted_vec.SortedSet Pt) =>
+      SlotSorted v_result.val ⦄ := by
+  unfold from_pb_loop0_loop0
+  apply loop.spec_decr_nat
+    (measure := fun (x : core.slice.iter.ChunksExact U8 × sorted_vec.SortedSet Pt) =>
+                  x.1.chunks.length)
+    (inv := fun (x : core.slice.iter.ChunksExact U8 × sorted_vec.SortedSet Pt) =>
+        ∃ (n : Nat), n ≤ iter.chunks.length ∧
+          x.1.chunks = iter.chunks.drop n ∧
+          x.2.val.length ≤ v.val.length + n ∧
+          SlotSorted x.2.val)
+  · rintro ⟨iter', v'⟩ ⟨n, h_n_le, h_drop, h_len, h_sorted'⟩
+    simp only at h_n_le h_drop h_len h_sorted' ⊢
+    have h_chunks' : ∀ c ∈ iter'.chunks, c.val.length = 4 := by
+      rw [h_drop]
+      exact fun c hc => h_chunks c (List.mem_of_mem_drop hc)
+    have h_cap' : v'.length + 1 ≤ Usize.max := by
+      simp only [alloc.vec.Vec.length] at *; omega
+    apply WP.spec_mono (WP.spec_and (body_spec iter' v' h_chunks' h_cap')
+      (body_spec_sorted iter' v' h_chunks' h_cap' h_sorted'))
+    rintro (⟨iter1, v1⟩ | v_final) ⟨h_cf, h_s⟩
+    · obtain ⟨c, h_cons, p, _, _, h_push⟩ := h_cf
+      rw [h_drop] at h_cons
+      have h_nlt : n < iter.chunks.length := by
+        have := congrArg List.length h_cons
+        simp only [List.length_drop, List.length_cons] at this
+        omega
+      have h_drop1 : iter1.chunks = iter.chunks.drop (n + 1) := by
+        rw [← List.drop_drop, h_cons]
+        rfl
+      have h_len1 : v1.val.length ≤ v'.val.length + 1 := by
+        split at h_push
+        · simp [h_push]
+        · split at h_push
+          · simp [h_push]
+          · simp only [h_push, List.length_append, List.length_dropLast,
+              List.length_singleton]
+            omega
+          · obtain ⟨i, hi, h | ⟨_, h⟩⟩ := h_push <;>
+              simp only [h, List.length_append, List.length_take, List.length_drop,
+                List.length_singleton] <;> omega
+          · exact absurd h_push id
+      simp only at h_s ⊢
+      refine ⟨⟨n + 1, by omega, h_drop1, by omega, h_s⟩, ?_⟩
+      rw [h_drop, h_cons]
+      simp
+    · exact h_s
+  · exact ⟨0, by omega, rfl, by simp, h_sorted⟩
+
+end spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0
+
+namespace spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
+
+/-- One step of the outer loop preserves `PointsValid` (the freshly decoded slot is
+`SlotSorted` because it is built from the empty set by pushes). -/
+theorem body_spec_valid
+    (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8)) (b : Bool)
+    (iter : core.ops.range.Range Usize)
+    (out_pts : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (h_end_le_v : iter.end ≤ v.length)
+    (h_end_le_16 : iter.end.val ≤ 16)
+    (h_pts_overflow : ∀ (j : Nat), j < v.length → (v[j]!).length + 4 ≤ Usize.max)
+    (h_valid : PointsValid out_pts) :
+    body i v b iter out_pts ⦃ cf =>
+      match cf with
+      | ControlFlow.done r =>
+          match r with
+          | core.result.Result.Ok d => PointsValid d.pts
+          | core.result.Result.Err _ => True
+      | ControlFlow.cont (_, out_pts') => PointsValid out_pts' ⦄ := by
+  unfold body
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨h_opt_eq, _, _⟩ := h_some h_lt
+    rw [h_opt_eq]
+    have h_i_lt_v : iter.start.val < v.val.length := by
+      simp only [alloc.vec.Vec.length] at h_end_le_v; omega
+    have h_pts_ov := h_pts_overflow iter.start.val h_i_lt_v
+    simp only [sorted_vec.SortedSet.with_capacity, alloc.vec.Vec.len]
+    step as ⟨pts, h_pts⟩
+    have h_pts' : v[iter.start.val]! = pts := by
+      rw [h_pts, alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v.val _ h_i_lt_v]
+    step as ⟨i3, _⟩
+    split
+    · exact (WP.spec_ok _).mpr trivial
+    · step as ⟨i5, _⟩
+      apply WP.spec_bind_ok
+      step with core.slice.Slice.chunks_exact_spec_with_content (alloc.vec.Vec.deref pts) 4#usize
+        (by decide) as ⟨iter2, h_c4, h_cn, _, _⟩
+      have h_deref : (alloc.vec.Vec.deref pts).val = pts.val := by simp [alloc.vec.Vec.deref]
+      rw [h_deref] at h_cn
+      have h_pts_ov' : pts.val.length + 4 ≤ Usize.max := by
+        rw [← h_pts']; exact h_pts_ov
+      step with from_pb_loop0_loop0.loop_spec_sorted iter2 (alloc.vec.Vec.new Pt) h_c4
+        (by rw [h_cn]; simp [alloc.vec.Vec.new]; omega) SlotSorted.nil as ⟨v2, h_v2⟩
+      step*
+      rw [‹a = _›, ‹index_mut_back = _›]
+      have h_ss_sorted : SlotSorted ss.val := by
+        rw [‹ss = _›]; exact h_valid.slot _ (by scalar_tac)
+      exact (h_valid.set _ _ h_ss_sorted).set _ v2 h_v2
+  · obtain ⟨h_opt_eq, rfl⟩ := h_none h_lt
+    rw [h_opt_eq]
+    step*
+
+/-- The outer loop preserves `PointsValid`. -/
+theorem loop_spec_valid
+    (iter : core.ops.range.Range Usize)
+    (i : U32) (v : alloc.vec.Vec (alloc.vec.Vec U8)) (b : Bool)
+    (out_pts : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (h_end_le_v : iter.end ≤ v.length)
+    (h_end_le_16 : iter.end.val ≤ 16)
+    (h_start_le : iter.start ≤ iter.end)
+    (h_pts_overflow : ∀ (j : Nat), j < v.length → (v[j]!).length + 4 ≤ Usize.max)
+    (h_valid : PointsValid out_pts) :
+    from_pb_loop0 iter i v b out_pts ⦃ (result : core.result.Result PolyDecoder
+        encoding.polynomial.PolynomialError) =>
+      match result with
+      | core.result.Result.Ok d => PointsValid d.pts
+      | core.result.Result.Err _ => True ⦄ := by
+  unfold from_pb_loop0
+  apply loop.spec_decr_nat
+    (measure := fun (x : core.ops.range.Range Usize ×
+                       Array (sorted_vec.SortedSet Pt) 16#usize) => x.1.end - x.1.start)
+    (inv := fun (x : core.ops.range.Range Usize ×
+                     Array (sorted_vec.SortedSet Pt) 16#usize) =>
+        x.1.end = iter.end ∧ x.1.start.val ≤ x.1.end.val ∧ PointsValid x.2)
+  · rintro ⟨iter', out_pts'⟩ ⟨h_end', h_le', h_valid'⟩
+    simp only at h_end' h_le' h_valid' ⊢
+    apply WP.spec_mono (WP.spec_and
+      (body_spec i v b iter' out_pts' (by rw [h_end']; exact h_end_le_v)
+        (by rw [h_end']; exact h_end_le_16) h_pts_overflow)
+      (body_spec_valid i v b iter' out_pts' (by rw [h_end']; exact h_end_le_v)
+        (by rw [h_end']; exact h_end_le_16) h_pts_overflow h_valid'))
+    rintro (⟨iter1, out_pts1⟩ | r) ⟨h_cf, h_v⟩
+    · obtain ⟨h_lt, _, h_start1, h_end1, _⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_end1' : iter1.end.val = iter'.end.val := by rw [h_end1]
+      simp only at h_v ⊢
+      exact ⟨⟨h_end1.trans h_end', by omega, h_v⟩, by omega⟩
+    · exact h_v
+  · exact ⟨rfl, h_start_le, h_valid⟩
+
+end spqr.encoding.polynomial.PolyDecoder.from_pb_loop0
+
+namespace spqr.encoding.polynomial.PolyDecoder
+
+/-- **`from_pb` establishes `PointsValid`**: whenever deserialisation succeeds, every slot
+of the resulting decoder has strictly increasing abscissae. -/
+theorem from_pb_spec_valid
+    (pb : proto.pq_ratchet.PolynomialDecoder)
+    (h_pts_overflow : ∀ (j : Nat), j < pb.pts.length →
+        (pb.pts[j]!).length + 4 ≤ Usize.max) :
+    from_pb pb ⦃ (result : core.result.Result
+        encoding.polynomial.PolyDecoder
+        encoding.polynomial.PolynomialError) =>
+      match result with
+      | core.result.Result.Ok decoder => PointsValid decoder.pts
+      | core.result.Result.Err _ => True ⦄ := by
+  unfold from_pb
+  simp only [alloc.vec.Vec.len, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val,
+    Usize.ofNatCore_val_eq, UScalar.ofNatCore_val_eq]
+  split
+  · exact (WP.spec_ok _).mpr trivial
+  · have h16 : pb.pts.val.length = 16 := by simpa using ‹¬¬_›
+    step as ⟨out_pts, h_out⟩
+    case l => exact List.replicate 16 (alloc.vec.Vec.new Pt)
+    case hl =>
+      apply core.array.from_fn_loop_const
+      · intro g i
+        simp only [from_pb.closure.Insts.CoreOpsFunctionFnMutTupleUsizeSortedSetPt.call_mut,
+          sorted_vec.SortedSet.new]
+        exact bind_ok _ _
+      · scalar_tac
+    case hlen => rfl
+    have h_valid0 : PointsValid out_pts := by
+      apply PointsValid_of_forall_nil
+      intro s hs
+      rw [h_out] at hs
+      obtain ⟨_, rfl⟩ := List.mem_replicate.mp hs
+      rfl
+    exact from_pb_loop0.loop_spec_valid { start := 0#usize, «end» := 16#usize } pb.pts_needed
+      pb.pts pb.is_complete out_pts (by simp [h16]) (by simp) (by simp) h_pts_overflow h_valid0
 
 end spqr.encoding.polynomial.PolyDecoder

@@ -9,11 +9,11 @@ import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
-import Mathlib.RingTheory.DedekindDomain.Basic
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Math.Gf16.Irreducible
@@ -62,7 +62,7 @@ private theorem u8_shl8_mod_u16_size (b : U8) :
 private theorem ite_or_of_neg_neg {a b : Prop} [Decidable a] [Decidable b] {P Q : Prop}
     (ha : ¬a) (hb : ¬b) (hq : Q) :
     (if a ∨ b then P else Q) :=
-  Eq.mpr (if_neg (by tauto)) hq
+  Eq.mpr (ite_eq_right (by tauto)) hq
 
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
@@ -90,33 +90,6 @@ theorem IsSortedPushResult.length_le {α : Type*} {old new_ : List α} {p : α}
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
 namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
-
-/-- All branches of `SortedSet.push` (empty/gt/eq/lt) satisfy `IsSortedPushResult`. -/
-private theorem push_match_to_sorted_push_result
-    {old new_ : List Pt} {p : Pt}
-    (h : match old.getLast? with
-         | none => new_ = old ++ [p]
-         | some last =>
-           match compare p.x.value.val last.x.value.val with
-           | Ordering.gt => new_ = old ++ [p]
-           | Ordering.eq => new_ = old.dropLast ++ [p]
-           | Ordering.lt =>
-             ∃ (j : Nat), j ≤ old.length ∧
-               (new_ = old.take j ++ [p] ++ old.drop j ∨
-                (j < old.length ∧
-                 new_ = old.take j ++ [p] ++ old.drop (j + 1)))) :
-    IsSortedPushResult old new_ p := by
-  unfold IsSortedPushResult
-  split at h
-  · exact ⟨old.length, le_refl _, Or.inl (by grind)⟩
-  · rename_i last _
-    split at h
-    · exact ⟨old.length, le_refl _, Or.inl (by grind)⟩
-    · have hne : old ≠ [] := by intro h'; simp [h'] at *
-      have hlen : 0 < old.length := by cases old <;> simp_all
-      refine ⟨old.length - 1, by omega, Or.inr ⟨by omega, ?_⟩⟩
-      rw [h, List.dropLast_eq_take]; simp; omega
-    · exact h
 
 /-- Helper: `getElem!` after `List.set` at the same (in-bounds) index returns
     the newly written element. -/
@@ -188,6 +161,18 @@ private theorem push_sorted_result (ss : sorted_vec.SortedSet Pt) (p : Pt)
         (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last))
       rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
       rw [h]; exact isSortedPushResult_append _ _
+
+/-- Writing the pushed set back into slot `poly` leaves the other slots unchanged and
+    records the push in slot `poly`. -/
+private theorem push_update (pts : Std.Array (sorted_vec.SortedSet Pt) 16#usize) (poly : Usize)
+    (ss1 : sorted_vec.SortedSet Pt) (p : Pt) (h_plt : poly.val < pts.val.length)
+    (h_r : IsSortedPushResult (pts.val[poly.val]!).val ss1.val p) :
+    (∀ k, k ≠ poly.val → (pts.set poly ss1).val[k]! = pts.val[k]!) ∧
+    IsSortedPushResult (pts.val[poly.val]!).val ((pts.set poly ss1).val[poly.val]!).val p := by
+  rw [Array.set_val_eq]
+  refine ⟨fun k hk => ?_, by rw [list_getElem!_set_self _ _ _ h_plt]; exact h_r⟩
+  rw [List.getElem!_eq_getElem?_getD, List.getElem!_eq_getElem?_getD,
+    List.getElem?_set_ne (Ne.symm hk)]
 
 /-- **Spec theorem for `body` (Lagrange-enriched)**:
 
@@ -266,8 +251,15 @@ theorem body_spec
     have h_py : y.value.val =
         (chunk.data.val[iter.start.val * 2]!).val * 256 +
         (chunk.data.val[iter.start.val * 2 + 1]!).val := by
-      simp [h_y, h_i9, h_i8, h_y1, h_y2, h_i5, h_i7, h_i4, h_i6, UScalar.cast_val_eq]
-      grind [u8_shl8_mod_u16_size]
+      have h_dlen : chunk.data.val.length = 32 := chunk.data.property
+      have h5 : chunk.data.val[iter.start.val * 2]! = i5 := by
+        rw [h_i5, getElem!_pos chunk.data.val _ (by omega)]
+        simp only [h_i4]
+      have h7 : chunk.data.val[iter.start.val * 2 + 1]! = i7 := by
+        rw [h_i7, getElem!_pos chunk.data.val _ (by omega)]
+        simp only [h_i6, h_i4]
+      rw [h_y, h_i9, h_i8, h_y1, h_y2, U8.cast_U16_val_eq, U8.cast_U16_val_eq,
+        u8_shl8_mod_u16_size, h5, h7]
     have h_mod : (chunk.index.val * 16 + iter.start.val) % 16 = iter.start.val := by omega
     have h_div : (chunk.index.val * 16 + iter.start.val) / 16 = chunk.index.val := by omega
     have h_plt : poly.val < self.pts.val.length := by simp; omega
@@ -277,20 +269,18 @@ theorem body_spec
       rw [getElem!_pos (h := by omega)]
     simp only [h_mod, h_div]
     split
-    · rename_i h_c
+    next h_c =>
       have h_c' : chunk.index.val < self.pts_needed.val / 16 +
           (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
         rw [← h_pidx', ← h_i10]; exact h_c
       step as ⟨ss, back, h_ss, h_back⟩
-      step with push_sorted_result as ⟨_, ss1, h_r⟩
+      step with push_sorted_result ss _ (by rw [h_ss, h_ss_eq]; exact h_cap) as ⟨_, ss1, h_r⟩
       subst h_back
-      refine ⟨by scalar_tac, h_start1, h_end1, by omega, { x := x, y := y }, h_px, h_py, ?_⟩
-      rw [if_pos (Or.inl h_c')]
-      refine ⟨fun k hk => ?_, ?_⟩
-      · simp only [Array.set_val_eq]; grind
-      · simp only [Array.set_val_eq]
-        rw [← h_poly', list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq, ← h_ss]; exact h_r
-    · rename_i h_c
+      rw [h_ss, h_ss_eq] at h_r
+      refine ⟨h_lt, h_start1, h_end1, h_i_lt_16, { x := x, y := y }, h_px, h_py, ?_⟩
+      rw [ite_eq_left (Or.inl h_c'), ← h_poly']
+      exact push_update _ _ _ _ h_plt h_r
+    next h_c =>
       have h_c' : ¬ chunk.index.val < self.pts_needed.val / 16 +
           (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
         rw [← h_pidx', ← h_i10]; exact h_c
@@ -301,29 +291,28 @@ theorem body_spec
       have h_vlen : v.len.val = ((self.pts.val)[iter.start.val]!).val.length := by
         rw [h_v, h_sv, h_ss0, h_ss_eq, h_poly']; simp
       split
-      · rename_i h_c2
+      next h_c2 =>
         have h_c2' : ((self.pts.val)[iter.start.val]!).val.length < self.pts_needed.val / 16 +
             (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
           rw [← h_vlen, ← h_i12]; exact h_c2
         step as ⟨ss, back, h_ss, h_back⟩
-        step with push_sorted_result as ⟨_, ss1, h_r⟩
+        step with push_sorted_result ss _ (by rw [h_ss, h_ss_eq]; exact h_cap) as ⟨_, ss1, h_r⟩
         subst h_back
-        refine ⟨by scalar_tac, h_start1, h_end1, by omega, { x := x, y := y }, h_px, h_py, ?_⟩
-        rw [if_pos (Or.inr h_c2')]
-        refine ⟨fun k hk => ?_, ?_⟩
-        · simp only [Array.set_val_eq]; grind
-        · simp only [Array.set_val_eq]
-          rw [← h_poly', list_getElem!_set_self _ _ _ h_plt, ← h_ss_eq, ← h_ss]; exact h_r
-      · rename_i h_c2
+        rw [h_ss, h_ss_eq] at h_r
+        refine ⟨h_lt, h_start1, h_end1, h_i_lt_16, { x := x, y := y }, h_px, h_py, ?_⟩
+        rw [ite_eq_left (Or.inr h_c2'), ← h_poly']
+        exact push_update _ _ _ _ h_plt h_r
+      next h_c2 =>
         have h_c2' : ¬ ((self.pts.val)[iter.start.val]!).val.length < self.pts_needed.val / 16 +
             (if iter.start.val < self.pts_needed.val % 16 then 1 else 0) := by
           rw [← h_vlen, ← h_i12]; exact h_c2
         simp only [WP.spec_ok]
-        refine ⟨by scalar_tac, h_start1, h_end1, trivial, trivial, by omega, { x := x, y := y },
+        refine ⟨h_lt, h_start1, h_end1, trivial, trivial, h_i_lt_16, { x := x, y := y },
           h_px, h_py, ?_⟩
         exact ite_or_of_neg_neg h_c' h_c2' trivial
-  · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    simp [h_opt_eq, WP.spec_ok, h_lt]
+  · obtain ⟨h_opt_eq, rfl⟩ := h_none h_lt
+    rw [h_opt_eq]
+    exact (WP.spec_ok _).mpr ⟨rfl, h_lt⟩
 
 private theorem body_pts_length_le
     (self1 self' : PolyDecoder) (p : Pt) (poly : Nat)
@@ -339,12 +328,12 @@ private theorem body_pts_length_le
     (self1.pts.val[k]!).val.length ≤
       (self'.pts.val[k]!).val.length + 1 := by
   by_cases hc : cond
-  · rw [if_pos hc] at h_update
+  · rw [ite_eq_left hc] at h_update
     obtain ⟨h_frame, h_push⟩ := h_update
     by_cases hk : k = poly
     · subst hk; exact h_push.length_le
     · rw [h_frame k hk]; omega
-  · rw [if_neg hc] at h_update
+  · rw [ite_eq_right hc] at h_update
     subst h_update
     omega
 
@@ -434,66 +423,52 @@ theorem loop_spec
                  ((selfs (j + 1)).pts.val[poly]!).val p
              else
                selfs (j + 1) = selfs j))
-  · rintro ⟨iter', self'⟩ ⟨h_end', h_orig_le, h_le', h_pn', h_ic', h_cap',
-            n, selfs', h_s0, h_sn, h_n, h_chain⟩
-    simp only [] at h_end' h_orig_le h_le' h_pn' h_ic' h_cap' h_s0 h_sn h_n h_chain ⊢
+  · rintro ⟨iter', self'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_orig_le, h_le', h_pn', h_ic', h_cap', n, selfs', h_s0, h_sn, h_n,
+      h_chain⟩ := hinv
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_orig_le' : iter.start.val ≤ iter'.start.val := h_orig_le
     have h_push_cap' : ∀ k, k < 16 →
-        (self'.pts.val[k]!).val.length + 1 ≤ Usize.max := by
+        ((self'.pts.val[k]! : sorted_vec.SortedSet Pt).val).length + 1 ≤ Usize.max := by
       intro k hk; have := h_cap' k hk; omega
-    have h_body := body_spec chunk iter' self'
-      (by rw [h_end_val]; exact h_end_le_16) h_overflow h_push_cap'
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done self_final =>
-      simp only [] at h_cf ⊢
-      obtain ⟨h_eq, h_not_lt⟩ := h_cf
-      subst h_eq
-      have h_eq_n : iter.end.val - iter.start.val = n := by
-        have : ¬ iter'.start.val < iter'.end.val := h_not_lt
-        omega
-      refine ⟨h_pn', h_ic', selfs', h_s0, by rw [h_eq_n]; exact h_sn, trivial, fun j hj => ?_⟩
-      simpa only [Array.getElem!_Nat_eq] using h_chain j (by omega)
-    | ControlFlow.cont (iter1, self1) =>
-      simp only [] at h_cf ⊢
-      obtain ⟨h_lt, h_start1, h_end1, h_pn1, h_ic1, h_poly_lt, h_poly_idx_eq,
+    apply WP.spec_mono (body_spec chunk iter' self'
+      (by rw [h_end_val]; exact h_end_le_16) h_overflow h_push_cap')
+    rintro (⟨iter1, self1⟩ | self_final) h_cf
+    · obtain ⟨h_lt, h_start1, h_end1, h_pn1, h_ic1, h_poly_lt, h_poly_idx_eq,
               p, h_px, h_py, h_update⟩ := h_cf
-      refine ⟨⟨by rw [h_end1]; exact h_end',
-              by grind, by grind,
-              by rw [h_pn1]; exact h_pn',
-              by rw [h_ic1]; exact h_ic', ?_,
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_end1' : iter1.end.val = iter'.end.val := by rw [h_end1]
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter.start.val ≤ iter1.start.val by omega,
+              show iter1.start.val ≤ iter1.end.val by omega,
+              h_pn1.trans h_pn', h_ic1.trans h_ic', ?_,
               n + 1, Function.update selfs' (n + 1) self1,
-              ?_, ?_, ?_, ?_⟩, by grind⟩
+              ?_, Function.update_self .., by omega, ?_⟩,
+              show iter1.end.val - iter1.start.val < iter'.end.val - iter'.start.val by omega⟩
       · intro k hk
         have h_old := h_cap' k hk
         have h_len_le := body_pts_length_le self1 self' p
           ((chunk.index.val * 16 + iter'.start.val) % 16) _ h_update k
-        rw [h_start1, h_end1, h_end_val]
-        rw [h_end_val] at h_old
-        grind
-      · have h0 : (0 : Nat) ≠ n + 1 := by omega
-        simp [h_s0]
-      · simp [Function.update_self]
-      · grind
+        omega
+      · rw [Function.update_of_ne (by omega), h_s0]
       · intro j hj
         by_cases hj_lt : j < n
-        · obtain ⟨pn_j, ic_j, h_poly_lt', h_poly_idx_eq', p', h_px', h_py', h_upd'⟩ :=
-            h_chain j hj_lt
-          have h1 : j ≠ n + 1 := by omega
-          have h2 : j + 1 ≠ n + 1 := by omega
-          simp only [Function.update_of_ne h1, Function.update_of_ne h2]
-          exact ⟨pn_j, ic_j, h_poly_lt', h_poly_idx_eq', p', h_px', h_py', h_upd'⟩
-        · have hj_eq : j = n := by omega
-          subst hj_eq
-          have hne : j ≠ j + 1 := by omega
-          simp only [Function.update_of_ne hne, Function.update_self, h_sn]
-          have h_i_eq : iter.start.val + j = iter'.start.val := by grind
+        · rw [Function.update_of_ne (by omega : j ≠ n + 1),
+            Function.update_of_ne (by omega : j + 1 ≠ n + 1)]
+          exact h_chain j hj_lt
+        · obtain rfl : j = n := by omega
+          rw [Function.update_of_ne (by omega : j ≠ j + 1), Function.update_self, h_sn]
+          have h_i_eq : iter.start.val + j = iter'.start.val := by omega
           simp only [h_i_eq]
-          refine ⟨by rw [h_pn1]; exact h_pn',
-                  by rw [h_ic1]; exact h_ic',
-                  h_poly_lt, h_poly_idx_eq,
-                  p, h_px, h_py, (by grind)⟩
+          exact ⟨h_pn1.trans h_pn', h_ic1.trans h_ic', h_poly_lt, h_poly_idx_eq,
+            p, h_px, h_py, by rw [h_pn'] at h_update; exact h_update⟩
+    · obtain ⟨rfl, h_not_lt⟩ := h_cf
+      have h_eq_n : iter.end.val - iter.start.val = n := by
+        have : ¬ iter'.start.val < iter'.end.val := h_not_lt
+        omega
+      refine ⟨h_pn', h_ic', selfs', h_s0, by rw [h_eq_n]; exact h_sn, rfl, fun j hj => ?_⟩
+      simpa only [Array.getElem!_Nat_eq] using h_chain j (by omega)
   · refine ⟨rfl, le_refl _, h_start_le, rfl, rfl, ?_,
             0, fun _ => self, rfl, rfl, by dsimp; omega, fun j hj => by omega⟩
     intro k hk
@@ -554,11 +529,160 @@ theorem add_chunk_spec
   apply WP.spec_mono (add_chunk_loop.loop_spec chunk
     { start := 0#usize, «end» := 16#usize } self
     (by scalar_tac) (by scalar_tac) h_overflow
-    (by intro k hk; have := h_push_cap k hk; grind))
+    (by intro k hk; have := h_push_cap k hk; change _ + (16 - 0) + 1 ≤ _; omega))
   intro r ⟨h1, h2, s, h3, h4, _, h5⟩
   refine ⟨h1, h2, s, h3, h4, fun j hj => ?_⟩
   have h := h5 j hj
   simp only [show (0#usize : Usize).val = 0 from rfl, Nat.zero_add] at h
   exact h
+
+end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
+
+/-! ## `add_chunk` preserves the `PointsValid` invariant
+
+Every point insertion goes through `SortedSet::push`, which preserves `SlotSorted`
+(`PolyDecoder.push_spec_sorted`); the other slots are untouched. -/
+
+namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
+
+/-- One iteration of `add_chunk_loop` preserves `PointsValid`. -/
+theorem body_spec_valid
+    (chunk : encoding.Chunk)
+    (iter : core.ops.range.Range Usize)
+    (self : PolyDecoder)
+    (h_end_le_16 : iter.end.val ≤ 16)
+    (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 →
+        (self.pts.val[k]!).val.length + 1 ≤ Usize.max)
+    (h_valid : PointsValid self.pts) :
+    body chunk iter self ⦃ cf =>
+      match cf with
+      | ControlFlow.done self' => PointsValid self'.pts
+      | ControlFlow.cont (_, self1) => PointsValid self1.pts ⦄ := by
+  unfold body
+  step with core.iter.range.IteratorRange.next_Usize_spec' iter as
+    ⟨opt, iter1', h_none, h_some⟩
+  by_cases h_lt : iter.start.val < iter.end.val
+  · obtain ⟨h_opt_eq, _, _⟩ := h_some h_lt
+    rw [h_opt_eq]
+    step as ⟨i1, h_i1⟩
+    step as ⟨i2, h_i2⟩
+    step as ⟨total_idx, h_total⟩
+    step as ⟨poly, h_poly⟩
+    step as ⟨poly_idx, _⟩
+    step as ⟨i3, _⟩
+    step as ⟨x, _⟩
+    step as ⟨i4, h_i4⟩
+    step as ⟨i5, _⟩
+    step as ⟨y1, _⟩
+    step as ⟨i6, h_i6⟩
+    step as ⟨i7, _⟩
+    step as ⟨y2, _⟩
+    step as ⟨i8, _, _⟩
+    step as ⟨i9, _⟩
+    step as ⟨y, _⟩
+    step as ⟨i10, _⟩
+    have h_i1v : i1.val = chunk.index.val := by rw [h_i1]; exact U16.cast_Usize_val_eq chunk.index
+    have h_poly' : poly.val = iter.start.val := by rw [h_poly, h_total, h_i2]; omega
+    have h_poly16 : poly.val < 16 := by omega
+    have h_cap : (self.pts.val[poly.val]!).val.length + 1 ≤ Usize.max :=
+      h_push_cap _ h_poly16
+    have h_ss_eq : self.pts.val[poly.val]'(by simp; omega) = self.pts.val[poly.val]! := by
+      rw [getElem!_pos (h := by simp; omega)]
+    have h_slot : SlotSorted (self.pts.val[poly.val]'(by simp; omega)).val :=
+      h_valid.slot poly.val h_poly16
+    split
+    · step as ⟨ss, back, h_ss, h_back⟩
+      step with PolyDecoder.push_spec_sorted ss _ (by rw [h_ss, h_ss_eq]; exact h_cap)
+        as ⟨_, ss1, h_r⟩
+      subst h_back
+      exact h_valid.set poly ss1 (h_r (h_ss ▸ h_slot))
+    · step as ⟨ss0, _⟩
+      step as ⟨sv, _⟩
+      step as ⟨v, _⟩
+      step as ⟨i12, _⟩
+      split
+      · step as ⟨ss, back, h_ss, h_back⟩
+        step with PolyDecoder.push_spec_sorted ss _ (by rw [h_ss, h_ss_eq]; exact h_cap)
+          as ⟨_, ss1, h_r⟩
+        subst h_back
+        exact h_valid.set poly ss1 (h_r (h_ss ▸ h_slot))
+      · simp only [WP.spec_ok]
+        exact h_valid
+  · obtain ⟨h_opt_eq, rfl⟩ := h_none h_lt
+    rw [h_opt_eq]
+    exact (WP.spec_ok _).mpr h_valid
+
+/-- `add_chunk_loop` preserves `PointsValid`.  The proof runs `body_spec` (for the length
+bookkeeping needed by the capacity side condition) and `body_spec_valid` side by side via
+`WP.spec_and`. -/
+theorem loop_spec_valid
+    (chunk : encoding.Chunk)
+    (iter : core.ops.range.Range Usize)
+    (self : PolyDecoder)
+    (h_end_le_16 : iter.end.val ≤ 16)
+    (h_start_le : iter.start ≤ iter.end)
+    (h_overflow : chunk.index.val * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 →
+        (self.pts[k]!).length + (iter.end - iter.start) + 1 ≤ Usize.max)
+    (h_valid : PointsValid self.pts) :
+    add_chunk_loop iter self chunk ⦃ (result : PolyDecoder) => PointsValid result.pts ⦄ := by
+  unfold add_chunk_loop
+  apply loop.spec_decr_nat
+    (measure := fun (x : core.ops.range.Range Usize × PolyDecoder) => x.1.end - x.1.start)
+    (inv := fun (x : core.ops.range.Range Usize × PolyDecoder) =>
+        x.1.end = iter.end ∧
+        iter.start.val ≤ x.1.start.val ∧
+        x.1.start.val ≤ x.1.end.val ∧
+        (∀ (k : Nat), k < 16 →
+          (x.2.pts.val[k]!).val.length + (x.1.end.val - x.1.start.val) + 1 ≤ Usize.max) ∧
+        PointsValid x.2.pts)
+  · rintro ⟨iter', self'⟩ ⟨h_end', h_orig_le, h_le', h_cap', h_valid'⟩
+    dsimp only at h_end' h_orig_le h_le' h_cap' h_valid' ⊢
+    have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_push_cap' : ∀ k, k < 16 →
+        (self'.pts.val[k]!).val.length + 1 ≤ Usize.max := by
+      intro k hk; have := h_cap' k hk; omega
+    apply WP.spec_mono (WP.spec_and
+      (body_spec chunk iter' self' (by rw [h_end_val]; exact h_end_le_16) h_overflow h_push_cap')
+      (body_spec_valid chunk iter' self' (by rw [h_end_val]; exact h_end_le_16) h_overflow
+        h_push_cap' h_valid'))
+    rintro (⟨iter1, self1⟩ | self_final) ⟨h_cf, h_v⟩
+    · obtain ⟨h_lt, h_start1, h_end1, _, _, _, _, p, _, _, h_update⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_end1' : iter1.end.val = iter'.end.val := by rw [h_end1]
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter.start.val ≤ iter1.start.val by omega,
+        show iter1.start.val ≤ iter1.end.val by omega, ?_, h_v⟩,
+        show iter1.end.val - iter1.start.val < iter'.end.val - iter'.start.val by omega⟩
+      intro k hk
+      have h_old := h_cap' k hk
+      have h_len_le := body_pts_length_le self1 self' p
+        ((chunk.index.val * 16 + iter'.start.val) % 16) _ h_update k
+      omega
+    · exact h_v
+  · refine ⟨rfl, le_refl _, h_start_le, ?_, h_valid⟩
+    intro k hk
+    have := h_push_cap k hk
+    simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.length] at this
+    omega
+
+end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop
+
+namespace spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
+
+/-- **`add_chunk` preserves `PointsValid`**: if every slot of `self.pts` has strictly
+increasing abscissae, so does every slot of the result. -/
+@[step]
+theorem add_chunk_spec_valid
+    (self : PolyDecoder) (chunk : encoding.Chunk)
+    (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 → (self.pts[k]!).length + 17 ≤ Usize.max)
+    (h_valid : PointsValid self.pts) :
+    add_chunk self chunk ⦃ (result : PolyDecoder) => PointsValid result.pts ⦄ := by
+  unfold add_chunk
+  exact add_chunk_loop.loop_spec_valid chunk { start := 0#usize, «end» := 16#usize } self
+    (by scalar_tac) (by scalar_tac) h_overflow
+    (by intro k hk; have := h_push_cap k hk; change _ + (16 - 0) + 1 ≤ _; omega) h_valid
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder

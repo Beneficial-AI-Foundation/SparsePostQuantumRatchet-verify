@@ -12,7 +12,7 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-!
@@ -45,26 +45,8 @@ private lemma extend_from_slice_U8_spec
       ∀ x ∈ s.val, core.clone.CloneU8.clone x = ok x := by
     intros _ _; rfl
   unfold alloc.vec.Vec.extend_from_slice
-  rw [dif_pos h]
+  rw [dite_eq_left h]
   step*
-
-/-! ## Helper: big-endian byte pair arithmetic -/
-
-/--
-**Big-endian byte-pair identity for `u16`**:
-
-If the 2-byte big-endian encoding of a `u16` value `x` is `[b0, b1]`, then
-`b0.val * 256 + b1.val = x.val`.
--/
-private lemma toBEBytes_pair (x : U16) (b0 b1 : U8)
-    (h : [b0, b1] = List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes) :
-    256 * b0 + b1 = x.val := by
-  have h0 : b0 = (List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes)[0]! := by rw [← h]; simp
-  have h1 : b1 = (List.map (@UScalar.mk UScalarTy.U8) x.bv.toBEBytes)[1]! := by rw [← h]; simp
-  subst h0 h1
-  simp only [Std.UScalar.val]
-  simp [BitVec.toBEBytes, BitVec.toLEBytes, Nat.shiftRight_eq_div_pow]
-  grind
 
 /-- **Spec theorem for `encoding.polynomial.Poly.serialize_loop.body`**:
 

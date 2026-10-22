@@ -11,7 +11,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 
 
 /-! # Spec theorem for `Poly::deserialize`: loop body 0

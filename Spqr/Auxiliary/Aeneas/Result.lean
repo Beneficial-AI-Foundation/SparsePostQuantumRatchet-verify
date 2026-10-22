@@ -10,7 +10,8 @@ public import Aeneas
 /-! # Staged for upstream to Aeneas `Std/Primitives.lean` and `Std/Core/Convert.lean`
 
 Inversion lemmas for proofs in the "if it returns `Ok`" form: a bind that returns `ok`, and
-the two halves of the Rust `?` operator, `Result::branch` and `Result::from_residual`. -/
+the two halves of the Rust `?` operator, `Result::branch` and `Result::from_residual`; plus
+`WP.spec_bind_ok` for stepping over `ok x >>= f` when `simp [bind_ok]` cannot. -/
 
 @[expose] public section
 
@@ -19,6 +20,11 @@ namespace Aeneas.Std
 theorem Result.bind_eq_ok {α β : Type} {x : Result α} {f : α → Result β} {y : β} :
     bind x f = ok y ↔ ∃ a, x = ok a ∧ f a = ok y := by
   cases x <;> simp
+
+/-- A spec for `ok x >>= f` follows from a spec for `f x`. -/
+theorem WP.spec_bind_ok {α β : Type} {x : α} {f : α → Result β} {P : WP.Post β}
+    (h : WP.spec (f x) P) : WP.spec (bind (Result.ok x) f) P :=
+  WP.spec_bind (Pₘ := (· = x)) ((WP.spec_ok x).mpr rfl) (by rintro _ rfl; exact h)
 
 end Aeneas.Std
 

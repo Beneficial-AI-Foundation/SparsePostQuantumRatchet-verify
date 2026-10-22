@@ -12,7 +12,7 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Spqr.Specs.Aeneas.IndexRangeFull
 
 /-! # Spec theorem for `PolyDecoder::into_pb`: loop body 1
@@ -64,18 +64,39 @@ theorem body_spec
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt, h_start1, h_end1⟩ := h_some h_lt
     subst h_opt
-    step*
+    step as ⟨sv, h_sv⟩
+    step as ⟨v1, h_v1⟩
+    step as ⟨pt, h_pt⟩
+    step as ⟨a, h_x, h_y⟩
+    step as ⟨v2, h_v2⟩
     obtain ⟨b0, b1, b2, b3, h_a_eq⟩ : ∃ b0 b1 b2 b3, a.val = [b0, b1, b2, b3] :=
       match a.val, a.property with | [b0, b1, b2, b3], _ => ⟨b0, b1, b2, b3, rfl⟩
-    refine ⟨by omega, h_start1, h_end1, b0, b1, b2, b3, ?_, ?_, ?_⟩
-    · simp_all [Array.to_slice]
-    · simp_all
-      grind
-    · simp_all
-      grind
+    have h_get : pts.val[iter.start.val]! = pt := by
+      have : iter.start.val < pts.val.length := by
+        have : iter.end.val ≤ pts.val.length := h_end_le
+        omega
+      subst h_pt h_v1 h_sv
+      exact (List.Inhabited_getElem_eq_getElem! (hi := this)).symm
+    simp only [Array.getElem!_Nat_eq, h_a_eq] at h_x h_y
+    refine ⟨h_lt, h_start1, h_end1, b0, b1, b2, b3, ?_, ?_, ?_⟩
+    · rw [h_v2, Array.val_to_slice, h_a_eq]
+    · rw [h_get, ← h_x]; simp only [List.getElem!_cons_zero, List.getElem!_cons_succ]; ring
+    · rw [h_get, ← h_y]; simp only [List.getElem!_cons_zero, List.getElem!_cons_succ]; ring
   · obtain ⟨h_opt, _⟩ := h_none (by omega)
     subst h_opt
     exact (WP.spec_ok _).mpr ⟨rfl, by omega⟩
+
+/-- Appending four bytes keeps the prefix and places the bytes at `v.length + 0..3`. -/
+private lemma vec_append_quad {v v1 : alloc.vec.Vec U8} {b0 b1 b2 b3 : U8}
+    (h : v1 = v ++ [b0, b1, b2, b3]) :
+    v1.length = v.length + 4 ∧ (∀ p < v.length, v1[p]! = v[p]!) ∧
+      v1[v.length]! = b0 ∧ v1[v.length + 1]! = b1 ∧
+      v1[v.length + 2]! = b2 ∧ v1[v.length + 3]! = b3 := by
+  have h : v1.val = v.val ++ [b0, b1, b2, b3] := h
+  simp only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length, h, List.length_append,
+    List.getElem!_eq_getElem?_getD]
+  refine ⟨by simp, fun p hp => by rw [List.getElem?_append_left hp], by simp, by simp,
+    by simp, by simp⟩
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.into_pb_loop0_loop0`**:
 
@@ -114,31 +135,38 @@ theorem loop_spec
         (∀ (j : Nat), j < p.1.start →
             256 * (p.2[4 * j]!) + (p.2[4 * j + 1]!).val = (pts.val[j]!).x.value.val ∧
             256 * (p.2[4 * j + 2]!) + (p.2[4 * j + 3]!).val = (pts.val[j]!).y.value.val))
-  · rintro ⟨iter', out'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
-    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
-    have h_end_val : iter'.end = iter.end := by rw [h_end']
-    have h_body := body_spec pts iter' out' (by rw [h_end']; exact h_end_le) (by grind)
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done out'' => grind
-    | ControlFlow.cont (iter'', out'') =>
-      simp only [] at h_cf ⊢
-      obtain ⟨h_lt, h_start1, h_end1, b0, b1, b2, b3, h_out_eq, h_x_eq, h_y_eq⟩ := h_cf
-      have h_val : out''.val = out'.val ++ [b0, b1, b2, b3] := h_out_eq
-      have h_len : out'.val.length = 4 * iter'.start.val := h_out_len'
-      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+  · rintro ⟨iter', out'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_start_le', h_out_len', h_pre'⟩ := hinv
+    have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_end_le' : iter.end.val ≤ pts.val.length := h_end_le
+    have h_out_len'' : out'.val.length = 4 * iter'.start.val := h_out_len'
+    have h_ovf : 4 * pts.val.length + 4 ≤ Usize.max := h_overflow
+    have h_start_le'' : iter'.start.val ≤ iter'.end.val := h_start_le'
+    apply WP.spec_mono (body_spec pts iter' out' (by rw [h_end']; exact h_end_le)
+      (show out'.val.length + 4 ≤ Usize.max by omega))
+    rintro (⟨iter'', out''⟩ | out'') h_cf
+    · obtain ⟨h_lt, h_start1, h_end1, b0, b1, b2, b3, h_out_eq, h_x_eq, h_y_eq⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      obtain ⟨h_len, h_keep, h_0, h_1, h_2, h_3⟩ := vec_append_quad h_out_eq
+      have h_len' : out''.val.length = out'.val.length + 4 := h_len
+      have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter''.start.val ≤ iter''.end.val by omega,
+        show out''.val.length = 4 * iter''.start.val by omega, fun j hj => ?_⟩,
+        show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val by omega⟩
       by_cases hj_lt : j < iter'.start.val
-      · grind
-      · have hj_eq : j = iter'.start.val := by omega
-        subst hj_eq
-        simp only [alloc.vec.Vec.getElem!_Nat_eq, h_val]
-        rw [List.getElem!_append_right _ _ _ (by grind),
-          List.getElem!_append_right _ _ _ (by grind),
-          List.getElem!_append_right _ _ _ (by grind),
-          List.getElem!_append_right _ _ _ (by grind)]
-        simp [h_len, h_x_eq, h_y_eq]
-  · grind
+      · rw [h_keep _ (by omega), h_keep _ (by omega), h_keep _ (by omega),
+          h_keep _ (by omega)]
+        exact h_pre' j hj_lt
+      · obtain rfl : j = iter'.start.val := by omega
+        rw [← h_out_len'', h_0, h_1, h_2, h_3]
+        exact ⟨h_x_eq, h_y_eq⟩
+    · obtain ⟨rfl, h_nlt⟩ := h_cf
+      have : ¬iter'.start.val < iter'.end.val := h_nlt
+      have h_eq : iter'.start.val = iter.end.val := by omega
+      refine ⟨by rw [h_out_len', h_eq], fun j hj => h_pre' j (by omega)⟩
+  · exact ⟨rfl, h_start_le, h_out_len, h_pre⟩
 
 end spqr.encoding.polynomial.PolyDecoder.into_pb_loop0_loop0
 
@@ -194,11 +222,34 @@ theorem body_spec
     have h_getelem : (a.val[iter.start.val]! : sorted_vec.SortedSet Pt) =
         a.val[iter.start.val]'h_j_lt := by
       rw [← List.Inhabited_getElem_eq_getElem! (hi := h_j_lt)]
-    step*
-    · simp_all [alloc.vec.Vec.with_capacity]
-    · simp_all
-  · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    simp [h_opt_eq, WP.spec_ok, h_lt]
+    step as ⟨pts, h_pts⟩
+    rw [← h_getelem] at h_pts
+    subst h_pts
+    step as ⟨sv, h_sv⟩
+    subst h_sv
+    -- `SortedSet`/`SortedVec`/`Vec` are plain `def` synonyms: pass the argument explicitly
+    step with sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec _
+      a.val[iter.start.val]! as ⟨v1, h_v1⟩
+    subst h_v1
+    step as ⟨i2, h_i2⟩
+    step with sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref_spec _
+      a.val[iter.start.val]! as ⟨v3, h_v3⟩
+    subst h_v3
+    step with into_pb_loop0_loop0.loop_spec as ⟨v4, h_v4_len, h_v4⟩
+    · rfl
+    step as ⟨v5, h_v5⟩
+    exact ⟨h_lt, h_start1, h_end1, v4, h_v5, h_v4_len, h_v4⟩
+  · obtain ⟨h_opt_eq, _⟩ := h_none h_lt
+    rw [h_opt_eq]
+    exact (WP.spec_ok _).mpr ⟨rfl, h_lt⟩
+
+/-- Pushing `x` keeps the prefix and places `x` at index `v.length`. -/
+private lemma vec_push {α : Type} [Inhabited α] {v v1 : alloc.vec.Vec α} {x : α}
+    (h : v1.val = v.val ++ [x]) :
+    v1.val.length = v.val.length + 1 ∧ (∀ j < v.val.length, v1.val[j]! = v.val[j]!) ∧
+      v1.val[v.val.length]! = x := by
+  simp only [h, List.length_append, List.length_singleton, List.getElem!_eq_getElem?_getD]
+  exact ⟨trivial, fun j hj => by rw [List.getElem?_append_left hj], by simp⟩
 
 /-- **Spec theorem for `encoding.polynomial.PolyDecoder.into_pb_loop0`**:
 
@@ -253,29 +304,39 @@ theorem loop_spec
                   ((a.val[j]!).val[k]!).x.value.val ∧
                 256 * ((p.2[j]!)[4 * k + 2]!) + ((p.2[j]!)[4 * k + 3]!) =
                   ((a.val[j]!).val[k]!).y.value.val))
-  · rintro ⟨iter', v'⟩ ⟨h_end', h_start_le', h_out_len', h_pre'⟩
-    simp only [] at h_end' h_start_le' h_out_len' h_pre' ⊢
+  · rintro ⟨iter', v'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_start_le', h_out_len', h_pre'⟩ := hinv
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
-    have h_body := body_spec a iter' v' (by grind) (by grind) h_inner_overflow
-    apply WP.spec_mono h_body
-    intro cf h_cf
-    match cf with
-    | ControlFlow.done v'' => grind
-    | ControlFlow.cont (iter'', v'') =>
-      simp only [] at h_cf ⊢
-      obtain ⟨h_lt, h_start1, h_end1, serialized, h_v_eq, h_ser_len, h_ser_enc⟩ := h_cf
-      have h_end1_val : iter''.end.val = iter'.end.val := by rw [h_end1]
-      have h_val : v''.val = v'.val ++ [serialized] := h_v_eq
-      have h_len : v'.val.length = iter'.start.val := h_out_len'
-      refine ⟨⟨by grind, by grind, by grind, fun j hj => ?_⟩, by grind⟩
+    have h_end_le' : iter.end.val ≤ a.val.length := h_end_le
+    have h_start_le'' : iter'.start.val ≤ iter'.end.val := h_start_le'
+    have h_out_len'' : v'.val.length = iter'.start.val := h_out_len'
+    have h_alen : a.val.length + 1 ≤ Usize.max := h_out_overflow
+    apply WP.spec_mono (body_spec a iter' v' (by omega)
+      (show v'.val.length + 1 ≤ Usize.max by omega) h_inner_overflow)
+    rintro (⟨iter'', v''⟩ | v'') h_cf
+    · obtain ⟨h_lt, h_start1, h_end1, serialized, h_v_eq, h_ser_len, h_ser_enc⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
+      obtain ⟨h_len, h_keep, h_last⟩ := vec_push h_v_eq
+      dsimp only
+      refine ⟨⟨h_end1.trans h_end', show iter''.start.val ≤ iter''.end.val by omega,
+        show v''.val.length = iter''.start.val by omega, fun j hj => ?_⟩,
+        show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val by omega⟩
       by_cases hj_lt : j < iter'.start.val
-      · grind
-      · have hj_eq : j = iter'.start.val := by omega
-        subst hj_eq
-        have h_get : v''[iter'.start.val]! = serialized := by grind
+      · have h_get : v''[j]! = v'[j]! := h_keep j (by omega)
+        rw [h_get]
+        exact h_pre' j hj_lt
+      · obtain rfl : j = iter'.start.val := by omega
+        have h_get : v''[v'.val.length]! = serialized := h_last
+        rw [h_out_len''] at h_get
         rw [h_get]
         exact ⟨h_ser_len, h_ser_enc⟩
-  · grind
+    · obtain ⟨rfl, h_nlt⟩ := h_cf
+      have : ¬iter'.start.val < iter'.end.val := h_nlt
+      have h_eq : iter'.start.val = iter.end.val := by omega
+      refine ⟨by rw [h_out_len', h_eq], fun j hj => h_pre' j (by omega)⟩
+  · exact ⟨rfl, h_start_le, h_out_len, h_pre⟩
 
 end spqr.encoding.polynomial.PolyDecoder.into_pb_loop0
 
@@ -313,19 +374,15 @@ theorem into_pb_spec
               256 * ((result.pts[j]!)[4 * k + 2]!) + ((result.pts[j]!)[4 * k + 3]!) =
                 ((self.pts.val[j]!).val[k]!).y.value.val ⦄ := by
   unfold into_pb
-  simp only [alloc.vec.Vec.with_capacity]
-  step*
-  have h_len : (s1.len : Usize).val = 16 := by simp [*]
-  have h_enc : ∀ j < (s1.len : Usize).val,
-      (v1[j]!).length = 4 * (self.pts.val[j]!).length ∧
-      ∀ k < (self.pts.val[j]!).length,
-        256 * ((v1[j]!)[4 * k]!) + ((v1[j]!)[4 * k + 1]!) =
-          ((self.pts.val[j]!).val[k]!).x.value.val ∧
-        256 * ((v1[j]!)[4 * k + 2]!) + ((v1[j]!)[4 * k + 3]!) =
-          ((self.pts.val[j]!).val[k]!).y.value.val := by
-    assumption
-  refine ⟨?_, by omega, fun j hj => h_enc j (by omega)⟩
-  simp only [UScalar.cast_val_eq, *]
-  scalar_tac
+  have h_slen : (Slice.len self.pts.to_slice).val = 16 := by
+    simp only [Slice.len_val, Array.length_to_slice]; rfl
+  step as ⟨i, h_i⟩
+  simp only [lift, bind_ok]
+  step with into_pb_loop0.loop_spec as ⟨v1, h_len, h_enc⟩
+  · rfl
+  have h_u32 : U32.max = 4294967295 := U32.max_eq
+  refine ⟨?_, by rw [h_len, h_slen], fun j hj => h_enc j (by omega)⟩
+  rw [h_i, UScalar.cast_val_eq]
+  exact Nat.mod_eq_of_lt (by change _ < 2 ^ 32; omega)
 
 end spqr.encoding.polynomial.PolyDecoder

@@ -8,7 +8,7 @@ module
 public import Spqr.Math.Gf16.Basic
 import Spqr.Math.Gf2Poly.NatRep
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Data.Nat.Bitwise
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Tactic.ComputeDegree

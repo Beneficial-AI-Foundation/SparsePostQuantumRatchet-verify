@@ -13,7 +13,7 @@ import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Spqr.Specs.Aeneas.GF16New
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
@@ -90,7 +90,7 @@ theorem body_spec
       obtain ⟨c', hc', hval⟩ :=
         WP.spec_imp_exists (Usize.add_spec (x := iter.count) (y := 1#usize) (by scalar_tac))
       exact ⟨c', hc', by scalar_tac⟩
-    simp only [bind_tc_ok, hc_eq, bind_ok]
+    simp only [hc_eq, bind_ok]
     step as ⟨r, hr⟩
     have h_el : iter.iter.slice[iter.iter.i] = v[iter.iter.i]! := by
       rw [alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v.val _ h_i]
@@ -100,18 +100,23 @@ theorem body_spec
         (v[iter.iter.i]!).val := by
       simp [alloc.vec.Vec.deref, h_el]
     rcases r with poly | e
-    · step*
-      simp only [Slice.length, Slice.getElem!_Nat_eq, h_dv] at hr
+    · simp only [Slice.length, Slice.getElem!_Nat_eq, h_dv] at hr
       obtain ⟨h_ne, h_ev, h_deg, h_coef⟩ := hr
-      obtain rfl : val = poly := by simp_all
       have h_cnt : iter.count.val = iter.iter.i := h_count
       have h_len16 : out.val.length = 16 := by simp
-      have h_a : a.val = out.val.set iter.iter.i val := by
-        rw [‹a = _›, ‹index_mut_back = _›]
-        simp [h_cnt]
-      have h_slot : a[iter.iter.i]! = val := by
+      have h_i16 : iter.iter.i < 16 := by
+        have : v.val.length ≤ 16 := h_le_16
+        omega
+      step as ⟨cf, h_cf⟩
+      subst h_cf
+      step
+      step as ⟨p1, index_mut_back, h_p1, h_imb⟩
+      step as ⟨a, h_a⟩
+      replace h_a : a.val = out.val.set iter.iter.i poly := by
+        rw [h_a, h_imb, Array.set_val_eq, Array.set_val_eq, h_cnt, List.set_set]
+      have h_slot : a[iter.iter.i]! = poly := by
         rw [Array.getElem!_Nat_eq, h_a, List.getElem!_eq_getElem?_getD,
-          List.getElem?_set_self (by simp only [alloc.vec.Vec.length] at h_le_16; omega)]
+          List.getElem?_set_self (by omega)]
         rfl
       simp only [alloc.vec.Vec.length] at h_ne h_ev h_deg h_coef ⊢
       refine ⟨h_i, by omega, h_ne, h_ev, ?_, by rw [h_slot]; exact h_deg, ?_⟩
@@ -257,12 +262,27 @@ theorem body_spec
             g.value.val = 256 * pts[j.val]! + pts[j.val + 1]! ⦄ := by
   unfold body
   split
-  · have h_j1_lt : j.val + 1 < pts.length := by scalar_tac
-    have h_j_lt : j.val < pts.length := by omega
-    step*
-    refine ⟨by scalar_tac, by scalar_tac, _, ‹_›, ?_⟩
-    simp_all [Array.make, Nat.mul_comm, getElem!_pos]
-  · simp_all
+  next h_lt =>
+    have h_lt' : j.val < pts_len.val := h_lt
+    have h_len' : pts_len.val = pts.val.length := h_len
+    have h_ev : pts.val.length % 2 = 0 := h_even
+    have h_j1_lt : j.val + 1 < pts.val.length := by omega
+    step as ⟨b0, h_b0⟩
+    step as ⟨i1, h_i1⟩
+    step as ⟨b1, h_b1⟩
+    step as ⟨i3, h_i3⟩
+    step as ⟨g, h_g⟩
+    step as ⟨v1, h_v1⟩
+    step as ⟨j1, h_j1⟩
+    refine ⟨h_lt', h_j1, g, h_v1, ?_⟩
+    have h_b0' : pts[j.val]! = b0 := by
+      rw [h_b0, alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos pts.val _ (by omega)]
+    have h_b1' : pts[j.val + 1]! = b1 := by
+      rw [h_b1, alloc.vec.Vec.getElem!_Nat_eq, ← h_i1, getElem!_pos pts.val _ (by omega)]
+    rw [h_g, h_i3, h_b0', h_b1', Nat.mul_comm]
+    rfl
+  next h_nlt =>
+    exact (WP.spec_ok _).mpr ⟨h_nlt, rfl⟩
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 2
 
@@ -303,26 +323,28 @@ theorem loop_spec
         p.1.length = p.2.val / 2 ∧
         (∀ k < p.2.val / 2,
           (p.1[k]!).value.val = 256 * pts[2 * k]! + pts[2 * k + 1]!))
-  · rintro ⟨v', j'⟩ ⟨h_j_even', h_j_le', h_v_len', h_pre'⟩
-    have h_body := body_spec pts pts_len v' j' h_len h_even h_j_even' (by scalar_tac)
-    apply WP.spec_mono h_body
-    simp only at h_j_even' h_j_le' h_v_len' h_pre'
+  · rintro ⟨v', j'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_j_even', h_j_le', h_v_len', h_pre'⟩ := hinv
+    have h_v_len'' : v'.val.length = j'.val / 2 := h_v_len'
+    have h_pts_max : pts_len.val ≤ Usize.max ∧ 1 ≤ Usize.max := by scalar_tac
+    apply WP.spec_mono (body_spec pts pts_len v' j' h_len h_even h_j_even'
+      (show v'.val.length + 1 ≤ Usize.max by omega))
     rintro (⟨v1, j1⟩ | v'') hcf
     · obtain ⟨h_lt, h_j1, g, h_v1, h_g⟩ := hcf
-      simp only
-      have h_v1_len : v1.length = v'.length + 1 := by
-        simp [alloc.vec.Vec.length, h_v1]
-      refine ⟨⟨by omega, by omega, by omega, ?_⟩, by omega⟩
-      intro k hk
-      simp only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length] at h_pre' h_v_len' ⊢
-      rw [h_v1]
+      have h_v1_len : v1.val.length = v'.val.length + 1 := by
+        rw [h_v1, List.length_append, List.length_singleton]
+      dsimp only
+      refine ⟨⟨by omega, by omega, show v1.val.length = j1.val / 2 by omega, fun k hk => ?_⟩,
+        by omega⟩
+      rw [alloc.vec.Vec.getElem!_Nat_eq, h_v1]
       by_cases hkl : k < j'.val / 2
-      · rw [List.getElem!_append_left _ _ _ (by omega)]
+      · rw [List.getElem!_append_left _ _ _ (by omega), ← alloc.vec.Vec.getElem!_Nat_eq]
         exact h_pre' k hkl
       · have h2k : 2 * k = j'.val := by omega
         rw [List.getElem!_append_right _ _ _ (by omega), h2k,
-          show k - (↑v' : List GF16).length = 0 by omega]
-        simpa using h_g
+          show k - v'.val.length = 0 by omega]
+        exact h_g
     · obtain ⟨h_ge, rfl⟩ := hcf
       have h_eq : j'.val = pts.length := by omega
       refine ⟨by omega, fun k hk => h_pre' k (by omega)⟩
@@ -395,28 +417,35 @@ theorem body_spec
     have h_pts' : v[iter.start.val]! = pts := by
       rw [h_pts, alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v.val _ h_j_lt_v]
     step as ⟨i3, h_i3⟩
+    have h_i3' : i3.val = pts.val.length % 2 := h_i3
+    have h_zero : (0#usize).val = 0 := rfl
     split
-    · simp only [WP.spec_ok]
-      refine Or.inr ⟨h_lt, trivial, ?_⟩
+    next h_ne =>
+      have h_ne' : i3.val ≠ (0#usize).val := by
+        simpa only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val] using h_ne
+      refine (WP.spec_ok _).mpr (Or.inr ⟨h_lt, rfl, ?_⟩)
       rw [h_pts']
-      simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, alloc.vec.Vec.len] at *
-      scalar_tac
-    · have h_mod : pts.val.length % 2 = 0 := by
-        simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, not_not, alloc.vec.Vec.len] at *
-        scalar_tac
+      change pts.val.length % 2 ≠ 0
+      omega
+    next h_eq =>
+      have h_mod : pts.val.length % 2 = 0 := by
+        have : i3.val = (0#usize).val := by
+          simpa only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, not_not] using h_eq
+        omega
       step with from_pb_loop1_loop0.loop_spec pts
         (alloc.vec.Vec.with_capacity GF16 (alloc.vec.Vec.len pts)) (alloc.vec.Vec.len pts)
         0#usize
         (by simp [alloc.vec.Vec.len]) h_mod (by simp) (by simp)
         (by simp [alloc.vec.Vec.with_capacity])
         (by simp) as ⟨v2, h_v2_len, h_v2⟩
-      step*
+      step
+      step as ⟨p, index_mut_back, h_p, h_imb⟩
+      step as ⟨a, h_a⟩
       have h_vv : v.val[iter.start.val]! = pts := by
         rw [← alloc.vec.Vec.getElem!_Nat_eq]; exact h_pts'
       have h_len16 : out.val.length = 16 := by simp
-      have h_a : a.val = out.val.set iter.start.val { value := v2 } := by
-        rw [‹a = _›, ‹index_mut_back = _›]
-        simp
+      replace h_a : a.val = out.val.set iter.start.val { value := v2 } := by
+        rw [h_a, h_imb, Array.set_val_eq, Array.set_val_eq, List.set_set]
       have h_slot : a.val[iter.start.val]! = { value := v2 } := by
         rw [h_a, List.getElem!_eq_getElem?_getD, List.getElem?_set_self (by omega)]
         rfl
@@ -437,8 +466,9 @@ theorem body_spec
           simp only [alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v2.val k hk'] at this
           rw [this]
           ring
-  · obtain ⟨h_opt_eq, _⟩ := h_none (by omega)
-    simp [h_opt_eq, h_lt]
+  · obtain ⟨h_opt_eq, _⟩ := h_none h_lt
+    rw [h_opt_eq]
+    exact (WP.spec_ok _).mpr (Or.inl ⟨h_lt, rfl⟩)
 
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop 1
@@ -584,21 +614,21 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
       · obtain ⟨h_idx, h_ok, h_st⟩ := h_r
         have h_wf : FromPbWellFormed pb :=
           Or.inl ⟨h_pts', h_len', fun j hj => h_ok j (by omega)⟩
-        rw [if_pos h_wf]
+        rw [ite_eq_left h_wf]
         cases st with
         | Points _ => exact h_st.elim
         | Polys out' =>
-          have h_enc : ∀ j < 16, (out'[j]!).degree = (pb.polys[j]!).length / 2 ∧
-              ∀ k < (pb.polys[j]!).length / 2,
-                (out'[j]!.coefficients[k]!).value.val =
-                  256 * ((pb.polys[j]!)[2 * k]!).val + ((pb.polys[j]!)[2 * k + 1]!).val :=
-            fun j hj => h_st j (by omega)
-          have h_even : ∀ j < 16, (pb.polys[j]!).length % 2 = 0 :=
-            fun j hj => (h_ok j (by omega)).2
-          clear h_st h_ok h_wf h_out h_len hp0 h_pts h_iter h_cnt
-          exact ⟨h_idx.symm, by grind⟩
+          change IntoPbPostCond { idx := idx, s := EncoderState.Polys out' } pb
+          have h16 : out'.length = 16 := out'.property
+          refine ⟨h_idx.symm, h_pts', by rw [h_len', h16], fun j hj => ?_⟩
+          have hj' : j < pb.polys.length := by rw [h_len', ← h16]; exact hj
+          obtain ⟨h_deg, h_coef⟩ := h_st j hj'
+          have h_ev : (pb.polys[j]!).length % 2 = 0 := (h_ok j hj').2
+          refine ⟨by rw [h_deg]; omega, fun k hk => ?_⟩
+          have h := h_coef k (by rw [← h_deg]; exact hk)
+          exact ⟨h.symm, by rw [h], by rw [h]⟩
       · obtain ⟨rfl, j, hj, hbad⟩ := h_r
-        rw [if_neg]
+        rw [ite_eq_right]
         rintro (⟨-, -, h_el⟩ | ⟨h_nil, -, -⟩)
         · have := h_el j (by omega)
           omega
@@ -608,7 +638,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         rintro (⟨-, h16, -⟩ | ⟨-, h16, -⟩)
         · exact h_len (by scalar_tac)
         · simp [alloc.vec.Vec.length, h_pts'] at h16
-      simp only [WP.spec_ok, if_neg h_nwf]
+      simp only [WP.spec_ok, ite_eq_right h_nwf]
   next h_pts =>
     have h_pts' : pb.pts.val ≠ [] := by simpa [List.isEmpty_iff] using h_pts
     split
@@ -622,7 +652,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
           · exact h_pts' h_nil
           · simp only [bne_iff_ne, ne_eq] at h_ne
             exact h_ne (by scalar_tac)
-        simp only [WP.spec_ok, if_neg h_nwf]
+        simp only [WP.spec_ok, ite_eq_right h_nwf]
       next h_ne =>
         have h_len' : pb.pts.length = 16 := by
           simp only [bne_iff_ne, ne_eq, not_not] at h_ne
@@ -643,33 +673,34 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         · obtain ⟨h_idx, h_ok, h_st⟩ := h_r
           have h_wf : FromPbWellFormed pb :=
             Or.inr ⟨h_polys', h_len', fun j hj => h_ok j (by omega)⟩
-          rw [if_pos h_wf]
+          rw [ite_eq_left h_wf]
           cases st with
           | Polys _ => exact h_st.elim
           | Points out' =>
-            have h_enc : ∀ j < 16, (out'[j]!).value.length = (pb.pts[j]!).length / 2 ∧
-                ∀ k < (pb.pts[j]!).length / 2,
-                  ((out'[j]!).value[k]!).value.val =
-                    256 * ((pb.pts[j]!)[2 * k]!).val + ((pb.pts[j]!)[2 * k + 1]!).val := by
-              intro j hj
-              obtain ⟨h1, h2⟩ := h_st j hj
-              exact ⟨h1, fun k hk => by rw [h2 k hk]; ring⟩
-            have h_even : ∀ j < 16, (pb.pts[j]!).length % 2 = 0 := h_ok
-            clear h_st h_ok h_wf h_out h_ne h_pts h_polys
-            exact ⟨h_idx.symm, by grind⟩
+            change IntoPbPostCond { idx := idx, s := EncoderState.Points out' } pb
+            have h16 : out'.length = 16 := out'.property
+            refine ⟨h_idx.symm, h_polys', by rw [h_len', h16], fun j hj => ?_⟩
+            have hj' : j < 16 := h16 ▸ hj
+            obtain ⟨h_vlen, h_val⟩ := h_st j hj'
+            have h_ev : (pb.pts[j]!).length % 2 = 0 := h_ok j hj'
+            refine ⟨by rw [h_vlen]; omega, fun k hk => ?_⟩
+            have h : ((out'[j]!).value[k]!).value.val =
+                256 * ((pb.pts[j]!)[2 * k]!).val + ((pb.pts[j]!)[2 * k + 1]!).val := by
+              rw [h_val k (by rw [← h_vlen]; exact hk), Nat.mul_comm]
+            exact ⟨h.symm, by rw [h], by rw [h]⟩
         · obtain ⟨rfl, j, -, hj, hbad⟩ := h_r
           have h_nwf : ¬ FromPbWellFormed pb := by
             rintro (⟨h_nil, -, -⟩ | ⟨-, -, h_el⟩)
             · exact h_pts' h_nil
             · exact hbad (h_el j hj)
-          simp only [if_neg h_nwf]
+          simp only [ite_eq_right h_nwf]
     next h_polys =>
       have h_polys' : pb.polys.val ≠ [] := by simpa [List.isEmpty_iff] using h_polys
       have h_nwf : ¬ FromPbWellFormed pb := by
         rintro (⟨h_nil, -, -⟩ | ⟨h_nil, -, -⟩)
         · exact h_pts' h_nil
         · exact h_polys' h_nil
-      simp only [WP.spec_ok, if_neg h_nwf]
+      simp only [WP.spec_ok, ite_eq_right h_nwf]
 
 /-- The old spec theorem for `from_pb`, kept to establish that the refactor lost nothing: it is
 now a corollary of the generalised `from_pb_spec` via `WP.spec_mono. Not `@[step]` anymore, so that

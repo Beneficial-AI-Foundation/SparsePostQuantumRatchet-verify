@@ -12,6 +12,7 @@ set_option linter.unusedVariables false
 set_option linter.style.whitespace false
 set_option linter.style.setOption false
 set_option linter.style.longLine false
+set_option linter.internalConstructors false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -28,7 +29,7 @@ namespace spqr
     Source: '/rustc/library/core/src/borrow.rs', lines 229:0-229:38
     Name pattern: [core::borrow::Borrow<&'0 @T, @T>] -/
 @[reducible, rust_trait_impl "core::borrow::Borrow<&'0 @T, @T>"]
-def Shared0T.Insts.CoreBorrowBorrow (T : Type) : core.borrow.Borrow T T := {
+def Shared0T.Insts.CoreBorrowBorrow (T : Type _) : core.borrow.Borrow T T := {
   borrow := Shared0T.Insts.CoreBorrowBorrow.borrow
 }
 
@@ -36,8 +37,8 @@ def Shared0T.Insts.CoreBorrowBorrow (T : Type) : core.borrow.Borrow T T := {
     Source: '/rustc/library/core/src/fmt/mod.rs', lines 2871:8-2871:46
     Name pattern: [core::fmt::Display<&'0 @T>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<&'0 @T>"]
-def Shared0T.Insts.CoreFmtDisplay {T : Type} (DisplayInst : core.fmt.Display T)
-  : core.fmt.Display T := {
+def Shared0T.Insts.CoreFmtDisplay {T : Type _} (DisplayInst : core.fmt.Display
+  T) : core.fmt.Display T := {
   fmt := Shared0T.Insts.CoreFmtDisplay.fmt DisplayInst
 }
 
@@ -62,7 +63,7 @@ def Usize.Insts.CoreFmtDisplay : core.fmt.Display Std.Usize := {
     Name pattern: [core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>] -/
 @[reducible, rust_trait_impl
   "core::ops::range::RangeBounds<core::ops::range::RangeFrom<@T>, @T>"]
-def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type) :
+def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type _) :
   core.ops.range.RangeBounds (core.ops.range.RangeFrom T) T := {
   start_bound :=
     core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds.start_bound
@@ -74,9 +75,10 @@ def core.ops.range.RangeFrom.Insts.CoreOpsRangeRangeBounds (T : Type) :
     Name pattern: [alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>] -/
 @[reducible, rust_trait_impl
   "alloc::slice::Concat<[@V], @T, alloc::vec::Vec<@T>>"]
-def Slice.Insts.AllocSliceConcatTVec {T : Type} {V : Type} (corecloneCloneInst
-  : core.clone.Clone T) (coreborrowBorrowVSliceInst : core.borrow.Borrow V
-  (Slice T)) : alloc.slice.Concat (Slice V) T (alloc.vec.Vec T) := {
+def Slice.Insts.AllocSliceConcatTVec {T : Type _} {V : Type _}
+  (corecloneCloneInst : core.clone.Clone T) (coreborrowBorrowVSliceInst :
+  core.borrow.Borrow V (Slice T)) : alloc.slice.Concat (Slice V) T
+  (alloc.vec.Vec T) := {
   concat := Slice.Insts.AllocSliceConcatTVec.concat corecloneCloneInst
     coreborrowBorrowVSliceInst
 }
@@ -103,8 +105,8 @@ def libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFmtDebug :
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sorted-vec-0.8.6/src/lib.rs', lines 38:9-38:14
     Name pattern: [core::clone::Clone<sorted_vec::SortedSet<@T>>] -/
 @[reducible, rust_trait_impl "core::clone::Clone<sorted_vec::SortedSet<@T>>"]
-def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type} (corecloneCloneInst :
-  core.clone.Clone T) (corecmpOrdInst : core.cmp.Ord T) : core.clone.Clone
+def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type _} (corecloneCloneInst
+  : core.clone.Clone T) (corecmpOrdInst : core.cmp.Ord T) : core.clone.Clone
   (sorted_vec.SortedSet T) := {
   clone := sorted_vec.SortedSet.Insts.CoreCloneClone.clone corecloneCloneInst
     corecmpOrdInst
@@ -9117,7 +9119,7 @@ def encoding.Chunk.Insts.CoreMarkerCopy : core.marker.Copy encoding.Chunk := {
     Source: 'src/encoding.rs', lines 63:4-71:5
     Visibility: public -/
 def core.option.Option.Insts.SpqrEncodingEncoder.next_chunk
-  {T : Type} (EncoderInst : encoding.Encoder T) (self : Option T) :
+  {T : Type _} (EncoderInst : encoding.Encoder T) (self : Option T) :
   Result (encoding.Chunk × (Option T))
   := do
   let (o, _) := core.option.Option.take self
@@ -9129,7 +9131,7 @@ def core.option.Option.Insts.SpqrEncodingEncoder.next_chunk
     Source: 'src/encoding.rs', lines 55:4-60:5
     Visibility: public -/
 def core.option.Option.Insts.SpqrEncodingEncoder.encode_bytes
-  {T : Type} (EncoderInst : encoding.Encoder T) (msg : Slice Std.U8) :
+  {T : Type _} (EncoderInst : encoding.Encoder T) (msg : Slice Std.U8) :
   Result (core.result.Result (Option T) encoding.EncodingError)
   := do
   let r ← EncoderInst.encode_bytes msg
@@ -9144,7 +9146,7 @@ def core.option.Option.Insts.SpqrEncodingEncoder.encode_bytes
 /-- Trait implementation: [spqr::encoding::{impl spqr::encoding::Encoder for core::option::Option<T>}]
     Source: 'src/encoding.rs', lines 54:0-72:1 -/
 @[reducible]
-def core.option.Option.Insts.SpqrEncodingEncoder {T : Type} (EncoderInst :
+def core.option.Option.Insts.SpqrEncodingEncoder {T : Type _} (EncoderInst :
   encoding.Encoder T) : encoding.Encoder (Option T) := {
   encode_bytes := core.option.Option.Insts.SpqrEncodingEncoder.encode_bytes
     EncoderInst
@@ -9156,7 +9158,7 @@ def core.option.Option.Insts.SpqrEncodingEncoder {T : Type} (EncoderInst :
     Source: 'src/encoding.rs', lines 94:4-100:5
     Visibility: public -/
 def core.option.Option.Insts.SpqrEncodingDecoder.decoded_message
-  {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T) :
+  {T : Type _} (DecoderInst : encoding.Decoder T) (self : Option T) :
   Result (Option (alloc.vec.Vec Std.U8))
   := do
   let o ← core.option.Option.as_ref self
@@ -9167,7 +9169,7 @@ def core.option.Option.Insts.SpqrEncodingDecoder.decoded_message
     Source: 'src/encoding.rs', lines 84:4-91:5
     Visibility: public -/
 def core.option.Option.Insts.SpqrEncodingDecoder.add_chunk
-  {T : Type} (DecoderInst : encoding.Decoder T) (self : Option T)
+  {T : Type _} (DecoderInst : encoding.Decoder T) (self : Option T)
   (chunk : encoding.Chunk) :
   Result (Option T)
   := do
@@ -9180,7 +9182,7 @@ def core.option.Option.Insts.SpqrEncodingDecoder.add_chunk
     Source: 'src/encoding.rs', lines 76:4-81:5
     Visibility: public -/
 def core.option.Option.Insts.SpqrEncodingDecoder.new
-  {T : Type} (DecoderInst : encoding.Decoder T) (len_bytes : Std.Usize) :
+  {T : Type _} (DecoderInst : encoding.Decoder T) (len_bytes : Std.Usize) :
   Result (core.result.Result (Option T) encoding.EncodingError)
   := do
   let r ← DecoderInst.new len_bytes
@@ -9195,7 +9197,7 @@ def core.option.Option.Insts.SpqrEncodingDecoder.new
 /-- Trait implementation: [spqr::encoding::{impl spqr::encoding::Decoder for core::option::Option<T>}]
     Source: 'src/encoding.rs', lines 75:0-101:1 -/
 @[reducible]
-def core.option.Option.Insts.SpqrEncodingDecoder {T : Type} (DecoderInst :
+def core.option.Option.Insts.SpqrEncodingDecoder {T : Type _} (DecoderInst :
   encoding.Decoder T) : encoding.Decoder (Option T) := {
   new := core.option.Option.Insts.SpqrEncodingDecoder.new DecoderInst
   add_chunk := core.option.Option.Insts.SpqrEncodingDecoder.add_chunk
@@ -9246,8 +9248,8 @@ def incremental_mlkem768.ek_matches_header
     Source: 'src/incremental_mlkem768.rs', lines 34:0-43:1
     Visibility: public -/
 def incremental_mlkem768.generate
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (rng : R) :
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (rng : R) :
   Result (incremental_mlkem768.Keys × R)
   := do
   let randomness := Array.repeat 64#usize 0#u8
@@ -9272,8 +9274,8 @@ def incremental_mlkem768.generate
     Source: 'src/incremental_mlkem768.rs', lines 48:0-66:1
     Visibility: public -/
 def incremental_mlkem768.encaps1
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (hdr : alloc.vec.Vec Std.U8) (rng : R) :
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (hdr : alloc.vec.Vec Std.U8) (rng : R) :
   Result (((alloc.vec.Vec Std.U8) × (alloc.vec.Vec Std.U8) × (alloc.vec.Vec
     Std.U8)) × R)
   := do
@@ -10231,8 +10233,8 @@ def v1.chunked.send_ek.KeysUnsampled.epoch
     Source: 'src/v1/unchunked/send_ek.rs', lines 84:4-100:5
     Visibility: public -/
 def v1.unchunked.send_ek.KeysUnsampled.send_header
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (self : v1.unchunked.send_ek.KeysUnsampled)
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (self : v1.unchunked.send_ek.KeysUnsampled)
   (rng : R) :
   Result ((v1.unchunked.send_ek.HeaderSent × (alloc.vec.Vec Std.U8) ×
     (alloc.vec.Vec Std.U8)) × R)
@@ -10249,8 +10251,8 @@ def v1.unchunked.send_ek.KeysUnsampled.send_header
     Source: 'src/v1/chunked/send_ek.rs', lines 59:4-66:5
     Visibility: public -/
 def v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled) 
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (self : v1.chunked.send_ek.KeysUnsampled)
   (rng : R) :
   Result ((v1.chunked.send_ek.KeysSampled × encoding.Chunk) × R)
   := do
@@ -10344,8 +10346,8 @@ def v1.chunked.send_ct.HeaderReceived.epoch
     Source: 'src/v1/unchunked/send_ct.rs', lines 120:4-148:5
     Visibility: public -/
 def v1.unchunked.send_ct.HeaderReceived.send_ct1
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (self : v1.unchunked.send_ct.HeaderReceived)
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (self : v1.unchunked.send_ct.HeaderReceived)
   (rng : R) :
   Result ((v1.unchunked.send_ct.Ct1Sent × (alloc.vec.Vec Std.U8) ×
     EpochSecret) × R)
@@ -10382,8 +10384,8 @@ def v1.unchunked.send_ct.HeaderReceived.send_ct1
     Source: 'src/v1/chunked/send_ct.rs', lines 123:4-142:5
     Visibility: public -/
 def v1.chunked.send_ct.HeaderReceived.send_ct1_chunk
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (self : v1.chunked.send_ct.HeaderReceived) 
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (self : v1.chunked.send_ct.HeaderReceived)
   (rng : R) :
   Result ((v1.chunked.send_ct.Ct1Sampled × encoding.Chunk × EpochSecret) ×
     R)
@@ -10413,8 +10415,8 @@ def v1.chunked.send_ct.NoHeaderReceived.epoch
 /-- [spqr::v1::chunked::states::{spqr::v1::chunked::states::States}::send]:
     Source: 'src/v1/chunked/states.rs', lines 115:4-273:5 -/
 def v1.chunked.states.States.send
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (self : v1.chunked.states.States) (rng : R) :
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (self : v1.chunked.states.States) (rng : R) :
   Result ((core.result.Result v1.chunked.states.Send Error) × R)
   := do
   match self with
@@ -11924,8 +11926,8 @@ def chain_from_version_negotiation
     Source: 'src/lib.rs', lines 271:0-331:1
     Visibility: public -/
 def send
-  {R : Type} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst :
-  rand_core_1.CryptoRng R) (state : alloc.vec.Vec Std.U8) (rng : R) :
+  {R : Type _} (rand_1rngRngInst : rand_1.rng.Rng R) (rand_core_1CryptoRngInst
+  : rand_core_1.CryptoRng R) (state : alloc.vec.Vec Std.U8) (rng : R) :
   Result ((core.result.Result Send Error) × R)
   := do
   let r ← decode_state state

@@ -46,19 +46,19 @@ theorem IteratorRange_next_I32_spec
         iter1.start.val = iter.start.val + 1 ∧ iter1.end = iter.end ⦄ := by
   simp only [IteratorRange.next]
   unfold core.iter.range.StepI32 core.iter.range.IScalarStep
-  simp only [liftFun2, liftFun1, core.clone.impls.CloneI32.clone, bind_tc_ok]
+  simp only [liftFun2, liftFun1, core.clone.impls.CloneI32.clone, bind_ok]
   have h_lt_iff :
       (core.cmp.impls.PartialOrdI32.lt iter.start iter.end = true) =
       (iter.start.val < iter.end.val) := by
     simp [core.cmp.impls.PartialOrdI32.lt]
   simp only [h_lt_iff]
   by_cases hlt : iter.start.val < iter.end.val
-  · rw [if_pos hlt]
+  · rw [ite_eq_left hlt]
     have hfwd : iter.start.val + (1#usize).val ≤ IScalar.max .I32 := by scalar_tac
     simp only [core.iter.range.IScalarStep.forward_checked, hfwd, reduceDIte,
-      bind_tc_ok, WP.spec_ok]
+      bind_ok, WP.spec_ok]
     grind
-  · rw [if_neg hlt]
+  · rw [ite_eq_right hlt]
     grind
 
 end core.iter.range.IteratorRange

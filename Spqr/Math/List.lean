@@ -13,7 +13,7 @@ public import Spqr.Math.Poly.Horner.Eval
 public import Spqr.Math.Poly.ExpectedTrailing.Basic
 public import Spqr.Math.Poly.Identities.Basic
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
@@ -39,9 +39,9 @@ independent of both Mathlib-specific algebra and Aeneas-extracted types.
 * `list_getElem?_getD_eq_getElem`: `xs[n]?.getD default = xs[n]` when `n < xs.length`.
 * `getElem?_append_of_lt`: `(l₁ ++ l₂)[i]? = l₁[i]?` when `i < l₁.length`.-/
 
-@[expose] public section
-
 /-! ## List indexing utilities -/
+
+@[expose] public section
 
 /-- If `xs[k]? = ys[k]?` and both `k` are in bounds, then `xs.get k = ys.get k`. -/
 theorem list_get_of_getElem?_eq {T : Type} {xs ys : List T}

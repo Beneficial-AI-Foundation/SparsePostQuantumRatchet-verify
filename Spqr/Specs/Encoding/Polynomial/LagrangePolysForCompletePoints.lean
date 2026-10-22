@@ -11,7 +11,7 @@ public import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.LinearFactors.Degree

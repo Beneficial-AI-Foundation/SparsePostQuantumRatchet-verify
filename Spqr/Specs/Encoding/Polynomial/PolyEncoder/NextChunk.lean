@@ -8,7 +8,7 @@ module
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
 public import Spqr.Math.Poly.Lagrange.CompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{Encoder for PolyEncoder}::next_chunk`

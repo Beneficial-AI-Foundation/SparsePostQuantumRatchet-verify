@@ -13,7 +13,7 @@ public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.LinearFactors.Degree
@@ -42,9 +42,7 @@ private lemma getElem!_of_drop_cons {l : List (Slice U8)} {n : Nat}
 private lemma drop_succ_of_drop_cons {α : Type*} {l : List α} {n : Nat}
     {hd : α} {tl : List α} (h : l.drop n = hd :: tl) :
     l.drop (n + 1) = tl := by
-  have key : (l.drop n).drop 1 = l.drop (n + 1) := List.drop_drop
-  simp only [← key, h]
-  grind
+  rw [← List.drop_drop, h]; rfl
 
 /-- Pops head chunk `chd`, advances chunks to `ctl`, increments count, appends
 `g` with `g.toGF216 = (256 * chd[0]! + chd[1]!).toGF216` to `pts[count % 16].value`,
@@ -74,36 +72,55 @@ private theorem body_spec_chunk
     core.iter.adapters.enumerate.IteratorEnumerate.next,
     core.slice.iter.IteratorChunksExact.next]
   split
-  · rename_i h_nil
-    rw [h_chunks] at h_nil; exact absurd h_nil (List.cons_ne_nil _ _)
-  · rename_i hd tl rest
+  next h_nil => rw [h_chunks] at h_nil; exact absurd h_nil (List.cons_ne_nil _ _)
+  next hd tl rest =>
     have h_hd : hd = chd := by have h := rest.symm.trans h_chunks; injection h
     have h_tl : tl = ctl := by have h := rest.symm.trans h_chunks; injection h
     subst h_hd; subst h_tl
-    simp only [bind_tc_eq, Std.bind_assoc, bind_ok]
-    step*
-    · simp_all
-    · simp_all
-    · scalar_tac
-    · simp_all; grind
-    · simp_all only [alloc.vec.Vec.length, Array.getElem!_Nat_eq,
-      getElem!_pos, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
-      Array.val_to_slice, UScalarTy.U8_numBits_eq, UScalarTy.U16_numBits_eq, Nat.reduceLeDiff,
-      UScalar.cast_val_mod_pow_greater_numBits_eq, Bvify.U16.UScalar_bv, Bvify.UScalar.cast_bv,
-      Bvify.U8.UScalar_bv, Slice.getElem!_Nat_eq, List.mem_cons, true_or,
-      Order.lt_two_iff, zero_le, Std.le_refl, Array.set_val_eq, List.getElem!_eq_getElem?_getD,
-      ne_eq, true_and]
-      use g
-      simp_all only
-      constructor
-      · congr 1
-        rw [Nat.shiftLeft_eq]
-        simp only [Nat.reducePow]
-        have : (↑(hd.val)[0]! : Nat) * 256 < U16.size := by scalar_tac
-        grind [Nat.mod_eq_of_lt this]
-      · have h_len : (↑pts' : List Point).length = 16 := by scalar_tac
-        simp_all
-        grind
+    have h_hd_len : hd.length = 2 := h_chunks_len hd (by rw [h_chunks]; exact List.mem_cons_self ..)
+    simp only [bind_ok]
+    step as ⟨count1, h_count1⟩
+    simp only [lift, bind_ok]
+    step as ⟨poly, h_poly⟩
+    step as ⟨p1, index_mut_back, h_p1, h_back⟩
+    step as ⟨i2, h_i2⟩
+    step as ⟨i4, h_i4, _⟩
+    step as ⟨i5, h_i5⟩
+    step as ⟨i7, h_i7⟩
+    step as ⟨g, h_g⟩
+    have h_poly_val : poly.val = iter'.count.val % 16 := by rw [h_poly]; simp
+    have h_poly_lt : poly.val < (pts' : List Point).length := by
+      rw [h_poly_val, pts'.property]; exact Nat.mod_lt _ (by norm_num)
+    have h_p1' : p1 = pts'[iter'.count.val % 16]! := by
+      rw [h_p1, Array.getElem!_Nat_eq, ← h_poly_val]
+      exact List.Inhabited_getElem_eq_getElem! _ _ h_poly_lt
+    have : p1.value.val.length < Usize.max := by
+      have := h_push_ok (iter'.count.val % 16) (Nat.mod_lt _ (by norm_num))
+      rw [← h_p1'] at this; simp only [alloc.vec.Vec.length] at this; omega
+    step as ⟨v, h_v⟩
+    have h_arr : (index_mut_back { value := v } : Std.Array Point 16#usize).val =
+        (pts' : List Point).set (iter'.count.val % 16) { value := v } := by
+      rw [h_back, Array.set_val_eq, h_poly_val]
+    have h_mod_lt : iter'.count.val % 16 < (pts' : List Point).length := h_poly_val ▸ h_poly_lt
+    refine ⟨h_count1, g, ?_, ?_, fun k hk => ?_⟩
+    · -- `g = 256 * hd[0] + hd[1]`
+      rw [h_g]
+      congr 1
+      have hi2 : i2.val < 256 := i2.hBounds
+      have hi5 : i5.val < 256 := i5.hBounds
+      have h_len' : (hd : List U8).length = 2 := h_hd_len
+      have h_hd0 : (hd[0]! : U8) = i2 := by
+        rw [h_i2, Slice.getElem!_Nat_eq]
+        exact (List.Inhabited_getElem_eq_getElem! (hd : List U8) 0 (by omega)).symm
+      have h_hd1 : (hd[1]! : U8) = i5 := by
+        rw [h_i5, Slice.getElem!_Nat_eq]
+        exact (List.Inhabited_getElem_eq_getElem! (hd : List U8) 1 (by omega)).symm
+      rw [h_hd0, h_hd1, h_i7, h_i4, Nat.shiftLeft_eq]
+      scalar_tac
+    · simp only [Array.getElem!_Nat_eq, h_arr, List.getElem!_eq_getElem?_getD,
+        List.getElem?_set_self h_mod_lt, Option.getD_some, h_v, h_p1']
+    · simp only [Array.getElem!_Nat_eq, h_arr, List.getElem!_eq_getElem?_getD,
+        List.getElem?_set_ne (Ne.symm hk)]
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop 0
 
@@ -145,38 +162,38 @@ theorem loop_spec
       it.count.val ≤ chunks.length ∧
       (∀ c ∈ it.iter.chunks, c.length = 2) ∧
       (it.count.val + it.iter.chunks.length ≤ Usize.max) ∧
-      (∀ j, j < 16 → (ps[j]!).value.length + it.iter.chunks.length ≤ Usize.max) ∧
+      (∀ j, j < 16 → (ps[j]! : Point).value.length + it.iter.chunks.length ≤ Usize.max) ∧
       (∀ j, j < 16 → ∃ sfx : List GF16,
-        ps[j]!.value = pts[j]!.value ++ sfx ∧
+        (ps[j]! : Point).value = (pts[j]! : Point).value ++ sfx ∧
         sfx.length = it.count.val / 16 +
           (if j < it.count.val % 16 then 1 else 0) ∧
         ∀ m, m < sfx.length →
           j + 16 * m < chunks.length ∧
           sfx[m]!.toGF216 =
-            (256 * (chunks[j + 16 * m]!)[0]! +
-             (chunks[j + 16 * m]!)[1]!).toGF216))
+            (256 * ((chunks[j + 16 * m]!)[0]!).val +
+             ((chunks[j + 16 * m]!)[1]!).val).toGF216))
   · rintro ⟨it, ps⟩ ⟨h_drop, h_le, h_clen, h_cbound, h_pbnd, h_sinv⟩
     simp only [] at h_drop h_le h_clen h_cbound h_pbnd h_sinv
     cases h_ch : it.iter.chunks with
     | nil =>
       have h_cnt_eq : it.count.val = chunks.length := by
-        have h1 : (chunks.drop it.count.val).length = chunks.length - it.count.val :=
-          List.length_drop
-        grind
+        have h1 := congrArg List.length h_drop
+        rw [h_ch, List.length_drop] at h1
+        simp only [List.length_nil] at h1
+        omega
       rw [h_cnt_eq] at h_sinv
       unfold body
       simpa [core.iter.adapters.enumerate.IteratorEnumerate.next,
         core.slice.iter.IteratorChunksExact.next, h_ch] using h_sinv
     | cons hd tl =>
-      have h_push' : ∀ j, j < 16 → (ps[j]!).value.length + 1 ≤ Usize.max := by
+      have h_push' : ∀ j, j < 16 → (ps[j]! : Point).value.length + 1 ≤ Usize.max := by
         intro j hj
         have h := h_pbnd j hj
-        rw [h_ch] at h; simp at h; grind
+        rw [h_ch, List.length_cons] at h; omega
       have h_cnt_ok : it.count.val + 1 ≤ Usize.max := by
         rw [h_ch] at h_cbound; simp at h_cbound; omega
       have h_clen' : ∀ c ∈ it.iter.chunks, c.length = 2 := h_clen
-      have h_body := body_spec_chunk it ps hd tl h_ch h_push'
-        (by rw [h_ch] at h_clen'; grind) h_cnt_ok
+      have h_body := body_spec_chunk it ps hd tl h_ch h_push' h_clen' h_cnt_ok
       apply WP.spec_mono h_body
       intro cf h_cf
       match cf with
@@ -203,17 +220,16 @@ theorem loop_spec
           · intro j hj
             by_cases heq : j = k % 16
             · subst heq
-              have hlen : (ps''[k % 16]!).value.length = (ps[k % 16]!).value.length + 1 := by
-                have := congr_arg (fun v => v.length) h_slot
-                simp only [ Array.getElem!_Nat_eq,
-                  List.getElem!_eq_getElem?_getD] at this
-                grind
+              have hlen : (ps''[k % 16]! : Point).value.length =
+                  (ps[k % 16]! : Point).value.length + 1 := by
+                have := congrArg List.length h_slot
+                simpa only [List.length_append, List.length_singleton] using this
               rw [hlen, h_tl]
               have h := h_pbnd (k % 16) (by omega)
-              rw [h_ch] at h; simp at h; grind
+              rw [h_ch, List.length_cons] at h; omega
             · rw [h_other j heq, h_tl]
               have h := h_pbnd j hj
-              rw [h_ch] at h; simp at h; grind
+              rw [h_ch, List.length_cons] at h; omega
           · intro j hj
             obtain ⟨sfx, h_sfx_eq, h_sfx_len, h_sfx_cont⟩ := h_sinv j hj
             by_cases heq : j = k % 16
@@ -222,11 +238,12 @@ theorem loop_spec
               · rw [h_slot, h_sfx_eq, List.append_assoc]
               · rw [List.length_append, List.length_cons, List.length_nil,
                     h_sfx_len, h_cnt]
-                grind
+                have h16 : k % 16 < 16 := Nat.mod_lt _ (by norm_num)
+                split_ifs <;> omega
               · intro m hm
                 rw [List.length_append, List.length_cons, List.length_nil,
                     h_sfx_len] at hm
-                simp at hm
+                simp only [Nat.lt_succ_iff] at hm
                 by_cases hm_old : m < sfx.length
                 · have h_get : (sfx ++ [g])[m]! = sfx[m]! := by
                     simp only [List.getElem!_eq_getElem?_getD]
@@ -248,14 +265,14 @@ theorem loop_spec
                     rw [h_get, h_g]
                     have h_sfx_len' : sfx.length = k / 16 := by
                       rw [h_sfx_len]; simp
-                    congr 1; congr 1
-                    · congr 1
-                      · grind
-                    · grind
+                    have hk : k % 16 + 16 * (k / 16) = k := Nat.mod_add_div k 16
+                    rw [h_sfx_len', hk, h_hd_eq]
             · refine ⟨sfx, ?_, ?_, h_sfx_cont⟩
               · rw [h_other j heq, h_sfx_eq]
-              · rw [h_sfx_len, h_cnt]; grind
-        · grind
+              · rw [h_sfx_len, h_cnt]
+                split_ifs <;> omega
+        · change it''.iter.chunks.length < (hd :: tl).length
+          rw [h_tl, List.length_cons]; omega
   · simp only []
     refine ⟨?_, ?_, h_chunks_len, ?_, ?_, ?_⟩
     · rw [h_count_zero, List.drop_zero]
@@ -277,6 +294,18 @@ and `(listToGF216Poly pts[j]!.value).coeff k =
 (256 * msg[2 * (j + 16 * k)]! + msg[2 * (j + 16 * k) + 1]!.val).toGF216`. -/
 
 namespace spqr.encoding.polynomial.PolyEncoder
+
+/-- `2 ^ 16 * 16` fits in `usize` on every platform. -/
+private lemma pow16_mul16_le_usize_max : (2 : Nat) ^ 16 * 16 ≤ Usize.max := by
+  simp only [Usize.max, Usize.numBits]
+  cases System.Platform.numBits_eq <;> simp_all
+
+/-- `1 <<< 16 = 65536` as a `usize` value on every platform. -/
+private lemma shift16_mod_usize_size : (1 <<< 16) % Usize.size = 65536 := by
+  rw [show (1 : Nat) <<< 16 = 65536 by norm_num [Nat.shiftLeft_eq]]
+  apply Nat.mod_eq_of_lt
+  simp only [Usize.size, Usize.numBits]
+  cases System.Platform.numBits_eq <;> simp_all
 
 private theorem call_mut_ok
     (c : PolyEncoder.encode_bytes_base.closure) (i : Usize) :
@@ -338,48 +367,30 @@ theorem encode_bytes_base_spec (msg : Slice U8)
       call_mut_ok msg 0#usize (16#usize).val ?_
     simp only [show (16#usize).val = 16 from rfl, show (0#usize : Usize).val = 0 from rfl,
       Nat.zero_add]
-    simp only [Usize.max, Usize.numBits]
-    cases System.Platform.numBits_eq <;> simp_all
+    exact Nat.le_trans (by norm_num) pow16_mul16_le_usize_max
   case hlen =>
     simp only [show (16#usize).val = 16 from rfl, List.length_replicate]
-  case hy =>
-    cases System.Platform.numBits_eq <;> simp_all
+  case hy => cases System.Platform.numBits_eq <;> simp_all
   case hmax =>
-    have h_pow : (1 : Nat) <<< 16 = 65536 := by
-      norm_num [Nat.shiftLeft_eq]
-    have h_shift : (1 <<< 16) % Usize.size = 65536 := by
-      rw [h_pow]
-      apply Nat.mod_eq_of_lt
-      simp only [Usize.size, Usize.numBits]
-      cases System.Platform.numBits_eq <;> simp_all
-    have h3 : i3.val = 65536 := by rw [← h_shift]; assumption
+    have h3 : i3.val = 65536 := by rwa [← shift16_mod_usize_size]
     rw [h3]
-    have h_max : (65536 : Nat) * 16 ≤ Usize.max := by
-      simp only [Usize.max, Usize.numBits]
-      cases System.Platform.numBits_eq <;> simp_all
+    have := pow16_mul16_le_usize_max
     omega
-  · exfalso
-    have h_pow : (1 : Nat) <<< 16 = 65536 := by norm_num [Nat.shiftLeft_eq]
-    have h_shift : (1 <<< 16) % Usize.size = 65536 := by
-      rw [h_pow]
-      apply Nat.mod_eq_of_lt
-      simp only [Usize.size, Usize.numBits]
-      cases System.Platform.numBits_eq <;> simp_all
+  · -- `msg.len() > 2 ^ 16 * 16` contradicts `h_len`
+    exfalso
     have h_i5 : i5.val = 65536 * 16 := by
-      rw [‹i5.val = _›, ‹i4.val = _›, ‹i3.val = _›, h_shift]
+      rw [‹i5.val = _›, ‹i4.val = _›, ‹i3.val = _›, shift16_mod_usize_size]
     have h_gt' : msg.len.val > i5.val := by scalar_tac
     have h_msglen : msg.len.val = (msg.val).length := by scalar_tac
-    grind
+    have h_len' : msg.val.length ≤ 65536 * 16 := h_len
+    omega
   · have h_pts_empty : ∀ (j : Nat), j < 16 → pts.val[j]!.value.val = [] := by
       intro j hj
       rw [pts_post]
       interval_cases j <;> rfl
     have h_msglen : msg.len.val = (msg.val).length := by scalar_tac
-    have h_len_bound : (msg.val).length ≤ Usize.max := by
-      have h_max : (2 : Nat) ^ 16 * 16 ≤ Usize.max := by
-        simp only [Usize.max, Usize.numBits]
-        cases System.Platform.numBits_eq <;> simp_all
-      grind
+    have h_len_bound : (msg.val).length ≤ Usize.max :=
+      Nat.le_trans h_len pow16_mul16_le_usize_max
     apply WP.spec_bind (core.slice.Slice.chunks_exact_spec_with_content msg 2#usize (by decide))
     intro ce h_ce
     obtain ⟨h_ce_len, h_ce_count, h_ce_rem, h_ce_content⟩ := h_ce
@@ -391,11 +402,18 @@ theorem encode_bytes_base_spec (msg : Slice U8)
           core.iter.adapters.enumerate.Enumerate (core.slice.iter.ChunksExact U8))
         pts
         (by rfl)
-        (by grind)
-        (by grind)
+        (fun j hj => by
+          -- `pts[j]` is still empty, and there are `msg.len() / 2` chunks
+          have h0 : (pts[j]! : Point).value.length = 0 := by
+            simpa [Array.getElem!_Nat_eq, alloc.vec.Vec.length] using
+              congrArg List.length (h_pts_empty j hj)
+          rw [h0, zero_add, h_ce_count]
+          exact Nat.le_trans (Nat.div_le_self _ _) h_len_bound)
+        (fun c hc => h_ce_len c hc)
         (by
           simp only [show (0#usize : Usize).val = 0 from rfl, Nat.zero_add]
-          grind))
+          rw [h_ce_count]
+          exact Nat.le_trans (Nat.div_le_self _ _) h_len_bound))
     intro pts1 h_pts1
     simp only [WP.spec_ok]
     simp only [alloc.vec.Vec.length, Array.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD,
@@ -419,24 +437,27 @@ theorem encode_bytes_base_spec (msg : Slice U8)
       have h_empty' : (pts[j]!).value.val = [] := by
         rw [Array.getElem!_Nat_eq]; exact h_empty
       have h_val_eq : pts1[j]!.value.val = suffix := by
-        have := h_eq; simp at this; grind
+        rw [h_eq, h_empty', List.nil_append]
       change pts1[j]!.value.val.length = _
-      rw [h_val_eq, h_len_suf]
-      split <;> grind
+      rw [h_val_eq, h_len_suf, h_ce_count]
+      simp only [show (2#usize).val = 2 from rfl]
+      split <;> rfl
     · intro j hj k hk
       obtain ⟨suffix, h_eq, h_len_suf, h_content⟩ := h_suffix j hj
       have h_empty := h_pts_empty j hj
       have h_empty' : (pts[j]!).value.val = [] := by
         rw [Array.getElem!_Nat_eq]; exact h_empty
       have h_val_eq : pts1[j]!.value.val = suffix := by
-        have := h_eq; simp  at this; grind
+        rw [h_eq, h_empty', List.nil_append]
       have hk' : k < suffix.length := by
         rw [← h_val_eq]; exact hk
       obtain ⟨h_chunk_bound, h_enc⟩ := h_content k hk'
       have h_bound : 2 * (j + 16 * k) + 1 < msg.val.length := by
         have h_even' : msg.val.length % 2 = 0 := by
           have := h_even; simp only [Slice.length] at this; exact this
-        grind
+        have h_cb : j + 16 * k < msg.val.length / 2 := by
+          have := h_ce_count; simp only [show (2#usize).val = 2 from rfl] at this; omega
+        omega
       refine ⟨h_bound, ?_⟩
       simp only [← List.getElem!_eq_getElem?_getD]
       simp only [Array.getElem!_Nat_eq] at h_val_eq

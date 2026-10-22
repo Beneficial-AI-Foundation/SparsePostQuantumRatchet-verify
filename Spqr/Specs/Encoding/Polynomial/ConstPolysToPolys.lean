@@ -9,7 +9,7 @@ public import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 
 /-!

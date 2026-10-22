@@ -33,7 +33,7 @@ theorem extend_from_slice_U8_spec
     intros _ _; rfl
   unfold alloc.vec.Vec.extend_from_slice
   have hlen : v.length + s.length ≤ Usize.max := h
-  rw [dif_pos hlen]
+  rw [dite_eq_left hlen]
   step*
 
 /-- **Spec theorem for `alloc.vec.Vec.extend_from_slice` specialised to `GF16`**:
@@ -53,7 +53,7 @@ theorem extend_from_slice_GF16_spec
     simp [spqr.encoding.gf.GF16.Insts.CoreCloneClone.clone]
   unfold alloc.vec.Vec.extend_from_slice
   have hlen : v.length + s.length ≤ Usize.max := h
-  rw [dif_pos hlen]
+  rw [dite_eq_left hlen]
   step*
 
 end Aeneas.Std.alloc.vec.Vec

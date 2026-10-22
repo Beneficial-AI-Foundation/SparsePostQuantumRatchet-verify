@@ -10,13 +10,11 @@ import Spqr.Specs.Encoding.Gf.GF16.Eq
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
 import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
--- Unfolds `List.resize`, whose body upstream does not `@[expose]`.
-import all Aeneas.Data.List.List
 public import Spqr.Math.Poly.ExpectedTrailing.Defs
 public import Spqr.Math.Poly.LinearFactors.Basic
 public import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Coeff.MultXdiffPolyIdentity
@@ -90,15 +88,30 @@ theorem body_spec
   by_cases h_lt : iter.start.val < iter.end.val
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
-    simp only [not_lt, tsub_le_iff_right, not_and]
-    have h_i_lt_pts : iter.start < pts.length := by grind
-    have h_i_lt_offset : iter.start < offset := by grind
-    step*
-    simp_all
-    grind[degree]
-  · obtain ⟨h_opt_eq, h_range_eq⟩ := h_none (by omega)
+    have h_end_pts : iter.end.val ≤ pts.val.length := h_end_le_pts
+    have h_end_off : iter.end.val ≤ offset.val := h_end_le_offset
+    have h_i_lt_pts : iter.start.val < pts.val.length := by omega
+    step as ⟨pi, h_pi⟩
+    step as ⟨i1, h_i1, _⟩
+    step as ⟨p1, h_len, h_mod, h_frame, _⟩
+    have h_pi' : (pts[iter.start.val]!) = pi := by
+      rw [h_pi, Slice.getElem!_Nat_eq, getElem!_pos pts.val iter.start.val h_i_lt_pts]
+    refine ⟨h_lt, h_start1, h_end1, h_len, fun j hj1 hj2 hj => ?_, fun j hj => ?_⟩
+    · rw [h_pi']
+      simpa only [alloc.vec.Vec.getElem_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq,
+        List.get_eq_getElem] using h_mod j (by omega) hj2 hj
+    · have h_pl : p.coefficients.length = p.coefficients.val.length := rfl
+      have h_eq := h_frame j (by omega)
+      have h_len' : p1.coefficients.val.length = p.coefficients.val.length := h_len
+      simp only [alloc.vec.Vec.getElem?_Nat_eq]
+      by_cases hj_lt : j < p.coefficients.val.length
+      · rw [List.getElem?_eq_getElem hj_lt, List.getElem?_eq_getElem (by omega),
+          ← getElem!_pos p.coefficients.val j hj_lt,
+          ← getElem!_pos p1.coefficients.val j (by omega), h_eq]
+      · rw [List.getElem?_eq_none (by omega), List.getElem?_eq_none (by omega)]
+  · obtain ⟨h_opt_eq, rfl⟩ := h_none h_lt
     rw [h_opt_eq]
-    grind
+    exact (WP.spec_ok _).mpr ⟨rfl, h_lt⟩
 
 /-! # Spec theorem for `lagrange_interpolate_prepare`: loop 0
 
@@ -109,7 +122,6 @@ Invariants: vector length = `offset + 1`, leading coeff = `ONE`, trailing sub-po
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
-set_option maxHeartbeats 400000 in -- required for large proof
 @[step]
 theorem loop_spec
     (pts : Slice Pt)
@@ -164,83 +176,115 @@ theorem loop_spec
                 ⟨offset - (st.1.start - iter.start) + m, hpos⟩) =
               (expectedTrailingPoly p.coefficients pts offset
                 iter.start (st.1.start - iter.start)).coeff m))
-  · rintro ⟨iter', p'⟩ ⟨h_end', h_ge', h_le', h_len', h_off', h_gf16_off', h_frame', h_trail'⟩
-    simp only [] at h_end' h_ge' h_le' h_len' h_off' h_gf16_off' h_frame' h_trail' ⊢
-    have h_end_le_pts' : iter'.end.val ≤ pts.length := by scalar_tac
-    have h_end_le_offset' : iter'.end.val ≤ offset.val := by scalar_tac
-    have h_offset_lt_len' : offset.val < p'.coefficients.length := by grind
-    step*
-    split
-    · rename_i r_post
-      simp only [] at r_post
-      obtain ⟨h_eq, h_nlt⟩ := r_post
-      subst h_eq
-      have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
-      refine ⟨h_len', (by grind), h_gf16_off', fun j hj => ?_, fun m hm hpos => ?_⟩
-      · apply h_frame'
-        intro ⟨h1, h2⟩
-        exact hj ⟨by omega, h2⟩
-      · have h_iters_eq : iter'.start.val - iter.start.val =
-            iter.end.val - iter.start.val := by grind
+  · rintro ⟨iter', p'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨h_end', h_ge', h_le', h_len', h_off', h_gf16_off', h_frame', h_trail'⟩ := hinv
+    have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
+    have h_end_off : iter.end.val ≤ offset.val := h_end_le_offset
+    have h_end_pts : iter.end.val ≤ pts.length := h_end_le_pts
+    have hP'len : p'.coefficients.val.length = offset.val + 1 := by
+      have : p'.coefficients.val.length = p.coefficients.val.length := h_len'
+      omega
+    apply WP.spec_mono (body_spec pts offset iter' p' (show iter'.end.val ≤ pts.length by omega)
+      (show iter'.end.val ≤ offset.val by omega)
+      (show offset.val < p'.coefficients.val.length by omega))
+    rintro (⟨iter'', p''⟩ | r) h_cf
+    · obtain ⟨h_lt, h_start1, h_end1, h_v1len, h_modified, h_frame⟩ := h_cf
+      have h_lt' : iter'.start.val < iter'.end.val := h_lt
+      have hRlen : p''.coefficients.val.length = offset.val + 1 := by
+        have : p''.coefficients.val.length = p'.coefficients.val.length := h_v1len
+        omega
+      have hP'len' : p'.coefficients.length = offset.val + 1 := hP'len
+      -- position `offset` and everything below the touched window are unchanged
+      have h_keep : ∀ j, ¬(offset.val - iter''.start.val ≤ j ∧ j < offset.val) →
+          p''.coefficients[j]? = p.coefficients[j]? := by
+        intro j hj
+        rw [h_frame j (by omega)]
+        exact h_frame' j (by omega)
+      have h_off'' : p''.coefficients[offset.val]? = p.coefficients[offset.val]? :=
+        h_keep offset.val (by omega)
+      dsimp only
+      have h_end1' : iter''.end.val = iter'.end.val := by rw [h_end1]
+      refine ⟨⟨h_end1.trans h_end', by omega, by omega, h_v1len.trans h_len', h_off'', ?_, h_keep,
+        fun m hm hpos => ?_⟩, show iter''.end.val - iter''.start.val <
+          iter'.end.val - iter'.start.val by omega⟩
+      · intro hoff
+        have h_eq : p''.coefficients.val[offset.val]? = p'.coefficients.val[offset.val]? :=
+          h_frame offset.val (by omega)
+        rw [← h_gf16_off' (by omega)]
+        simp only [List.get_eq_getElem]
+        rw [List.getElem?_eq_getElem hoff, List.getElem?_eq_getElem (by omega)] at h_eq
+        rw [Option.some_inj.mp h_eq]
+      · obtain ⟨k, hk⟩ : ∃ k, iter'.start.val - iter.start.val = k := ⟨_, rfl⟩
+        have hk1 : iter''.start.val - iter.start.val = k + 1 := by omega
+        simp only [hk1, List.get_eq_getElem]
+        simp only [hk] at h_trail'
+        rw [expectedTrailingPoly_succ]
+        have hs : iter'.start.val = iter.start.val + k := by omega
+        have hk_off : k + 1 ≤ offset.val := by omega
+        have hx : (pts[iter'.start.val]!).x.toGF216 =
+            (pts.val[iter.start.val + k]!).x.toGF216 := by
+          rw [Slice.getElem!_Nat_eq, hs]
+        have hT : ∀ m ≤ k, (p'.coefficients.val[offset.val - k + m]!).toGF216 =
+            (expectedTrailingPoly p.coefficients pts offset iter.start k).coeff m := by
+          intro m hm
+          rw [getElem!_pos _ _ (by omega)]
+          exact h_trail' m hm (by change _ < p'.coefficients.val.length; omega)
+        have hMod : ∀ j, offset.val - k ≤ j + 1 → j + 1 < offset.val + 1 →
+            (p''.coefficients.val[j]!).toGF216 =
+              (p'.coefficients.val[j]!).toGF216 - (p'.coefficients.val[j + 1]!).toGF216 *
+                (pts.val[iter.start.val + k]!).x.toGF216 := by
+          intro j hj1 hj2
+          have := h_modified j (by omega) (by change _ < p'.coefficients.val.length; omega)
+            (by change _ < p''.coefficients.val.length; omega)
+          rw [getElem!_pos _ _ (by omega), ← hx]
+          simpa only [alloc.vec.Vec.getElem_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq] using this
+        rw [← getElem!_pos _ _ (by omega)]
+        rcases Nat.lt_or_ge m (k + 1) with hm_lt | hm_ge
+        · rw [hMod _ (by omega) (by omega)]
+          cases m with
+          | zero =>
+            have hFr : p'.coefficients.val[offset.val - (k + 1)]! =
+                p.coefficients.val[offset.val - (k + 1)]! := by
+              have := h_frame' (offset.val - (k + 1)) (by omega)
+              simp only [alloc.vec.Vec.getElem?_Nat_eq] at this
+              simp only [List.getElem!_eq_getElem?_getD, this]
+            rw [coeff_zero_C_add_X_sub_C_mul, Nat.add_zero, hFr,
+              show offset.val - (k + 1) + 1 = offset.val - k + 0 by omega, hT 0 (by omega),
+              mul_comm]
+          | succ m' =>
+            rw [coeff_succ_C_add_X_sub_C_mul,
+              show offset.val - (k + 1) + (m' + 1) = offset.val - k + m' by omega,
+              hT m' (by omega), show offset.val - k + m' + 1 = offset.val - k + (m' + 1) by omega,
+              hT (m' + 1) (by omega), mul_comm]
+        · obtain rfl : m = k + 1 := by omega
+          have hFr :
+              p''.coefficients.val[offset.val]! = p'.coefficients.val[offset.val]! := by
+            have := h_frame offset.val (by omega)
+            simp only [alloc.vec.Vec.getElem?_Nat_eq] at this
+            simp only [List.getElem!_eq_getElem?_getD, this]
+          rw [coeff_succ_C_add_X_sub_C_mul,
+            show offset.val - (k + 1) + (k + 1) = offset.val by omega, hFr, ← hT k le_rfl,
+            show offset.val - k + k = offset.val by omega,
+            expectedTrailingPoly_coeff_eq_zero_of_lt _ _ _ _ _ _ (by omega : k < k + 1),
+            mul_zero, sub_zero]
+    · obtain ⟨rfl, h_nlt⟩ := h_cf
+      have h_nlt' : ¬iter'.start.val < iter'.end.val := h_nlt
+      have h_eq : iter'.start.val = iter.end.val := by omega
+      refine ⟨h_len', ?_, h_gf16_off', fun j hj => h_frame' j (by omega), fun m hm hpos => ?_⟩
+      · simp only [alloc.vec.Vec.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD]
+        exact congrArg (·.getD default) h_off'
+      · have h_iters_eq : iter'.start.val - iter.start.val = iter.end.val - iter.start.val := by
+          omega
         rw [h_iters_eq] at h_trail'
         exact h_trail' m hm hpos
-    · rename_i r_post
-      simp only [] at r_post
-      obtain ⟨h_lt, h_start1, h_end1, h_v1len, h_modified, h_frame⟩ := r_post
-      refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-      · rw [h_end1]; exact h_end'
-      · omega
-      · scalar_tac
-      · grind [degree]
-      · grind
-      · grind
-      · grind
-      · intro m hm hpos
-        set k := iter'.start.val - iter.start.val with hk_def
-        have hk1 : (Prod.fst r_post).start.val - iter.start.val = k + 1 := by omega
-        have hpos' : offset.val - (k + 1) + m <
-            (Prod.snd r_post).degree := by grind
-        have hget_eq : (Prod.snd r_post).coefficients.val.get
-            ⟨offset.val - ((Prod.fst r_post).start.val - iter.start.val) + m, hpos⟩ =
-            (Prod.snd r_post).coefficients.val.get
-            ⟨offset.val - (k + 1) + m, hpos'⟩ := by grind
-        rw [hget_eq, hk1]
-        rw [expectedTrailingPoly_succ]
-        set pos := offset - (k + 1) + m with hpos_def
-        by_cases hm0 : m = 0
-        · subst hm0
-          rw [coeff_zero_C_add_X_sub_C_mul]
-          have htr := h_trail' 0 (by omega)
-            (show offset - k + 0 < p'.coefficients.length by omega)
-          grind
-        · obtain ⟨m', rfl⟩ : ∃ m', m = m' + 1 := ⟨m - 1, by omega⟩
-          rw [coeff_succ_C_add_X_sub_C_mul]
-          have hpos_simp : pos = offset - k + m' := by grind
-          by_cases hm'k : m' + 1 ≤ k
-          · have hget_conv : (Prod.snd r_post).coefficients.val.get ⟨pos, hpos'⟩ =
-                (Prod.snd r_post).coefficients.val.get
-                  ⟨offset - k + m', (by grind)⟩ := by
-              congr 1
-              exact Fin.ext (by omega)
-            have hlen_m' : offset.val - k + m' < p'.coefficients.length := by omega
-            have htr_m' := h_trail' m' (by omega) hlen_m'
-            have hlen_m1 : offset.val - k + (m' + 1) < p'.coefficients.length := by omega
-            have htr_m1 := h_trail' (m' + 1) (by omega) hlen_m1
-            have hiter : iter'.start.val = iter.start.val + k := by omega
-            grind
-          · have hm'_eq : m' = k := by omega
-            subst hm'_eq
-            have hpos_off : pos = offset.val := by omega
-            have htr_k := h_trail' k (by omega)
-              (show offset.val - k + k < p'.coefficients.length by omega)
-            rw [expectedTrailingPoly_coeff_eq_zero_of_lt _ _ _ _ _ _ (by omega : k < k + 1)]
-            grind
-      · scalar_tac
   · refine ⟨rfl, le_refl _, h_le, rfl, rfl, ?_, ?_, ?_⟩
-    · grind
+    · intro hoff
+      rw [List.get_eq_getElem, ← getElem!_pos p.coefficients.val offset.val hoff]
+      rfl
     · intro _ _; rfl
     · intro m hm hpos
-      have hm0 : m = 0 := by grind
+      have hm0 : m = 0 := by dsimp only at hm; omega
       subst hm0
       simp only [Nat.sub_self, expectedTrailingPoly_zero, coeff_C_zero]
       congr 1
@@ -275,55 +319,66 @@ theorem lagrange_interpolate_prepare_spec
       (∀ m ≤ pts.length,
         (result.coefficients[m]!).toGF216 = (prodLinearFactors pts 0 pts.length).coeff m) ∧
       result.toGF216Poly = prodLinearFactors pts 0 pts.length ⦄ := by
-  unfold lagrange_interpolate_prepare degree
-  step*
-  · simp_all [GF16.Insts.CoreCloneClone.clone]
-  · simp_all [degree]
-  · simp_all [degree]
-  · have p_len : p.coefficients.val.length = (index_mut_back ONE).length := by
-      simpa [degree] using ‹p.degree = _›
-    simp_all
-  · have p_len : p.coefficients.length =
-        (index_mut_back ONE).val.length := by
-      simpa [degree] using ‹p.degree = _›
-    simp_all only [Slice.length, Order.add_one_le_iff, Usize.ofNatCore_val_eq,
-      alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.set_val_eq, List.length_set,
-      List.length_replicate,
-      lt_add_iff_pos_right, Order.lt_one_iff, getElem!_pos, List.getElem_set_self,
-      alloc.vec.Vec.getElem_Nat_eq, ONE_toGF216, implies_true, tsub_self, zero_le, true_and, not_lt,
-      alloc.vec.Vec.getElem?_Nat_eq, tsub_zero, zero_add, ONE_value, alloc.vec.Vec.length,
-      Order.lt_add_one_iff]
-    have h_bridge : expectedTrailingPoly
-        ((List.replicate (pts.length + 1) ZERO).set pts.length ONE)
-        pts pts.length 0 pts.length =
-      prodLinearFactors pts 0 pts.length := by
-      apply expectedTrailingPoly_eq_prodLinearFactors
-      · have hlen : pts.length < (List.replicate (pts.length + 1) ZERO).length := by
-          simp
-        rw [list_getElem_bang_set_self _ _ _ hlen, ONE_toGF216]
-      · intro j hj
-        rw [getElem!_pos _ j (by simp only [List.length_set, List.length_replicate]; omega),
-          List.getElem_set_ne (by omega), List.getElem_replicate, ZERO_toGF216]
-      · exact le_refl _
-      · exact le_refl _
-    have h_tr := ‹∀ m ≤ (↑pts : List Pt).length,
-      ∀ (_ : m < ({ coefficients := v.set pts.len ONE } : Poly).degree), _›
-    constructor
-    · intro m hm
-      have hm_bound : m < ({ coefficients := v.set pts.len ONE } : Poly).degree := by
-        simp only [degree]; grind
-      have h5 := h_tr m hm hm_bound
-      rw [h_bridge] at h5
-      exact h5
-    · change listToGF216Poly p.coefficients = prodLinearFactors pts 0 pts.length
-      apply listToGF216Poly_eq_of_coeffs
-      · intro m hm
-        have hm_le : m ≤ pts.length := by grind
-        have hm_bound : m < ({ coefficients := v.set pts.len ONE } : Poly).degree := by
-          simp only [degree]; grind
-        have h5 := h_tr m hm_le hm_bound
-        grind
-      · intro m hm
-        exact prodLinearFactors_coeff_eq_zero_high _ _ _ _ (by grind)
+  unfold lagrange_interpolate_prepare
+  have h_plen : (Slice.len pts).val = pts.length := Slice.len_val pts
+  step as ⟨i1, h_i1⟩
+  step as ⟨v, h_v, _⟩
+  · rfl
+  step as ⟨x, index_mut_back, _, h_imb⟩
+  have h_c : (index_mut_back ONE).val =
+      (List.replicate (pts.length + 1) ZERO).set pts.length ONE := by
+    rw [h_imb, alloc.vec.Vec.set_val_eq, h_v, h_i1, h_plen]
+  have h_clen : (index_mut_back ONE).val.length = pts.length + 1 := by
+    rw [h_c, List.length_set, List.length_replicate]
+  have h_one : (index_mut_back ONE).val[pts.length]! = ONE := by
+    rw [h_c, list_getElem_bang_set_self _ _ _ (by simp)]
+  step with lagrange_interpolate_prepare_loop.loop_spec as
+    ⟨p, h_pdeg, h_poff, _, _, h_trail⟩
+  · change (index_mut_back ONE).val.length = (Slice.len pts).val + 1
+    rw [h_clen, h_plen]
+  have h_pdeg' : p.coefficients.val.length = pts.length + 1 := by
+    change p.coefficients.val.length = (index_mut_back ONE).val.length at h_pdeg
+    rw [h_pdeg, h_clen]
+  have h_pone : p.coefficients.val[pts.length]! = ONE := by
+    have : p.coefficients[(Slice.len pts).val]! = (index_mut_back ONE)[(Slice.len pts).val]! :=
+      h_poff
+    simp only [alloc.vec.Vec.getElem!_Nat_eq, h_plen] at this
+    rw [this, h_one]
+  step as ⟨left_val, h_lv⟩
+  step as ⟨b, h_b⟩
+  have h_lv' : left_val = ONE := by
+    rw [h_lv, ← getElem!_pos p.coefficients.val (Slice.len pts).val (by omega), h_plen, h_pone]
+  have h_bt : b = true := h_b.mpr (by rw [h_lv'])
+  step
+  have h_bridge : expectedTrailingPoly
+      ((List.replicate (pts.length + 1) ZERO).set pts.length ONE)
+      pts pts.length 0 pts.length =
+    prodLinearFactors pts 0 pts.length := by
+    apply expectedTrailingPoly_eq_prodLinearFactors
+    · have hlen : pts.length < (List.replicate (pts.length + 1) ZERO).length := by
+        simp
+      rw [list_getElem_bang_set_self _ _ _ hlen, ONE_toGF216]
+    · intro j hj
+      rw [getElem!_pos _ j (by simp only [List.length_set, List.length_replicate]; omega),
+        List.getElem_set_ne (by omega), List.getElem_replicate, ZERO_toGF216]
+    · exact le_refl _
+    · exact le_refl _
+  have h_coef : ∀ m ≤ pts.length,
+      (p.coefficients.val[m]!).toGF216 = (prodLinearFactors pts 0 pts.length).coeff m := by
+    intro m hm
+    have h5 := h_trail m (by rw [h_plen]; omega)
+      (by change _ < p.coefficients.val.length; rw [h_pdeg', h_plen]; omega)
+    simp only [h_plen, Nat.sub_zero, Nat.sub_self, Nat.zero_add, h_c, h_bridge,
+      alloc.vec.Vec.getElem_Nat_eq] at h5
+    rw [getElem!_pos p.coefficients.val m (by omega)]
+    exact h5
+  refine ⟨h_pdeg', h_pone, h_coef, ?_⟩
+  change listToGF216Poly p.coefficients = prodLinearFactors pts 0 pts.length
+  apply listToGF216Poly_eq_of_coeffs
+  · intro m hm
+    have := h_coef m (by rw [h_pdeg'] at hm; omega)
+    rwa [getElem!_pos p.coefficients.val m hm] at this
+  · intro m hm
+    exact prodLinearFactors_coeff_eq_zero_high _ _ _ _ (by rw [h_pdeg'] at hm; omega)
 
 end spqr.encoding.polynomial.Poly

@@ -7,7 +7,7 @@ module
 
 public import Spqr.Math.Poly.LinearFactors.Basic
 import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Data.Int.ConditionallyCompleteOrder
+import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 
@@ -115,7 +115,7 @@ lemma prodLinearFactors_coeff_eq_zero_high
     intro start stop m hd hm'
     have : ¬(start < stop ∧ start < pts.length) := by omega
     rw [prodLinearFactors_eq_one_of_not_lt _ _ _ this, coeff_one]
-    exact if_neg (by omega)
+    exact ite_eq_right (by omega)
   | succ n ih =>
     intro start stop m hd hm'
     by_cases h : start < stop ∧ start < pts.length
@@ -128,6 +128,6 @@ lemma prodLinearFactors_coeff_eq_zero_high
             ih (start + 1) stop m' (by omega) (by omega)]
         ring
     · rw [prodLinearFactors_eq_one_of_not_lt _ _ _ h, coeff_one]
-      exact if_neg (by omega)
+      exact ite_eq_right (by omega)
 
 end spqr.encoding.polynomial
