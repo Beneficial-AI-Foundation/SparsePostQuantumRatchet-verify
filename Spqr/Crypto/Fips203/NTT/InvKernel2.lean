@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import Spqr.Crypto.Fips203.NTT.Packed
+meta import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT⁻¹ — kernel verification shard 2 (basis vectors 128–191)
 
@@ -14,16 +15,20 @@ Split into four files so each compiles in well under 30 s and `lake` can run
 them in parallel.
 -/
 
-@[expose] public section
+public section
 
 namespace Fips203
 
+set_option linter.style.native false in
 set_option maxHeartbeats 400000 in
 -- `decide +kernel` evaluates the 7-layer inverse butterfly network on 64
 -- packed basis vectors inside the kernel; this exceeds the default budget.
 /-- Inverse kernel verification for basis vectors `128 ≤ j < 192`. -/
 lemma invNttP_formulaP_eq_2 :
     ∀ j ∈ List.range 64, invNttP (formulaP (j + 128)) = 128 * deltaP (j + 128) := by
-  decide +kernel
+  /- This goal closes with `decide +kernel`. However there are 8 similar files which often build in
+  parallel and can cause the runner to crash and so `native_decide` is used temporarily.
+  TODO: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/721 -/
+  native_decide
 
 end Fips203
