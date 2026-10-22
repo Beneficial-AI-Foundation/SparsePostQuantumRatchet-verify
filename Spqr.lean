@@ -229,12 +229,17 @@ public import Spqr.Specs.Encoding.Polynomial.PolyConst.ZEROS
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallMut
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallOnce
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedMessage
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
@@ -330,6 +335,8 @@ public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.New
+public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.New
+public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.SendHeader
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.IntoPb
@@ -342,4 +349,3 @@ public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FromPb
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.IntoPb
-public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.KeysUnsampled.New
