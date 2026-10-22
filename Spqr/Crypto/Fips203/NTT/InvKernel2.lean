@@ -19,6 +19,7 @@ them in parallel.
 
 namespace Fips203
 
+set_option linter.style.native false in
 set_option maxHeartbeats 400000 in
 -- `decide +kernel` evaluates the 7-layer inverse butterfly network on 64
 -- packed basis vectors inside the kernel; this exceeds the default budget.
