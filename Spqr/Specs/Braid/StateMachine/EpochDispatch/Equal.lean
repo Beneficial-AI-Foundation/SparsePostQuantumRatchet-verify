@@ -59,9 +59,10 @@ Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn 
   the code's checks compute the spec's checks is not proved here either: `recv_ct2` for
   `Decaps`, `KDF_OK`, `Update` and `VfyCt`, `verify_hdr` for `VfyHdr`, and
   `ek_matches_header` for `SHA3-256(ek_seed || ek_vector) = hek`.
-* Only the successor's name and whether a key is emitted are compared. A successor with the
-  right name but a wrong epoch, authenticator, KEM material or decoder, or a wrong key value,
-  satisfies `recv_of_eq_refines`.
+* `recv_of_eq_refines` compares only the successor's name and whether a key is emitted. A
+  successor with the right name but a wrong epoch, authenticator, KEM material or decoder, or
+  a wrong key value, satisfies it. `recv_of_eq_unexpected` states the whole successor: it is
+  the input state.
 
 ## Departures from §2.5
 

@@ -56,7 +56,8 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      (`v1/chunked/states.rs:465-474`). The code gives no reason for this arm. No sender builds
      `Ct1Ack(false)`, and the wire format cannot carry it: the serializer drops the flag
      (`v1/chunked/states/serialize.rs:128`), and the deserializer always gives `Ct1Ack(true)`
-     (`v1/chunked/states/serialize.rs:208`). `States::recv` ignores `Ct1Ack(false)`.
+     (`v1/chunked/states/serialize.rs:208`). On a message from the state's own epoch,
+     `States::recv` ignores `Ct1Ack(false)`.
    * Effect: call the party in `EkReceivedCt1Sampled` the receiver, and the other party the
      peer. Assume two things. First, each party's successful calls form one chain: the state
      that a call gets is the state that the previous successful call of that party returned.
@@ -92,7 +93,7 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      `encaps2` and `mac_ct` (`v1/unchunked/send_ct.rs:177-197`), and neither takes a random
      input (`incremental_mlkem768.rs:71`, `authenticator.rs:66`). `send_ct2_encoder` encodes
      their output (`v1/chunked/send_ct.rs:159-163`). The new encoder starts again at chunk
-     index 0 (`encoding/polynomial.rs:708`).
+     index 0 (`encoding/polynomial.rs:709`).
 
      In this state, anyone who can deliver to the receiver a message with the receiver's
      epoch triggers transition (12) with either type: with `EkCt1Ack` under §2.5, which does not
@@ -107,19 +108,22 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      (11) (`v1/chunked/states.rs:486-507`). The comment at `v1/chunked/states.rs:486-489` gives
      the reason: messages can arrive out of order.
    * Effect: the receiver is in `Ct1Acknowledged` after an `EkCt1Ack` chunk that did not
-     complete its decoder (transition (8)). The peer sends `Ek` chunks in `HeaderSent` and
-     `EkCt1Ack` chunks in `Ct1Received` (`v1/chunked/states.rs:150-173`), and it enters
-     `Ct1Received` after `HeaderSent`. So an `Ek` chunk from the peer that reaches
-     `Ct1Acknowledged` was sent before an `EkCt1Ack` chunk that arrived earlier. Both payloads
-     come from one encoder, because `v1/chunked/send_ek.rs:141` moves `HeaderSent.sending_ek`
-     into `Ct1Received`. So the late chunk is a chunk of the same encoding.
+     complete its decoder (transition (8)). Make the two assumptions of Deviation 2, so that
+     the `EkCt1Ack` chunk and a later `Ek` chunk both come from the peer's `send` in this
+     session and epoch. The peer sends `Ek` chunks in `HeaderSent` and `EkCt1Ack` chunks in
+     `Ct1Received` (`v1/chunked/states.rs:150-173`), and it enters `Ct1Received` after
+     `HeaderSent`. So the peer sent the `Ek` chunk before the `EkCt1Ack` chunk, which arrived
+     first. Both payloads come from one encoder, because `v1/chunked/send_ek.rs:141` moves
+     `HeaderSent.sending_ek` into `Ct1Received`. So the late chunk is a chunk of the same
+     encoding.
 
      §2.5 drops the late chunk. Its decoder keeps the chunks received in `Ct1Sampled`
      (transition (8), p. 20), and in `Ct1Acknowledged` it adds only `EkCt1Ack` chunks
-     (pp. 21-22). The code also adds the late `Ek` chunk, so it can complete `ek` with fewer
-     `EkCt1Ack` chunks than §2.5 needs. The code also adds an `Ek` chunk that the peer did not
-     send, which §2.5 ignores. If the decoder then completes with a key that fails the
-     check, `recv` returns `Err` on the call that completes it.
+     (pp. 21-22). The code also adds the late `Ek` chunk. When that chunk has an index that the
+     decoder lacks, the code can complete `ek` with fewer `EkCt1Ack` chunks than §2.5 needs.
+     The code also adds an `Ek` chunk that the peer did not send, which §2.5 ignores. If the
+     decoder then completes with a key that fails the check, `recv` returns `Err` on the call
+     that completes it.
    * Proved: `States.Expects` and `specRecvEq` in `Equal.lean` include the arm. The claims under
      *Effect* are not proved.
 
