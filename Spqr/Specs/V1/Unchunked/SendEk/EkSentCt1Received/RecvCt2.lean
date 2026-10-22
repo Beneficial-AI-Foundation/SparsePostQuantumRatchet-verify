@@ -9,7 +9,7 @@ public import SrcTranslated.Funs
 public import Spqr.Specs.IncrementalMlkem768.Decaps
 public import Spqr.Specs.Authenticator.Authenticator.Update
 public import Spqr.Specs.Authenticator.Authenticator.VerifyCt
-public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.SendCt1
+public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
 public import Spqr.Crypto.Hkdf
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Kdf.HkdfToVec
@@ -54,7 +54,7 @@ open List core.num.U64 in
 /-- The 32-byte epoch secret `hkdf 0³² ss (sckaKeyLabel ++ epoch.to_be_bytes()) 32` derived by
 `recv_ct2` from the raw shared secret `ss`; same derivation as `HeaderReceived::send_ct1`. -/
 def epochSecretOf (epoch : U64) (ss : List U8) : List U8 :=
-  hkdf (replicate 32 0#u8) ss (send_ct.HeaderReceived.sckaKeyLabel ++ to_be_bytes epoch) 32
+  hkdf (replicate 32 0#u8) ss (Spqr.V1.Unchunked.SendCt.sckaKeyLabel ++ to_be_bytes epoch) 32
 
 @[simp, grind =]
 theorem epochSecretOf_length (epoch : U64) (ss : List U8) :
@@ -168,7 +168,7 @@ theorem recv_ct2_spec (self : EkSentCt1Received) (ct2 mac : alloc.vec.Vec U8)
     have h_secret :
         ss1.val = epochSecretOf self.epoch (Fips203.Refinement.ssList dk' ct1' ct2') := by
       rw [ss1_post, alloc.vec.Vec.deref_val, alloc.vec.Vec.deref_val, h_ss, info_post]
-      simp [epochSecretOf, send_ct.HeaderReceived.sckaKeyLabel]
+      simp [epochSecretOf, Spqr.V1.Unchunked.SendCt.sckaKeyLabel]
   · -- `Ok` arm of `?`: `verify_ct` accepted.
     refine ⟨dk', ct1', ct2', auth, h_dk', h_ct1', h_ct2', auth_post, auth_post1, ?_, ?_⟩
     · simpa [alloc.vec.Vec.deref_val, h_secret] using auth_post2
