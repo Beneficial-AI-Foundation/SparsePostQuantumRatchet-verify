@@ -21,19 +21,21 @@ module compares that dispatch with the `Receive` functions of [ML-KEM Braid] §2
   the state unchanged and emits no key.
 * `recv_of_eq_refines`: for every payload, if `States.recv` returns, an `Ok` result has the
   successor state name and key presence that `specRecvEq` gives, and an `Err` happens exactly
-  when `specRecvEq` raises.
+  when `specRecvEq` is `none`.
 
-`specRecvEq` transcribes the spec's `Receive` bodies at the level of state names and key
-presence, plus Deviations 2 and 3 listed below. A chunk that completes a decoder takes the
-transition if the completed message passes the state's check (`States.Accepts`) and raises if it
-does not pass (`States.Rejects`). Decoding and the check are stated with the code's own calls:
-`add_chunk` and `decoded_message` for the decoder, and `recv_ct2` (the spec's `Decaps` then
-`VfyCt`), `verify_hdr` (the spec's `VfyHdr`) and `ek_matches_header` for the check, on the
-message split with `take` / `drop`.
+`specRecvEq` follows the branches of the spec's `Receive` bodies at the level of state names
+and key presence, plus Deviations 2 and 3 listed below. A chunk that completes a decoder takes
+the transition if the completed message passes the state's check (`States.Accepts`). It fails if
+the message does not pass (`States.Rejects`). Decoding and the check are stated with the code's
+own calls. The decoder is `add_chunk` and `decoded_message`. The checks are `recv_ct2` and
+`verify_hdr`, on the message split with `take` / `drop`, and `ek_matches_header`, on the whole
+message. `HeaderSent` has no check.
 
-Because `recv_of_eq_refines` covers every payload and `specRecvEq` is the §2.5 table with only
-Deviations 2 and 3 added, the theorem also shows that, at this level, they are the only places
-where the equal-epoch dispatch differs from §2.5.
+`recv_of_eq_refines` covers every payload, and `specRecvEq` adds only Deviations 2 and 3 to the
+branches of §2.5. So, for calls that return, and with the code's decoder and checks taken as
+the spec's, these two are the only places where the equal-epoch dispatch differs from §2.5 in
+state names and key presence. That the code's decoder and checks compute the spec's is not
+proved here.
 
 Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
@@ -48,9 +50,11 @@ Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn 
   module does not prove.
 * The branches selected by `States.Accepts` and `States.Rejects` constrain the code only when
   some chunk completes the decoder. This module does not prove that such a chunk exists.
-* The theorems relate the dispatch to the results of the code's checks. That `recv_ct2`,
-  `verify_hdr` and `ek_matches_header` compute the spec's `VfyCt`, `VfyHdr` and
-  `SHA3-256(ek_seed || ek_vector) = hek` is not proved here.
+* The theorems relate the dispatch to the results of the code's decoder and checks. That
+  `add_chunk` and `decoded_message` compute the spec's decoder is not proved here. That
+  `recv_ct2`, `verify_hdr` and `ek_matches_header` compute the spec's checks (`Decaps`,
+  `KDF_OK`, `Update` and `VfyCt`, then `VfyHdr`, then `SHA3-256(ek_seed || ek_vector) = hek`)
+  is not proved here either.
 * Only the successor's name and whether a key is emitted are compared. A successor with the
   right name but a wrong epoch, authenticator, KEM material or decoder, or a wrong key value,
   satisfies `recv_of_eq_refines`.
@@ -62,8 +66,9 @@ The three deviations on the receive path are listed and numbered in the module d
 code on both:
 
 * Deviation 2: `Ct1Ack true` in `EkReceivedCt1Sampled` takes transition (12).
-* Deviation 3: `Ek` in `Ct1Acknowledged` feeds the decoder and, on completion, takes the step of
-  transition (11).
+* Deviation 3: `Ek` in `Ct1Acknowledged` feeds the decoder. When the decoder completes, the
+  code runs the check of transition (11), and when the check passes, it takes the step of
+  (11).
 
 ## References
 
@@ -121,12 +126,16 @@ def States.Decodes : States → MessagePayload → alloc.vec.Vec Std.U8 → Prop
 `m[..i]` for the first `i` bytes of `m` and `m[i..]` for the rest.
 
 * `EkSentCt1Received`: `recv_ct2` on ciphertext `m[..i]` and MAC `m[i..]`, with
-  `i = CIPHERTEXT2_SIZE`, gives `Ok`. It implements the spec's `Decaps` then `VfyCt`. Its only inner
+  `i = CIPHERTEXT2_SIZE`, gives `Ok`. It has the role of the spec's `Decaps`, `KDF_OK`,
+  `Update` and `VfyCt` (§2.5 p. 15). That it computes these is not proved here. Its only inner
   error is the one `verify_ct` returns.
-* `NoHeaderReceived`: `verify_hdr`, the spec's `VfyHdr`, on header `m[..i]` and MAC `m[i..]`,
-  with `i = HEADER_SIZE`, gives `Ok`.
-* `Ct1Sampled` and `Ct1Acknowledged`: `ek_matches_header m hdr` gives `true`. It stands for the
-  spec's `SHA3-256(ek_seed || ek_vector) = hek`. That it computes this is not proved here.
+* `NoHeaderReceived`: `verify_hdr` on header `m[..i]` and MAC `m[i..]`, with `i = HEADER_SIZE`,
+  gives `Ok`. It has the role of the spec's `VfyHdr` (§2.5 p. 17). That it computes `VfyHdr` is
+  not proved here.
+* `Ct1Sampled` and `Ct1Acknowledged`: `ek_matches_header m hdr` gives `true`. It has the role of
+  the spec's `SHA3-256(ek_seed || ek_vector) = hek` (§2.5 pp. 19, 22). It calls libcrux
+  `validate_pk_bytes` (`incremental_mlkem768.rs:28-29`). That it computes the spec's check is
+  not proved here.
 * Every other state: `True`. In particular, `HeaderSent` takes transition (3) without a check. -/
 def States.CheckPasses : States → alloc.vec.Vec Std.U8 → Prop
   | .EkSentCt1Received st, m =>
@@ -150,9 +159,9 @@ def States.Accepts (s : States) (p : MessagePayload) : Prop :=
   ∃ m, s.Decodes p m ∧ s.CheckPasses m
 
 /-- The chunk completes the state's decoder and the code's check on the completed message does
-not pass: the spec raises. Not passing includes the check call panicking (for example, the epoch
-increment in `recv_ct2` at `U64.max`), so this matches the spec only on runs where the call
-returns. -/
+not pass: the spec raises or FAILs. Not passing includes the check call panicking (for example,
+the epoch increment in `recv_ct2` at `U64.max`), so this matches the spec only on runs where the
+call returns. -/
 def States.Rejects (s : States) (p : MessagePayload) : Prop :=
   ∃ m, s.Decodes p m ∧ ¬ s.CheckPasses m
 
@@ -180,16 +189,16 @@ def States.name : States → SpecState
 open Classical in
 /-- ML-KEM Braid §2.5 `Receive` on a message from the state's own epoch, extended by
 Deviations 2 and 3. The result is the successor's name and whether a key is emitted, or `none`
-when the spec raises. The comments on the arms give the spec's transition numbers, or the
-deviation that adds the arm.
+when the spec fails: a `raise` in the `ek` check, or a `FAIL` in `VfyHdr` or `VfyCt` (§2.4,
+p. 9). What the session does after a failure (§2.4, p. 9) is outside this table. The comments
+on the arms give the spec's transition numbers, or the deviation that adds the arm.
 
 * Transitions (2), (4) and (12), and Deviation 2, need no completed message and are taken
   directly.
 * Transitions (3), (5), (6), (9), (10), (11), and Deviation 3, are taken when `States.Accepts`
-  holds. The
-  result is `none` when `States.Rejects` holds. When no message completes the decoder, neither
-  holds and the state keeps its name. The exception is `Ct1Sampled` on `EkCt1Ack`, which then
-  takes transition (8).
+  holds. The result is `none` when `States.Rejects` holds. When no message completes the
+  decoder, neither holds and the state keeps its name. The exception is `Ct1Sampled` on
+  `EkCt1Ack`, which then takes transition (8).
 * A payload type the state does not expect keeps the state's name.
 
 Only transition (5) emits a key. `States.Accepts` and `States.Rejects` read the code's calls,
@@ -587,7 +596,7 @@ theorem recv_of_eq_unexpected (s : States) (msg : Message) (h : msg.epoch = s.ep
 
 /-- If `States.recv` returns on a message from the state's own epoch, it agrees with the §2.5
 `Receive` table extended by Deviations 2 and 3 (`specRecvEq`) on the successor's name and on
-whether a key is emitted, and its result is an error exactly when that table raises. -/
+whether a key is emitted, and its result is an error exactly when that table gives `none`. -/
 @[correctness_spec, braid_spec "§2.5"]
 theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
     (r : core.result.Result Recv Error) (hr : States.recv s msg = ok r) :
