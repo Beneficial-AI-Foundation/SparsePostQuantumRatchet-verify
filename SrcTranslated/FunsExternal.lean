@@ -1823,7 +1823,18 @@ noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 26:8-26:39
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk1_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk1_len"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize
+def libcrux_ml_kem.mlkem768.incremental.pk1_len : Result Std.Usize :=
+  -- `PublicKey1 = ρ ‖ H(ek)`: `32 + 32 = 64` bytes
+  ok 64#usize
+
+/-- **Spec theorem for `libcrux_ml_kem::mlkem768::incremental::pk1_len`**: the first public-key
+half (the "header" `ρ ‖ H(ek)`) has `64` bytes. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.pk1_len_spec :
+    libcrux_ml_kem.mlkem768.incremental.pk1_len ⦃ (r : Std.Usize) =>
+      r.val = Spqr.Mlkem.headerBytes ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.pk1_len, WP.spec_ok]
+  rfl
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk2_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 31:8-31:39
