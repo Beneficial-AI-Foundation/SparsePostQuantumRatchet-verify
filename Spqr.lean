@@ -260,6 +260,7 @@ public import Spqr.Specs.IncrementalMlkem768.Encaps1
 public import Spqr.Specs.IncrementalMlkem768.Encaps2
 public import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 public import Spqr.Specs.IncrementalMlkem768.Generate
+public import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
 public import Spqr.Specs.Kdf.HkdfToSlice
 public import Spqr.Specs.Kdf.HkdfToVec
 public import Spqr.Specs.Lib.ChainFrom
@@ -299,6 +300,7 @@ public import Spqr.Specs.Serialize.Error.From
 public import Spqr.Specs.Util.Compare
 public import Spqr.Specs.Util.Inz
 public import Spqr.Specs.Util.IsNonZero
+public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
@@ -315,6 +317,7 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
+public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
 public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.FunctionalModels
