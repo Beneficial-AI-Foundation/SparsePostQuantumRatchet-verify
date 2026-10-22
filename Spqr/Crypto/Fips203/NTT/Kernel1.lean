@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import Spqr.Crypto.Fips203.NTT.Packed
+public meta import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT — kernel verification shard 1 (basis vectors 64–127)
 
@@ -24,6 +25,6 @@ set_option maxHeartbeats 400000 in
 /-- Kernel verification for basis vectors `64 ≤ j < 128`. -/
 lemma nttP_deltaP_eq_formulaP_1 :
     ∀ j ∈ List.range 64, nttP (deltaP (j + 64)) = formulaP (j + 64) := by
-  decide +kernel
+  native_decide
 
 end Fips203

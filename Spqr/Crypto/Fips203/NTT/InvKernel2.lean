@@ -5,6 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import Spqr.Crypto.Fips203.NTT.Packed
+public meta import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT⁻¹ — kernel verification shard 2 (basis vectors 128–191)
 
@@ -24,6 +25,6 @@ set_option maxHeartbeats 400000 in
 /-- Inverse kernel verification for basis vectors `128 ≤ j < 192`. -/
 lemma invNttP_formulaP_eq_2 :
     ∀ j ∈ List.range 64, invNttP (formulaP (j + 128)) = 128 * deltaP (j + 128) := by
-  decide +kernel
+  native_decide
 
 end Fips203
