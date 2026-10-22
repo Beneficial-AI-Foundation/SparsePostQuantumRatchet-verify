@@ -45,16 +45,20 @@ Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn 
 * `recv_of_eq_unexpected` is total, but `recv_of_eq_refines` is in the "if it returns" form. It
   constrains only the runs where `States.recv` returns, so an implementation that panics on
   every expected payload also satisfies it. It is not stated as total because some handlers can
-  panic: for example, transition (2) calls `expect` on the new decoder, and transition (12)
-  runs the encapsulation. Ruling these panics out needs invariants on the state, which this
-  module does not prove.
+  panic when the state's fields have the wrong sizes. For example, transition (2) calls
+  `expect` on `encode_bytes` of the state's `ek` (`src/v1/chunked/send_ek.rs:91-92`), which
+  fails when the length of `ek` is odd or too large (`src/encoding/polynomial.rs:692-695`).
+  Transition (12) calls `encaps2`, which calls `expect` on size conversions of the state's
+  encapsulation state and key (`src/incremental_mlkem768.rs:75-76`). Ruling these panics out
+  needs invariants on the state, and specifications of the opaque libcrux functions that the
+  handlers call. This module proves neither.
 * The branches selected by `States.Accepts` and `States.Rejects` constrain the code only when
   some chunk completes the decoder. This module does not prove that such a chunk exists.
 * The theorems relate the dispatch to the results of the code's decoder and checks. That
   `add_chunk` and `decoded_message` compute the spec's decoder is not proved here. That
-  `recv_ct2`, `verify_hdr` and `ek_matches_header` compute the spec's checks (`Decaps`,
-  `KDF_OK`, `Update` and `VfyCt`, then `VfyHdr`, then `SHA3-256(ek_seed || ek_vector) = hek`)
-  is not proved here either.
+  the code's checks compute the spec's checks is not proved here either: `recv_ct2` for
+  `Decaps`, `KDF_OK`, `Update` and `VfyCt`, `verify_hdr` for `VfyHdr`, and
+  `ek_matches_header` for `SHA3-256(ek_seed || ek_vector) = hek`.
 * Only the successor's name and whether a key is emitted are compared. A successor with the
   right name but a wrong epoch, authenticator, KEM material or decoder, or a wrong key value,
   satisfies `recv_of_eq_refines`.
@@ -101,8 +105,10 @@ def States.Expects : States → MessagePayload → Prop
   | .Ct1Acknowledged _, .Ek _ => True              -- Deviation 3
   | _, _ => False
 
-/-- The chunk completes the decoder with message `m`: the spec's `decoder.add_chunk(msg.data)`,
-then `decoder.has_message()` and `decoder.message()`. -/
+/-- The chunk completes the decoder with message `m`, by the code's `add_chunk` and
+`decoded_message`. These calls have the role of the spec's `decoder.add_chunk(msg.data)`,
+`decoder.has_message()` and `decoder.message()`. That they compute the spec's decoder is not
+proved here. -/
 def decodes (d : encoding.polynomial.PolyDecoder) (c : encoding.Chunk)
     (m : alloc.vec.Vec Std.U8) : Prop :=
   ∃ d', encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk d c = ok d' ∧
@@ -134,7 +140,7 @@ def States.Decodes : States → MessagePayload → alloc.vec.Vec Std.U8 → Prop
   not proved here.
 * `Ct1Sampled` and `Ct1Acknowledged`: `ek_matches_header m hdr` gives `true`. It has the role of
   the spec's `SHA3-256(ek_seed || ek_vector) = hek` (§2.5 pp. 19, 22). It calls libcrux
-  `validate_pk_bytes` (`incremental_mlkem768.rs:28-29`). That it computes the spec's check is
+  `validate_pk_bytes` (`src/incremental_mlkem768.rs:28-29`). That it computes the spec's check is
   not proved here.
 * Every other state: `True`. In particular, `HeaderSent` takes transition (3) without a check. -/
 def States.CheckPasses : States → alloc.vec.Vec Std.U8 → Prop
