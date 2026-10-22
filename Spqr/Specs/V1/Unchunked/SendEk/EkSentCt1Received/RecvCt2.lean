@@ -48,7 +48,13 @@ exactly.
 
 open Aeneas Aeneas.Std Result spqr crypto
 
-namespace spqr.v1.unchunked.send_ek.EkSentCt1Received
+/- Helper definitions live in a CamelCase namespace (mirroring `Spqr.V1.Unchunked.SendCt` in
+`SendCt1.lean`) so that their full names satisfy the `defsWithUnderscore` linter; the spec
+theorems themselves stay in the Rust-mirroring `spqr.v1.unchunked.send_ek.EkSentCt1Received`
+namespace. -/
+namespace Spqr.V1.Unchunked.SendEk.EkSentCt1Received
+
+open spqr spqr.v1.unchunked spqr.v1.unchunked.send_ek
 
 open List core.num.U64 in
 /-- The 32-byte epoch secret `hkdf 0³² ss (sckaKeyLabel ++ epoch.to_be_bytes()) 32` derived by
@@ -77,14 +83,14 @@ epoch `secret`:
   - **`Err e`** iff `¬ ctAccepted ...`, and then `e = MacVerifyFailed`. -/
 def recvCt2Outcome (self : EkSentCt1Received) (ct2 mac : alloc.vec.Vec U8)
     (auth' : authenticator.Authenticator) (secret : List U8)
-    (result : core.result.Result (send_ct.NoHeaderReceived × EpochSecret) Error) : Prop :=
+    (result : core.result.Result (send_ct.NoHeaderReceived × EpochSecret) spqr.Error) : Prop :=
   match result with
   | core.result.Result.Ok (st, es) =>
       ctAccepted auth' self.epoch (self.ct1.val ++ ct2.val) mac ∧
       st.epoch.val = self.epoch.val + 1 ∧ st.auth = auth' ∧
       es.epoch = self.epoch ∧ es.secret.val = secret
   | core.result.Result.Err e =>
-      ¬ ctAccepted auth' self.epoch (self.ct1.val ++ ct2.val) mac ∧ e = Error.MacVerifyFailed
+      ¬ ctAccepted auth' self.epoch (self.ct1.val ++ ct2.val) mac ∧ e = spqr.Error.MacVerifyFailed
 
 open List core.num.U64 in
 /-- Postcondition of `EkSentCt1Received::recv_ct2`: there are fixed-size arrays `dk'`, `ct1'`,
@@ -93,7 +99,7 @@ keys from `hkdf 0³² (self.auth.root_key ‖ secret) (updateLabel ‖ epoch) 64
 `update_spec`), where `secret = epochSecretOf self.epoch (ssList dk' ct1' ct2')`, such that
 `recvCt2Outcome` holds. -/
 def recvCt2Post (self : EkSentCt1Received) (ct2 mac : alloc.vec.Vec U8)
-    (result : core.result.Result (send_ct.NoHeaderReceived × EpochSecret) Error) : Prop :=
+    (result : core.result.Result (send_ct.NoHeaderReceived × EpochSecret) spqr.Error) : Prop :=
   ∃ (dk' : Array U8 2400#usize) (ct1' : Array U8 960#usize) (ct2' : Array U8 128#usize)
     (auth' : authenticator.Authenticator),
     dk'.val = self.dk.val ∧ ct1'.val = self.ct1.val ∧ ct2'.val = ct2.val ∧
@@ -105,6 +111,12 @@ def recvCt2Post (self : EkSentCt1Received) (ct2 mac : alloc.vec.Vec U8)
           (authenticator.Authenticator.updateLabel ++ to_be_bytes self.epoch) 64 ∧
     recvCt2Outcome self ct2 mac auth'
       (epochSecretOf self.epoch (Fips203.Refinement.ssList dk' ct1' ct2')) result
+
+end Spqr.V1.Unchunked.SendEk.EkSentCt1Received
+
+namespace spqr.v1.unchunked.send_ek.EkSentCt1Received
+
+open Spqr.V1.Unchunked.SendEk.EkSentCt1Received
 
 open List core.num.U64 in
 /-- **Spec theorem for `spqr.v1.unchunked.send_ek.EkSentCt1Received.recv_ct2`**:
