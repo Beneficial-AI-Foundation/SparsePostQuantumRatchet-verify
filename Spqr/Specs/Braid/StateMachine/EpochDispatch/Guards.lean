@@ -42,11 +42,15 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      (p. 23).
    * Code: every arm returns `Err(EpochOutOfRange msg.epoch)` (for example
      `v1/chunked/states.rs:283-285`), except `Ct2Sampled` at `e + 1`
-     (`v1/chunked/states.rs:514-526`).
-   * Effect: the code reports the message as an error instead of dropping it. The error leaves
-     `spqr::recv` at `lib.rs:460` with no updated state and no message key. The serialized state
-     that the caller passes in is borrowed and does not change (`lib.rs:355`).
-   * Proved: `recv_of_gt`.
+     (`v1/chunked/states.rs:514-526`). The error leaves `spqr::recv` at `lib.rs:460` with no
+     updated state and no message key. The serialized state that the caller passes in is
+     borrowed and does not change (`lib.rs:355`).
+   * Effect: the code reports the message as an error, where §2.5 drops it.
+   * Proved: `recv_of_gt`. In every state, `States.recv` on a message from a later epoch returns
+     `Err(EpochOutOfRange msg.epoch)` and does not read the payload. The one exception is
+     `Ct2Sampled` at `e + 1`, which `recv_Ct2Sampled_next_epoch` covers. The theorem is total, so
+     the call also cannot panic. What `spqr::recv` does with the error is read from the code and
+     is not proved.
 2. `Ct1Ack true` in `EkReceivedCt1Sampled`.
    * §2.5: *EkReceivedCt1Sampled.Receive* acts only on `EkCt1Ack` (p. 21), and
      *EkSentCt1Received.Send* sends a message of type `None` (p. 15). §2.3 defines `Ct1Ack`
@@ -58,20 +62,24 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      (`v1/chunked/states/serialize.rs:128`), and the deserializer always gives `Ct1Ack(true)`
      (`v1/chunked/states/serialize.rs:208`). On a message from the state's own epoch,
      `States::recv` ignores `Ct1Ack(false)`.
-   * Effect: call the party in `EkReceivedCt1Sampled` the receiver, and the other party the
-     peer. Assume two things. First, each party's successful calls form one chain: the state
-     that a call gets is the state that the previous successful call of that party returned.
-     Second, every message that a party's `recv` gets is the output of the other party's `send`
-     in this session. Then this arm is never reached. The peer is in `EkSentCt1Received` only
+   * Effect: in a normal run the arm is never reached. It fires only after a forged message or
+     a reused older state, and then §2.5 stalls, but the code lets the receiver take
+     transition (12). The rest of this item gives the reasoning.
+
+     Call the party in `EkReceivedCt1Sampled` the receiver, and the other party the peer. A
+     normal run satisfies two conditions. First, each party's successful calls form one chain:
+     the state that a call gets is the state that the previous successful call of that party
+     returned. Second, every message that a party's `recv` gets is the output of the other
+     party's `send` in this session, possibly out of order. The peer is in `EkSentCt1Received` only
      after a `Ct2` chunk (`v1/chunked/states.rs:338-344`), which only `Ct2Sampled` sends
      (`v1/chunked/states.rs:267`). So the receiver has reached `Ct2Sampled` at this epoch. No
      transition of `send` or `recv` leads from `Ct2Sampled` back to `EkReceivedCt1Sampled` at the
-     same epoch (`v1/chunked/states.rs:115-533`), so by the first assumption the receiver is not
+     same epoch (`v1/chunked/states.rs:115-533`), so by the first condition the receiver is not
      in `EkReceivedCt1Sampled` when the `Ct1Ack(true)` arrives. A lost `EkCt1Ack` does not need
      the arm either, because the peer sends an `EkCt1Ack` chunk on every call of `send` while it
      is in `Ct1Received` (`v1/chunked/states.rs:162-173`).
 
-     When an assumption does not hold, the arm can be reached. Three examples:
+     When a condition does not hold, the arm can be reached. Three examples:
      - (a) The peer, in `Ct1Received`, gets a `Ct2` chunk that the receiver did not send. The
        peer puts this first chunk into a new decoder and checks no MAC or hash on it
        (`v1/chunked/send_ek.rs:165-180`, and §2.5 p. 14). The peer is then in
@@ -99,8 +107,10 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      epoch triggers transition (12) with either type: with `EkCt1Ack` under §2.5, which does not
      read the chunk (p. 21), and also with `Ct1Ack(true)` in the code. This compares one
      transition. It is not a security result.
-   * Proved: only the receiving side. `States.Expects` and `specRecvEq` in `Equal.lean` include
-     the arm. The claims under *Effect* are not proved.
+   * Proved: one `recv` call. `recv_of_eq_refines` in `Equal.lean`, applied to
+     `EkReceivedCt1Sampled` and `Ct1Ack true`, shows that the code moves to `Ct2Sampled` with no
+     key. The theorems do not cover `send` or runs, so the claim under *Effect* that the arm is
+     never reached is not proved.
 3. `Ek` in `Ct1Acknowledged`.
    * §2.5: *Ct1Acknowledged.Receive* acts only on `EkCt1Ack` (pp. 21-22).
    * Code: `Ek` chunks go to the same decoder as `EkCt1Ack` chunks. When the decoder completes,
@@ -108,7 +118,7 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      (11) (`v1/chunked/states.rs:486-507`). The comment at `v1/chunked/states.rs:486-489` gives
      the reason: messages can arrive out of order.
    * Effect: the receiver is in `Ct1Acknowledged` after an `EkCt1Ack` chunk that did not
-     complete its decoder (transition (8)). Make the two assumptions of Deviation 2, so that
+     complete its decoder (transition (8)). Assume a normal run, as defined in Deviation 2, so that
      the `EkCt1Ack` chunk and a later `Ek` chunk both come from the peer's `send` in this
      session and epoch. The peer sends `Ek` chunks in `HeaderSent` and `EkCt1Ack` chunks in
      `Ct1Received` (`v1/chunked/states.rs:150-173`), and it enters `Ct1Received` after
@@ -124,8 +134,10 @@ the cited pages and lines. *Proved* says what the theorems here show. Paths are 
      The code also adds an `Ek` chunk that the peer did not send, which §2.5 ignores. If the
      decoder then completes with a key that fails the check, `recv` returns `Err` on the call
      that completes it.
-   * Proved: `States.Expects` and `specRecvEq` in `Equal.lean` include the arm. The claims under
-     *Effect* are not proved.
+   * Proved: one `recv` call. `recv_of_eq_refines` in `Equal.lean`, applied to `Ct1Acknowledged`
+     and an `Ek` chunk, shows the outcome. If the chunk completes no message, the state stays. If
+     the completed message passes `ek_matches_header`, the code moves to `Ct2Sampled` with no
+     key. If it does not pass, the result is `Err`. The claims under *Effect* are not proved.
 
 ## References
 
