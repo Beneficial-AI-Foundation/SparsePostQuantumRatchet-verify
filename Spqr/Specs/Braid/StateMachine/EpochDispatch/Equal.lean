@@ -631,9 +631,9 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
       fun _ => Iff.rfl
     cases res <;> rw [ok.injEq] at hr <;> subst hr <;> simp only [specRecvEq]
     · obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-      rw [if_neg hA, if_neg hR]; rfl
+      rw [ite_eq_right hA, ite_eq_right hR]; rfl
     · obtain ⟨m, hm⟩ := ho
-      rw [if_pos (accepts_of hD ⟨m, hm, trivial⟩)]; rfl
+      rw [ite_eq_left (accepts_of hD ⟨m, hm, trivial⟩)]; rfl
   case EkSentCt1Received.Ct2 st _ =>
     simp only [bind_eq_ok] at hr
     obtain ⟨res, hres, cf, hcf, hr⟩ := hr
@@ -647,20 +647,20 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
       | StillReceiving st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-        rw [if_neg hA, if_neg hR]; rfl
+        rw [ite_eq_right hA, ite_eq_right hR]; rfl
       | Done p =>
         obtain ⟨st1, sec⟩ := p
         change ok (core.result.Result.Ok
           { key := some sec, state := States.NoHeaderReceived st1 }) = ok r at hr
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
-        rw [if_pos (accepts_of hD ho)]; rfl
+        rw [ite_eq_left (accepts_of hD ho)]; rfl
     | Break rs =>
       obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
-      rw [if_neg hA, if_pos hR]
+      rw [ite_eq_right hA, ite_eq_left hR]
   case NoHeaderReceived.Hdr st _ =>
     simp only [bind_eq_ok] at hr
     obtain ⟨res, hres, cf, hcf, hr⟩ := hr
@@ -674,17 +674,17 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
       | StillReceiving st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-        rw [if_neg hA, if_neg hR]; rfl
+        rw [ite_eq_right hA, ite_eq_right hR]; rfl
       | Done st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
-        rw [if_pos (accepts_of hD ho)]; rfl
+        rw [ite_eq_left (accepts_of hD ho)]; rfl
     | Break rs =>
       obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
-      rw [if_neg hA, if_pos hR]
+      rw [ite_eq_right hA, ite_eq_left hR]
   case Ct1Acknowledged.EkCt1Ack st _ =>
     simp only [bind_eq_ok] at hr
     obtain ⟨res, hres, cf, hcf, hr⟩ := hr
@@ -698,17 +698,17 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
       | StillReceiving st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-        rw [if_neg hA, if_neg hR]; rfl
+        rw [ite_eq_right hA, ite_eq_right hR]; rfl
       | Done st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
-        rw [if_pos (accepts_of hD ho)]; rfl
+        rw [ite_eq_left (accepts_of hD ho)]; rfl
     | Break rs =>
       obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
-      rw [if_neg hA, if_pos hR]
+      rw [ite_eq_right hA, ite_eq_left hR]
   case Ct1Acknowledged.Ek st _ =>
     simp only [bind_eq_ok] at hr
     obtain ⟨res, hres, cf, hcf, hr⟩ := hr
@@ -722,17 +722,17 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
       | StillReceiving st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
         obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-        rw [if_neg hA, if_neg hR]; rfl
+        rw [ite_eq_right hA, ite_eq_right hR]; rfl
       | Done st1 =>
         rw [ok.injEq] at hr; subst hr; simp only [specRecvEq]
-        rw [if_pos (accepts_of hD ho)]; rfl
+        rw [ite_eq_left (accepts_of hD ho)]; rfl
     | Break rs =>
       obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
-      rw [if_neg hA, if_pos hR]
+      rw [ite_eq_right hA, ite_eq_left hR]
   case Ct1Sampled.None st _ | Ct1Sampled.Hdr st _ | Ct1Sampled.Ct1Ack.false st _
       | Ct1Sampled.Ct1Ack.true st _ | Ct1Sampled.Ct1 st _ | Ct1Sampled.Ct2 st _ =>
     change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
@@ -751,15 +751,15 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
         simp only [Bool.false_eq_true, false_and] at ho
       all_goals first
         | (obtain ⟨-, ho⟩ := ho; obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-           rw [if_neg hA, if_neg hR]; rfl)
-        | (obtain ⟨-, ho⟩ := ho; rw [if_pos (accepts_of hD ho)]; rfl)
+           rw [ite_eq_right hA, ite_eq_right hR]; rfl)
+        | (obtain ⟨-, ho⟩ := ho; rw [ite_eq_left (accepts_of hD ho)]; rfl)
     | Break rs =>
       obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
-      rw [if_neg hA, if_pos hR]
+      rw [ite_eq_right hA, ite_eq_left hR]
   case Ct1Sampled.EkCt1Ack st _ =>
     obtain ⟨res, hres, hr⟩ := bind_eq_ok.1 hr
     simp only [bind_eq_ok] at hr
@@ -774,14 +774,14 @@ theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epoch
         simp only [Bool.true_eq_false, false_and] at ho
       all_goals first
         | (obtain ⟨-, ho⟩ := ho; obtain ⟨hA, hR⟩ := not_accepts_rejects hD ho
-           rw [if_neg hA, if_neg hR]; rfl)
-        | (obtain ⟨-, ho⟩ := ho; rw [if_pos (accepts_of hD ho)]; rfl)
+           rw [ite_eq_right hA, ite_eq_right hR]; rfl)
+        | (obtain ⟨-, ho⟩ := ho; rw [ite_eq_left (accepts_of hD ho)]; rfl)
     | Break rs =>
       obtain ⟨err, rfl, rfl⟩ := branch_eq_break hcf
       simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, ok.injEq] at hr
       subst hr; simp only [specRecvEq]
       obtain ⟨hA, hR⟩ := rejects_of hD ho
-      rw [if_neg hA, if_pos hR]
+      rw [ite_eq_right hA, ite_eq_left hR]
 
 end spqr.v1.chunked.states
