@@ -40,8 +40,14 @@ what the code does. If the code changes to follow the spec, the marked statement
    also takes transition (12) on `Ct1Ack true` (`states.rs:465-474`), which the peer sends from
    `EkSentCt1Received` (`states.rs:175-186`) where §2.5 sends nothing
    (*EkSentCt1Received.Send*, p. 15). §2.3 defines `Ct1Ack`, but §2.5 never uses it.
-   The extra acceptance tolerates a lost acknowledgement. `Equal.lean` covers only the
-   receiving side. `Ct1Ack false` is never sent and stays a no-op.
+   When both parties follow the protocol, this arm is never reached: the peer is in
+   `EkSentCt1Received` only after a `Ct2` chunk (`states.rs:338-344`), which is sent only from
+   `Ct2Sampled` (`states.rs:267`), so the receiver has already left `EkReceivedCt1Sampled`. A
+   lost `EkCt1Ack` needs no extra message, because `Ct1Received` keeps sending `EkCt1Ack`
+   chunks (`states.rs:170`). An injected `Ct1Ack true` takes the same transition that an
+   injected `EkCt1Ack` takes in §2.5, which does not read the chunk. Neither claim is proved
+   here. `Equal.lean` covers only the receiving side. `Ct1Ack false` is never sent and stays a
+   no-op.
 3. `Ek` in `Ct1Acknowledged` (`Equal.lean`, `States.Expects` and `specRecvEq`). §2.5 acts only
    on `EkCt1Ack` in this state (*Ct1Acknowledged.Receive*, pp. 21-22). The code also feeds `Ek`
    chunks to the same decoder, for out-of-order delivery, and checks the completed key against
