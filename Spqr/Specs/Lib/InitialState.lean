@@ -113,14 +113,13 @@ def IsWellFormedV1InitialState
 • When `params.version = V1`, the function always succeeds and returns `Ok bytes`
   where `bytes` is a valid protobuf encoding of a `PqRatchetState` that is a
   well-formed V1 initial state for the given `params`.
-• Requires `auth_key.length + 32 ≤ Usize.max` and `pk1_len = ok 64`.
+• Requires `auth_key.length + 32 ≤ Usize.max`.
 
 **Source**: spqr/src/lib.rs (lines 219:0-242:1) -/
 @[step]
 theorem initial_state_spec_v1 (params : Params)
     (h_version : params.version = proto.pq_ratchet.Version.V1)
-    (h_len : params.auth_key.length + 32 ≤ Usize.max)
-    (h_pk1 : libcrux_ml_kem.mlkem768.incremental.pk1_len = ok 64#usize) :
+    (h_len : params.auth_key.length + 32 ≤ Usize.max) :
     initial_state params ⦃ (result : core.result.Result (alloc.vec.Vec U8) Error) =>
       ∃ v : alloc.vec.Vec U8, result = .Ok v ∧
         ∃ st : proto.pq_ratchet.PqRatchetState, decodesTo v st ∧
