@@ -269,12 +269,14 @@ public import Spqr.Specs.Lib.EmptyState
 public import Spqr.Specs.Lib.Error.From
 public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.MsgPreamble
+public import Spqr.Specs.Lib.Recv
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
 public import Spqr.Specs.Lib.SecretOutput.HasSecret
 public import Spqr.Specs.Lib.SecretOutput.RecvSecret
 public import Spqr.Specs.Lib.SecretOutput.Secret
 public import Spqr.Specs.Lib.SecretOutput.SendSecret
+public import Spqr.Specs.Lib.Send
 public import Spqr.Specs.Lib.StatePb
 public import Spqr.Specs.Lib.StateVersion
 public import Spqr.Specs.Lib.Version.DISABLED
