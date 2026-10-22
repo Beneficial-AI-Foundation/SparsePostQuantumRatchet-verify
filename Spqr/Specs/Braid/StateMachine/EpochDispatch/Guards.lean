@@ -40,14 +40,20 @@ what the code does. If the code changes to follow the spec, the marked statement
    also takes transition (12) on `Ct1Ack true` (`states.rs:465-474`), which the peer sends from
    `EkSentCt1Received` (`states.rs:175-186`) where §2.5 sends nothing
    (*EkSentCt1Received.Send*, p. 15). §2.3 defines `Ct1Ack`, but §2.5 never uses it.
-   When both parties follow the protocol, this arm is never reached: the peer is in
+   If the states of both parties only move forward, this arm is never reached: the peer is in
    `EkSentCt1Received` only after a `Ct2` chunk (`states.rs:338-344`), which is sent only from
    `Ct2Sampled` (`states.rs:267`), so the receiver has already left `EkReceivedCt1Sampled`. A
    lost `EkCt1Ack` needs no extra message, because `Ct1Received` keeps sending `EkCt1Ack`
-   chunks (`states.rs:170`). An injected `Ct1Ack true` takes the same transition that an
-   injected `EkCt1Ack` takes in §2.5, which does not read the chunk. Neither claim is proved
-   here. `Equal.lean` covers only the receiving side. `Ct1Ack false` is never sent and stays a
-   no-op.
+   chunks (`states.rs:170`). The arm matters when the receiver resumes from an older saved
+   state, for example after a crash before it saved `Ct2Sampled`. It is then back in
+   `EkReceivedCt1Sampled` while the peer is in `EkSentCt1Received`. Under §2.5 neither party
+   moves again in that epoch: the peer sends `None`, and the receiver waits for `EkCt1Ack`.
+   With the arm, the receiver takes transition (12) again and rebuilds the same `ct2` chunks,
+   because `encaps2`, `mac_ct` and the encoder take no random input
+   (`send_ct.rs:159-163`, `236-243`). Upstream does not state this purpose. An injected
+   `Ct1Ack true` takes the same transition that an injected `EkCt1Ack` takes in §2.5, which
+   does not read the chunk. None of these claims is proved here. `Equal.lean` covers only the
+   receiving side. `Ct1Ack false` is never sent and stays a no-op.
 3. `Ek` in `Ct1Acknowledged` (`Equal.lean`, `States.Expects` and `specRecvEq`). §2.5 acts only
    on `EkCt1Ack` in this state (*Ct1Acknowledged.Receive*, pp. 21-22). The code also feeds `Ek`
    chunks to the same decoder, for out-of-order delivery, and checks the completed key against
