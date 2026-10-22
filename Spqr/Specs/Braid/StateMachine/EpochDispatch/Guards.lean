@@ -22,15 +22,12 @@ compares `msg.epoch` with `e`. When `msg.epoch ≠ e`, the arm decides without r
   [ML-KEM Braid] §2.5, marked in *Ct2Sampled.Receive* on p. 23.
 
 The theorems state the code. `recv_of_lt` and `recv_Ct2Sampled_next_epoch` agree with §2.5 and
-carry its tag. `recv_of_gt` does not, because of one departure from the spec:
-
-1. D2. In §2.5 every `Receive` function ignores a message with `msg.epoch > e`, apart from
-   transition (13). The code returns `Err(EpochOutOfRange msg.epoch)` instead, so it is
-   stricter than the spec: a message from a future epoch is reported as an error
-   instead of being dropped. D2 is the project's label for this departure. It is provisional:
-   `recv_of_gt` states what the code does, until Signal rules whether the spec or the code
-   changes. If the code adopts the spec's no-op, `recv_of_gt` no longer holds and must be
-   restated.
+carry its tag. `recv_of_gt` does not, because the code departs from the spec there. In §2.5
+every `Receive` function ignores a message with `msg.epoch > e`, apart from transition (13). The
+code returns `Err(EpochOutOfRange msg.epoch)` instead, so it is stricter than the spec: a message
+from a later epoch is reported as an error instead of being dropped. `recv_of_gt` states what the
+code does. If the code adopts the spec's no-op, `recv_of_gt` no longer holds and must be
+restated.
 
 ## References
 
@@ -69,7 +66,7 @@ theorem recv_of_lt (s : States) (msg : Message) (h : msg.epoch.val < s.epochOf.v
 
 /-- Let `e` be the epoch of `s`, let `msg.epoch > e`, and if `s` is `Ct2Sampled`, let
 `msg.epoch ≠ e + 1`. Then `States.recv s msg` returns `Err(EpochOutOfRange msg.epoch)`.
-§2.5 ignores such a message instead. This is deviation D2. -/
+§2.5 ignores such a message instead. -/
 theorem recv_of_gt (s : States) (msg : Message) (h : s.epochOf.val < msg.epoch.val)
     (hnext : ∀ st, s = .Ct2Sampled st → msg.epoch.val ≠ st.uc.epoch.val + 1) :
     States.recv s msg = ok (.Err (Error.EpochOutOfRange msg.epoch)) := by

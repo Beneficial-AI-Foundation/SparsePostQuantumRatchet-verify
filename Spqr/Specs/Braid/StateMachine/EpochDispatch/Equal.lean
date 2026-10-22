@@ -32,8 +32,8 @@ does not pass (`States.Rejects`). Decoding and the check are stated with the cod
 message split with `take` / `drop`.
 
 Because `recv_of_eq_refines` covers every payload and `specRecvEq` is the §2.5 table with only
-D3 and D4 added, the theorem also shows that, at this level, D3 and D4 are the only places where
-the equal-epoch dispatch differs from §2.5.
+those two departures added, the theorem also shows that, at this level, they are the only places
+where the equal-epoch dispatch differs from §2.5.
 
 Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn in its Fig. 1
 (p. 10) and marked `# Transition (n)` in the pseudocode of that section.
@@ -58,18 +58,20 @@ Transitions are numbered as in the state machine of [ML-KEM Braid] §2.5, drawn 
 ## Departures from §2.5
 
 The code accepts two messages that §2.5 ignores. `States.Expects` and `specRecvEq` follow the
-code. The labels D3 and D4 are the project's names for these departures, and `Guards.lean`
-describes D2. All three are provisional: the theorems state what the code does, until Signal
-rules whether the spec or the code changes.
+code, so the theorems state what the code does.
 
-* D3. In `EkReceivedCt1Sampled`, §2.5 acts only on `EkCt1Ack`. The code also takes
-  transition (12) on `Ct1Ack true`, which the peer sends from `EkSentCt1Received` where §2.5
-  sends nothing (`states.rs:175-186`, `states.rs:465-468`). §2.3 defines `Ct1Ack`, but §2.5
-  never uses it. The extra acceptance tolerates a lost acknowledgement. This module covers only
-  the receiving side. `Ct1Ack false` is never sent and stays a no-op.
-* D4. In `Ct1Acknowledged`, §2.5 acts only on `EkCt1Ack`. The code also feeds `Ek` chunks to
-  the same decoder, for out-of-order delivery, and checks the completed key against the header
-  as in transition (11) (`states.rs:485-493`).
+* `Ct1Ack true` in `EkReceivedCt1Sampled`. §2.5 acts only on `EkCt1Ack` in this state. The
+  code also takes transition (12) on `Ct1Ack true`, which the peer sends from
+  `EkSentCt1Received` where §2.5 sends nothing (`states.rs:175-186`, `states.rs:465-468`).
+  §2.3 defines `Ct1Ack`, but §2.5 never uses it. The extra acceptance tolerates a lost
+  acknowledgement. This module covers only the receiving side. `Ct1Ack false` is never sent and
+  stays a no-op.
+* `Ek` in `Ct1Acknowledged`. §2.5 acts only on `EkCt1Ack` in this state. The code also feeds
+  `Ek` chunks to the same decoder, for out-of-order delivery, and checks the completed key
+  against the header as in transition (11) (`states.rs:485-493`).
+
+The other departure on the receive path, an error on a message from a later epoch, is in
+`Guards.lean`.
 
 ## References
 
@@ -87,7 +89,7 @@ namespace spqr.v1.chunked.states
 
 /-- The payload types a state acts on when the message is from its own epoch: the
 `msg.type ==` tests of the `Receive` functions in ML-KEM Braid §2.5, plus `Ct1Ack true` in
-`EkReceivedCt1Sampled` (D3) and `Ek` in `Ct1Acknowledged` (D4). -/
+`EkReceivedCt1Sampled` and `Ek` in `Ct1Acknowledged`, the two departures in the module doc. -/
 def States.Expects : States → MessagePayload → Prop
   | .KeysSampled _, .Ct1 _ => True
   | .HeaderSent _, .Ct1 _ => True
@@ -184,12 +186,15 @@ def States.name : States → SpecState
   | .Ct2Sampled _ => .Ct2Sampled
 
 open Classical in
-/-- ML-KEM Braid §2.5 `Receive` on a message from the state's own epoch, extended by D3 and D4.
-The result is the successor's name and whether a key is emitted, or `none` when the spec
-raises. The comments on the arms give the spec's transition numbers.
+/-- ML-KEM Braid §2.5 `Receive` on a message from the state's own epoch, extended by the two
+departures in the module doc. The result is the successor's name and whether a key is emitted,
+or `none` when the spec raises. The comments on the arms give the spec's transition numbers, or
+mark an arm that is not in §2.5.
 
-* Transitions (2), (4) and (12), and D3, need no completed message and are taken directly.
-* Transitions (3), (5), (6), (9), (10), (11) and D4 are taken when `States.Accepts` holds. The
+* Transitions (2), (4) and (12), and `Ct1Ack true` in `EkReceivedCt1Sampled`, need no completed
+  message and are taken directly.
+* Transitions (3), (5), (6), (9), (10), (11), and `Ek` in `Ct1Acknowledged`, are taken when
+  `States.Accepts` holds. The
   result is `none` when `States.Rejects` holds. When no message completes the decoder, neither
   holds and the state keeps its name. The exception is `Ct1Sampled` on `EkCt1Ack`, which then
   takes transition (8).
@@ -211,9 +216,9 @@ noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecSta
   | .Ct1Sampled _, .EkCt1Ack _ =>
       complete .Ct2Sampled false (some (.Ct1Acknowledged, false))        -- (9), (8)
   | .EkReceivedCt1Sampled _, .EkCt1Ack _ => some (.Ct2Sampled, false)    -- (12)
-  | .EkReceivedCt1Sampled _, .Ct1Ack true => some (.Ct2Sampled, false)   -- D3
+  | .EkReceivedCt1Sampled _, .Ct1Ack true => some (.Ct2Sampled, false)   -- not in §2.5
   | .Ct1Acknowledged _, .EkCt1Ack _ => complete .Ct2Sampled false stay   -- (11)
-  | .Ct1Acknowledged _, .Ek _ => complete .Ct2Sampled false stay         -- D4
+  | .Ct1Acknowledged _, .Ek _ => complete .Ct2Sampled false stay         -- not in §2.5
   | _, _ => stay
 
 /-- If state `s` does not expect payload `p`, then `specRecvEq s p` keeps the state's name and
@@ -517,7 +522,7 @@ theorem Ct1Sampled_recv_ek_chunk_outcome (st : send_ct.Ct1Sampled) (e : Std.U64)
 
 * `Ok StillReceiving` means that no message completes the decoder.
 * `Ok Done` means that a completed message passes the `ek` check. On an `EkCt1Ack` payload this
-  is transition (11). On an `Ek` payload it is D4.
+  is transition (11). On an `Ek` payload it is the code's extra arm, not in §2.5.
 * `Err` means that a completed message fails the check. -/
 theorem Ct1Acknowledged_recv_ek_chunk_outcome (st : send_ct.Ct1Acknowledged) (e : Std.U64)
     (c : encoding.Chunk) {r : core.result.Result send_ct.Ct1AcknowledgedRecvChunk Error}
@@ -589,8 +594,8 @@ theorem recv_of_eq_unexpected (s : States) (msg : Message) (h : msg.epoch = s.ep
   all_goals rfl
 
 /-- If `States.recv` returns on a message from the state's own epoch, it agrees with the §2.5
-`Receive` table extended by D3 and D4 (`specRecvEq`) on the successor's name and on whether a
-key is emitted, and its result is an error exactly when that table raises. -/
+`Receive` table extended by the code's two extra arms (`specRecvEq`) on the successor's name and
+on whether a key is emitted, and its result is an error exactly when that table raises. -/
 @[correctness_spec, braid_spec "§2.5"]
 theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
     (r : core.result.Result Recv Error) (hr : States.recv s msg = ok r) :
