@@ -11,11 +11,9 @@ public import Spqr.Specs.Authenticator.Authenticator.Update
 public import Spqr.Specs.Authenticator.Authenticator.VerifyCt
 public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
 public import Spqr.Crypto.Hkdf
-import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Aeneas.VecExtendFromSlice
-import Spqr.Auxiliary.Aeneas.Vec
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ek::{EkSentCt1Received}::recv_ct2`
 

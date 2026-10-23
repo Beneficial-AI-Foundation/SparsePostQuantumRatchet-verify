@@ -12,7 +12,6 @@ public import Spqr.Crypto.Hkdf
 import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Aeneas.VecClone
-import Spqr.Auxiliary.Aeneas.Vec
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::{HeaderReceived}::send_ct1`
 
