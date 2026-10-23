@@ -319,6 +319,8 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
 public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
+public import Spqr.Specs.V1.Unchunked.SendCt.NoHeaderReceived.New
+public import Spqr.Specs.V1.Unchunked.SendCt.NoHeaderReceived.RecvHeader
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.IntoPb
@@ -335,7 +337,6 @@ public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
-public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.New
 public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.SendHeader
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
