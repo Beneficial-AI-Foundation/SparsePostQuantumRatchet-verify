@@ -300,6 +300,7 @@ public import Spqr.Specs.Serialize.Error.From
 public import Spqr.Specs.Util.Compare
 public import Spqr.Specs.Util.Inz
 public import Spqr.Specs.Util.IsNonZero
+public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
