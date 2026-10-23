@@ -16,10 +16,8 @@ or substitute for a human approval. The limits on what an AI review may propose 
 [Reporting the review](#reporting-the-review).
 
 The principles in each section are meant to stay valid as the repository evolves. The
-[appendix](#appendix-historical-examples) ties them to past discussions, drawn from the
-[repository history summary](REPOSITORY_HISTORY_SUMMARY.md) and its
-[complete discussion catalog](history/GITHUB_HISTORY_CATALOG.md) as captured on 2026-10-23.
-Append newer examples there rather than rewriting the principles.
+[appendix](#appendix-historical-examples) ties them to past issues and PRs, as read on
+2026-10-23. Append newer examples there rather than rewriting the principles.
 
 ## Procedure
 
@@ -347,8 +345,10 @@ reviewer.
 
 ## Appendix: historical examples
 
-Captured from the discussion catalog on 2026-10-23. Each entry illustrates a principle above; it
-is not a finding about the current code. Add newer examples below the existing ones.
+Each entry illustrates a principle above; it is not a finding about the current code. The
+entries were read from the linked issues and PRs on 2026-10-23. A historical statement may be
+superseded or disputed, and an author saying a finding is fixed is not independent verification.
+Add newer examples below the existing ones.
 
 **Core questions.**
 
@@ -372,81 +372,139 @@ is not a finding about the current code. Add newer examples below the existing o
   the build cache saved before the build ran, so green CI did not demonstrate what it appeared
   to; #718 weighed compiler trust against proof performance. [#549][549], [#676][676], [#718][718]
 
-**Specification strength.** #320 removed a representability condition that was always true;
-#373 requested a useful decoder-progress condition; #389 exposed an inconsistent bound; #491 used
-deletion and duplication counterexamples; #550 found unconstrained chain state; #678 found that
-parameter presence did not imply correct parameter values. Discussion in #542 explains why an
-existential and a match formulation can be equivalent. [#320][320], [#373][373], [#389][389],
-[#491][491], [#542][542], [#550][550], [#678][678]
+**Specifications must rule out plausible wrong implementations.** Review of key-history garbage
+collection supplied two counterexamples: deleting every key, and duplicating a live key while
+losing another entry. Saying that remaining keys are valid did not capture preservation or
+multiplicity. Review of `recv_key` found that constraints on returned values and scalar fields
+left the updated `links` unconstrained. Initialization review required direction, minimum
+version, serialized parameters, and the direction-specific initial state to be tied to the
+inputs; a later pass caught that "parameters are present" still permitted the wrong parameters.
+Other discussions rejected a representability clause that was always true, a missing lower bound
+on decoder progress, and a hypothesis strong enough to imply `False`. Discussion in #542 explains
+why an existential and a match formulation can be equivalent. [#320][320], [#373][373],
+[#389][389], [#491][491], [#542][542], [#550][550], [#678][678]
 
-**Extraction and external models.** `clone_from_slice` omitted the length-mismatch panic;
-deque models disagreed on representation; sorted insertion initially appended in an equality
-case; decoder search needed an explicit uniqueness invariant. #272 illustrates why a reported
-extraction defect must be checked against later discussion and the source. [#153][153],
-[#200][200], [#234][234], [#272][272], [#365][365], [#618][618], [#683][683]
+**Handwritten external models need their own fidelity review.** The original `clone_from_slice`
+model ignored destination length and omitted the mismatch panic. Deque discussions exposed
+inconsistent choices between a physical ring-buffer layout and a logical list model; a later
+iterator issue showed nontermination and wrong output after `pop_front`. Sorted-set review caught
+append behavior where replacement was required. Decoder review questioned a binary-search model
+that always chose the first match when the Rust behavior needed an explicit uniqueness invariant
+to justify that choice. In #272 an issue proposed changing an extracted record update to force
+`y = ONE`; later comments showed the Rust loop preserves `y` and the "fix" would make the
+translation unfaithful. Check the source and the invariant before repairing generated code to
+make a proof work. [#153][153], [#183][183], [#200][200], [#234][234], [#272][272], [#365][365],
+[#618][618], [#619][619], [#683][683]
 
-**Axioms and cryptographic boundaries.** HMAC generalization needed algorithm-specific
-lengths; #661 received reviews about matrix orientation, signed state encoding, key/header
-validation, a stubbed repair path, hidden model assumptions, randomness, and overbroad end-to-end
-claims. #718 and #721 show that compiler trust and performance require an explicit tradeoff.
-[#243][243], [#661][661], [#714][714], [#718][718], [#721][721]
+**Trust assumptions must remain visible.** The workflow discussion settled on `sorry` for
+intended future proofs, with a linked issue, and `axiom` for externally justified properties,
+with a source. Auditing must inspect transitive dependencies, not merely search the edited file
+for `sorry`; #574's PR body reported `sorryAx` inherited through an extraction iterator stub in
+its statements about runs, and that qualification should accompany any summary of its result.
+In #661 reviewers questioned moving external behavior into concrete definition bodies, which can
+make correspondence lemmas reflexive while hiding the implementation-to-model assumption from an
+axiom count, and questioned end-to-end wording for a round-trip theorem about model functions.
+HMAC generalization needed algorithm-specific lengths. #718 merged a temporary switch to
+`native_decide`; #721 remains open to decide a lasting solution. [#39][39], [#48][48], [#89][89],
+[#243][243], [#574][574], [#661][661], [#714][714], [#718][718], [#721][721]
 
-**Serialization and round trips.** #567 discussed the zero-polynomial failure and its claimed
-exclusion by V1 invariants. #568 developed canonical/noncanonical round-trip distinctions. #578
-separated model round trips from implementation correspondence and avoided unnecessary repeated
-corollaries. [#567][567], [#568][568], [#578][578]
+**Serialization requires valid domains and explicit normalization.** The zero-polynomial
+discussion identified serialization to an empty sequence that deserialization rejects.
+Participants argued that V1 execution invariants exclude this case; that is a claim about
+reachable protocol states, not a universal round-trip theorem for the type. #568 and its
+implementation PRs developed a common architecture: pure functional models, proofs that extracted
+conversions implement them, and model-level round trips. Discussion distinguished decoding an
+encoded valid state from re-encoding arbitrary accepted protobuf data, which may normalize
+defaults or discard information, so literal equality requires canonical input or a normalization
+statement. Encoder postconditions must imply decoder preconditions. [#566][566], [#567][567],
+[#568][568], [#571][571], [#578][578]
 
-**Protocol properties and composition.** #574 concerned per-party epoch uniqueness over
-successful runs, with a reported transitive extraction stub dependency. #576 clarified scope
-documentation and Braid layout. Draft #663 explicitly lists receive-dispatch deviations. #645 is
-an open proposal for more compositional contracts. [#574][574], [#576][576], [#645][645], [#663][663]
+**Composition and protocol claims need precise scope.** Function contracts need enough
+information for their callers: interpolation required degree information, authentication
+required input/output relationships, and state operations required frame conditions for
+unchanged fields. A pure model can make these contracts clearer and easier to compose than
+equations between opaque computations; #645 proposes further work in this direction and is not a
+ban on equational specifications. The Braid documentation discussion required stating whether a
+theorem covers one or both parties, arbitrary or initialized states, and only successful calls.
+Assuming a call succeeds does not prove it succeeds. Draft #663 compares receive dispatch with
+ML-KEM Braid Rev. 1 §2.5 and lists three deviations. [#247][247], [#249][249], [#546][546],
+[#550][550], [#574][574], [#576][576], [#645][645], [#662][662], [#663][663]
 
-**Proof maintainability.** #31 emphasized separate mathematical foundations and reuse; #98
-documented a costly `step` registration; #140 and #326 discussed pure constants; #276 recorded a
-real type annotation/elaboration exception; #560 consolidated instances; #712 and #715 corrected
-file placement and registration. [#31][31], [#98][98], [#140][140], [#276][276], [#326][326],
-[#560][560], [#712][712], [#715][715]
+**Performance and CI evidence need interpretation.** Reviews encouraged profiling but challenged
+comparisons involving failed builds, changed benchmark configurations, or apparent noise. Early
+discussion found that registering a loop lemma for `step` could sharply increase proof time;
+later work extracted repeated proof arguments and reduced import cost. Infrastructure history
+includes required checks that did not run for PRs, fork-token failures, duplicate runs, lint
+errors missed by text matching, and caches saved before the build they were supposed to cache. A
+green check is useful only if the intended command ran on the intended revision and its failure
+status was preserved. [#55][55], [#84][84], [#86][86], [#98][98], [#100][100], [#548][548],
+[#549][549], [#647][647], [#660][660], [#670][670], [#676][676], [#677][677], [#718][718]
 
-**Validation and performance.** #549, #647, #670, #676, #677, and #718 covered failing base
-builds, cache keys, exit codes through pipes, and benchmark interpretation. [#549][549],
-[#647][647], [#670][670], [#676][676], [#677][677], [#718][718]
+**Maintainability and review process are recurring concerns.** Reviewers repeatedly requested
+shared helpers and instances, source-aligned file placement, accurate docstrings, discoverable
+theorem names, `@[step]` where applicable, narrower imports, stable tactics, and removal of
+unused declarations. #140 and #326 discussed pure constants; #276 recorded a real type
+annotation/elaboration exception. Reviewers also asked authors to keep PRs focused, match issue
+references to the actual function, and obtain renewed review after meaningful updates; the
+roughly 500-line target was discussed as guidance, with exceptions for coherent larger work.
+[#30][30], [#31][31], [#89][89], [#140][140], [#276][276], [#326][326], [#362][362], [#560][560],
+[#562][562], [#570][570], [#661][661], [#712][712], [#715][715]
 
 **Reporting.** In #678 an author reply claimed a fix, but the re-review of the updated diff still
-found the chain parameters untied to the input; only the next revision resolved it. [#678][678]
+found the chain parameters untied to the input; only the next revision resolved it. Recent AI
+review comments presented themselves as assistance to human review; the workflow prohibiting
+AI-generated specifications is unchanged by this guide. [#678][678], [#714][714], [#715][715]
 
+[30]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/30
 [31]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/31
+[39]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/39
 [48]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/48
+[55]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/55
+[84]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/84
+[86]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/86
+[89]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/89
 [98]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/98
+[100]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/100
 [140]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/140
 [153]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/153
+[183]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/183
 [200]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/200
 [234]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/234
 [243]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/243
+[247]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/247
 [249]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/249
 [272]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/272
 [276]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/276
 [320]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/320
 [326]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/326
+[362]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/362
 [365]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/365
 [373]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/373
 [389]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/389
 [491]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/491
 [542]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/542
+[546]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/546
+[548]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/548
 [549]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/549
 [550]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/550
 [560]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/560
 [562]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/562
+[566]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/566
 [567]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/567
 [568]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/568
 [570]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/570
+[571]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/571
 [574]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/574
 [576]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/576
 [578]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/578
 [618]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/618
+[619]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/619
 [645]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/645
 [647]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/647
 [654]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/654
+[660]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/660
 [661]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/661
+[662]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/662
 [663]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/663
 [670]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/670
 [676]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/676
