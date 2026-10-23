@@ -35,7 +35,7 @@ It is also generally the case, that a specification should not simply re-state t
 Comments regarding the level of abstraction _may_ be _blocking_ or _non-blocking_, according to judgement.
 
 ### 3. Observe performance
-Due to the low cost and ease of use, it is recommended to prompt `!bench` on all but the shortest PRs, to observe the proof's impact on build time. Not all performance decreases are avoidable, and not all avoidable performance decreases are worth prioritizing immediately. Use your judgement to determine whether to
+Radar is requested automatically for ready PRs and subsequent commits. Review the `baif-radar` report for the current commit to observe the proof's impact on build time, and verify that both benchmark builds succeeded. If the automatic request is not accepted, comment `!radar` manually. A successful request workflow does not mean the benchmark passed. Not all performance decreases are avoidable, and not all avoidable performance decreases are worth prioritizing immediately. Use your judgement to determine whether to
 
 	- accept the PR as is,
 	- accept the PR now, but open an issue to revisit performance in the future, or

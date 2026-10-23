@@ -72,7 +72,10 @@ The expected format for PR title, body, and footer is:
 
 All PRs are expected to consider the performance impact they may have on verification time/CI.
 
-Upon opening a PR, you may call `!radar`, to invoke our performance analysis tool.
+Radar is requested automatically for non-draft PRs and subsequent commits.
+Before approving, review its report for the current commit and address or
+justify performance regressions. You may also comment `!radar` to request a
+report manually, including when the automatic request is not accepted.
 
 See our [performance tracking guidelines](./PERFORMANCE.md) for more information.
 
