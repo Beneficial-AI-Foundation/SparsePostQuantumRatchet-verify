@@ -31,12 +31,7 @@ namespace spqr.v1.chunked.send_ct.EkReceivedCt1Sampled
 • Always succeeds: a field projection is total.
 • The `sending_ct1` encoder does not affect the result.
 
-Postcondition: `result = self.uc.epoch`.
-
-Proof: unfold `epoch`, then `step*`.
-
-**Source**: spqr/src/v1/chunked/send_ct.rs (lines 245:4-247:5)
--/
+Postcondition: `result = self.uc.epoch`. -/
 @[step]
 theorem epoch_spec (self : EkReceivedCt1Sampled) :
     epoch self ⦃ (result : U64) =>
