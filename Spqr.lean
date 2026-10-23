@@ -301,6 +301,7 @@ public import Spqr.Specs.Util.Compare
 public import Spqr.Specs.Util.Inz
 public import Spqr.Specs.Util.IsNonZero
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
@@ -338,6 +339,7 @@ public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.IntoPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FromPb
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.FunctionalModels
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
+public import Spqr.Specs.V1.Unchunked.SendEk.EkSent.RecvCt1
 public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.SendHeader
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
