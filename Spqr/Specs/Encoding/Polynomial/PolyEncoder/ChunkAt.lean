@@ -207,12 +207,22 @@ theorem loop_spec
               + result.2[out.length + 2 * (j - iter.start) + 1]!) =
               (polys[j]!).toGF216Poly.eval (idx.val.toGF216)
       | .Points pts =>
-          ∀ polys', result.1.s = .Polys polys' →
-            ∀ (j : Nat), j < 16 →
+          -- Either stayed in Points (cache hit) with constrained bytes …
+          (result.1 = self ∧
+            ∀ (j : Nat), iter.start ≤ j → j < iter.end →
+              idx.val < (pts[j]!).value.length ∧
+              256 * result.2[out.length + 2 * (j - iter.start)]! +
+                result.2[out.length + 2 * (j - iter.start) + 1]! =
+                  ((pts[j]!).value[idx.val]!).value.val) ∨
+          -- … or transitioned to Polys with Lagrange identity
+          (∃ polys', result.1.s = .Polys polys' ∧
+            (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
                 ∑ k ∈ Finset.range (pts[j]!).value.length,
                   C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k ⦄ := by
+                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
+            (∀ (j : Nat), j < 16 →
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max)) ⦄ := by
   unfold chunk_at_loop
   apply loop.spec_decr_nat
     (measure := fun (p : core.ops.range.Range Usize × PolyEncoder × alloc.vec.Vec U8) =>
@@ -251,10 +261,19 @@ theorem loop_spec
               polys'[j]!.toGF216Poly =
                 ∑ k ∈ Finset.range (pts[j]!).value.length,
                   C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k))
+                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
+        -- When starting in Points and still in Points, bytes = stored points
+        (∀ pts, self.s = .Points pts → p.2.1 = self →
+          ∀ (j : Nat), iter.start ≤ j → j < p.1.start →
+            idx.val < (pts[j]!).value.length ∧
+            256 * p.2.2.val[out.length + 2 * (j - iter.start)]! +
+              p.2.2.val[out.val.length +
+                2 * (j - iter.start) + 1]! =
+                  ((pts[j]!).value[idx.val]!).value.val))
   · rintro ⟨iter', self', out'⟩ ⟨h_end', h_iter_ge, h_start_le', h_idx', h_out_len',
                                   h_stable', h_adm', h_pre', h_poly_pre',
-                                  h_pts_stable', h_coeff_inv', h_lagrange'⟩
+                                  h_pts_stable', h_coeff_inv', h_lagrange',
+                                  h_pts_cache_bytes'⟩
     simp only at h_end' h_iter_ge h_start_le' h_idx' h_out_len' h_stable' h_adm'
     simp only at  h_pre' h_pts_stable' ⊢
     dsimp at h_poly_pre' h_coeff_inv' h_lagrange'
@@ -292,7 +311,7 @@ theorem loop_spec
                  by rw [h_out_eq]; simp only [List.length_append, List.length_cons,
                    List.length_nil]; omega,
                  ?_, ?_, fun j hj1 hj2 => ?_, fun polys h_polys j hj1 hj2 => ?_,
-                 ?_, ?_, ?_⟩
+                 ?_, ?_, ?_, ?_⟩
           · intro polys h_polys
             have h_self'_eq := h_stable' polys h_polys
             subst h_self'_eq
@@ -388,6 +407,58 @@ theorem loop_spec
               simp only [h_s] at h_match
               rw [h_match.2] at h_polys_new
               exact h_lagrange' pts_init h_pts_init polys_new h_polys_new j hj
+          · -- h_pts_cache_bytes': Points→Points, bytes = stored points
+            intro pts_init h_pts_init h_self''_eq j hj1 hj2
+            simp only [alloc.vec.Vec.length, h_out_eq]
+            -- self'' = self means self''.s = .Points pts_init
+            have h_self''_pts : self''.s = .Points pts_init := by
+              rw [h_self''_eq]; exact h_pts_init
+            -- self' must also be Points (since body preserves or transitions)
+            cases h_s : self'.s with
+            | Polys polys_curr =>
+              -- self'.s = Polys, but body_spec Polys case: self'' = self'
+              simp only [h_s] at h_match
+              -- h_match.2: self'' = self', so self''.s = Polys
+              rw [h_match.2] at h_self''_pts
+              simp [h_s] at h_self''_pts
+            | Points pts_curr =>
+              simp only [h_s] at h_match
+              by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
+              · -- Cache hit
+                simp only [ite_eq_left h_cache] at h_match
+                -- h_match: g = stored point, self'' = self'
+                -- self' = self (from pts_stable)
+                have h_self'_eq := h_pts_stable' pts_curr h_s
+                -- self'' = self' = self
+                have h_pts_eq : pts_curr = pts_init := by
+                  rw [h_self'_eq] at h_s; cases h_s.symm.trans h_pts_init; rfl
+                by_cases hj_lt : j < iter'.start.val
+                · -- Previous iteration: use IH
+                  have ⟨h_idx_lt, h_bytes⟩ :=
+                    h_pts_cache_bytes' pts_init h_pts_init (h_self'_eq ▸ rfl) j hj1 hj_lt
+                  exact ⟨h_idx_lt, by
+                    rw [getElem!_append_pair_of_lt (by omega),
+                        getElem!_append_pair_of_lt (by omega)]
+                    simpa only [alloc.vec.Vec.length] using h_bytes⟩
+                · -- Current iteration: j = iter'.start
+                  obtain rfl : j = iter'.start.val := by omega
+                  have h1 : out.val.length + 2 * (iter'.start.val - iter.start.val) =
+                      out'.val.length := h_out_len'.symm
+                  constructor
+                  · rw [h_pts_eq] at h_cache; exact h_cache
+                  · rw [h1, getElem!_append_pair_hi, getElem!_append_pair_lo, h_encode]
+                    rw [h_pts_eq] at h_match
+                    exact h_match.1.symm ▸ rfl
+              · -- Cache miss: self'' transitions, but self'' = self (Points) — contradiction
+                simp only [ite_eq_right h_cache] at h_match
+                have h_self'_eq := h_pts_stable' pts_curr h_s
+                -- After body: self''.s = .Polys (from h_match)
+                -- But self'' = self, self.s = .Points — contradiction
+                match h_s'' : self''.s with
+                | .Polys _ =>
+                  simp [h_self''_pts] at h_s''
+                | .Points _ =>
+                  simp [h_s''] at h_match
         · show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val
           omega
     · unfold body
@@ -405,8 +476,20 @@ theorem loop_spec
           exact ⟨h_stable' polys h_s, fun j hj1 hj2 =>
             h_poly_pre' polys h_s j hj1 (by omega)⟩
         | Points pts =>
-          intro polys' h2 j hj
-          exact h_lagrange' pts h_s polys' (by simpa using h2) j hj
+          -- Decide: did the state stay Points or transition to Polys?
+          cases h_s' : self'.s with
+          | Points pts' =>
+            -- Stayed in Points → cache-hit case
+            have h_eq := h_pts_stable' pts' h_s'
+            left
+            exact ⟨h_eq, fun j hj1 hj2 =>
+              h_pts_cache_bytes' pts h_s h_eq j hj1
+                (show j < iter'.start.val by omega)⟩
+          | Polys polys' =>
+            -- Transitioned to Polys
+            right
+            exact ⟨polys', rfl, fun j hj => h_lagrange' pts h_s polys' h_s' j hj,
+              fun j hj => h_coeff_inv' polys' h_s' j hj⟩
   · dsimp
     constructor; · exact rfl
     constructor; · exact le_refl _
@@ -421,10 +504,14 @@ theorem loop_spec
     constructor
     · intro polys h_polys
       exact h_coeff_bound polys h_polys
-    intro pts h1 polys' h2 j hj
-    exfalso
-    have h2' : self.s = .Polys polys' := by simpa using h2
-    simp [h1] at h2'
+    constructor
+    · intro pts h1 polys' h2 j hj
+      exfalso
+      have h2' : self.s = .Polys polys' := by simpa using h2
+      simp [h1] at h2'
+    -- h_pts_cache_bytes': vacuous at start (no j in range)
+    intro pts h1 h2 j hj1 hj2
+    exact absurd hj2 (by omega)
 
 end spqr.encoding.polynomial.PolyEncoder.chunk_at_loop
 
@@ -481,12 +568,21 @@ theorem chunk_at_spec
             Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
               (polys[j]!).toGF216Poly.eval (idx.val.toGF216)
       | .Points pts =>
-          ∀ polys', self'.s = .Polys polys' →
+          -- Either stayed in Points (cache hit) with constrained bytes …
+          (self' = self ∧
             ∀ (j : Nat), j < 16 →
+              idx.val < (pts[j]!).value.length ∧
+              Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
+                ((pts[j]!).value[idx.val]!).toGF216) ∨
+          -- … or transitioned to Polys with Lagrange identity
+          (∃ polys', self'.s = .Polys polys' ∧
+            (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
                 ∑ k ∈ Finset.range (pts[j]!).value.length,
                   C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k ⦄ := by
+                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
+            (∀ (j : Nat), j < 16 →
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max)) ⦄ := by
   unfold chunk_at
   have h_wc : (alloc.vec.Vec.with_capacity U8 32#usize).length = 0 := by
     simp [alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]
@@ -505,6 +601,18 @@ theorem chunk_at_spec
     simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_bytes j (Nat.zero_le _) hj
   | Points pts =>
     simp only [hs] at h_match1 ⊢
-    exact h_match1
+    rcases h_match1 with ⟨h_eq, h_cache_bytes⟩ | ⟨polys', h_polys', h_lagrange, h_coeff⟩
+    · -- Cache hit case
+      left
+      refine ⟨h_eq, fun j hj => ?_⟩
+      obtain ⟨h_lt, h_bytes⟩ := h_cache_bytes j (Nat.zero_le _) hj
+      refine ⟨h_lt, ?_⟩
+      simp only [GF16.toGF216]
+      have h_bytes' : Nat.toGF216 (256 * out1.val[2 * j]! + out1.val[2 * j + 1]!) =
+            Nat.toGF216 ((pts[j]!).value[idx.val]!).value.val := by congr 1
+      simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_bytes'
+    · -- Polys transition case
+      right
+      exact ⟨polys', h_polys', h_lagrange, h_coeff⟩
 
 end spqr.encoding.polynomial.PolyEncoder
