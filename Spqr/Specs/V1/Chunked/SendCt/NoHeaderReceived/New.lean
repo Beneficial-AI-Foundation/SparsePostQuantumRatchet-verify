@@ -6,10 +6,9 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.New
+public import Spqr.Specs.V1.Unchunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
-import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
 import Spqr.Specs.Aeneas.ResultExpect
 /-!
