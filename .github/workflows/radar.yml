@@ -1,0 +1,65 @@
+name: Request Radar
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+# This privileged workflow only reads PR metadata and posts comments.
+# Never check out or execute PR code here, including for fork PRs.
+permissions:
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: radar-request-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  request:
+    name: Request Radar benchmark
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Request benchmark for the current PR revision
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const eventPR = context.payload.pull_request;
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: eventPR.number,
+            });
+
+            // A queued event may refer to a closed PR or an older revision.
+            if (pr.state !== 'open' || pr.draft ||
+                pr.head.sha !== eventPR.head.sha ||
+                pr.base.ref !== eventPR.base.ref) {
+              core.info('Skipping a closed, draft, or superseded PR event.');
+              return;
+            }
+
+            const marker =
+              `<!-- radar-request:${pr.base.sha}:${pr.head.sha} -->`;
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { ...context.repo, issue_number: pr.number, per_page: 100 }
+            );
+            if (comments.some(c =>
+                c.user?.login === 'github-actions[bot]' &&
+                c.body?.includes(marker))) {
+              core.info('Radar has already been requested for this revision.');
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: pr.number,
+              body: `!radar\n\n${marker}`,
+            });
+            await core.summary
+              .addRaw('Radar requested. This check confirms only that the request ' +
+                'was posted; review the baif-radar report for the current PR ' +
+                'commit before approving. If no report appears, check Radar ' +
+                'authorization for github-actions[bot] or request !radar manually.')
+              .write();
