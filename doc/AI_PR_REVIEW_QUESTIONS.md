@@ -1,8 +1,10 @@
 # Questions for AI review of SPQR pull requests
 
 Use these questions to review a PR in `SparsePostQuantumRatchet-verify`. Answer them from the
-current diff, Rust source, theorem statements, dependencies, and validation results. Ask the author
-only when a material question remains unresolved after that inspection. A passing Lean proof
+current diff, Rust source, theorem statements, dependencies, and validation results, then report
+only the problems found, grouped and tagged as described in
+[Reporting the review](#reporting-the-review). Ask the author only when a material question
+remains unresolved after that inspection. A passing Lean proof
 establishes its formal statement under its assumptions; review must also assess whether those
 assumptions and that statement describe the intended implementation.
 
@@ -248,25 +250,58 @@ The commands are in the [procedure](#procedure). These questions interpret their
 
 ## Reporting the review
 
-Classify each finding using the vocabulary of the [reviewer guide](REVIEWER_GUIDE.md):
+The questions above are the investigation checklist, not the outline of the report. The report
+lists only problems. Do not answer the questions one by one, do not restate what the PR does, and
+do not list the checks that passed except in the validation footer. A reader should be able to
+see the verdict and every finding, grouped by severity, without reading anything else.
+
+### Severity groups
+
+Group findings under these three headings, in this order, using the vocabulary of the
+[reviewer guide](REVIEWER_GUIDE.md). Omit a heading that has no findings.
 
 - **Blocking:** a demonstrated counterexample to a specification, an unsatisfiable or
   question-begging premise, an unfaithful model of the Rust behavior, an unjustified change to
   the trust base, or validation that did not actually pass on the head revision.
-- **Blocking or non-blocking by judgment:** level of abstraction, usability by callers,
+- **Judgment (blocking or non-blocking):** level of abstraction, usability by callers,
   composition gaps, and performance regressions, in proportion to their impact.
-- **Non-blocking:** naming, placement, reuse, comments, and style, unless the style guide makes
-  the point mandatory or the problem is pervasive.
+- **Non-blocking:** naming, placement, reuse, comments, PR format, and style, unless the style
+  guide makes the point mandatory or the problem is pervasive.
 
 A historical disagreement or keyword match is a prompt to investigate, not a finding by itself.
-State the classification explicitly in each finding so the human reviewer can override it.
+State the group explicitly so the human reviewer can override it.
 
-For each substantive finding, provide:
+### Category tags
 
-1. The affected file, line, theorem, and reviewed commit.
-2. The violated behavior or contract, with a concrete counterexample or dependency argument.
-3. The consequence for callers, proof meaning, or verification scope.
-4. A focused question or requested correction, and the evidence needed to resolve it.
+Tag each finding with one category so that findings of the same kind can be compared across
+PRs. The tag names the section of this guide that produced the finding:
+
+| Tag | Source section |
+| --- | --- |
+| `spec` | Specification strength and state changes; core question 3 |
+| `premise` | Core question 4 |
+| `model` | Core question 5; Extraction and handwritten external models |
+| `trust` | Core question 6; Axioms and cryptographic boundaries |
+| `usability` | Core question 7; Protocol properties and composition |
+| `serialization` | Serialization and round trips |
+| `validation` | Core question 8; Validation and performance |
+| `maintainability` | Proof maintainability and discoverability |
+| `format` | Core questions 1 and 2; PR title, body, footer, revision |
+
+### Finding format
+
+Write each finding as one bullet in this shape:
+
+```text
+- [`tag`] `path/to/File.lean:LINE` `theorem_name` — one-sentence defect.
+  Evidence: counterexample, dependency argument, or Rust lines that define the intended behavior.
+  Consequence: what callers, proof meaning, or verification scope lose.
+  Ask: the focused question or requested correction, and what evidence would resolve it.
+```
+
+Keep the first line short enough to scan. Put the reviewed head commit once in the footer, not
+in every finding. If the same defect appears at several places, report it once and list the
+locations.
 
 **What an AI review may propose.** The workflow prohibits AI-generated specifications. In a
 review this means: an AI may present a counterexample, name the property that is missing in
@@ -286,10 +321,29 @@ Useful author-facing questions after investigation include:
   there a separate success theorem?"
 - "The benchmark compares against a failed base build. Is a successful comparable baseline available?"
 
-End the review with the checks actually performed, the head commit they ran on, and any material
-unverified boundary. If no blocking problem is demonstrated, say so without claiming full
-protocol security. Recheck claimed fixes against the updated diff rather than accepting an
-author reply. An AI review remains assistance for the responsible human reviewer.
+### Report layout
+
+```text
+Verdict: <no blocking finding | N blocking finding(s)> on <head commit> (base <base commit>).
+
+Blocking
+- ...
+
+Judgment
+- ...
+
+Non-blocking
+- ...
+
+Validation: <commands from the procedure that ran on the head, each with pass/fail>.
+Unverified: <material boundaries not checked, or "none">.
+```
+
+The verdict line comes first. If no blocking problem is demonstrated, say so without claiming
+full protocol security. The validation line names the commands that actually ran and their
+results; it does not repeat the PR body's claims. Recheck claimed fixes against the updated diff
+rather than accepting an author reply. An AI review remains assistance for the responsible human
+reviewer.
 
 ## Appendix: historical examples
 
