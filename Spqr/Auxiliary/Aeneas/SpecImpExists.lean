@@ -38,4 +38,14 @@ theorem exists_imp_spec {α : Type} {m : Result α} {p : Post α} (h : ∃ v, m 
   obtain ⟨v, rfl, hv⟩ := h
   exact (spec_ok v).mpr hv
 
+/-- A non-panicking `bind` has a non-panicking head, and its tail does not panic on the value
+the head returns. -/
+theorem bind_spec_true {α β : Type} {m : Result α} {k : α → Result β}
+    (h : (Std.bind m k) ⦃ _ => True ⦄) :
+    ∃ v, m = ok v ∧ (k v) ⦃ _ => True ⦄ := by
+  cases hm : m with
+  | ret v => exact ⟨v, rfl, by rw [hm, bind_ok] at h; exact h⟩
+  | vis _ _ => rw [hm, bind_vis] at h; exact (spec_vis _ _).mp h |>.elim
+  | div => rw [hm, bind_div] at h; exact spec_div.mp h |>.elim
+
 end Aeneas.Std.WP
