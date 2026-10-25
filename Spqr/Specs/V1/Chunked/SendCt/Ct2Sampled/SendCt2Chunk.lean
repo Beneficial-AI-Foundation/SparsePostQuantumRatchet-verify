@@ -88,6 +88,6 @@ theorem send_ct2_chunk_spec (self : Ct2Sampled)
   unfold send_ct2_chunk
   step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec self.sending_ct2
     h_idx_fits h_admissible h_coeff_bound
-  exact chunk_post
+  assumption
 
 end spqr.v1.chunked.send_ct.Ct2Sampled
