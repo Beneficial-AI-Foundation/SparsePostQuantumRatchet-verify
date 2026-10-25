@@ -613,7 +613,7 @@ rows: `recv_of_eq_unexpected` and `recv_of_eq_refines`. All five are in
 `Spqr/Specs/Braid/StateMachine/EpochDispatch.lean`. The equal-epoch theorems compare against the
 spec's `Receive` at state name and key presence; `recv_of_eq_unexpected` is total, and
 `recv_of_eq_refines` holds in the if-it-returns form, with the checks stated by the code's own calls
-(REV-01 ACCEPT round 8, `docs/statement-reviews/PROP-30-equal-8.md`).
+(REV-01 ACCEPT round 10, `docs/statement-reviews/PROP-30-equal-10.md`).
 
 ### PROP-47 Transition refinement
 
