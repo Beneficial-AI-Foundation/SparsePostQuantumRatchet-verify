@@ -86,7 +86,8 @@ theorem next_chunk_spec_poly_encoder
                 pe0.idx.val < (pts[j]!).value.length ∧
                 Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
                   ((pts[j]!).value[pe0.idx.val]!).toGF216) ∨
-            -- … or transitioned to Polys with Lagrange identity
+            -- … or transitioned to Polys with Lagrange identity; each chunk word is either
+            -- a cache hit (served before the transition) or an evaluation of the interpolant
             (∃ polys', pe.s = .Polys polys' ∧
               (∀ (j : Nat), j < 16 →
                 polys'[j]!.toGF216Poly =
@@ -94,7 +95,13 @@ theorem next_chunk_spec_poly_encoder
                     C (((pts[j]!).value[k]!).toGF216) *
                       scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
               (∀ (j : Nat), j < 16 →
-                (polys'[j]!).coefficients.length + 1 ≤ Usize.max))
+                (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
+              (∀ (j : Nat), j < 16 →
+                (pe0.idx.val < (pts[j]!).value.length ∧
+                  Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
+                    ((pts[j]!).value[pe0.idx.val]!).toGF216) ∨
+                Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
+                  (polys'[j]!).toGF216Poly.eval (pe0.idx.val.toGF216)))
       | none => False ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]

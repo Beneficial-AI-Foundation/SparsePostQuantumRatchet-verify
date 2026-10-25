@@ -37,7 +37,9 @@ Unfolds `send_ct2_chunk` and delegates to `next_chunk_spec`. Preconditions:
 Postcondition: `result.uc = self.uc`, `chunk.index = idx`, `chunk.data.length = 32`,
 encoder index increments mod 2³², plus the phase-dependent invariant from `next_chunk_spec`
 (`Polys`: chunk words = polynomial evaluations; `Points`: either stayed in Points with
-chunk bytes = stored points, or transitioned to Polys with Lagrange interpolation identity). -/
+chunk bytes = stored points, or transitioned to Polys with Lagrange interpolation identity,
+where each chunk word is either a stored point served before the transition or an evaluation
+of the interpolated polynomial at `idx`). -/
 @[step]
 theorem send_ct2_chunk_spec (self : Ct2Sampled)
     (h_idx_fits : self.sending_ct2.idx.val ≤ U16.max)
@@ -67,7 +69,8 @@ theorem send_ct2_chunk_spec (self : Ct2Sampled)
               self.sending_ct2.idx.val < (pts[j]!).value.length ∧
               Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
                 ((pts[j]!).value[self.sending_ct2.idx.val]!).toGF216) ∨
-          -- … or transitioned to Polys with Lagrange identity
+          -- … or transitioned to Polys with Lagrange identity; each chunk word is either
+          -- a cache hit (served before the transition) or an evaluation of the interpolant
           (∃ polys', result.sending_ct2.s = .Polys polys' ∧
             (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
@@ -75,7 +78,13 @@ theorem send_ct2_chunk_spec (self : Ct2Sampled)
                   C (((pts[j]!).value[k]!).toGF216) *
                     scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
             (∀ (j : Nat), j < 16 →
-              (polys'[j]!).coefficients.length + 1 ≤ Usize.max)) ⦄ := by
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
+            (∀ (j : Nat), j < 16 →
+              (self.sending_ct2.idx.val < (pts[j]!).value.length ∧
+                Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                  ((pts[j]!).value[self.sending_ct2.idx.val]!).toGF216) ∨
+              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                (polys'[j]!).toGF216Poly.eval (self.sending_ct2.idx.val.toGF216))) ⦄ := by
   unfold send_ct2_chunk
   step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec self.sending_ct2
     h_idx_fits h_admissible h_coeff_bound

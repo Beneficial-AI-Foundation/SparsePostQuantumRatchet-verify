@@ -58,7 +58,8 @@ theorem next_chunk_spec
               self.idx.val < (pts[j]!).value.length ∧
               Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
                 ((pts[j]!).value[self.idx.val]!).toGF216) ∨
-          -- … or transitioned to Polys with Lagrange identity
+          -- … or transitioned to Polys with Lagrange identity; each chunk word is either
+          -- a cache hit (served before the transition) or an evaluation of the interpolant
           (∃ polys', self'.s = .Polys polys' ∧
             (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
@@ -66,7 +67,13 @@ theorem next_chunk_spec
                   C (((pts[j]!).value[k]!).toGF216) *
                     scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
             (∀ (j : Nat), j < 16 →
-              (polys'[j]!).coefficients.length + 1 ≤ Usize.max)) ⦄ := by
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
+            (∀ (j : Nat), j < 16 →
+              (self.idx.val < (pts[j]!).value.length ∧
+                Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                  ((pts[j]!).value[self.idx.val]!).toGF216) ∨
+              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                (polys'[j]!).toGF216Poly.eval (self.idx.val.toGF216))) ⦄ := by
   unfold next_chunk
   step
   step with chunk_at_spec
@@ -83,7 +90,7 @@ theorem next_chunk_spec
     grind
   | Points pts =>
     simp only [h_s] at h_match ⊢
-    rcases h_match with ⟨h_eq, h_cache⟩ | ⟨polys', h_polys', h_lagrange, h_coeff⟩
+    rcases h_match with ⟨h_eq, h_cache⟩ | ⟨polys', h_polys', h_lagrange, h_coeff, h_trans⟩
     · left
       constructor
       · -- chunk_at preserved the state, so next_chunk also preserves state
@@ -98,6 +105,17 @@ theorem next_chunk_spec
           simp_all [UScalar.cast_val_eq]
           grind
     · right
-      exact ⟨polys', h_polys', h_lagrange, h_coeff⟩
+      refine ⟨polys', h_polys', h_lagrange, h_coeff, fun j hj => ?_⟩
+      rcases h_trans j hj with ⟨h_lt, h_bytes⟩ | h_eval
+      · left
+        constructor
+        · simp_all [UScalar.cast_val_eq]; grind
+        · have := h_bytes
+          simp_all [UScalar.cast_val_eq]
+          grind
+      · right
+        have := h_eval
+        simp_all [UScalar.cast_val_eq]
+        grind
 
 end spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder

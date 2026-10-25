@@ -172,7 +172,10 @@ The full serialization loop. Returns the updated encoder state and byte vector s
 - Big-endian encoding invariant for each `j ∈ [start, end)`.
 - **Polys**: encoder state unchanged; each pair decodes to
   `(polys[j]!).toGF216Poly.eval (idx.val.toGF216)`.
-- **Points**: Lagrange interpolation identity preserved for any resulting Polys state.
+- **Points**: either the state is unchanged and each pair decodes to the stored point
+  `pts[j].value[idx]`, or the state transitioned to Polys satisfying the Lagrange
+  interpolation identity, and each pair decodes either to a stored point (cache hit served
+  before the transition) or to `(polys'[j]!).toGF216Poly.eval (idx.val.toGF216)`.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 697:8-705:9) -/
 @[step]
@@ -214,7 +217,9 @@ theorem loop_spec
               256 * result.2[out.length + 2 * (j - iter.start)]! +
                 result.2[out.length + 2 * (j - iter.start) + 1]! =
                   ((pts[j]!).value[idx.val]!).value.val) ∨
-          -- … or transitioned to Polys with Lagrange identity
+          -- … or transitioned to Polys with Lagrange identity, where every emitted word is
+          -- either a cache hit served before the transition or an evaluation of the
+          -- interpolated polynomial
           (∃ polys', result.1.s = .Polys polys' ∧
             (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
@@ -222,7 +227,15 @@ theorem loop_spec
                   C (((pts[j]!).value[k]!).toGF216) *
                     scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
             (∀ (j : Nat), j < 16 →
-              (polys'[j]!).coefficients.length + 1 ≤ Usize.max)) ⦄ := by
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
+            (∀ (j : Nat), iter.start ≤ j → j < iter.end →
+              (idx.val < (pts[j]!).value.length ∧
+                256 * result.2[out.length + 2 * (j - iter.start)]! +
+                  result.2[out.length + 2 * (j - iter.start) + 1]! =
+                    ((pts[j]!).value[idx.val]!).value.val) ∨
+              Nat.toGF216 (256 * result.2[out.length + 2 * (j - iter.start)]! +
+                result.2[out.length + 2 * (j - iter.start) + 1]!) =
+                (polys'[j]!).toGF216Poly.eval (idx.val.toGF216))) ⦄ := by
   unfold chunk_at_loop
   apply loop.spec_decr_nat
     (measure := fun (p : core.ops.range.Range Usize × PolyEncoder × alloc.vec.Vec U8) =>
@@ -269,11 +282,23 @@ theorem loop_spec
             256 * p.2.2.val[out.length + 2 * (j - iter.start)]! +
               p.2.2.val[out.val.length +
                 2 * (j - iter.start) + 1]! =
-                  ((pts[j]!).value[idx.val]!).value.val))
+                  ((pts[j]!).value[idx.val]!).value.val) ∧
+        -- When starting in Points and now in Polys, every emitted word is either a cache hit
+        -- (served before the transition) or an evaluation of the interpolated polynomial
+        (∀ pts, self.s = .Points pts →
+          ∀ polys', p.2.1.s = .Polys polys' →
+            ∀ (j : Nat), iter.start ≤ j → j < p.1.start →
+              (idx.val < (pts[j]!).value.length ∧
+                256 * p.2.2.val[out.length + 2 * (j - iter.start)]! +
+                  p.2.2.val[out.val.length + 2 * (j - iter.start) + 1]! =
+                    ((pts[j]!).value[idx.val]!).value.val) ∨
+              Nat.toGF216 (256 * p.2.2.val[out.length + 2 * (j - iter.start)]! +
+                p.2.2.val[out.val.length + 2 * (j - iter.start) + 1]!) =
+                (polys'[j]!).toGF216Poly.eval (idx.val.toGF216)))
   · rintro ⟨iter', self', out'⟩ ⟨h_end', h_iter_ge, h_start_le', h_idx', h_out_len',
                                   h_stable', h_adm', h_pre', h_poly_pre',
                                   h_pts_stable', h_coeff_inv', h_lagrange',
-                                  h_pts_cache_bytes'⟩
+                                  h_pts_cache_bytes', h_trans_bytes'⟩
     simp only at h_end' h_iter_ge h_start_le' h_idx' h_out_len' h_stable' h_adm'
     simp only at  h_pre' h_pts_stable' ⊢
     dsimp at h_poly_pre' h_coeff_inv' h_lagrange'
@@ -311,7 +336,7 @@ theorem loop_spec
                  by rw [h_out_eq]; simp only [List.length_append, List.length_cons,
                    List.length_nil]; omega,
                  ?_, ?_, fun j hj1 hj2 => ?_, fun polys h_polys j hj1 hj2 => ?_,
-                 ?_, ?_, ?_, ?_⟩
+                 ?_, ?_, ?_, ?_, ?_⟩
           · intro polys h_polys
             have h_self'_eq := h_stable' polys h_polys
             subst h_self'_eq
@@ -459,6 +484,61 @@ theorem loop_spec
                   simp [h_self''_pts] at h_s''
                 | .Points _ =>
                   simp [h_s''] at h_match
+          · -- h_trans_bytes': Points→Polys, each word is a cache hit or an evaluation
+            intro pts_init h_pts_init polys_new h_polys_new j hj1 hj2
+            simp only [alloc.vec.Vec.length, h_out_eq]
+            by_cases hj_lt : j < iter'.start.val
+            · -- Previous iteration: bytes unchanged; split on self'.s
+              rw [getElem!_append_pair_of_lt (by omega), getElem!_append_pair_of_lt (by omega)]
+              cases h_s : self'.s with
+              | Polys polys_curr =>
+                -- self' already in Polys: body preserves state, so polys_new = polys_curr
+                simp only [h_s] at h_match
+                have h_eq : self'' = self' := h_match.2
+                rw [h_eq, h_s] at h_polys_new
+                have h_polys_eq : polys_new = polys_curr := by
+                  cases h_polys_new; rfl
+                subst h_polys_eq
+                rcases h_trans_bytes' pts_init h_pts_init polys_new h_s j hj1 hj_lt with
+                  h | h
+                · exact Or.inl (by simpa only [alloc.vec.Vec.length] using h)
+                · exact Or.inr (by simpa only [alloc.vec.Vec.length] using h)
+              | Points pts_curr =>
+                -- self' still Points: self' = self, so previous bytes are cache hits
+                have h_self'_eq := h_pts_stable' pts_curr h_s
+                left
+                have h := h_pts_cache_bytes' pts_init h_pts_init h_self'_eq j hj1 hj_lt
+                simpa only [alloc.vec.Vec.length] using h
+            · -- Current iteration: j = iter'.start
+              obtain rfl : j = iter'.start.val := by omega
+              have h1 : out.val.length + 2 * (iter'.start.val - iter.start.val) =
+                  out'.val.length := h_out_len'.symm
+              rw [h1, getElem!_append_pair_hi, getElem!_append_pair_lo, h_encode]
+              cases h_s : self'.s with
+              | Points pts_curr =>
+                simp only [h_s] at h_match
+                have h_self'_eq := h_pts_stable' pts_curr h_s
+                have h_pts_eq : pts_curr = pts_init := by
+                  rw [h_self'_eq] at h_s; cases h_s.symm.trans h_pts_init; rfl
+                subst h_pts_eq
+                by_cases h_cache : idx < (pts_curr[iter'.start]!).value.length
+                · -- cache hit on this iteration, but self'' = self' is Points ≠ Polys
+                  simp only [ite_eq_left h_cache] at h_match
+                  rw [h_match.2, h_s] at h_polys_new
+                  cases h_polys_new
+                · -- cache miss: transition happened in this iteration
+                  simp only [ite_eq_right h_cache] at h_match
+                  simp only [h_polys_new] at h_match
+                  right
+                  have := h_match.2.2
+                  simpa [GF16.toGF216] using this
+              | Polys polys_curr =>
+                simp only [h_s] at h_match
+                have h_eq : self'' = self' := h_match.2
+                rw [h_eq, h_s] at h_polys_new
+                cases h_polys_new
+                right
+                simpa [GF16.toGF216] using h_match.1
         · show iter''.end.val - iter''.start.val < iter'.end.val - iter'.start.val
           omega
     · unfold body
@@ -489,7 +569,9 @@ theorem loop_spec
             -- Transitioned to Polys
             right
             exact ⟨polys', rfl, fun j hj => h_lagrange' pts h_s polys' h_s' j hj,
-              fun j hj => h_coeff_inv' polys' h_s' j hj⟩
+              fun j hj => h_coeff_inv' polys' h_s' j hj,
+              fun j hj1 hj2 => h_trans_bytes' pts h_s polys' h_s' j hj1
+                (show j < iter'.start.val by omega)⟩
   · dsimp
     constructor; · exact rfl
     constructor; · exact le_refl _
@@ -509,8 +591,12 @@ theorem loop_spec
       exfalso
       have h2' : self.s = .Polys polys' := by simpa using h2
       simp [h1] at h2'
-    -- h_pts_cache_bytes': vacuous at start (no j in range)
-    intro pts h1 h2 j hj1 hj2
+    constructor
+    · -- h_pts_cache_bytes': vacuous at start (no j in range)
+      intro pts h1 h2 j hj1 hj2
+      exact absurd hj2 (by omega)
+    -- h_trans_bytes': vacuous at start (no j in range)
+    intro pts h1 polys' h2 j hj1 hj2
     exact absurd hj2 (by omega)
 
 end spqr.encoding.polynomial.PolyEncoder.chunk_at_loop
@@ -541,7 +627,10 @@ Serializes 16 polynomial evaluations into a 32-byte `Chunk` satisfying:
 - `self'.idx = self.idx` — encoder index preserved.
 - **Polys**: encoder state unchanged; each byte pair decodes to
   `(polys[j]!).toGF216Poly.eval (idx.val.toGF216)`.
-- **Points**: Lagrange interpolation identity preserved for any resulting Polys state.
+- **Points**: either the state is unchanged and each byte pair decodes to the stored point
+  `pts[j].value[idx]`, or the state transitioned to Polys satisfying the Lagrange
+  interpolation identity, and each byte pair decodes either to a stored point (cache hit
+  served before the transition) or to `(polys'[j]!).toGF216Poly.eval (idx.val.toGF216)`.
 
 **Source**: spqr/src/encoding/polynomial.rs (lines 694:4-710:5) -/
 @[step]
@@ -574,7 +663,8 @@ theorem chunk_at_spec
               idx.val < (pts[j]!).value.length ∧
               Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
                 ((pts[j]!).value[idx.val]!).toGF216) ∨
-          -- … or transitioned to Polys with Lagrange identity
+          -- … or transitioned to Polys with Lagrange identity; each chunk word is either
+          -- a cache hit (served before the transition) or an evaluation of the interpolant
           (∃ polys', self'.s = .Polys polys' ∧
             (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
@@ -582,7 +672,13 @@ theorem chunk_at_spec
                   C (((pts[j]!).value[k]!).toGF216) *
                     scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
             (∀ (j : Nat), j < 16 →
-              (polys'[j]!).coefficients.length + 1 ≤ Usize.max)) ⦄ := by
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
+            (∀ (j : Nat), j < 16 →
+              (idx.val < (pts[j]!).value.length ∧
+                Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
+                  ((pts[j]!).value[idx.val]!).toGF216) ∨
+              Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
+                (polys'[j]!).toGF216Poly.eval (idx.val.toGF216))) ⦄ := by
   unfold chunk_at
   have h_wc : (alloc.vec.Vec.with_capacity U8 32#usize).length = 0 := by
     simp [alloc.vec.Vec.with_capacity, alloc.vec.Vec.new]
@@ -601,7 +697,8 @@ theorem chunk_at_spec
     simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_bytes j (Nat.zero_le _) hj
   | Points pts =>
     simp only [hs] at h_match1 ⊢
-    rcases h_match1 with ⟨h_eq, h_cache_bytes⟩ | ⟨polys', h_polys', h_lagrange, h_coeff⟩
+    rcases h_match1 with ⟨h_eq, h_cache_bytes⟩ |
+      ⟨polys', h_polys', h_lagrange, h_coeff, h_trans_bytes⟩
     · -- Cache hit case
       left
       refine ⟨h_eq, fun j hj => ?_⟩
@@ -613,6 +710,15 @@ theorem chunk_at_spec
       simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_bytes'
     · -- Polys transition case
       right
-      exact ⟨polys', h_polys', h_lagrange, h_coeff⟩
+      refine ⟨polys', h_polys', h_lagrange, h_coeff, fun j hj => ?_⟩
+      rcases h_trans_bytes j (Nat.zero_le _) hj with ⟨h_lt, h_bytes⟩ | h_eval
+      · left
+        refine ⟨h_lt, ?_⟩
+        simp only [GF16.toGF216]
+        have h_bytes' : Nat.toGF216 (256 * out1.val[2 * j]! + out1.val[2 * j + 1]!) =
+              Nat.toGF216 ((pts[j]!).value[idx.val]!).value.val := by congr 1
+        simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_bytes'
+      · right
+        simpa [h_arr, h_s, alloc.vec.Vec.getElem!_Nat_eq] using h_eval
 
 end spqr.encoding.polynomial.PolyEncoder
