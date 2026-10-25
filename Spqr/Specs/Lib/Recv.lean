@@ -42,6 +42,15 @@ The path theorems are not tagged `@[step]`: their hypotheses are equations on th
 `@[step]` contracts are `recv_spec_v0` (empty inputs) and the total `recv_spec`, which only
 assumes that `recv` does not panic and derives the shape of every possible result.
 
+**Scope.** Progress (the absence of panics) is *not* established here: `recv_spec` and the
+`Ordering::Greater` / `Ordering::Less` / `Ordering::Equal` theorems take non-panic hypotheses on
+`recv` or on its sub-calls (`Chain::recv_key`, `Chain::into_pb`, `States::recv`, …), because
+those sub-calls carry well-formedness preconditions that a raw `decode_state` result does not
+provide.  Discharging them from a well-formedness predicate on the decoded state is left for a
+follow-up.  Value-level information about the result (which key, which re-encoded state) is
+carried by the per-path theorems and `recvV1Post`; the registered `recv_spec` only constrains
+the shape of the result.
+
 | Path (Rust)                                       | Spec theorem(s)                              |
 |---------------------------------------------------|----------------------------------------------|
 | `msg_preamble(msg)?` fails                        | `recv_spec_msg_preamble_err`                 |
@@ -528,10 +537,10 @@ theorem recv_eq_equal_v1_negotiating (state msg : alloc.vec.Vec U8)
   rw [hdec]
   simp only [bind_ok, state_version, Version.V1_discriminant_u8, lift]
   change (if mp.version < _ then _ else _) = _
-  rw [if_neg hge]
+  rw [ite_eq_right hge]
   simp only [hv1, bne_self_eq_false, Bool.false_eq_true, ↓reduceIte, bind_ok,
     core.cmp.impls.OrdU8.cmp, core.option.Option.as_ref]
-  rw [if_neg (by decide)]
+  rw [ite_eq_right (by decide)]
   simp only [hcmp11,
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
     core.convert.FromSame.from]
@@ -779,7 +788,9 @@ theorem recvV1Model_spec (mp : MsgPreamble)
   obtain ⟨cr, hcr, hok⟩ := WP.bind_spec_true hok
   simp only [hep, hcr, bind_ok]
   cases cr with
-  | Err e => rw [WP.spec_ok]; unfold recvV1Post; exact ⟨_, hmr, _, hsr, _, hrr, _, hep, _, hcr, rfl⟩
+  | Err e =>
+    rw [WP.spec_ok]; unfold recvV1Post
+    exact ⟨_, hmr, _, hsr, _, hrr, _, hep, _, hcr, rfl⟩
   | Ok c =>
   obtain ⟨c1, hc1, hok⟩ := WP.bind_spec_true hok
   obtain ⟨⟨kr, c2⟩, hk, hok⟩ := WP.bind_spec_true hok
