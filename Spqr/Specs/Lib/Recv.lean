@@ -47,7 +47,9 @@ the state `decode_state` decodes from `state`, and on each branch names the exac
 which error, which key (`recvKeyPost` at epoch `0` resp. `msg.epoch - 1`), and which re-encoded
 state (as a `decodesTo` fact, the form `decode_state_spec` consumes on the next call).  The
 per-path `recv_spec_<path>` theorems are the branches of `recvPost` restated as standalone
-contracts; `recv_spec_v0` covers the empty-input case.
+contracts; `recv_spec_v0` (empty inputs) is a corollary of `recv_spec`.  No other theorem on
+`recv` is `@[step]`, so `step` never faces a choice; the side goal `recvInputsOk` it leaves
+closes by `simp` for an empty state (`recvInputsOk_of_empty`).
 
 **Progress.**  `recv_spec` takes no hypothesis on `recv` itself.  The deque well-formedness
 preconditions of `Chain::into_pb` / `Chain::recv_key` are discharged for every chain `recv`
@@ -99,11 +101,25 @@ def currentVersionU8 (st : proto.pq_ratchet.PqRatchetState) : U8 :=
   | some _ => 1#u8
 
 /-- `min_version` of the Rust negotiation check: `vn.min_version as u8` while negotiating,
-the current version otherwise. -/
+the current version otherwise.
+
+Note that `recv` does **not** validate `vn.min_version` (unlike `current_version`, which goes
+through `Version::try_from` and reports `StateDecode` for values other than `0`/`1`): the Rust
+code casts the `i32` with `as u8`, so `IScalar.hcast` — a truncating cast — is the faithful
+model.  E.g. `min_version = 256` gives `0` and `min_version = -1` gives `255`. -/
 def minVersionU8 (st : proto.pq_ratchet.PqRatchetState) : U8 :=
   match st.version_negotiation with
   | none => currentVersionU8 st
   | some vn => IScalar.hcast .U8 vn.min_version
+
+/-- Without negotiation and with a V1 inner state the minimum version is `1`.  This is what
+makes the `(.lt, none)` arm of `recvDecodedPost` unreachable: a message with version `< 1`
+is already rejected by the min-version check. -/
+theorem minVersionU8_none_v1 (st : proto.pq_ratchet.PqRatchetState)
+    (hvn : st.version_negotiation = none) (hin : ∃ i, st.inner = some i) :
+    minVersionU8 st = 1#u8 := by
+  obtain ⟨i, hi⟩ := hin
+  simp [minVersionU8, currentVersionU8, hvn, hi]
 
 /-- Postcondition of the `Ordering::Greater` path (their version is newer than ours): the chain
 is rebuilt via `chain_from st.chain (Some vn)`; on success the key is pulled from **epoch 0**
@@ -140,41 +156,6 @@ def recvLessPost (vn : proto.pq_ratchet.pq_ratchet_state.VersionNegotiation)
     match cr with
     | .Err e => result = .Err e
     | .Ok _ => result = recvV0Result
-
-/-- **Spec theorem for `spqr.recv`** (V0 / disabled path):
-
-When both state and message are empty, `recv` returns the empty-state result with no key.
-
-**Source**: spqr/src/lib.rs (lines 361:0-490:1) -/
-@[step]
-theorem recv_spec_v0 (state msg : alloc.vec.Vec U8)
-    (h_empty : state.val = [])
-    (h_msg_empty : msg.val = []) :
-    recv state msg ⦃ (result : core.result.Result Recv Error) =>
-      result = recvV0Result ⦄ := by
-  -- An empty message parses to the default preamble (`version = 0`).
-  have hpre : ∃ mp : MsgPreamble, msg_preamble msg = ok (.Ok mp) ∧ mp.version = 0#u8 := by
-    unfold msg_preamble
-    simp only [alloc.vec.Vec.is_empty, bind_ok, List.isEmpty_iff, h_msg_empty, ↓reduceIte]
-    obtain ⟨s, hs, -⟩ := WP.spec_imp_exists (alloc.vec.Vec.index_RangeFull_spec msg)
-    rw [hs]
-    exact ⟨{ version := 0#u8, epoch := 0#u64, index := 0#u32, remaining := s }, by simp, rfl⟩
-  obtain ⟨mp, hpre, hmpv⟩ := hpre
-  -- An empty state decodes to the default state (all `none`).
-  have hdec : decode_state state =
-      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
-    unfold decode_state
-    simp [alloc.vec.Vec.is_empty, h_empty]
-  -- The discriminant of `V0` cast to `u8` is `0`.
-  have hcv : IScalar.hcast UScalarTy.U8 (read_discriminant proto.pq_ratchet.Version.V0) = 0#u8 := by
-    decide
-  unfold recv
-  rw [hpre, hdec]
-  simp only [bind_ok, core.result.Result.Insts.CoreOpsTry.branch, state_version, hcv, hmpv, lift,
-    ↓reduceIte]
-  step*
-  -- Only the trivial `match 0#u8 with | 0 => ok true | _ => ok false` remains before the result.
-  split <;> simp [recvV0Result]
 
 /-! ## Helper lemmas on the version discriminants -/
 
@@ -838,14 +819,6 @@ def recvV1ChainReady (mp : MsgPreamble)
              | some es => chain.Chain.add_epoch c es) = ok c1 →
         ∀ e : U64, e.val = mp.epoch.val - 1 → recvKeyReady c1 e mp.index
 
-/-- `encode_state_pb st = ok bytes` already carries `decodesTo bytes st`
-(from the axiom `encode_state_pb_spec`). -/
-theorem decodesTo_of_encode_state_pb (st : proto.pq_ratchet.PqRatchetState)
-    (bytes : alloc.vec.Vec U8) (h : encode_state_pb st = ok bytes) : decodesTo bytes st := by
-  obtain ⟨bytes', h', hdt⟩ := WP.spec_imp_exists (encode_state_pb_spec st)
-  obtain rfl := Result.ok_injective (h'.symm.trans h)
-  exact hdt
-
 /-- Under `recvV1StatesOk` (no-panic of the three `States::*` sub-calls) and
 `recvV1ChainReady` (chain-side readiness), `recvV1Model` does not panic and its result
 satisfies `recvV1Post`.  Deque well-formedness of every intermediate chain is derived. -/
@@ -1023,6 +996,29 @@ def recvInputsOk (state msg : alloc.vec.Vec U8) : Prop :=
       (mp.version.val = 1 →
         recvV1StatesOk mp pb ∧ recvV1ChainReady mp st.version_negotiation st.chain pb)
 
+/-- `recvInputsOk` is vacuous whenever the decoded state has no inner state (current version
+`0`): none of the guarded sub-calls is reached. -/
+theorem recvInputsOk_of_inner_none (state msg : alloc.vec.Vec U8)
+    (h : ∀ st, decode_state state = ok (.Ok st) → st.inner = none) :
+    recvInputsOk state msg := by
+  intro mp st _ hdec pb hpb
+  rw [h st hdec] at hpb
+  cases hpb
+
+/-- `recvInputsOk` holds for an empty persisted state, which decodes to the all-`none` state.
+Registered as a `simp` lemma so that the side goal `recv_spec` leaves on empty inputs closes
+automatically. -/
+@[simp]
+theorem recvInputsOk_of_empty (state msg : alloc.vec.Vec U8) (h_empty : state.val = []) :
+    recvInputsOk state msg := by
+  refine recvInputsOk_of_inner_none state msg (fun st hdec => ?_)
+  have : decode_state state =
+      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
+    unfold decode_state
+    simp [alloc.vec.Vec.is_empty, h_empty]
+  cases Result.ok_injective (this.symm.trans hdec)
+  rfl
+
 /-- **Spec theorem for `spqr.recv`** (total):
 
 Under `recvInputsOk state msg` — preconditions on the *inputs* only — `recv` does not panic
@@ -1031,6 +1027,14 @@ passed through, and otherwise `recvDecodedPost` names the exact result of the br
 parsed preamble and decoded state select (which error; the key from `recv_key` at epoch `0`
 resp. `msg.epoch - 1`; the re-encoded state as a `decodesTo` fact with `version_negotiation`
 kept resp. cleared and `inner` preserved resp. updated).
+
+This is the only `@[step]` contract on `recv`; `recv_spec_v0` (empty inputs) is derived from
+it.  `recvInputsOk` closes by `simp` for an empty state (`recvInputsOk_of_empty`) and by
+`recvInputsOk_of_inner_none` for any V0 state.
+
+**Platform.**  Through `recvKeyReady` → `recvKeyPre`, the `Greater` and `Equal` paths inherit
+`System.Platform.numBits = 64` from `Chain.recv_key_spec`; on a 32-bit target those premises
+are unsatisfiable and the spec is vacuous there (`recv_key_spec_32` is the 32-bit contract).
 
 **Source**: spqr/src/lib.rs (lines 361:0-490:1) -/
 @[step]
@@ -1115,6 +1119,36 @@ theorem recv_spec (state msg : alloc.vec.Vec U8) (hin : recvInputsOk state msg) 
         (recv_spec_greater state msg mp vn ch pb hpre hdec hge hgt (hready vn rfl hgt))
         (fun r hr => ?_)
       simp [Nat.compare_eq_gt.mpr hgt, hr]
+
+/-- **Spec theorem for `spqr.recv`** (V0 / disabled path):
+
+When both state and message are empty, `recv` returns the empty-state result with no key.
+Derived from `recv_spec`: the empty message parses to the default preamble (`version = 0`),
+the empty state decodes to the all-`none` state, and `recvDecodedPost` selects the V0 branch.
+
+**Source**: spqr/src/lib.rs (lines 361:0-490:1) -/
+theorem recv_spec_v0 (state msg : alloc.vec.Vec U8)
+    (h_empty : state.val = [])
+    (h_msg_empty : msg.val = []) :
+    recv state msg ⦃ (result : core.result.Result Recv Error) =>
+      result = recvV0Result ⦄ := by
+  refine WP.spec_mono (recv_spec state msg (recvInputsOk_of_empty state msg h_empty))
+    (fun r hr => ?_)
+  have hdec : decode_state state =
+      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
+    unfold decode_state
+    simp [alloc.vec.Vec.is_empty, h_empty]
+  -- An empty message parses to the default preamble (`version = 0`).
+  have hpre : ∃ mp : MsgPreamble, msg_preamble msg = ok (.Ok mp) ∧ mp.version = 0#u8 := by
+    unfold msg_preamble
+    simp only [alloc.vec.Vec.is_empty, bind_ok, List.isEmpty_iff, h_msg_empty, ↓reduceIte]
+    obtain ⟨s, hs, -⟩ := WP.spec_imp_exists (alloc.vec.Vec.index_RangeFull_spec msg)
+    rw [hs]
+    exact ⟨{ version := 0#u8, epoch := 0#u64, index := 0#u32, remaining := s }, by simp, rfl⟩
+  obtain ⟨mp, hpre, hv⟩ := hpre
+  have hd := hr.2.2 mp _ hpre hdec
+  unfold recvDecodedPost minVersionU8 currentVersionU8 at hd
+  simpa [hv] using hd
 
 end spqr
 
