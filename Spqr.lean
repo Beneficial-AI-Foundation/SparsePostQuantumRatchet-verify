@@ -276,6 +276,7 @@ public import Spqr.Specs.Lib.Error.From
 public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.InitialState
 public import Spqr.Specs.Lib.MsgPreamble
+public import Spqr.Specs.Lib.Recv
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
 public import Spqr.Specs.Lib.SecretOutput.HasSecret
@@ -303,6 +304,7 @@ public import Spqr.Specs.Util.IsNonZero
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.SendCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
@@ -343,6 +345,7 @@ public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.Function
 public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
 public import Spqr.Specs.V1.Unchunked.SendEk.EkSent.RecvCt1
 public import Spqr.Specs.V1.Unchunked.SendEk.EkSentCt1Received.RecvCt2
+public import Spqr.Specs.V1.Unchunked.SendEk.HeaderSent.SendEk
 public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Unchunked.SendEk.KeysUnsampled.SendHeader
 public import Spqr.Specs.V1.Unchunked.SendEk.Serialize.EkSent.FromPb
