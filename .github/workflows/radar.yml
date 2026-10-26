@@ -6,9 +6,14 @@ on:
 
 # This privileged workflow only reads PR metadata and posts comments.
 # Never check out or execute PR code here, including for fork PRs.
-permissions:
-  issues: write
-  pull-requests: read
+#
+# The comment is posted with a token of the `baif-radar` machine user
+# (secret RADAR_COMMENT_TOKEN: fine-grained PAT limited to this repository
+# with "Issues: read and write" and "Pull requests: read"). Radar only
+# honours commands whose author association is allowed by its server
+# configuration; `baif-radar` is an organization member, whereas
+# `github-actions[bot]` comments carry association NONE and would be rejected.
+permissions: {}
 
 concurrency:
   group: radar-request-${{ github.event.pull_request.number }}
@@ -17,13 +22,29 @@ concurrency:
 jobs:
   request:
     name: Request Radar benchmark
-    if: github.event.pull_request.draft == false
+    # Radar builds the PR head on its runner, so only request benchmarks for
+    # PRs authored by repository owners, members, or collaborators. Others can
+    # still receive a manual `!radar` from an authorized reviewer.
+    if: >-
+      github.event.pull_request.draft == false &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
+               github.event.pull_request.author_association)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Check that the Radar comment token is configured
+        env:
+          RADAR_COMMENT_TOKEN: ${{ secrets.RADAR_COMMENT_TOKEN }}
+        run: |
+          if [ -z "$RADAR_COMMENT_TOKEN" ]; then
+            echo "::error::Secret RADAR_COMMENT_TOKEN is not set; cannot request Radar."
+            exit 1
+          fi
+
       - name: Request benchmark for the current PR revision
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.RADAR_COMMENT_TOKEN }}
           script: |
             const eventPR = context.payload.pull_request;
             const { data: pr } = await github.rest.pulls.get({
@@ -39,6 +60,9 @@ jobs:
               return;
             }
 
+            // Deduplicate against earlier requests posted by the same account
+            // (the token's owner, normally `baif-radar`).
+            const { data: requester } = await github.rest.users.getAuthenticated();
             const marker =
               `<!-- radar-request:${pr.base.sha}:${pr.head.sha} -->`;
             const comments = await github.paginate(
@@ -46,7 +70,7 @@ jobs:
               { ...context.repo, issue_number: pr.number, per_page: 100 }
             );
             if (comments.some(c =>
-                c.user?.login === 'github-actions[bot]' &&
+                c.user?.login === requester.login &&
                 c.body?.includes(marker))) {
               core.info('Radar has already been requested for this revision.');
               return;
@@ -60,6 +84,7 @@ jobs:
             await core.summary
               .addRaw('Radar requested. This check confirms only that the request ' +
                 'was posted; review the baif-radar report for the current PR ' +
-                'commit before approving. If no report appears, check Radar ' +
-                'authorization for github-actions[bot] or request !radar manually.')
+                'commit before approving. If no report appears, check that the ' +
+                'RADAR_COMMENT_TOKEN account is accepted by Radar or request ' +
+                '!radar manually.')
               .write();
