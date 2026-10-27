@@ -76,6 +76,18 @@ theorem varintVal_mod_lt (bytes : List Std.U8) (start : ℕ) {n : ℕ} (hn : n �
   · exact lt_of_lt_of_le (Nat.mod_lt _ (by positivity))
       (Nat.pow_le_pow_right (by norm_num) h)
 
+/-- `varintVal` over `n + 1` bytes from `start` is the low 7 bits of `bytes[start]` plus `128`
+times `varintVal` over `n` bytes from `start + 1`. -/
+theorem varintVal_succ_left (bytes : List Std.U8) (start : ℕ) : ∀ n : ℕ,
+    varintVal bytes start (n + 1) =
+      bytes[start]!.val % 128 + 128 * varintVal bytes (start + 1) n
+  | 0 => by simp [varintVal]
+  | n + 1 => by
+    rw [varintVal, varintVal_succ_left bytes start n, varintVal]
+    rw [show start + (n + 1) = start + 1 + n by omega, show 7 * (n + 1) = 7 * n + 7 by ring,
+      pow_add]
+    ring
+
 /-! ## Bit-twiddling lemmas
 
 The loop accumulates with `out ||| ((byte &&& 0x7f) << 7*i)`.  Because `out < 2^(7i)`, the OR
