@@ -305,6 +305,7 @@ public import Spqr.Specs.Util.Inz
 public import Spqr.Specs.Util.IsNonZero
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.SendCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.SendCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.Epoch

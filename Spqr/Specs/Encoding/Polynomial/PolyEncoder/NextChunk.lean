@@ -25,9 +25,16 @@ namespace spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
 
 /-- **Spec theorem for `encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk`**:
 
-Postcondition: `chunk.index = self.idx`, `chunk.data.length = 32`,
-`self'.idx = (self.idx + 1) % 2³²`, plus polynomial-evaluation (`Polys`) or
-Lagrange-interpolation (`Points`) invariants on the chunk data. -/
+Postcondition: `NextChunkPostCond self self' chunk` (see `PolyEncoder.Defs`), i.e.
+`chunk.index = self.idx`, `chunk.data.length = 32`, `self'.idx = (self.idx + 1) % 2³²`, and
+
+* `Polys`: the state is unchanged and every chunk word is `polys[j](idx)`;
+* `Points`: either a cache hit (`idx < |pts[j]|`, state unchanged, every chunk word is the
+  stored point `pts[j][idx]`) or an interpolation step (state becomes `Polys polys'` with
+  `polys'[j]` the Lagrange interpolant of `pts[j]`, and every chunk word is a stored point or
+  `polys'[j](idx)`).
+
+The `send_ct*_chunk` wrappers restate exactly this predicate on their encoder field. -/
 @[step]
 theorem next_chunk_spec
     (self : encoding.polynomial.PolyEncoder)
@@ -42,42 +49,12 @@ theorem next_chunk_spec
           (polys[j]!).coefficients.length + 1 ≤ Usize.max) :
     next_chunk self ⦃ ((chunk, self') :
         encoding.Chunk × encoding.polynomial.PolyEncoder) =>
-      chunk.index.val = self.idx.val ∧
-      chunk.data.length = 32 ∧
-      self'.idx.val = (self.idx.val + 1) % U32.size ∧
-      match self.s with
-      | .Polys polys =>
-          self'.s = self.s ∧
-          ∀ (j : Nat), j < 16 →
-            Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-              (polys[j]!).toGF216Poly.eval (self.idx.val.toGF216)
-      | .Points pts =>
-          -- Either stayed in Points (cache hit) with constrained bytes …
-          (self'.s = self.s ∧
-            ∀ (j : Nat), j < 16 →
-              self.idx.val < (pts[j]!).value.length ∧
-              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-                ((pts[j]!).value[self.idx.val]!).toGF216) ∨
-          -- … or transitioned to Polys with Lagrange identity; each chunk word is either
-          -- a cache hit (served before the transition) or an evaluation of the interpolant
-          (∃ polys', self'.s = .Polys polys' ∧
-            (∀ (j : Nat), j < 16 →
-              polys'[j]!.toGF216Poly =
-                ∑ k ∈ Finset.range (pts[j]!).value.length,
-                  C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
-            (∀ (j : Nat), j < 16 →
-              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
-            (∀ (j : Nat), j < 16 →
-              (self.idx.val < (pts[j]!).value.length ∧
-                Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-                  ((pts[j]!).value[self.idx.val]!).toGF216) ∨
-              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-                (polys'[j]!).toGF216Poly.eval (self.idx.val.toGF216))) ⦄ := by
+      NextChunkPostCond self self' chunk ⦄ := by
   unfold next_chunk
   step
   step with chunk_at_spec
   step*
+  unfold NextChunkPostCond chunkWord
   obtain ⟨h_idx_eq, h_data_len, h_self_idx, h_match⟩ := out_post
   refine ⟨by simp_all [UScalar.cast_val_eq]; grind, h_data_len, by simp_all, ?_⟩
   cases h_s : self.s with
