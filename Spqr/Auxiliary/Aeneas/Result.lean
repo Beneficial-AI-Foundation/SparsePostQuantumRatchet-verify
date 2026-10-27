@@ -36,6 +36,17 @@ theorem core.result.Result.Insts.CoreOpsTry.branch_eq_continue {T E : Type}
     r = .Ok v := by
   cases r <;> simp_all [core.result.Result.Insts.CoreOpsTry.branch]
 
+theorem core.result.Result.Insts.CoreOpsTry.branch_eq_break {T E : Type}
+    {r : core.result.Result T E} {res : core.result.Result Never E}
+    (h : core.result.Result.Insts.CoreOpsTry.branch r = Result.ok (.Break res)) :
+    ∃ e, r = .Err e ∧ res = .Err e := by
+  cases r with
+  | Ok v => simp [core.result.Result.Insts.CoreOpsTry.branch] at h
+  | Err e =>
+    simp only [core.result.Result.Insts.CoreOpsTry.branch, Result.ok.injEq,
+      core.ops.control_flow.ControlFlow.Break.injEq] at h
+    exact ⟨e, rfl, h.symm⟩
+
 /-- The `Break` arm of a `?` never returns `Ok`. -/
 theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_ne_ok
     {T E F : Type} {inst : core.convert.From F E}
