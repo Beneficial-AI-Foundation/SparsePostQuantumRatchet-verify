@@ -34,8 +34,12 @@ Mathematically the chunk is the evaluation of the sixteen GF(2¹⁶) polynomials
 encoder at the point `x = idx`:  the `j`-th 16-bit word of the chunk data is
 `polys[j](idx)` in `GF216 = GaloisField 2 16`, and the chunk is tagged with `index = idx`.  The
 encoder's index is then wrapping-incremented modulo 2³².  If the encoder is still in the
-`Points` phase it first interpolates the polynomials (Lagrange interpolation over the stored
-points) before evaluating — this is all inherited from `PolyEncoder::next_chunk`.
+`Points` phase (as a fresh encoder from `encode_bytes` always is) the behaviour is conditional
+(src/encoding/polynomial.rs:646–650): while `idx` is below the stored point count the stored
+point `pts[j][idx]` is returned verbatim and the state stays `Points`; only once `idx` reaches
+the point count are the polynomials Lagrange-interpolated from the stored points, the state
+switches to `Polys`, and the word is the evaluation of the interpolant.  Both cases are
+captured by `PolyEncoder.NextChunkPostCond`, inherited from `PolyEncoder::next_chunk`.
 
 **Source**: spqr/src/v1/chunked/send_ct.rs (lines 202:4-217:5)
 -/
@@ -80,25 +84,27 @@ The result satisfies the postcondition:
 
   `result.uc = self.uc`
   `result.receiving_ek = self.receiving_ek`
-  `chunk.index.val = self.sending_ct1.idx.val`
-  `chunk.data.length = 32`
-  `result.sending_ct1.idx.val = (self.sending_ct1.idx.val + 1) % U32.size`
+  `PolyEncoder.NextChunkPostCond self.sending_ct1 result.sending_ct1 chunk`
 
-together with the phase-dependent encoder invariant inherited from `next_chunk_spec`:
+where `NextChunkPostCond` (defined once in `PolyEncoder.Defs` and shared verbatim with
+`next_chunk_spec` and `send_ct2_chunk_spec`) states
+`chunk.index.val = self.sending_ct1.idx.val`, `chunk.data.length = 32`,
+`result.sending_ct1.idx.val = (self.sending_ct1.idx.val + 1) % U32.size`, and the
+phase-dependent encoder invariant:
 
   • `Polys polys` phase — the polynomials are left unchanged
     (`result.sending_ct1.s = self.sending_ct1.s`) and for every `j < 16` the `j`-th 16-bit
     big-endian word of the chunk is the evaluation of the `j`-th polynomial at the index:
-      `(256 * chunk.data[2j] + chunk.data[2j+1]).toGF216 =
-          polys[j].toGF216Poly.eval (self.sending_ct1.idx.val.toGF216)`
+      `chunkWord chunk.data j = polys[j].toGF216Poly.eval (self.sending_ct1.idx.val.toGF216)`
   • `Points pts` phase — either the encoder stays in `Points` (cache hit, mirroring Rust's
-    `pts[poly].value[idx]` lookup that leaves the state untouched) and every chunk word
-    is the stored point `pts[j][idx]` (so `idx < |pts[j]|`), or it transitions to
-    `Polys polys'` where
+    `pts[poly].value[idx]` lookup that leaves the state untouched:
+    `result.sending_ct1.s = self.sending_ct1.s`) and every chunk word is the stored point
+    `pts[j][idx]` (so `idx < |pts[j]|`), or it transitions to `Polys polys'` where
       `polys'[j].toGF216Poly =
           ∑ k < |pts[j]|, C (pts[j][k].toGF216) * scaledLagrangeBasis |pts[j]| k`,
     the coefficient count is bounded, and each chunk word is either a cache hit or an
-    evaluation of the interpolant at `idx`
+    evaluation of the interpolant at `idx`.  In both alternatives the retained encoder
+    state and every chunk word are pinned down, so pending `ct1` data is preserved.
 
 The proof unfolds `send_ct1_chunk` and applies `next_chunk_spec` with the supplied hypotheses;
 the `uc`- and `receiving_ek`-preservation conjuncts are closed by reflexivity
@@ -121,38 +127,7 @@ theorem send_ct1_chunk_spec (self : Ct1Sampled)
     send_ct1_chunk self ⦃ ((result, chunk) : Ct1Sampled × encoding.Chunk) =>
       result.uc = self.uc ∧
       result.receiving_ek = self.receiving_ek ∧
-      chunk.index.val = self.sending_ct1.idx.val ∧
-      chunk.data.length = 32 ∧
-      result.sending_ct1.idx.val = (self.sending_ct1.idx.val + 1) % U32.size ∧
-      match self.sending_ct1.s with
-      | .Polys polys =>
-          result.sending_ct1.s = self.sending_ct1.s ∧
-          ∀ (j : Nat), j < 16 →
-            Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-              (polys[j]!).toGF216Poly.eval (self.sending_ct1.idx.val.toGF216)
-      | .Points pts =>
-          -- Either stayed in Points (cache hit) with constrained bytes …
-          (result.sending_ct1.s = self.sending_ct1.s ∧
-            ∀ (j : Nat), j < 16 →
-              self.sending_ct1.idx.val < (pts[j]!).value.length ∧
-              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-                ((pts[j]!).value[self.sending_ct1.idx.val]!).toGF216) ∨
-          -- … or transitioned to Polys with Lagrange identity; each chunk word is either
-          -- a cache hit (served before the transition) or an evaluation of the interpolant
-          (∃ polys', result.sending_ct1.s = .Polys polys' ∧
-            (∀ (j : Nat), j < 16 →
-              polys'[j]!.toGF216Poly =
-                ∑ k ∈ Finset.range (pts[j]!).value.length,
-                  C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
-            (∀ (j : Nat), j < 16 →
-              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
-            (∀ (j : Nat), j < 16 →
-              (self.sending_ct1.idx.val < (pts[j]!).value.length ∧
-                Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-                  ((pts[j]!).value[self.sending_ct1.idx.val]!).toGF216) ∨
-              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
-                (polys'[j]!).toGF216Poly.eval (self.sending_ct1.idx.val.toGF216))) ⦄ := by
+      PolyEncoder.NextChunkPostCond self.sending_ct1 result.sending_ct1 chunk ⦄ := by
   unfold send_ct1_chunk
   step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec self.sending_ct1
     h_idx_fits h_admissible h_coeff_bound
