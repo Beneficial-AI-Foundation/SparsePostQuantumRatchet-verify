@@ -12,12 +12,17 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
 import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-!
-# The message wire format is not injective
+# Messages and their byte encodings are not one-to-one
 
-`Message::serialize` followed by `msg_preamble` and `Message::deserialize` can give a message
-back only if its epoch is nonzero and its `Ct1Ack` flag, if any, is `true`: `msg_preamble`
-rejects epoch `0`, and the first witness below rules out `Ct1Ack false`. Neither stage is
-injective, with explicit witnesses:
+A message goes from one party to the other as a byte string. `Message::serialize` writes the
+bytes. The receiver reads them back in two stages: `msg_preamble` reads the version, epoch and
+index, and `Message::deserialize` reads the message from the remaining bytes. This file shows
+that neither direction is injective (one-to-one): two messages can have the same bytes, and
+several byte strings can parse to the same message.
+
+The round trip gives a message back only if its epoch is nonzero and its `Ct1Ack` flag, if
+any, is `true`: `msg_preamble` rejects epoch `0`, and the first witness below rules out
+`Ct1Ack false`. The witnesses:
 
 * For a `Ct1Ack` payload, `serialize` writes only the type tag, and
   `MessageType::from_payload` sends both Booleans to one tag, so two distinct messages have one

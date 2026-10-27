@@ -8,16 +8,15 @@ module
 public import SrcTranslated.Funs
 
 /-!
-# `spqr::recv` depends on the message only through its parse
+# `spqr::recv` gives the same result on messages that parse the same
 
-`recv` reads the message bytes only through `msg_preamble` (version, epoch, index and the
-remaining bytes) and, on the version-1 path, through `Message::deserialize` of the remaining
-bytes. So two byte strings with the same parsed version, epoch and index, whose remaining
-bytes deserialize to the same result, are indistinguishable to `recv`: from any state, `recv`
-returns the same result on both.
+`recv` does not use the message bytes directly. It calls `msg_preamble` to read the version,
+epoch and index, and then calls `Message::deserialize` on the remaining bytes. Take two byte
+strings that give the same version, epoch, index and deserialized message. Then `recv`
+returns the same result on both, from any state.
 
-The wire format is not injective (`Message.serialize_parse_not_injective`), so the extra
-encodings cannot change what `recv` returns. A caller that inspects the raw bytes can still
+Several byte strings can encode one message (`Message.serialize_parse_not_injective`). This
+file shows that `recv` treats them all the same. A caller that reads the raw bytes can still
 tell them apart.
 
 **Source**: src/lib.rs (lines 361:0-490:1)
