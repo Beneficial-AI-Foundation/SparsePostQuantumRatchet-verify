@@ -242,15 +242,19 @@ theorem send_spec {R : Type} (rngInst : rand_1.rng.Rng R)
     U8.Insts.CoreConvertFromVersion.from]
   obtain ⟨d, hd, -⟩ := WP.spec_imp_exists (decode_state_spec state)
   rcases d with ⟨vno, cho, _ | ⟨⟨pb⟩⟩⟩ | e
-  · simp only [hd, bind_ok]; simp [-IsEmpty.forall_iff, -IsEmpty.exists_iff]
-  on_goal 2 => simp only [hd, bind_ok]; simp [-IsEmpty.forall_iff, -IsEmpty.exists_iff]
+  · simp only [hd, bind_ok, Result.ok.injEq, and_imp, Option.mem_def, exists_and_left,
+      forall_exists_index, forall_eq', WP.spec_ok]
+  on_goal 2 => simp only [hd, bind_tc_ok, bind_ok, Result.ok.injEq, and_imp, Option.mem_def,
+    exists_and_left, forall_exists_index, forall_eq', WP.spec_ok]
   obtain ⟨h_fp, h_assumptions⟩ := h_assumptions _ hd pb rfl
   obtain ⟨s | e, hr1, -⟩ := WP.spec_imp_exists h_fp
-  on_goal 2 => simp only [hd, hr1, bind_ok]; simp [hr1, -IsEmpty.forall_iff, -IsEmpty.exists_iff]
+  on_goal 2 => simp only [hd, hr1, bind_tc_ok, bind_ok, Result.ok.injEq, and_imp, Option.mem_def,
+    exists_and_left, forall_exists_index, forall_eq', WP.spec_ok]
   obtain ⟨h_st, h_assumptions⟩ := h_assumptions s hr1
   obtain ⟨⟨ss | e, rng₁⟩, hr2, -⟩ := WP.spec_imp_exists h_st
-  on_goal 2 => simp only [hd, hr1, hr2, bind_ok, uncurry_apply_pair]; simp [hr1, hr2,
-    -IsEmpty.forall_iff, -IsEmpty.exists_iff]
+  on_goal 2 => simp only [hd, hr1, hr2, bind_tc_ok, bind_ok, uncurry_apply_pair, Result.ok.injEq,
+    and_imp, Option.mem_def, exists_and_left, forall_exists_index, forall_eq', Prod.mk.injEq,
+    forall_apply_eq_imp_iff, WP.spec_ok]
   obtain ⟨h_nc, h_cs⟩ := h_assumptions ss rng₁ hr2
   simp only [hd, hr1, hr2, bind_ok, uncurry_apply_pair, Result.ok.injEq, Prod.mk.injEq, and_imp,
     forall_apply_eq_imp_iff, forall_eq']
@@ -324,17 +328,30 @@ theorem send_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       by_cases h_mv : 0 < vn.min_version.val
       · obtain ⟨c | e, hr3, hcf⟩ := WP.spec_imp_exists (chain_from_version_negotiation_spec vn)
         · exact (hsrc ⟨c, .inr ⟨rfl, vn, rfl, h_mv, hcf⟩⟩).elim
-        simp [hr3, hcf, h_mv, -IsEmpty.forall_iff, -IsEmpty.exists_iff]
+        simp only [gt_iff_lt, IScalar.lt_equiv, IScalar.ofInt_val_eq, h_mv, decide_true,
+          core.option.Option.is_none, Bool.true_or, ↓reduceIte, hr3, List.isEmpty_iff, ite_not,
+          bind_tc_ok, bind_ok, reduceCtorEq, false_implies, imp_self, Option.mem_def,
+          Option.some.injEq, exists_eq_left', exists_and_left, forall_const, false_and,
+          exists_false, hcf, Result.ok.injEq, true_and, false_or, forall_eq', WP.spec_ok,
+          imp_false, not_le, and_self]
       · obtain ⟨h_key, h_ip⟩ := h_nc ⟨rfl, vn, rfl, by omega⟩
         obtain ⟨vs, hvs, -⟩ := WP.spec_imp_exists h_ip
         obtain ⟨msg, hmsg, hbytes, hne, hidx⟩ := h_ser 0#u32
         obtain ⟨v, hv, hdec⟩ :=
           WP.spec_imp_exists (encode_state_pb_spec ⟨some vn, none, some (.V1 vs)⟩)
-        simp [h_key, h_mv, core.option.Option.is_none, hmsg, hne, hidx,
-          hvs, hv, hbytes, hdec, -IsEmpty.forall_iff, -IsEmpty.exists_iff]
+        simp only [gt_iff_lt, IScalar.lt_equiv, IScalar.ofInt_val_eq, h_mv, decide_false,
+          core.option.Option.is_none, h_key, Option.isNone_none, Bool.or_true, ↓reduceIte, hmsg,
+          List.isEmpty_iff, ite_not, hvs, alloc.vec.Vec.from_val, List.isEmpty_nil, bind_ok, hv,
+          hne, hidx, reduceCtorEq, false_implies, imp_self, Option.mem_def, Option.some.injEq,
+          exists_eq_left', Result.ok.injEq, exists_and_left, ↓existsAndEq, true_and, forall_const,
+          false_and, exists_false, and_false, or_self, exists_eq_left, implies_true, and_true,
+          WP.spec_ok, core.result.Result.Ok.injEq, hdec, hbytes, UScalar.ofNatCore_val_eq,
+          and_self]
     · obtain ⟨c | e, hr3, hfp⟩ := WP.spec_imp_exists (chain.Chain.from_pb_spec cpb)
       · exact (hsrc ⟨c, .inl ⟨cpb, rfl, hfp.symm⟩⟩).elim
       simp only [hr3, bind_ok, bind_tc_ok]
-      simp [← hfp, -IsEmpty.forall_iff, -IsEmpty.exists_iff]
+      simp only [reduceCtorEq, false_implies, Option.mem_def, exists_and_left, forall_exists_index,
+        and_imp, Option.some.injEq, exists_eq_left', ← hfp, false_and, or_false, forall_eq',
+        true_and, WP.spec_ok, and_self]
 
 end spqr
