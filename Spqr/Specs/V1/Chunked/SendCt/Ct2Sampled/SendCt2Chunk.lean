@@ -7,7 +7,6 @@ module
 
 public import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
-public import Spqr.Math.Poly.Lagrange.CompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 /-!
 # Spec theorem for
@@ -32,9 +31,16 @@ namespace spqr.v1.chunked.send_ct.Ct2Sampled
 /-- **Spec theorem for `spqr.v1.chunked.send_ct.Ct2Sampled.send_ct2_chunk`**:
 
 Unfolds `send_ct2_chunk` and delegates to `next_chunk_spec`. Preconditions:
-- `h_idx_fits`: encoder index fits in `u16`.
-- `h_admissible`: in `Points` phase, each point-vector length ∈ `{0,1,3,5,30,34,36}`.
+- `h_idx_fits`: encoder index fits in `u16`. Rust's `self.idx as u16`
+  (src/encoding/polynomial.rs:759) truncates silently, so indices ≥ 2¹⁶ (reachable only after
+  65 536 chunks of a single `ct2`) are deliberately out of scope rather than an error case.
+- `h_admissible`: in `Points` phase, each point-vector length ∈ `{0,1,3,5,30,34,36}`. The
+  encoder built by `send_ct2_encoder` encodes `ct2 ‖ mac` (128 + 32 bytes = 80 points), so
+  `encode_bytes_spec` gives every `pts[j]` length 5.
 - `h_coeff_bound`: in `Polys` phase, each polynomial has ≤ `Usize.max - 1` coefficients.
+
+Trust note: the proof inherits the `native_decide` auxiliary axioms of `chunk_at` /
+`point_at_loop0.body` through `next_chunk_spec` (see issue #721).
 
 Postcondition: `result.uc = self.uc` together with
 `PolyEncoder.NextChunkPostCond self.sending_ct2 result.sending_ct2 chunk`, the predicate
