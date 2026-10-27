@@ -52,12 +52,28 @@ theorem next_chunk_spec
             Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
               (polys[j]!).toGF216Poly.eval (self.idx.val.toGF216)
       | .Points pts =>
-          ∀ polys', self'.s = .Polys polys' →
+          -- Either stayed in Points (cache hit) with constrained bytes …
+          (self'.s = self.s ∧
             ∀ (j : Nat), j < 16 →
+              self.idx.val < (pts[j]!).value.length ∧
+              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                ((pts[j]!).value[self.idx.val]!).toGF216) ∨
+          -- … or transitioned to Polys with Lagrange identity; each chunk word is either
+          -- a cache hit (served before the transition) or an evaluation of the interpolant
+          (∃ polys', self'.s = .Polys polys' ∧
+            (∀ (j : Nat), j < 16 →
               polys'[j]!.toGF216Poly =
                 ∑ k ∈ Finset.range (pts[j]!).value.length,
                   C (((pts[j]!).value[k]!).toGF216) *
-                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k ⦄ := by
+                    scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k) ∧
+            (∀ (j : Nat), j < 16 →
+              (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
+            (∀ (j : Nat), j < 16 →
+              (self.idx.val < (pts[j]!).value.length ∧
+                Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                  ((pts[j]!).value[self.idx.val]!).toGF216) ∨
+              Nat.toGF216 (256 * chunk.data[2 * j]! + chunk.data[2 * j + 1]!) =
+                (polys'[j]!).toGF216Poly.eval (self.idx.val.toGF216))) ⦄ := by
   unfold next_chunk
   step
   step with chunk_at_spec
@@ -74,7 +90,32 @@ theorem next_chunk_spec
     grind
   | Points pts =>
     simp only [h_s] at h_match ⊢
-    intro polys' h_polys' j hj
-    exact h_match polys' h_polys' j hj
+    rcases h_match with ⟨h_eq, h_cache⟩ | ⟨polys', h_polys', h_lagrange, h_coeff, h_trans⟩
+    · left
+      constructor
+      · -- chunk_at preserved the state, so next_chunk also preserves state
+        -- h_eq says the chunk_at output encoder = self, but next_chunk changes idx
+        -- We need self'.s = self.s
+        simp_all
+      · intro j hj
+        obtain ⟨h_lt, h_bytes⟩ := h_cache j hj
+        constructor
+        · simp_all [UScalar.cast_val_eq]; grind
+        · have := h_bytes
+          simp_all [UScalar.cast_val_eq]
+          grind
+    · right
+      refine ⟨polys', h_polys', h_lagrange, h_coeff, fun j hj => ?_⟩
+      rcases h_trans j hj with ⟨h_lt, h_bytes⟩ | h_eval
+      · left
+        constructor
+        · simp_all [UScalar.cast_val_eq]; grind
+        · have := h_bytes
+          simp_all [UScalar.cast_val_eq]
+          grind
+      · right
+        have := h_eval
+        simp_all [UScalar.cast_val_eq]
+        grind
 
 end spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
