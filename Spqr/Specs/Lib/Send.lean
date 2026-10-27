@@ -104,23 +104,15 @@ namespace spqr
 open v1.chunked.states
 open chain.Chain.FunctionalModels (fromPb intoPb)
 
-/-! ## What the spec theorem for `send` assumes -/
-
-/-- Everything `send_spec` assumes. Each item is stated only for the intermediate values `send`
-actually computes before reaching it (the decoded state, the result of `States::from_pb`, and so
-on). On an input where `send` returns before that point, for instance because decoding fails, the
-item holds trivially and asks nothing:
+/-- Everything `send_spec` assumes. Each item is guarded by the stage of `send` that needs it:
 
 - (a) No panic in `States::from_pb`, `States::send` and `States::into_pb`, which have no
-  specification yet. Once they are specified, each item follows from the preconditions of that
-  specification: size bounds for `States::from_pb` and `States::into_pb` (all that their
-  component specifications demand so far) and, for `States::send`, also well-formed encoder
-  states, since its polynomial encoders can panic on point counts that `States::from_pb` accepts.
-  The items stay here either way, so `send_spec` does not change.
-- (b) The `assert!` of `send` (no epoch secret on the no-chain path), the positivity of the
-  message epoch and the preconditions of `add_epoch_spec` and `send_key_spec` that `send` cannot
-  establish. No callee specification supplies these facts; they need an invariant on the whole
-  ratchet state. -/
+  specification yet. Once they are specified, each item can be derived from its associated
+  callee specification under its preconditions.
+- (b) The first `assert!` of `send` (no epoch secret on the no-chain path; the two asserts on
+  the serialised message follow from `Message::serialize_spec`), the positivity of the message
+  epoch and the preconditions of `add_epoch_spec` and `send_key_spec` that `send` cannot
+  establish. -/
 def SendAssumptions {R : Type} (rngInst : rand_1.rng.Rng R) (cryptoInst : rand_core_1.CryptoRng R)
     (state : alloc.vec.Vec U8) (rng : R) : Prop :=
   ∀ st, decode_state state = ok (.Ok st) → ∀ pb, st.inner = some (.V1 pb) →
@@ -130,24 +122,27 @@ def SendAssumptions {R : Type} (rngInst : rand_1.rng.Rng R) (cryptoInst : rand_c
       ∀ ss rng₁, States.send rngInst cryptoInst s rng = ok (.Ok ss, rng₁) →
         ((st.chain = none ∧ ∃ vn ∈ st.version_negotiation, vn.min_version.val ≤ 0) →
           ss.key = none ∧ serialize.States.into_pb ss.state ⦃ _ => True ⦄) ∧
-        ∀ c : chain.Chain, (∃ cpb ∈ st.chain, fromPb cpb = .Ok c) ∨
+        ∀ c, (∃ cpb ∈ st.chain, fromPb cpb = .Ok c) ∨
             (st.chain = none ∧ ∃ vn ∈ st.version_negotiation, 0 < vn.min_version.val ∧
               chainFromVersionNegotiation vn = ok (.Ok c)) →
           0 < ss.msg.epoch.val ∧
           (∀ k ∈ ss.key,
-            k.epoch.val = c.current_epoch.val + 1 ∧ c.links.buf.val.length < Usize.max) ∧
+            -- `h_epoch` of `add_epoch_spec`.
+            k.epoch.val = c.current_epoch.val + 1 ∧
+            -- `h_buf` of `add_epoch_spec`.
+            c.links.buf.val.length < Usize.max) ∧
           ∀ c₁, (match ss.key with | none => c₁ = c | some k => c.add_epoch k = ok c₁) →
             ∀ ep : U64, ep.val + 1 = ss.msg.epoch.val →
+            -- The two guards are shared by `h_diff_fits` and `h_target` of `send_key_spec`.
             (c₁.send_epoch.val ≤ ep.val → ep.val ≤ c₁.current_epoch.val →
-              c₁.current_epoch.val - ep.val ≤ Usize.max) ∧
-            (c₁.send_epoch.val ≤ ep.val → ep.val ≤ c₁.current_epoch.val →
-              c₁.current_epoch.val - ep.val < c₁.links.length.val →
-              ∀ ce ∈ c₁.links.buf.val[c₁.links.head.val + chain.sendKeyIdx c₁ ep]?,
-                ce.send.next.val.length = 32 ∧ ce.send.ctr.val < U32.max) ∧
-            ∀ i mk c₂, c₁.send_key ep = ok (.Ok (i, mk), c₂) →
+              -- `h_diff_fits` of `send_key_spec`.
+              c₁.current_epoch.val - ep.val ≤ Usize.max ∧
+              -- Reformulation of `h_target` of `send_key_spec`.
+              (c₁.current_epoch.val - ep.val < c₁.links.length.val →
+                ∀ ce ∈ c₁.links.buf.val[c₁.links.head.val + chain.sendKeyIdx c₁ ep]?,
+                  ce.send.next.val.length = 32 ∧ ce.send.ctr.val < U32.max)) ∧
+            ∀ r c₂, c₁.send_key ep = ok (.Ok r, c₂) →
               serialize.States.into_pb ss.state ⦃ _ => True ⦄
-
-/-! ## Spec theorem -/
 
 /-- **Spec theorem for `spqr::send`**:
 
@@ -287,10 +282,10 @@ theorem send_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       exact ⟨c₁, hc₁, by clear * - h hwf; grind⟩
     obtain ⟨e, he, he'⟩ := WP.spec_imp_exists (U64.sub_spec (y := 1#u64) h_e1)
     have he1 : e.val + 1 = ss.msg.epoch.val := by rw [he'.1]; exact Nat.sub_add_cancel h_e1
-    obtain ⟨h_df, h_tg, h_ip⟩ := h_sk c₁ hmix e he1
+    obtain ⟨h_g, h_ip⟩ := h_sk c₁ hmix e he1
     obtain ⟨⟨r₄, c₂⟩, hsk, hpost⟩ := WP.spec_imp_exists
-      (chain.Chain.send_key_spec c₁ e h_df hwf₁ fun h₁ h₂ h₃ => by
-        split <;> [trivial; exact h_tg h₁ h₂ h₃ _ ‹_›])
+      (chain.Chain.send_key_spec c₁ e (fun h₁ h₂ => (h_g h₁ h₂).1) hwf₁ fun h₁ h₂ h₃ => by
+        split <;> [trivial; exact (h_g h₁ h₂).2 h₃ _ ‹_›])
     have h_ok : ∀ i mk, r₄ = .Ok (i, mk) →
         c₂.links.head.val + c₂.links.length.val ≤ c₂.links.buf.val.length ∧ mk.val ≠ [] := by
       clear * - hpost; grind [chain.sendKeyPost, chain.sendKeyDequePost, chain.sendKeySlotPost]
@@ -312,7 +307,7 @@ theorem send_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       simp only [he, hsk, bind_ok, uncurry_apply_pair]
       rcases r₄ with ⟨⟨i, mk⟩⟩ | err
       · obtain ⟨hwf₂, hmk⟩ := h_ok i mk rfl
-        obtain ⟨vs, hvs, -⟩ := WP.spec_imp_exists (h_ip i mk c₂ hsk)
+        obtain ⟨vs, hvs, -⟩ := WP.spec_imp_exists (h_ip _ c₂ hsk)
         obtain ⟨msg, hmsg, hbytes, hne, hidx⟩ := h_ser i
         obtain ⟨cp, hcp, rfl⟩ := WP.spec_imp_exists (chain.Chain.into_pb_spec c₂ hwf₂)
         simp only [hcp, hmsg, List.isEmpty_iff, hne, hidx, hvs, hmk, bind_ok, uncurry_apply_pair,
