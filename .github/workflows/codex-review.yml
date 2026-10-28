@@ -1,0 +1,122 @@
+name: Codex quick review
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: codex-review-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: >-
+      github.event.issue.pull_request &&
+      github.event.comment.body == '!review' &&
+      github.event.comment.user.type == 'User'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      allowed: ${{ steps.request.outputs.allowed }}
+      head: ${{ steps.request.outputs.head }}
+      base: ${{ steps.request.outputs.base }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        id: request
+        with:
+          script: |
+            const { authorize } = require('./scripts/codex-review.cjs');
+            await authorize({ github, context, core });
+
+  review:
+    needs: prepare
+    if: needs.prepare.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+    outputs:
+      message: ${{ steps.codex.outputs.final-message }}
+      merge_base: ${{ steps.revisions.outputs.merge_base }}
+    steps:
+      # Keep the trusted default-branch checkout throughout: never execute PR files.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fetch and pin review revisions
+        id: revisions
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          HEAD_SHA: ${{ needs.prepare.outputs.head }}
+          BASE_SHA: ${{ needs.prepare.outputs.base }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.extraheader=AUTHORIZATION: basic $auth" fetch --no-tags origin \
+            "refs/pull/$PR_NUMBER/head" "$BASE_SHA"
+          git cat-file -e "$HEAD_SHA^{commit}"
+          merge_base=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          echo "merge_base=$merge_base" >> "$GITHUB_OUTPUT"
+          mkdir -p .codex-review
+          git diff --no-ext-diff --no-textconv "$merge_base" "$HEAD_SHA" > .codex-review/diff.patch
+          git diff --no-ext-diff --no-textconv --stat "$merge_base" "$HEAD_SHA" > .codex-review/stat.txt
+      - name: Collect metadata and existing validation evidence
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ needs.prepare.outputs.head }}
+          BASE_SHA: ${{ needs.prepare.outputs.base }}
+          MERGE_BASE: ${{ steps.revisions.outputs.merge_base }}
+        with:
+          script: |
+            const { collect } = require('./scripts/codex-review.cjs');
+            await collect({ github, context });
+      # Last step by design. Only this action receives the OpenAI credential.
+      - name: Run Codex
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/review-prompt.md
+          sandbox: read-only
+          safety-strategy: drop-sudo
+          model: ${{ vars.CODEX_REVIEW_MODEL }}
+          effort: medium
+
+  publish:
+    needs: [prepare, review]
+    if: >-
+      always() && needs.prepare.outputs.allowed == 'true' &&
+      needs.review.result != 'cancelled'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        env:
+          REVIEW_MESSAGE: ${{ needs.review.outputs.message }}
+          REVIEW_RESULT: ${{ needs.review.result }}
+          HEAD_SHA: ${{ needs.prepare.outputs.head }}
+          BASE_SHA: ${{ needs.prepare.outputs.base }}
+          MERGE_BASE: ${{ needs.review.outputs.merge_base }}
+        with:
+          script: |
+            const { publish } = require('./scripts/codex-review.cjs');
+            await publish({ github, context });
