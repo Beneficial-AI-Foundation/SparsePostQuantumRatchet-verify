@@ -28,7 +28,7 @@ Status values:
 One case needs saying, because `Open` as defined above assumes the statement is
 settled. An `Open` row that also carries a `Finding:` annotation has a statement
 that is **known wrong** and is being restated in a named later phase, so `Open`
-there means "no theorem *and* no settled statement". PROP-37 is the row this
+there means "no theorem *and* no settled statement". states-pb-roundtrip is the row this
 covers. No new status value is introduced: the §12 index vocabulary is unchanged,
 and a `Domain:` or `Finding:` line never changes a row's status by itself.
 
@@ -56,12 +56,12 @@ Opaque items and how they are handled:
 |------|----------|
 | `kdf::hkdf_to_slice` | Lean `noncomputable opaque` (`SrcTranslated/FunsExternal.lean:2336`); behaviour given by `axiom hkdf_to_slice_spec` (`Spqr/Specs/Kdf/HkdfToSlice.lean:29`) in terms of an RFC 5869 model with `opaque HMAC_SHA256`. One of three hand-written axioms under `Spqr/` (the other two are in the prost row below). |
 | `incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275` | Opaque stub (`noncomputable opaque`, `SrcTranslated/FunsExternal.lean:2343`; contains `log::*` under `cfg(not(hax))`). `encaps2` itself is extracted. |
-| `PolyDecoder::decoded_message` | Extracted (`SrcTranslated/Funs.lean:8804`) from a patched body (`translation-patches/polynomial-PolyDecoder-decoded_message.patch`). No spec yet; LEAN-ENC-2 is no longer blocked by an axiom. |
+| `PolyDecoder::decoded_message` | Extracted (`SrcTranslated/Funs.lean:8804`) from a patched body (`translation-patches/polynomial-PolyDecoder-decoded_message.patch`). No spec yet; erasure-decode-any-n is no longer blocked by an axiom. |
 | libcrux `validate_pk_bytes`, `decapsulate_compressed_key`, `encapsulate1/2`, `hmac`, size constants | Opaque stubs (`noncomputable opaque` in `SrcTranslated/FunsExternal.lean`), not axioms: `hmac` (`:1626`), `encapsulate1/2` (`:1872`, `:1734`), `decapsulate_compressed_key` (`:1884`), `validate_pk_bytes` (`:1863`), and the size constants `pk1_len`, `pk2_len`, `encaps_state_len`, `Ciphertext1/2::len`, `SHARED_SECRET_SIZE` (`:1684-1728`). Built against libcrux-ml-kem 0.0.10 and libcrux-hmac 0.0.8. |
-| `libcrux_hmac.hmac_sha256_tag32_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:1673`, not an aeneas signature stub: it carries a postcondition, namely that the returned tag is 32 bytes (`⦃ (r : alloc.vec.Vec U8) => r.length = 32 ⦄`). **Unavoidable**: `libcrux_hmac.hmac` is itself opaque, so there is nothing to prove the postcondition from. Specialised to `.Sha256` with `some 32#usize`, the only shapes the crate calls, so it adds no surplus assumption. Not unsound. It is in the axiom closure of `mac_hdr_spec` and `mac_ct_spec`, which carry PROP-40's **Proved** status. |
+| `libcrux_hmac.hmac_sha256_tag32_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:1673`, not an aeneas signature stub: it carries a postcondition, namely that the returned tag is 32 bytes (`⦃ (r : alloc.vec.Vec U8) => r.length = 32 ⦄`). **Unavoidable**: `libcrux_hmac.hmac` is itself opaque, so there is nothing to prove the postcondition from. Specialised to `.Sha256` with `some 32#usize`, the only shapes the crate calls, so it adds no surplus assumption. Not unsound. It is in the axiom closure of `mac_hdr_spec` and `mac_ct_spec`, which carry the **Proved** status of mac-inputs. |
 | `KeyPairCompressedBytes.from_seed_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:1751`, postcondition `⦃ fun kp => kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄`. **Avoidable**: `from_seed` is a `def` returning `ok default`, and `value` is a length-indexed array (`SrcTranslated/TypesExternal.lean:140`), so the postcondition follows from `Array.length_eq` — the same one-liner already used at `SrcTranslated/FunsExternal.lean:1769`. It is an axiom today only because it was written as the `-- TODO: add cryptographic properties of from_seed_spec` placeholder, not because of any obstruction; it is true, hence not unsound. It is in the axiom closure of `generate_spec`, which `docs/proof-targets.md:97` records as discharged at baseline. **Retiring it is Phase 4 work under AXIOM-01..06.** |
 | prost `Message` impls for `PqRatchetState` | Not reached by any proof. `lib.rs` routes all state encoding and decoding through `encode_state_pb` / `decode_state_pb` (patch `lib-state_pb.patch`; `noncomputable opaque` at `SrcTranslated/FunsExternal.lean:2352,2357`). **Hand-written** axioms `encode_state_pb_spec` (`Spqr/Specs/Lib/StatePb.lean:40`: encoding succeeds and decodes back to the encoded state) and `decode_state_pb_total` (`:45`: decoding never panics). **Unavoidable** while prost is opaque. That prost's encode/decode round-trips `PqRatchetState` is assumed, not checked here. Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
-| `alloc::fmt::format` | **Hand-written** `@[step] axiom alloc.fmt.format_spec` at `SrcTranslated/FunsExternal.lean:1209`: formatting succeeds, the string is unspecified. Needed because upstream v1.6.0 builds error strings with `format!` (`src/v1/chunked/states/serialize.rs:116`, `src/lib.rs:183`, both formatting a `u8`). Avoidable only by modelling `alloc.fmt.format`. In the closure of `Message.deserialize_spec` (PROP-35). Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
+| `alloc::fmt::format` | **Hand-written** `@[step] axiom alloc.fmt.format_spec` at `SrcTranslated/FunsExternal.lean:1209`: formatting succeeds, the string is unspecified. Needed because upstream v1.6.0 builds error strings with `format!` (`src/v1/chunked/states/serialize.rs:116`, `src/lib.rs:183`, both formatting a `u8`). Avoidable only by modelling `alloc.fmt.format`. In the closure of `Message.deserialize_spec` (message-wire-format). Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
 
 Hand-written `sorry`s on `main`: none (`grep -rn sorry Spqr SrcTranslated` is empty
 at `dd8e6b9`). The map-iterator `next := sorry` instance (aeneas#1043) is gone since
@@ -128,18 +128,20 @@ optional key as `EpochSecret { epoch, secret }` and never returns `t_snd` or
 byte is above ours, `recv` does not run the v1 machine and returns the chain key of
 epoch 0 at the message's index (`lib.rs:383-420`).
 
-### PROP-1 Session key consistency
+### session-key-agreement: Session key consistency
 
 If both parties output `(t, K)` and `(t, K')`, then `K = K'`.
 
 Source: Spec §1.1; SCKA Def. 3.1
 
 Reduces to: both parties' `EpochSecret.secret` for epoch `t` equal
-`KDF_OK(ss, t)` for the same ML-KEM shared secret `ss`, which needs PROP-3
-(KEM roundtrip) and PROP-24 (both KDF_OK sites identical). Status: **Open**.
-Requires the KEM axiom of PROP-3.
+`KDF_OK(ss, t)` for the same ML-KEM shared secret `ss`, which needs kem-correctness
+(KEM roundtrip) and kdf-ok-sites (both KDF_OK sites identical). Status: **Open**.
+Requires the KEM axiom of kem-correctness.
 
-### PROP-21 Per-participant epoch uniqueness
+### epoch-uniqueness: Per-participant epoch uniqueness
+
+Obligations: `send-epochs-unique`, `epochs-unique`
 
 Each party outputs at most one key per epoch.
 
@@ -156,7 +158,7 @@ keys come out at consecutive epochs: `HeaderReceived@e` emits `e` and moves to
 `Ct1Sampled@e`, whose next key can only be at `e + 1`, and `EkSentCt1Received@e`
 emits `e` and moves to `NoHeaderReceived@(e + 1)`.
 
-Theorem: PROP-21 is `spqr.v1.chunked.states.epochs_nodup`, in
+Theorem: epoch-uniqueness is `spqr.v1.chunked.states.epochs_nodup`, in
 `Spqr/Specs/Braid/Scka/EpochUniqueness.lean`. The Lean names and docstrings do not
 carry the ID; this row is the mapping.
 
@@ -169,9 +171,9 @@ emit when they succeed); the trace part is `epochs_nodup`, via
 `dd8e6b9` the closures contain only the Lean core axioms, the Aeneas `core.fmt.Formatter`
 axiom and `native_decide` artifacts of extracted definitions. Scope: the crate with overflow checks, or a release run in which no call
 overflows (Spec §3.8); `States`, not the public API. Statement ACCEPT:
-`docs/statement-reviews/PROP-21-trace-and-recv-half-3.md` (round 3; round 2 also ACCEPT).
+`docs/statement-reviews/epochs-unique-3.md` (round 3; round 2 also ACCEPT).
 
-### PROP-22 Epoch agreement
+### epoch-agreement: Epoch agreement
 
 `t_snd` returned by `Send` equals `t_rcv` returned by the matching `Receive`.
 
@@ -188,7 +190,7 @@ Status: **Open**. Note that the spec's own pseudocode computes `t_rcv` as
 `state.epoch - 1` of the receiver, which differs from `t_snd` for delayed
 messages; the code's choice is the one that satisfies the property.
 
-### PROP-23 Sender and receiver epoch knowledge
+### epoch-knowledge: Sender and receiver epoch knowledge
 
 When `Send` returns `t_snd` (resp. `Receive` returns `t_rcv`), the caller has
 emitted keys for that epoch and all earlier ones.
@@ -198,7 +200,7 @@ Source: Spec §1.1; src/lib.rs:297; src/lib.rs:465
 With `t_snd = msg.epoch - 1` this says: a party at state epoch `e` has emitted
 keys for epochs `1..e-1`. Trace property over the v1 machine plus the chain
 (`chain.add_epoch` is called with every emitted key, `lib.rs:297,465`).
-Status: **Open**. PROP-21's `epochs_consecutive` is groundwork: it already says a
+Status: **Open**. The `epochs_consecutive` lemma of epoch-uniqueness is groundwork: it already says a
 run's keys come out at consecutive epochs from `keyFloor s`, with no gaps.
 
 ---
@@ -212,7 +214,9 @@ with `hdr` (64 bytes) and `ek` (1152 bytes) built inside libcrux;
 `ek_matches_header(ek, hdr) = validate_pk_bytes(hdr, ek).is_ok()` (`:28-30`).
 The crate never computes SHA3 itself.
 
-### PROP-3 KEM roundtrip
+### kem-correctness: KEM roundtrip
+
+Obligations: `kem-generate`, `kem-roundtrip`
 
 For `Keys { hdr, ek, dk } = generate(r)`, `(ct1, es, ss) = encaps1(hdr, r')`,
 `ct2 = encaps2(ek, es)`: `decaps(dk, ct1, ct2) = ss`.
@@ -226,7 +230,7 @@ libcrux stubs). `generate_spec` (`Spqr/Specs/IncrementalMlkem768/Generate.lean`)
 is **Proved**: `ek` and `hdr` are the corresponding slices of `dk`, with the
 sizes above.
 
-### PROP-3b Header binding
+### kem-header-binding: Header binding
 
 `ek_matches_header(ek, hdr)` holds iff `hdr` is the header libcrux derives
 from the key pair whose vector part is `ek` (§1.2.1: `hdr = ek_seed ‖
@@ -243,7 +247,7 @@ checked. The exact byte string hashed must be taken from libcrux, not from the s
 
 ## 4. Erasure code and field arithmetic (§1.3, §2.2 Encode/Decode, §3.6)
 
-### LEAN-ENC-1 Point roundtrip
+### point-roundtrip: Point roundtrip
 
 `Pt.deserialize(Pt.serialize(p)) = ok p`. **Proved**
 (`Spqr/Specs/Encoding/Polynomial/Pt/{Serialize,Deserialize}.lean`).
@@ -251,7 +255,7 @@ checked. The exact byte string hashed must be taken from libcrux, not from the s
 Source: src/encoding/polynomial.rs:30-48
 Evidence: Spqr/Specs/Encoding/Polynomial/Pt/{Serialize,Deserialize}.lean
 
-### LEAN-ENC-2 Decode from any N chunks
+### erasure-decode-any-n: Decode from any N chunks
 
 If a message fits in `N` codewords, `PolyDecoder` reconstructs it from any
 `N` distinct codewords (§3.6). Status: **Open**. `decoded_message` is extracted
@@ -262,7 +266,7 @@ but has no spec; the surrounding encoder/decoder functions have specs
 Source: Spec §3.6; src/encoding/polynomial.rs:918-976
 Evidence: Spqr/Specs/Encoding/{Encoder,Decoder,Polynomial}/
 
-### LEAN-GF GF(2^16) arithmetic
+### gf16-field-agreement: GF(2^16) arithmetic
 
 `GF16` add, sub, eq, mul, div and their assign forms agree with
 `GaloisField 2 16` (`Spqr/Math/Gf16/Field.lean:36`). **Proved**
@@ -279,7 +283,7 @@ Evidence: Spqr/Math/Gf16/Field.lean:36; Spqr/Specs/Encoding/Gf/
 
 ## 5. Parameters (§2.2)
 
-### PROP-45 KEM constants
+### kem-constants: KEM constants
 
 `HEADER_SIZE = 64`, `EK_SIZE = 1152`, `CT1_SIZE = 960`, `CT2_SIZE = 128` for
 ML-KEM-768. Code: `HEADER_SIZE = pk1_len()`, `ENCAPSULATION_KEY_SIZE = pk2_len()`
@@ -288,7 +292,7 @@ ML-KEM-768. Code: `HEADER_SIZE = pk1_len()`, `ENCAPSULATION_KEY_SIZE = pk2_len()
 
 Source: Spec §2.2; src/incremental_mlkem768.rs:8-15
 
-### PROP-24 KDF_OK
+### kdf-ok-sites: KDF_OK
 
 Both derivation sites, `HeaderReceived::send_ct1` (`unchunked/send_ct.rs:129-135`)
 and `EkSentCt1Received::recv_ct2` (`unchunked/send_ek.rs:150-158`), call
@@ -299,7 +303,7 @@ Status: **Open**; `hkdf_to_vec_spec` (**Proved**) gives the HKDF value.
 
 Source: Spec §2.2; src/v1/unchunked/send_ct.rs:129-135; src/v1/unchunked/send_ek.rs:150-158
 
-### PROP-42 KDF_AUTH info and length
+### kdf-auth-inputs: KDF_AUTH info and length
 
 Decided behaviour (D1): `Authenticator::update(ep, k)`, on an authenticator whose
 `root_key ‖ k` fits in memory, calls HKDF-SHA256 with `salt = [0u8; 32]`,
@@ -329,7 +333,7 @@ memory-size hypothesis is the "fits in memory" clause above.
 Source: Spec §2.2; src/authenticator.rs:43-54
 Evidence: Spqr/Specs/Authenticator/Authenticator/Update.lean
 
-### PROP-18 HKDF output lengths
+### hkdf-output-lengths: HKDF output lengths
 
 Every production HKDF call requests 32, 64 or 96 bytes
 (`authenticator.rs:51`; `unchunked/send_ct.rs:135`; `unchunked/send_ek.rs:156`;
@@ -339,7 +343,9 @@ evaluation.
 
 Source: Spec §2.2; src/authenticator.rs:51; src/v1/unchunked/send_ct.rs:135; src/v1/unchunked/send_ek.rs:156; src/chain.rs:233; src/chain.rs:335; src/chain.rs:363
 
-### PROP-41 Label prefix
+### kdf-labels: Label prefix
+
+Obligations: `label-prefix`, `kdf-ok-literal`
 
 The five info/MAC labels (`authenticator.rs:47,68,93`,
 `unchunked/send_ct.rs:131`, `unchunked/send_ek.rs:152`) share the prefix
@@ -364,7 +370,9 @@ Source: Spec §2.2; src/authenticator.rs:47; src/authenticator.rs:68; src/authen
 
 ## 6. Messages (§2.3)
 
-### PROP-35 Wire format
+### message-wire-format: Wire format
+
+Obligations: `message-codec-components`, `message-roundtrip`
 
 `Message::serialize(m, index)` produces `messageBytes m index`
 (`v1/chunked/states/serialize.rs:171-197`). Parsing is split in two. `msg_preamble`
@@ -379,11 +387,11 @@ composed roundtrip is **Proved (branch)** on `la/prop-35` (`57fc83c`, 2026-10-27
 to `true`, `serialize m i` succeeds, `msg_preamble` parses its output to a preamble with
 version `1`, epoch `m.epoch` and index `i`, and `Message::deserialize` on that epoch and the
 remaining bytes returns `m` (`Message.serialize_parse_roundtrip`,
-`docs/statements/PROP-35-roundtrip.md`; REV-01 ACCEPT 2026-10-27, round 3 (docstring only,
-matching the Lean file), `docs/statement-reviews/PROP-35-roundtrip-3.md`, SHA `8e29d7d0`; round 2
+`docs/statements/message-roundtrip.md`; REV-01 ACCEPT 2026-10-27, round 3 (docstring only,
+matching the Lean file), `docs/statement-reviews/message-roundtrip-3.md`, SHA `8e29d7d0`; round 2
 ACCEPT 2026-10-27 (docstring only),
-`docs/statement-reviews/PROP-35-roundtrip-2.md`, SHA `7a07bc59`; round 1 ACCEPT 2026-10-15,
-`docs/statement-reviews/PROP-35-roundtrip-1.md`, SHA `0c426d60`). The proof is in
+`docs/statement-reviews/message-roundtrip-2.md`, SHA `7a07bc59`; round 1 ACCEPT 2026-10-15,
+`docs/statement-reviews/message-roundtrip-1.md`, SHA `0c426d60`). The proof is in
 `Spqr/Specs/V1/Chunked/States/Serialize/Message/Roundtrip.lean`; its encoder-to-decoder bridge
 is `varintBlockAt_of_map` (`Serialize/EncodedBlocks.lean`), and its completeness lemmas are
 `decode_varint_of_block`,
@@ -414,13 +422,13 @@ The `index` field is the chain layer's per-message key index from
 leaves the encoding to the implementer, so this is permitted, but the wire
 format is SPQR-specific rather than a pure ML-KEM Braid message.
 
-### STRUCT-02a Wire format is not injective
+### wire-not-injective: Wire format is not injective
 
-The converse of PROP-35 (does a byte string have at most one parse, and does a message
+The converse of message-wire-format (does a byte string have at most one parse, and does a message
 have at most one encoding?) is **false** for this wire format. `Message::serialize` is not
 injective on messages, and the parse `msg_preamble` followed by `Message::deserialize` is not
 injective on byte strings. The parse output is judged on version, epoch, index and message,
-as in STRUCT-02b. Both are witnessed:
+as in canonical-parse-injective. Both are witnessed:
 
 1. **Tag collapse.** `Message { epoch: 1, payload: Ct1Ack(false) }` and
    `Message { epoch: 1, payload: Ct1Ack(true) }` have the same serialization:
@@ -441,7 +449,7 @@ No parse stage checks the version byte (it is returned in the preamble and read 
 negotiation, `lib.rs:365-382`), so this adds no further collision.
 
 A negative result **discharges** this row; that is why it is stated separately from
-STRUCT-02b: what is to be recorded is that the converse fails, with the witnesses
+canonical-parse-injective: what is to be recorded is that the converse fails, with the witnesses
 named. Status: **Proved (branch)** on `la/struct-02a` (`2ddd203`, 2026-10-27), all five gates
 PASS: `Message.serialize_parse_not_injective` in
 `Spqr/Specs/V1/Chunked/States/Serialize/Message/NotInjective.lean`, docstring and signature identical to the
@@ -463,26 +471,26 @@ version, epoch, index and message (a parse-equivalence support lemma for this ro
 
 Source: src/v1/chunked/states/serialize.rs:93-153; src/v1/chunked/states/serialize.rs:171-219; src/lib.rs:507-590
 Evidence: Spqr/Specs/V1/Chunked/States/Serialize/DecodeVarint.lean:46-48
-Review: ACCEPT 2026-10-27 (round 5, docstring only) — docs/statement-reviews/STRUCT-02a-witness-5.md, statement docs/statements/STRUCT-02a-witness.md SHA 69dd7624957d856773fdf778c517fa25ab5fe77452e13daa6c7103583403b434. Earlier: ACCEPT 2026-10-27 (round 4, docstring only) — docs/statement-reviews/STRUCT-02a-witness-4.md, SHA 3dc598f9e220376441e3c5687e4c9d017934f775d7121e762168c8f000195b78. Earlier: ACCEPT 2026-10-15 (round 3, restated for the pin move) — docs/statement-reviews/STRUCT-02a-witness-3.md, SHA cda0cf1278c41d930b5523e53997d69d462a2bb73d7f6230ef988bda78b4269f. Earlier: ACCEPT 2026-09-15 (round 2; round 1 REVISE) against `d47083c`, docs/statement-reviews/STRUCT-02a-witness-2.md, SHA c67dbc81074ec89b10b03529bbe27c842eca9434c7a51467fdef6cdc26323f6c; all rounds logged in docs/spec-review-log.md
+Review: ACCEPT 2026-10-27 (round 5, docstring only) — docs/statement-reviews/wire-not-injective-5.md, statement docs/statements/wire-not-injective.md SHA 69dd7624957d856773fdf778c517fa25ab5fe77452e13daa6c7103583403b434. Earlier: ACCEPT 2026-10-27 (round 4, docstring only) — docs/statement-reviews/wire-not-injective-4.md, SHA 3dc598f9e220376441e3c5687e4c9d017934f775d7121e762168c8f000195b78. Earlier: ACCEPT 2026-10-15 (round 3, restated for the pin move) — docs/statement-reviews/wire-not-injective-3.md, SHA cda0cf1278c41d930b5523e53997d69d462a2bb73d7f6230ef988bda78b4269f. Earlier: ACCEPT 2026-09-15 (round 2; round 1 REVISE) against `d47083c`, docs/statement-reviews/wire-not-injective-2.md, SHA c67dbc81074ec89b10b03529bbe27c842eca9434c7a51467fdef6cdc26323f6c; all rounds logged in docs/spec-review-log.md
 
-### STRUCT-02b Canonical encodings deserialize injectively
+### canonical-parse-injective: Canonical encodings deserialize injectively
 
 Restricted to canonical encodings (the varint blocks minimal, no trailing bytes, and the
 byte string in the image of `Message::serialize`), the parse `msg_preamble` followed by
 `Message::deserialize` is injective: if two such byte strings parse to the same version,
 epoch, index and message, they are equal. Canonicity is a predicate to be written down, not
-an adjective; it is what excludes each of STRUCT-02a's three witness families. "No trailing
+an adjective; it is what excludes each of the three witness families of wire-not-injective. "No trailing
 bytes" means the preamble's `remaining` ends after the tag byte for the chunkless payloads and
 after the chunk block for the others.
 
-This is the half of PROP-35's converse that is true and useful, and it rests on the
-same `varintBytes`-to-`varintBlockAt` agreement lemma PROP-35's roundtrip needs, which is why
+This is the half of the converse of message-roundtrip that is true and useful, and it rests on the
+same `varintBytes`-to-`varintBlockAt` agreement lemma that message-roundtrip needs, which is why
 both sit in Phase 3. That lemma is now `varintBlockAt_of_map` on `la/prop-35`. Status: **Open**; the restated statement has an ACCEPT
 (round 3, against `dd8e6b9`).
 
 Source: src/v1/chunked/states/serialize.rs:93-153; src/v1/chunked/states/serialize.rs:171-219; src/lib.rs:507-590
 Evidence: Spqr/Specs/V1/Chunked/States/Serialize/DecodeVarint.lean:46-48
-Review: ACCEPT 2026-10-15 (round 3, restated for the pin move) — docs/statement-reviews/STRUCT-02b-canonicity-3.md, statement docs/statements/STRUCT-02b-canonicity.md SHA 2576b7560a4dc6fb3c44acc42c6de29cf47fadb13572ac515d816a3c07b05619. Earlier: ACCEPT 2026-09-15 (round 2; round 1 REVISE) against `d47083c`, docs/statement-reviews/STRUCT-02b-canonicity-2.md, SHA 07ec125c878134612cf0cce59860fe38d9a44b6890bfc218c42ec96a8a6454e0; all rounds logged in docs/spec-review-log.md
+Review: ACCEPT 2026-10-15 (round 3, restated for the pin move) — docs/statement-reviews/canonical-parse-injective-3.md, statement docs/statements/canonical-parse-injective.md SHA 2576b7560a4dc6fb3c44acc42c6de29cf47fadb13572ac515d816a3c07b05619. Earlier: ACCEPT 2026-09-15 (round 2; round 1 REVISE) against `d47083c`, docs/statement-reviews/canonical-parse-injective-2.md, SHA 07ec125c878134612cf0cce59860fe38d9a44b6890bfc218c42ec96a8a6454e0; all rounds logged in docs/spec-review-log.md
 
 Both rows are grounded in the code, not in the spec: §2.3 lists only
 `{epoch, type, data}` and leaves the encoding to the implementer, so canonicity is
@@ -492,7 +500,7 @@ enum and its `try_from` (`:95`, `:107`), `from_payload` (`:122`), and
 `lib.rs:509` and `lib.rs:524`, next to `msg_preamble` (`lib.rs:563`). `serialize.rs:171-219`
 carries `serialize` (`:172`) and `deserialize` (`:200`).
 
-### PROP-36 Epoch zero rejected
+### epoch-zero-rejected: Epoch zero rejected
 
 `msg_preamble` returns `Err(MsgDecode)` when a non-empty message's wire epoch is 0
 (`lib.rs:575-577`). **Proved** (part of `msg_preamble_spec`,
@@ -510,7 +518,7 @@ Source: src/lib.rs:563-590; src/lib.rs:462
 
 Constants: `MACSIZE = 32` (`authenticator.rs:33`), HMAC-SHA256.
 
-### PROP-31 Init
+### auth-init: Init
 
 `Authenticator::new(k, ep)` equals `update(ep, k)` applied to
 `{ root_key: 0^32, mac_key: 0^32 }` (`authenticator.rs:34-41`; spec
@@ -519,7 +527,7 @@ as `update_spec` on the zero state.
 
 Source: Spec §2.4; src/authenticator.rs:34-41
 
-### PROP-40 MAC inputs
+### mac-inputs: MAC inputs
 
 `mac_hdr(ep, hdr) = HMAC(mac_key, "…:ekheader" ‖ ep_be ‖ hdr)` and
 `mac_ct(ep, ct) = HMAC(mac_key, "…:ciphertext" ‖ ep_be ‖ ct)`, both 32 bytes
@@ -530,7 +538,7 @@ Source: Spec §2.4; src/authenticator.rs:34-41
 
 Source: Spec §2.4; src/authenticator.rs:66-105; src/v1/unchunked/send_ct.rs:192-193; src/v1/unchunked/send_ek.rs:160
 
-### PROP-15 Verify accepts own MAC
+### mac-verify-accepts-own: Verify accepts own MAC
 
 `verify_hdr(ep, hdr, mac_hdr(ep, hdr)) = Ok(())` and likewise for `ct`.
 `verify_*` uses the constant-time `util::compare` (`util.rs:25-33`) and returns
@@ -539,7 +547,7 @@ Source: Spec §2.4; src/authenticator.rs:66-105; src/v1/unchunked/send_ct.rs:192
 
 Source: Spec §2.4; src/authenticator.rs:57; src/authenticator.rs:82; src/util.rs:25-33
 
-### PROP-43 MAC failure
+### mac-failure: MAC failure
 
 Decided behaviour (D5): on a failed `verify_hdr` (transition 6,
 `unchunked/send_ct.rs:107`) or a failed `verify_ct` (transition 5,
@@ -602,7 +610,9 @@ Ct1Sampled, EkReceivedCt1Sampled, Ct1Acknowledged, Ct2Sampled. The unchunked
 types in `src/v1/unchunked/` are the inner core (`uc` field) of these states,
 not a separate protocol mode; `lib.rs` uses only `v1::chunked`.
 
-### PROP-30 Epoch and type dispatch
+### recv-epoch-dispatch: Epoch and type dispatch
+
+Obligations: `recv-epoch-less-greater`, `recv-epoch-equal`
 
 Every `recv` arm compares `msg.epoch` with `state.epoch()`. The table's
 `msg.epoch > epoch` rows assert the **code**, not the spec's no-op, per the
@@ -634,9 +644,11 @@ rows: `recv_of_eq_unexpected` and `recv_of_eq_refines`. All five are in
 `Spqr/Specs/Braid/StateMachine/EpochDispatch.lean`. The equal-epoch theorems compare against the
 spec's `Receive` at state name and key presence; `recv_of_eq_unexpected` is total, and
 `recv_of_eq_refines` holds in the if-it-returns form, with the checks stated by the code's own calls
-(REV-01 ACCEPT round 10, `docs/statement-reviews/PROP-30-equal-10.md`).
+(REV-01 ACCEPT round 10, `docs/statement-reviews/recv-epoch-equal-10.md`).
 
-### PROP-47 Transition refinement
+### transition-refinement: Transition refinement
+
+Obligations: `transition-refinement-1-5`, `transition-refinement-6-13`
 
 Each spec transition is implemented by the named code path with the same
 effect on the state's epoch, authenticator and payload. Transitions 11 and 12
@@ -654,7 +666,7 @@ Source: Spec §2.5; src/v1/chunked/states.rs:115-533; src/v1/chunked/states.rs:1
 | 5 | EkSentCt1Received.Receive Ct2 (complete) | `states.rs:355` → `recv_ct2` | decaps, KDF_OK, `auth.update`, `verify_ct(ct1 ‖ ct2)`, key emitted, epoch + 1 |
 | 6 | NoHeaderReceived.Receive Hdr (complete) | `states.rs:386` → `recv_header` | `verify_hdr` before constructing HeaderReceived |
 | 7 | HeaderReceived.Send | `states.rs:203` → `send_ct1` | encaps1, KDF_OK, `auth.update`, key emitted |
-| 8–10 | Ct1Sampled.Receive Ek / EkCt1Ack | `states.rs:418` → `recv_ek_chunk` | PROP-25 on completion |
+| 8–10 | Ct1Sampled.Receive Ek / EkCt1Ack | `states.rs:418` → `recv_ek_chunk` | ek-integrity on completion |
 | 11 | Ct1Acknowledged.Receive EkCt1Ack | `states.rs:485` | decided (D4): accepts `Ek` as well as `EkCt1Ack`, both routed to `recv_ek_chunk` (`states.rs:490-496`) |
 | 12 | EkReceivedCt1Sampled.Receive EkCt1Ack | `states.rs:464` | decided (D3): accepts `Ct1Ack(true)` as well as `EkCt1Ack` (`states.rs:465-468`) |
 | 13 | Ct2Sampled.Receive epoch + 1 | `states.rs:514-527` | |
@@ -679,7 +691,7 @@ difference: `ek_seed` and `hek` are held as a single 64-byte `hdr`
 (`chunked/send_ct.rs:95-97` copies `hdr ‖ mac` into two vectors at `HEADER_SIZE`; libcrux reads
 the seed and hash out of `hdr`).
 
-### PROP-50 Structural liveness
+### structural-liveness: Structural liveness
 
 Decided statement (D2), quotable as a theorem: from
 `(KeysUnsampled_A(e), NoHeaderReceived_B(e))`, every fair **in-order**
@@ -701,11 +713,11 @@ epoch forward and reaches `KeysUnsampled_B(e+1)`. Status: **Open**.
 
 Source: Spec §2.6; src/v1/chunked/states.rs:115-533
 
-### PROP-52 A premature acknowledgement stalls the epoch
+### premature-ack-stall: A premature acknowledgement stalls the epoch
 
-PROP-50 covers honest runs only. This row records what happens off them: one
+structural-liveness covers honest runs only. This row records what happens off them: one
 acknowledgement that B gets before A decoded ct1 stops the epoch for good. The
-row is a negative result, like STRUCT-02a, and a witness discharges it.
+row is a negative result, like wire-not-injective, and a witness discharges it.
 
 Take A in `HeaderSent(e)`, which still decodes ct1, and B in
 `EkReceivedCt1Sampled(e)`, which has all of ek. If A sends every `Ek` chunk before
@@ -742,26 +754,26 @@ so this is outside the SCKA model. The row records what one off-run message does
 for the D3 ruling. It is not a security claim.
 
 What is not claimed: first, that a run of successful calls from `initial_state`
-reaches the pair. That needs PROP-27 and the success of the sends that sample keys.
+reaches the pair. That needs initial-states and the success of the sends that sample keys.
 Second, that no other off-run message has the same effect.
 
 Status: **Open**; statement drafted
-(`docs/statements/PROP-52-premature-ack-stall.md`), review pending.
+(`docs/statements/premature-ack-stall.md`), review pending.
 
 Source: Spec §2.5; src/v1/chunked/states.rs:150-161; src/v1/chunked/states.rs:259-271; src/v1/chunked/states.rs:307-332; src/v1/chunked/states.rs:459-479; src/v1/chunked/states.rs:514-530
 
-### PROP-25 Encapsulation-key integrity
+### ek-integrity: Encapsulation-key integrity
 
 Whenever the `ek_decoder` completes, `ek_matches_header(ek, hdr)` is checked
 before `ek` is used, and failure returns `Err(ErroneousDataReceived)`.
 Single call site `Ct1Sent::recv_ek` (`unchunked/send_ct.rs:160-169`), reached
 from `Ct1Sampled` and `Ct1Acknowledged` with either `Ek` or `EkCt1Ack`
 chunks (four combinations). Status: **Open**; the meaning of the check is
-PROP-3b.
+kem-header-binding.
 
 Source: Spec §2.5; src/v1/unchunked/send_ct.rs:160-169
 
-### PROP-48 Decoder sizes
+### decoder-sizes: Decoder sizes
 
 Decoders are created with the spec's message sizes: header
 `HEADER_SIZE + MACSIZE` (`chunked/send_ct.rs:72-73`, `chunked/send_ek.rs:212-213`),
@@ -771,16 +783,16 @@ ek `ENCAPSULATION_KEY_SIZE` (`chunked/send_ct.rs:99`), ct1 `CIPHERTEXT1_SIZE`
 
 Source: Spec §2.2; src/v1/chunked/send_ct.rs:72-73; src/v1/chunked/send_ct.rs:99; src/v1/chunked/send_ek.rs:87; src/v1/chunked/send_ek.rs:171-172; src/v1/chunked/send_ek.rs:212-213
 
-### PROP-49 Key epoch
+### key-epoch: Key epoch
 
 The emitted `EpochSecret.epoch` is the epoch being negotiated: in
 transition 7 it is `state.epoch`; in transition 5 it is the pre-increment
 epoch while the new state carries `epoch + 1` (`unchunked/send_ek.rs:163-166`).
 This is the value `chain.add_epoch` asserts to be `current_epoch + 1`
-(PROP-9). Status: **Proved** (#574, on `main`) as support lemmas of
-PROP-21 (`send_key_epoch`, `recv_key_epoch`), not as a target of its own: each theorem is
+(add-epoch). Status: **Proved** (#574, on `main`) as support lemmas of
+epoch-uniqueness (`send_key_epoch`, `recv_key_epoch`), not as a target of its own: each theorem is
 about one call, which the statement review ruled Single path
-(`docs/statement-reviews/PROP-49-key-epoch-1.md`).
+(`docs/statement-reviews/key-epoch-1.md`).
 
 Source: Spec §2.5; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:361-369; src/v1/unchunked/send_ek.rs:163-166
 
@@ -788,7 +800,7 @@ Source: Spec §2.5; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:3
 
 ## 9. Initialization (§2.6)
 
-### PROP-27 Initial states
+### initial-states: Initial states
 
 `initial_state` with direction A2B yields `KeysUnsampled { epoch: 1, auth:
 Authenticator::new(k, 1) }`, with B2A `NoHeaderReceived { epoch: 1, auth:
@@ -798,7 +810,7 @@ calls `init_inner`, `lib.rs:197-208`; `unchunked/send_ek.rs:78-79`,
 
 Source: Spec §2.6; src/lib.rs:197-235; src/v1/unchunked/send_ek.rs:78-79; src/v1/unchunked/send_ct.rs:94-95
 
-### PROP-16 Version negotiation
+### version-negotiation: Version negotiation
 
 Not in the spec. Let `cur` be our state's version and `min` the negotiation
 record's `min_version`, or `cur` when there is no record. `recv` returns
@@ -820,20 +832,20 @@ Source: src/lib.rs:365-447
 The chain turns each SCKA key into per-message keys (SCKA Fig. 2). Properties
 here are grounded in the code.
 
-| ID | Statement | Source | Status |
-|----|-----------|--------|--------|
-| PROP-9 | `add_epoch(es)` with `es.epoch = current_epoch + 1` sets `current_epoch = es.epoch`, derives `next_root` and the new link's send/recv seeds from HKDF(`next_root`, `es.secret`, 96), appends one link, leaves `dir`, `send_epoch`, `params` unchanged | `src/chain.rs:356-375` | **Proved** `add_epoch_spec` (`Spqr/Specs/Chain/Chain/AddEpoch.lean`) |
-| PROP-14 | `send_key(epoch)` with `epoch < send_epoch` returns `Err(SendKeyEpochDecreased(send_epoch, epoch))` | `src/chain.rs:390-393` | **Proved** `send_key_spec`, first case (`Spqr/Specs/Chain/Chain/SendKey.lean`, #546) |
-| PROP-17 | `ChainEpochDirection::key(at)`: `at > ctr ∧ at - ctr > max_jump` → `Err(KeyJump(ctr, at))`; `at = ctr` → `Err(KeyAlreadyRequested(at))`; `at < ctr` → `prev.get` | `src/chain.rs:248-261` | **Proved** `key_spec_greater_jump`, `key_spec_equal`, `key_spec_less` (`Spqr/Specs/Chain/ChainEpochDirection/Key.lean`) |
-| PROP-29 | `epoch_idx(e)`: `Ok(links.len() - 1 - (current_epoch - e))` iff `e ≤ current_epoch` and the difference is below `links.len()`, else `Err(EpochOutOfRange(e))` | `src/chain.rs:378-388` | **Proved** `epoch_idx_spec` (`Spqr/Specs/Chain/Chain/EpochIdx.lean`) |
-| PROP-10 | When `send_key` moves `send_epoch` forward it pops links older than `EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH = 1` and clears the send seed of every earlier link; receive seeds are untouched, and `KeyHistory` entries are removed on `get` or trimmed by `gc` | `src/chain.rs:395-406`; `src/chain.rs:318`; `src/chain.rs:145-168`; `src/chain.rs:200` | **Open** |
-| PROP-12a | `KeyHistory.data.len() % 36 = 0` (`KEY_SIZE = 4 + 32`, `chain.rs:130`) is preserved by `add`, `get`, `gc` | `src/chain.rs:128-208` | **Proved** (`add_spec`, `get_loop_spec`, `gc_loop_spec` carry the alignment) |
-| PROP-12b | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `src/chain.rs:184-207` | **Open**; `get_loop_spec` gives the per-slot behaviour |
-| PROP-37 | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `src/v1/chunked/states/serialize.rs:10-90`; `src/v1/chunked/send_ek/serialize.rs:10-112`; `src/v1/chunked/send_ct/serialize.rs:11-151` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for chunked `KeysUnsampled` and `KeysSampled`; model-level `roundtrip_fromPb_intoPb` theorems exist for several states, some under a `WellFormed` field-length hypothesis |
-| PROP-38 | `Chain::from_pb(c.into_pb()) = ok c` for every `c` whose links each hold an empty or 32-byte `next` in both directions (`chain.rs:308-310` rejects any other length) | `src/chain.rs:299-316`; `src/chain.rs:424-462` | **Open** over the extracted functions. Proved on the functional models (`roundtrip_fromPb_intoPb`, `Spqr/Specs/Chain/Chain/FunctionalModels.lean:206`), which `from_pb_spec` and `into_pb_spec` link to the code; the composition is not stated. The model theorem also assumes `links.head = 0` and `links.length = links.buf.length`: these are hypotheses about the Lean `VecDeque` layout, not part of the Rust statement, since Rust `VecDeque` equality ignores layout. The code-level theorem must remove them or compare up to layout |
-| PROP-51 | Along any run of one party's state machine, feeding the emitted keys in order to `add_epoch` never fails, the `assert!(epoch_secret.epoch == self.current_epoch + 1)` included, provided the chain starts one epoch behind the run (`current_epoch + 1 = keyFloor s`, true for `Chain::new` with either init state) and the link buffer has room; the chain ends one behind the run. Over the state machine and `add_epoch` only: no `send_key`/`recv_key`, no serialization, chain present | `src/lib.rs:295-299`; `src/lib.rs:463-466`; `src/chain.rs:356-375`; `src/chain.rs:333-354` | **Open**; statement drafted (`docs/statements/PROP-51-chain-epoch-sync.md`), review pending; needs PROP-21 and PROP-9 |
+| Name | Statement | Source | Status |
+|------|-----------|--------|--------|
+| add-epoch | `add_epoch(es)` with `es.epoch = current_epoch + 1` sets `current_epoch = es.epoch`, derives `next_root` and the new link's send/recv seeds from HKDF(`next_root`, `es.secret`, 96), appends one link, leaves `dir`, `send_epoch`, `params` unchanged | `src/chain.rs:356-375` | **Proved** `add_epoch_spec` (`Spqr/Specs/Chain/Chain/AddEpoch.lean`) |
+| send-key-epoch-decreased | `send_key(epoch)` with `epoch < send_epoch` returns `Err(SendKeyEpochDecreased(send_epoch, epoch))` | `src/chain.rs:390-393` | **Proved** `send_key_spec`, first case (`Spqr/Specs/Chain/Chain/SendKey.lean`, #546) |
+| chain-direction-key | `ChainEpochDirection::key(at)`: `at > ctr ∧ at - ctr > max_jump` → `Err(KeyJump(ctr, at))`; `at = ctr` → `Err(KeyAlreadyRequested(at))`; `at < ctr` → `prev.get` | `src/chain.rs:248-261` | **Proved** `key_spec_greater_jump`, `key_spec_equal`, `key_spec_less` (`Spqr/Specs/Chain/ChainEpochDirection/Key.lean`) |
+| epoch-idx | `epoch_idx(e)`: `Ok(links.len() - 1 - (current_epoch - e))` iff `e ≤ current_epoch` and the difference is below `links.len()`, else `Err(EpochOutOfRange(e))` | `src/chain.rs:378-388` | **Proved** `epoch_idx_spec` (`Spqr/Specs/Chain/Chain/EpochIdx.lean`) |
+| send-key-gc | When `send_key` moves `send_epoch` forward it pops links older than `EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH = 1` and clears the send seed of every earlier link; receive seeds are untouched, and `KeyHistory` entries are removed on `get` or trimmed by `gc` | `src/chain.rs:395-406`; `src/chain.rs:318`; `src/chain.rs:145-168`; `src/chain.rs:200` | **Open** |
+| key-history-alignment | `KeyHistory.data.len() % 36 = 0` (`KEY_SIZE = 4 + 32`, `chain.rs:130`) is preserved by `add`, `get`, `gc` | `src/chain.rs:128-208` | **Proved** (`add_spec`, `get_loop_spec`, `gc_loop_spec` carry the alignment) |
+| key-history-get-after-add | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `src/chain.rs:184-207` | **Open**; `get_loop_spec` gives the per-slot behaviour |
+| states-pb-roundtrip | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `src/v1/chunked/states/serialize.rs:10-90`; `src/v1/chunked/send_ek/serialize.rs:10-112`; `src/v1/chunked/send_ct/serialize.rs:11-151` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for chunked `KeysUnsampled` and `KeysSampled`; model-level `roundtrip_fromPb_intoPb` theorems exist for several states, some under a `WellFormed` field-length hypothesis |
+| chain-pb-roundtrip | `Chain::from_pb(c.into_pb()) = ok c` for every `c` whose links each hold an empty or 32-byte `next` in both directions (`chain.rs:308-310` rejects any other length) | `src/chain.rs:299-316`; `src/chain.rs:424-462` | **Open** over the extracted functions. Proved on the functional models (`roundtrip_fromPb_intoPb`, `Spqr/Specs/Chain/Chain/FunctionalModels.lean:206`), which `from_pb_spec` and `into_pb_spec` link to the code; the composition is not stated. The model theorem also assumes `links.head = 0` and `links.length = links.buf.length`: these are hypotheses about the Lean `VecDeque` layout, not part of the Rust statement, since Rust `VecDeque` equality ignores layout. The code-level theorem must remove them or compare up to layout |
+| chain-epoch-sync | Along any run of one party's state machine, feeding the emitted keys in order to `add_epoch` never fails, the `assert!(epoch_secret.epoch == self.current_epoch + 1)` included, provided the chain starts one epoch behind the run (`current_epoch + 1 = keyFloor s`, true for `Chain::new` with either init state) and the link buffer has room; the chain ends one behind the run. Over the state machine and `add_epoch` only: no `send_key`/`recv_key`, no serialization, chain present | `src/lib.rs:295-299`; `src/lib.rs:463-466`; `src/chain.rs:356-375`; `src/chain.rs:333-354` | **Open**; statement drafted (`docs/statements/chain-epoch-sync.md`), review pending; needs epoch-uniqueness and add-epoch |
 
-Finding: PROP-37's statement above is **false as written** (found 2026-09-15), for
+Finding: the states-pb-roundtrip statement above is **false as written** (found 2026-09-15), for
 two independent reasons (a third was found later, #567). The row is annotated rather than restated: its corrected
 statement is deferred to Phase 7 (STRUCT-03, ROADMAP Phase 7 criterion 3), its
 asserted conclusion is left untouched, and its status stays `Open` in the sense the
@@ -876,7 +888,7 @@ code already asserts rather than inventing one. The variant-specific decoder-siz
 checks and representability are still open design. `States` protobuf injectivity is a
 corollary of this row on whatever domain Phase 7 designs, not a separate property.
 
-PROP-38 was **false as originally written** after upstream v1.6.0:
+chain-pb-roundtrip was **false as originally written** after upstream v1.6.0:
 `ChainEpochDirection::from_pb` (`src/chain.rs:307-316`) rejects a `next` that is neither
 empty nor 32 bytes, while `into_pb` copies it verbatim (`src/chain.rs:299-305`), so a
 chain holding such a link does not round-trip. The restated row adds that domain.
@@ -903,7 +915,7 @@ because readers there do not have this catalog.
 | D1 | `kdf-auth-salt` | `Authenticator::update` (`authenticator.rs:43-54`) | KDF_AUTH: salt = `root_key`, IKM = `update_key` | salt = `[0u8; 32]`, IKM = `root_key ‖ update_key` | Different key bytes. Not a weakness, but a spec-conformant peer cannot interoperate. Needs a decision from Signal on which side is authoritative. | Spec §2.2; `src/authenticator.rs:43-54` |
 | D2 | `future-epoch-error` | every `recv` arm | `msg.epoch > epoch` ignored | `Err(EpochOutOfRange)` (except Ct2Sampled at `epoch + 1`) | Tightening; a future-epoch message is an error instead of a no-op. | Spec §2.5; `src/v1/chunked/states.rs:275-533` |
 | D3 | `ct1ack-accepted` | `EkSentCt1Received.send` (`states.rs:182`), `EkReceivedCt1Sampled.recv` (`states.rs:465-468`) | sends `None`; accepts only `EkCt1Ack` | sends `Ct1Ack(true)`; accepts `Ct1Ack(true)` too | §2.3 defines the `Ct1Ack` type but §2.5 never uses it; the code does. `Ct1Ack(false)` is never emitted. Motivation is robustness to a lost acknowledgement; no reachable state pair of the spec machine deadlocks without it. | Spec §2.3; Spec §2.5; `src/v1/chunked/states.rs:182`; `src/v1/chunked/states.rs:465-468` |
-| D4 | `late-ek-chunk` | `Ct1Acknowledged.recv` (`states.rs:485-493`) | accepts `EkCt1Ack` | also accepts `Ek` chunks | Out-of-order delivery; comment at `states.rs:486-489`. Integrity still checked by PROP-25. | Spec §2.5; `src/v1/chunked/states.rs:485-493` |
+| D4 | `late-ek-chunk` | `Ct1Acknowledged.recv` (`states.rs:485-493`) | accepts `EkCt1Ack` | also accepts `Ek` chunks | Out-of-order delivery; comment at `states.rs:486-489`. Integrity still checked by ek-integrity. | Spec §2.5; `src/v1/chunked/states.rs:485-493` |
 | D5 | `mac-failure-no-abort` | MAC failure (§2.4) | "should not proceed with the session and should negotiate a new session" | returns `Err`; caller keeps the previous state and may retry | Weaker than the spec; the session is not aborted by the library. | Spec §2.4; `src/v1/unchunked/send_ct.rs:107`; `src/v1/unchunked/send_ek.rs:160` |
 | D6 | `protocol-info-no-mac` | the `PROTOCOL_INFO` label literal, at its five sites (`authenticator.rs:47,68,93`, `unchunked/send_ct.rs:131`, `unchunked/send_ek.rs:152`) | §2.2 prescribes `PROTOCOL_INFO` as the concatenation of a protocol identifier, a string representation of KEM and a string representation of MAC, `_`-delimited — the spec's own example is `MyProtocol_MLKEM768_SHA-256`. Only the string *representations* are defined by the implementer; the component set is prescribed. | `Signal_PQCKA_V1_MLKEM768` — a protocol identifier and a KEM representation, and no MAC representation | `PROTOCOL_INFO` feeds both KDF_AUTH and KDF_OK, so a spec-conformant peer building a three-component literal derives a different `root_key`, a different `mac_key` and different session keys, and **cannot interoperate** — the same class as D1, not a naming preference. A second, latent consequence: with the MAC component omitted, two deployments that differ only in their MAC derive identical keys, so the literal does not domain-separate them. That one is dormant today because SPQR fixes MAC = HMAC-SHA256. | Spec §2.2; `src/authenticator.rs:47`; `src/v1/unchunked/send_ct.rs:131`; `src/v1/unchunked/send_ek.rs:152` |
 
@@ -916,8 +928,8 @@ authorises a `src/` change:
 | D1 | `kdf-auth-salt` | The properties assert the code: KDF_AUTH is HKDF with salt = `[0u8; 32]` and IKM = `root_key ‖ update_key`, not the spec's salt = `root_key`, IKM = `update_key`. HKDF is not symmetric in its salt and its IKM, so the derived `root_key` and `mac_key` differ from the spec's and **a spec-conformant peer cannot interoperate** — this row and D6 are the two where adopting the code accepts a real interoperability cost rather than a bookkeeping one. Provisional and pending a Signal ruling; settling it needs either a code fix or a spec erratum, and Phase 1 does not speak for Signal on which. | Provisional (2026-09-15) |
 | D2 | `future-epoch-error` | The properties assert the code: a message with `msg.epoch > state.epoch()` is `Err(EpochOutOfRange)` in every `recv` arm, except `Ct2Sampled` at exactly `epoch + 1`, which transitions to `KeysUnsampled(epoch + 1)` and ignores the payload. Provisional and pending a Signal ruling, not a finding that the tightening is right; settling it needs the spec to mandate strictness or the code to adopt the spec's no-op. | Provisional (2026-09-15) |
 | D3 | `ct1ack-accepted` | The properties assert the code: `EkSentCt1Received.send` emits `Ct1Ack(true)` where the spec emits `None`, and `EkReceivedCt1Sampled.recv` accepts `Ct1Ack(true)` alongside `EkCt1Ack`; `Ct1Ack(false)` is never emitted. Provisional and pending a Signal ruling; settling it needs the spec to document the extra message handling or the code to drop it. | Provisional (2026-09-15) |
-| D4 | `late-ek-chunk` | The properties assert the code: `Ct1Acknowledged.recv` also accepts `Ek` chunks, for out-of-order delivery, with encapsulation-key integrity still checked on completion (PROP-25). Provisional and pending a Signal ruling; settling it needs the spec to document the extra accepted type or the code to drop it. | Provisional (2026-09-15) |
-| D5 | `mac-failure-no-abort` | The properties assert the code: MAC failure returns `Err` — `Error::MacVerifyFailed` at the public API — and the library does not abort the session, so the caller keeps its previous serialized state and may retry. The obligations this puts on the caller are written out once, as the caller contract in **PROP-43, section 7**; this row does not restate it. Provisional and pending a Signal ruling, and the code remains weaker than §2.4 until then; settling it needs the written contract adopted, or the library to abort the session itself. | Provisional (2026-09-15) |
+| D4 | `late-ek-chunk` | The properties assert the code: `Ct1Acknowledged.recv` also accepts `Ek` chunks, for out-of-order delivery, with encapsulation-key integrity still checked on completion (ek-integrity). Provisional and pending a Signal ruling; settling it needs the spec to document the extra accepted type or the code to drop it. | Provisional (2026-09-15) |
+| D5 | `mac-failure-no-abort` | The properties assert the code: MAC failure returns `Err` — `Error::MacVerifyFailed` at the public API — and the library does not abort the session, so the caller keeps its previous serialized state and may retry. The obligations this puts on the caller are written out once, as the caller contract in **mac-failure, section 7**; this row does not restate it. Provisional and pending a Signal ruling, and the code remains weaker than §2.4 until then; settling it needs the written contract adopted, or the library to abort the session itself. | Provisional (2026-09-15) |
 | D6 | `protocol-info-no-mac` | The properties assert the code: the two-component literal `Signal_PQCKA_V1_MLKEM768` at all five label sites, carrying a protocol identifier and a KEM representation and no MAC representation. §2.2 prescribes the component set — a protocol identifier, a string representation of KEM and a string representation of MAC — and leaves only the string representations to the implementer, so the omission is a deviation and not an implementer choice. This row and D1 are the two where adopting the code accepts a real interoperability cost rather than a bookkeeping one. Provisional and pending a Signal ruling; settling it needs either a code fix adding the MAC representation to the literal, or a spec erratum permitting a two-component literal. | Provisional (2026-09-16) |
 
 Resolution for each is a decision, not a proof: D1 needs either a code fix
@@ -931,57 +943,57 @@ to Signal (DEV-05, deferred). What has changed is that each row now carries a
 provisional decision in the second table above: the properties assert the code as
 implemented, which is a recorded project decision pending a Signal ruling and not a
 finding that the code is right. If Signal rules otherwise, the affected property
-statements — PROP-42 (D1), PROP-30, PROP-47 and PROP-50 (D2, D3, D4), PROP-43
-(D5) and PROP-41 (D6) — are restated, which is why each of them names its D-row
+statements — kdf-auth-inputs (D1), recv-epoch-dispatch, transition-refinement and structural-liveness (D2, D3, D4), mac-failure
+(D5) and kdf-labels (D6) — are restated, which is why each of them names its D-row
 inline.
 
 ---
 
 ## 12. Index
 
-| ID | Section | Status |
-|----|---------|--------|
-| PROP-1 | 2 | Open (needs PROP-3 axiom) |
-| PROP-3 | 3 | Axiom; `generate_spec` proved |
-| PROP-3b | 3 | Axiom |
-| PROP-9 | 10 | Proved |
-| PROP-10 | 10 | Open |
-| PROP-12a | 10 | Proved |
-| PROP-12b | 10 | Open |
-| PROP-14 | 10 | Proved |
-| PROP-15 | 7 | Proved |
-| PROP-16 | 9 | Open |
-| PROP-17 | 10 | Proved |
-| PROP-18 | 5 | Proved |
-| PROP-21 | 2 | Proved |
-| PROP-22 | 2 | Open |
-| PROP-23 | 2 | Open |
-| PROP-24 | 5 | Open |
-| PROP-25 | 8 | Open |
-| PROP-27 | 9 | Open |
-| PROP-29 | 10 | Proved |
-| PROP-30 | 8 | Proved |
-| PROP-31 | 7 | Proved |
-| PROP-35 | 6 | Proved (components); roundtrip Proved (branch) |
-| PROP-36 | 6 | Proved (preamble check); underflow half Open |
-| PROP-37 | 10 | Open |
-| PROP-38 | 10 | Open (restated domain); proved on the functional models |
-| PROP-40 | 7 | Proved |
-| PROP-41 | 5 | Proved (labels); KDF_OK literal Open |
-| PROP-42 | 5 | Proved |
-| PROP-43 | 7 | Open |
-| PROP-45 | 5 | Open |
-| PROP-47 | 8 | Open |
-| PROP-48 | 8 | Open |
-| PROP-49 | 8 | Proved, support lemmas of PROP-21 |
-| PROP-50 | 8 | Open |
-| PROP-51 | 10 | Open; statement drafted, review pending |
-| PROP-52 | 8 | Open; statement drafted, review pending |
-| LEAN-ENC-1 | 4 | Proved |
-| LEAN-ENC-2 | 4 | Open |
-| LEAN-GF | 4 | Proved |
-| STRUCT-02a | 6 | Proved (branch) |
-| STRUCT-02b | 6 | Open |
+| Name | Section | Status |
+|------|---------|--------|
+| session-key-agreement | 2 | Open (needs kem-correctness axiom) |
+| kem-correctness | 3 | Axiom; `generate_spec` proved |
+| kem-header-binding | 3 | Axiom |
+| add-epoch | 10 | Proved |
+| send-key-gc | 10 | Open |
+| key-history-alignment | 10 | Proved |
+| key-history-get-after-add | 10 | Open |
+| send-key-epoch-decreased | 10 | Proved |
+| mac-verify-accepts-own | 7 | Proved |
+| version-negotiation | 9 | Open |
+| chain-direction-key | 10 | Proved |
+| hkdf-output-lengths | 5 | Proved |
+| epoch-uniqueness | 2 | Proved |
+| epoch-agreement | 2 | Open |
+| epoch-knowledge | 2 | Open |
+| kdf-ok-sites | 5 | Open |
+| ek-integrity | 8 | Open |
+| initial-states | 9 | Open |
+| epoch-idx | 10 | Proved |
+| recv-epoch-dispatch | 8 | Proved |
+| auth-init | 7 | Proved |
+| message-wire-format | 6 | Proved (components); roundtrip Proved (branch) |
+| epoch-zero-rejected | 6 | Proved (preamble check); underflow half Open |
+| states-pb-roundtrip | 10 | Open |
+| chain-pb-roundtrip | 10 | Open (restated domain); proved on the functional models |
+| mac-inputs | 7 | Proved |
+| kdf-labels | 5 | Proved (labels); KDF_OK literal Open |
+| kdf-auth-inputs | 5 | Proved |
+| mac-failure | 7 | Open |
+| kem-constants | 5 | Open |
+| transition-refinement | 8 | Open |
+| decoder-sizes | 8 | Open |
+| key-epoch | 8 | Proved, support lemmas of epoch-uniqueness |
+| structural-liveness | 8 | Open |
+| chain-epoch-sync | 10 | Open; statement drafted, review pending |
+| premature-ack-stall | 8 | Open; statement drafted, review pending |
+| point-roundtrip | 4 | Proved |
+| erasure-decode-any-n | 4 | Open |
+| gf16-field-agreement | 4 | Proved |
+| wire-not-injective | 6 | Proved (branch) |
+| canonical-parse-injective | 6 | Open |
 | D1–D6 | 11 | Deviations; a provisional decision recorded per row, pending Signal |
 
 ---
