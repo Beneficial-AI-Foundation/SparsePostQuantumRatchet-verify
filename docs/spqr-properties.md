@@ -21,7 +21,7 @@ Status values:
 | Status | Meaning |
 |--------|---------|
 | Proved | Theorem on `main`, no `sorry`, and no hand-written axiom beyond the six §1 documents: `hkdf_to_slice_spec`, `encode_state_pb_spec`, `decode_state_pb_total`, `libcrux_hmac.hmac_sha256_tag32_spec`, `KeyPairCompressedBytes.from_seed_spec` and `alloc.fmt.format_spec`. Closures can also contain the Aeneas library's `core.fmt.Formatter` axiom and `native_decide` artifacts of extracted definitions, and `bv_decide` artifacts (ruling S-16, extended 2026-10-15). §1 carries each one's location, postcondition and whether it is avoidable; this cell names them only so that a `Proved` row can be checked against its own definition |
-| Proved (branch) | Theorem exists only on a branch, not on `main`: `la/lean-v1-protocol-proofs` (draft PR #46) or a property branch (`la/prop-30`). The proofs on `la/lean-v1-protocol-proofs` also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. The last two are false as stated, since both reach `generate`, which can fail; they need a premise, not just a proof. Merging them requires replacing all three with theorems. A property branch adds no axiom; its row says what its closure contains. |
+| Proved (branch) | Theorem exists only on a branch, not on `main`: `la/lean-v1-protocol-proofs` (draft PR #46) or a property branch (`la/prop-<n>`). The proofs on `la/lean-v1-protocol-proofs` also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. The last two are false as stated, since both reach `generate`, which can fail; they need a premise, not just a proof. Merging them requires replacing all three with theorems. A property branch adds no axiom; its row says what its closure contains. |
 | Open | Statement fixed, no theorem yet |
 | Axiom | Cannot be a theorem: the code calls an opaque library function |
 
@@ -374,12 +374,20 @@ index, and returns the remaining bytes. `Message::deserialize(epoch, from)`
 returns `Message { epoch, payload }`, ignoring trailing bytes. **Proved** as
 `Message.serialize_spec`, `msg_preamble_spec` and `Message.deserialize_spec`
 (`Spqr/Specs/V1/Chunked/States/Serialize/Message/`, `Spqr/Specs/Lib/MsgPreamble.lean`). The
-composed roundtrip is **Open**: for `m` with `0 < m.epoch` and a `Ct1Ack` flag, if any, equal
+composed roundtrip is **Proved (branch)** on `la/prop-35` (`57fc83c`, 2026-10-27, stacked on
+`la/struct-02a`; draft PR #755, closes #754), all five gates PASS: for `m` with `0 < m.epoch` and a `Ct1Ack` flag, if any, equal
 to `true`, `serialize m i` succeeds, `msg_preamble` parses its output to a preamble with
 version `1`, epoch `m.epoch` and index `i`, and `Message::deserialize` on that epoch and the
 remaining bytes returns `m` (`Message.serialize_parse_roundtrip`,
-`docs/statements/PROP-35-roundtrip.md`; REV-01 ACCEPT 2026-10-15, round 1,
-`docs/statement-reviews/PROP-35-roundtrip-1.md`, SHA `0c426d60`).
+`docs/statements/PROP-35-roundtrip.md`; REV-01 ACCEPT 2026-10-27, round 3 (docstring only,
+matching the Lean file), `docs/statement-reviews/PROP-35-roundtrip-3.md`, SHA `8e29d7d0`; round 2
+ACCEPT 2026-10-27 (docstring only),
+`docs/statement-reviews/PROP-35-roundtrip-2.md`, SHA `7a07bc59`; round 1 ACCEPT 2026-10-15,
+`docs/statement-reviews/PROP-35-roundtrip-1.md`, SHA `0c426d60`). The proof is in
+`Spqr/Specs/V1/Chunked/States/Serialize/Message/Roundtrip.lean`; its encoder-to-decoder bridge
+is `varintBlockAt_of_map` (`Serialize/EncodedBlocks.lean`), and its completeness lemmas are
+`decode_varint_of_block`,
+`msg_preamble_of_blocks`, `decode_chunk_of_block` and `Message.deserialize_of_bytes`.
 
 Source: Spec §2.3; src/v1/chunked/states/serialize.rs:171-219; src/lib.rs:563-590
 Evidence: Spqr/Specs/V1/Chunked/States/Serialize/Message/; Spqr/Specs/Lib/MsgPreamble.lean
@@ -388,10 +396,10 @@ domain the code round-trips. The two restrictions are (1) `0 < m.epoch`: `msg_pr
 rejects a zero wire epoch (`MsgPreamble.lean:66`, `lib.rs:575-577`); and (2) for
 `payload = Ct1Ack b`, `b = true`: `deserialize` always rebuilds `Ct1Ack(true)`
 (`Deserialize.lean:73`, `serialize.rs:208`). Outside them the composition is false, not
-merely unproved. The length bound `hlen : from.length + 32 ≤ usize::MAX`
-(`Deserialize.lean:65`) is instantiated at `p.remaining`, which is at most 36 bytes (tag byte,
-a `u16` chunk-index varint of at most 3 bytes, 32 data bytes), so the proof discharges it by
-arithmetic; `msg_preamble_spec` has no length hypothesis. A whole message is at most
+merely unproved. No length hypothesis is needed: the proof uses the completeness lemmas
+`Message.deserialize_of_bytes` and `decode_chunk_of_block`, not the length-bounded
+`Message.deserialize_spec` (`Deserialize.lean:65`), because a chunk block ends inside the slice;
+`msg_preamble_spec` has no length hypothesis. A whole message is at most
 **52 bytes** (`1 + 10 + 5 + 1 + 3 + 32`: version byte, `u64` epoch varint, `u32` index
 varint, tag, `u16` chunk-index varint, 32 data bytes; model in
 `Message/Serialize.lean:65-67`, `EncodeChunk.lean:45-46`, `EncodeVarint.lean:36-37`,
@@ -434,15 +442,28 @@ negotiation, `lib.rs:365-382`), so this adds no further collision.
 
 A negative result **discharges** this row; that is why it is stated separately from
 STRUCT-02b: what is to be recorded is that the converse fails, with the witnesses
-named. Status: **Open**; the restated statement has an ACCEPT (round 3, against `dd8e6b9`).
+named. Status: **Proved (branch)** on `la/struct-02a` (`2ddd203`, 2026-10-27), all five gates
+PASS: `Message.serialize_parse_not_injective` in
+`Spqr/Specs/V1/Chunked/States/Serialize/Message/NotInjective.lean`, docstring and signature identical to the
+ACCEPTed statement (round 5, 2026-10-27, docstring-only change from round 4). Support:
+`recv_eq_of_parse_eq` (`Spqr/Specs/Lib/Recv/ParseEq.lean`) and the corollary
+`recv_on_witnesses_eq`, the witness lemmas `msg_preamble_minimal_witness`,
+`msg_preamble_nonminimal_witness`, `msg_preamble_trailing_witness`, and the completeness lemmas `decode_varint_of_block`,
+`msg_preamble_of_blocks`, `Message.deserialize_none`.
 
-What is *not* claimed: whether the non-injectivity is exploitable depends on what is
-MAC'd against what is parsed, which has not been checked and is recorded as v2
-SEC-01. This is a functional-correctness row, not a security claim.
+What is *not* claimed: this is a functional-correctness row, not a security claim.
+Whether the non-injectivity is exploitable depends on what is MAC'd against what is parsed
+(v2 SEC-01). A code reading on 2026-10-27 (`docs/sec-01-wire-malleability.md`, libsignal
+`fc90b90`) found it is not exploitable in libsignal: the `SignalMessage` MAC covers the exact
+serialized bytes, including `pq_ratchet`, and the SPQR state is stored only after the MAC
+check. It matters for an integrator that does not authenticate the exact bytes, or that uses
+them as an identity. That result is outside the extraction and stays a cited code reading.
+The SPQR half is provable: `lib.recv` depends on the bytes only through the parsed
+version, epoch, index and message (a parse-equivalence support lemma for this row).
 
 Source: src/v1/chunked/states/serialize.rs:93-153; src/v1/chunked/states/serialize.rs:171-219; src/lib.rs:507-590
 Evidence: Spqr/Specs/V1/Chunked/States/Serialize/DecodeVarint.lean:46-48
-Review: ACCEPT 2026-10-15 (round 3, restated for the pin move) — docs/statement-reviews/STRUCT-02a-witness-3.md, statement docs/statements/STRUCT-02a-witness.md SHA cda0cf1278c41d930b5523e53997d69d462a2bb73d7f6230ef988bda78b4269f. Earlier: ACCEPT 2026-09-15 (round 2; round 1 REVISE) against `d47083c`, docs/statement-reviews/STRUCT-02a-witness-2.md, SHA c67dbc81074ec89b10b03529bbe27c842eca9434c7a51467fdef6cdc26323f6c; all rounds logged in docs/spec-review-log.md
+Review: ACCEPT 2026-10-27 (round 5, docstring only) — docs/statement-reviews/STRUCT-02a-witness-5.md, statement docs/statements/STRUCT-02a-witness.md SHA 69dd7624957d856773fdf778c517fa25ab5fe77452e13daa6c7103583403b434. Earlier: ACCEPT 2026-10-27 (round 4, docstring only) — docs/statement-reviews/STRUCT-02a-witness-4.md, SHA 3dc598f9e220376441e3c5687e4c9d017934f775d7121e762168c8f000195b78. Earlier: ACCEPT 2026-10-15 (round 3, restated for the pin move) — docs/statement-reviews/STRUCT-02a-witness-3.md, SHA cda0cf1278c41d930b5523e53997d69d462a2bb73d7f6230ef988bda78b4269f. Earlier: ACCEPT 2026-09-15 (round 2; round 1 REVISE) against `d47083c`, docs/statement-reviews/STRUCT-02a-witness-2.md, SHA c67dbc81074ec89b10b03529bbe27c842eca9434c7a51467fdef6cdc26323f6c; all rounds logged in docs/spec-review-log.md
 
 ### STRUCT-02b Canonical encodings deserialize injectively
 
@@ -455,8 +476,8 @@ bytes" means the preamble's `remaining` ends after the tag byte for the chunkles
 after the chunk block for the others.
 
 This is the half of PROP-35's converse that is true and useful, and it rests on the
-same `varintBytes`-to-`varintBlockAt` agreement lemma PROP-35's roundtrip needs,
-which is why both sit in Phase 3. Status: **Open**; the restated statement has an ACCEPT
+same `varintBytes`-to-`varintBlockAt` agreement lemma PROP-35's roundtrip needs, which is why
+both sit in Phase 3. That lemma is now `varintBlockAt_of_map` on `la/prop-35`. Status: **Open**; the restated statement has an ACCEPT
 (round 3, against `dd8e6b9`).
 
 Source: src/v1/chunked/states/serialize.rs:93-153; src/v1/chunked/states/serialize.rs:171-219; src/lib.rs:507-590
@@ -607,8 +628,8 @@ returns `Err(Error::EpochOutOfRange(msg.epoch))`, with the single exception of
 returns `Ok { state, key = None }`, the state unchanged, for every variant. The
 spec's no-op on a future epoch is asserted nowhere in this catalog.
 
-Status: **Proved (branch)** on `la/prop-30`, over all variants, no axioms beyond `States::recv`'s
-own closure. Less and Greater rows: `recv_of_lt`, `recv_of_gt`, `recv_Ct2Sampled_next_epoch`. Equal
+Status: **Proved** (#663, on `main`, merged 2026-10-27 as `c32a6d8`, closes #662), over all variants,
+no axioms beyond `States::recv`'s own closure. Less and Greater rows: `recv_of_lt`, `recv_of_gt`, `recv_Ct2Sampled_next_epoch`. Equal
 rows: `recv_of_eq_unexpected` and `recv_of_eq_refines`. All five are in
 `Spqr/Specs/Braid/StateMachine/EpochDispatch.lean`. The equal-epoch theorems compare against the
 spec's `Receive` at state name and key presence; `recv_of_eq_unexpected` is total, and
@@ -679,6 +700,55 @@ claimed for it. One `Greater` arm is exceptional and the claim depends on it:
 epoch forward and reaches `KeysUnsampled_B(e+1)`. Status: **Open**.
 
 Source: Spec §2.6; src/v1/chunked/states.rs:115-533
+
+### PROP-52 A premature acknowledgement stalls the epoch
+
+PROP-50 covers honest runs only. This row records what happens off them: one
+acknowledgement that B gets before A decoded ct1 stops the epoch for good. The
+row is a negative result, like STRUCT-02a, and a witness discharges it.
+
+Take A in `HeaderSent(e)`, which still decodes ct1, and B in
+`EkReceivedCt1Sampled(e)`, which has all of ek. If A sends every `Ek` chunk before
+enough `Ct1` chunks arrive, an honest run reaches this pair. If B now receives
+`Ct1Ack(true)` or `EkCt1Ack` at epoch `e`, it moves to `Ct2Sampled(e)`
+(`states.rs:459-479`). After that:
+
+1. B's `send` emits only `Ct2` chunks (`states.rs:259-271`).
+2. A's `send` in `HeaderSent` emits only `Ek` chunks (`states.rs:150-161`).
+3. A's `recv` in `HeaderSent` at epoch `e` acts only on `Ct1` and leaves the state
+   unchanged otherwise (`states.rs:307-332`).
+4. B's `recv` in `Ct2Sampled` at epoch `e` leaves the state unchanged for every
+   payload (`states.rs:514-530`). Only a message at `e + 1` moves it, and A never
+   sends one from `HeaderSent`.
+
+Take any run that delivers only messages sent after the acknowledgement, in any
+order and any number of times. In it A stays in `HeaderSent(e)`, B stays in
+`Ct2Sampled(e)`, and neither emits a key. If a `Ct1` chunk that B sent earlier is
+still in flight and completes A's decoder, the run does not stall. The statement
+excludes those messages.
+
+The spec has the same exposure. §2.5 transition 12 accepts `EkCt1Ack` in
+`EkReceivedCt1Sampled`, so a forged `EkCt1Ack` leads to the same deadlock under the
+spec. D3 adds `Ct1Ack(true)` as a second trigger. It does not add a failure mode.
+
+Neither trigger comes from the peer's `send` in a normal run (PR #663, Deviation
+`ct1ack-accepted`), because the peer emits `Ct1Ack(true)` and `EkCt1Ack` only after it
+decoded ct1. The examples in that PR have the peer in `EkSentCt1Received`. There §2.5
+stalls, while the code takes transition 12 and sends `Ct2` chunks that the peer
+accepts. Those examples are a different case from this row. So the
+trigger is a forged message or a call with an older state. Signal authenticates
+SPQR messages in the outer ratchet, and SCKA Def. 3.1 is stated over honest runs,
+so this is outside the SCKA model. The row records what one off-run message does,
+for the D3 ruling. It is not a security claim.
+
+What is not claimed: first, that a run of successful calls from `initial_state`
+reaches the pair. That needs PROP-27 and the success of the sends that sample keys.
+Second, that no other off-run message has the same effect.
+
+Status: **Open**; statement drafted
+(`docs/statements/PROP-52-premature-ack-stall.md`), review pending.
+
+Source: Spec §2.5; src/v1/chunked/states.rs:150-161; src/v1/chunked/states.rs:259-271; src/v1/chunked/states.rs:307-332; src/v1/chunked/states.rs:459-479; src/v1/chunked/states.rs:514-530
 
 ### PROP-25 Encapsulation-key integrity
 
@@ -890,9 +960,9 @@ inline.
 | PROP-25 | 8 | Open |
 | PROP-27 | 9 | Open |
 | PROP-29 | 10 | Proved |
-| PROP-30 | 8 | Proved (branch) |
+| PROP-30 | 8 | Proved |
 | PROP-31 | 7 | Proved |
-| PROP-35 | 6 | Proved (components); roundtrip Open |
+| PROP-35 | 6 | Proved (components); roundtrip Proved (branch) |
 | PROP-36 | 6 | Proved (preamble check); underflow half Open |
 | PROP-37 | 10 | Open |
 | PROP-38 | 10 | Open (restated domain); proved on the functional models |
@@ -906,10 +976,11 @@ inline.
 | PROP-49 | 8 | Proved, support lemmas of PROP-21 |
 | PROP-50 | 8 | Open |
 | PROP-51 | 10 | Open; statement drafted, review pending |
+| PROP-52 | 8 | Open; statement drafted, review pending |
 | LEAN-ENC-1 | 4 | Proved |
 | LEAN-ENC-2 | 4 | Open |
 | LEAN-GF | 4 | Proved |
-| STRUCT-02a | 6 | Open |
+| STRUCT-02a | 6 | Proved (branch) |
 | STRUCT-02b | 6 | Open |
 | D1–D6 | 11 | Deviations; a provisional decision recorded per row, pending Signal |
 
