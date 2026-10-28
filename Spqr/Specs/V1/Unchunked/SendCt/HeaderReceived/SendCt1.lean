@@ -35,6 +35,10 @@ The hax contract on the Rust function is `requires(self.hdr.len() == 64)` and
 full FIPS 203 / HKDF value semantics inherited from `encaps1_spec`, `hkdf_to_vec_spec` and
 `update_spec`.
 
+**Trust base.** Beyond the builtin axioms the theorem inherits, through those dependencies, the
+external HKDF model `spqr.kdf.hkdf_to_slice_spec` (an `axiom`) and the `native_decide`
+auxiliary axiom used inside `encaps1`; this file introduces no new axioms.
+
 **Source**: spqr/src/v1/unchunked/send_ct.rs (lines 120:4-148:5)
 -/
 
@@ -58,6 +62,13 @@ def sckaKeyLabel : List U8 :=
 @[simp, grind =]
 theorem sckaKeyLabel_length : sckaKeyLabel.length = 33 := by rfl
 
+/-- The HKDF info `sckaKeyLabel ‖ epoch.to_be_bytes()` is 33 + 8 = 41 bytes long.  Not a
+`simp` lemma: `simp` already normalises the left-hand side via `length_append`. -/
+@[grind =]
+theorem sckaKeyInfo_length (epoch : U64) :
+    (sckaKeyLabel ++ core.num.U64.to_be_bytes epoch).length = 41 := by
+  simp [sckaKeyLabel_length]
+
 end Spqr.V1.Unchunked.SendCt
 
 namespace spqr.v1.unchunked.send_ct.HeaderReceived
@@ -72,10 +83,12 @@ open List core.num.U64 in
 • Requires the hax precondition `self.hdr.len() == 64`, that `fill_bytes` of the RNG is
   panic-free, and that `self.auth.root_key ‖ secret` (32 more bytes) fits in memory.
 
-The function always succeeds and returns `((st, ct1, es), rng')` where:
+The function always succeeds and returns `((st, ct1, es), rng')`, where `es : EpochSecret` is
+the derived epoch secret (not to be confused with the serialised encapsulation state `st.es`):
 
-• **Successor state `st : Ct1Sent`** — `epoch` and `hdr` are carried over unchanged and
-  `st.ct1 = ct1` (the clone of a byte vector is the vector itself).
+• **Successor state `st : Ct1Sent`** — `epoch` and `hdr` are carried over unchanged,
+  `st.ct1 = ct1` (the clone of a byte vector is the vector itself) and `st.es` has length
+  `encapsStateSize = 2080`, as required by the `Ct1Sent` refinement and by `send_ct2_spec`.
 • **Ciphertext `ct1`** — has length `960` (the hax `ensures`).  Together with `st.es` and the
   epoch secret it is pinned to FIPS 203 Algorithm 17 round 1: there is a 32-byte message `m`
   such that, with `(K, c₁, (ŷ, e₂, m)) = mlkemEncapsPhase1 (ρ, h) m`
@@ -89,8 +102,9 @@ The function always succeeds and returns `((st, ct1, es), rng')` where:
     `st.auth.root_key ‖ st.auth.mac_key =
        hkdf 0³² (self.auth.root_key ‖ es.secret) (updateLabel ++ to_be_bytes epoch) 64`.
 
-The proof unfolds `send_ct1`, applies `encaps1_spec` by hand (it is not `@[step]`-registered
-because of its `h_fill` hypothesis) and discharges the remaining chain of calls with `step*`.
+The hypothesis `h_root` is not part of the hax contract; it is the memory-fit side condition
+inherited from `update_spec` (`root_key ‖ secret` is built as a `Vec`).  It holds for every
+state produced by `new_spec`/`recv_header_spec`, where `root_key` has length `32`.
 
 **Source**: spqr/src/v1/unchunked/send_ct.rs (lines 120:4-148:5)
 -/
@@ -125,9 +139,11 @@ theorem send_ct1_spec {R : Type} (rngInst : rand_1.rng.Rng R)
   step with incremental_mlkem768.encaps1_spec rngInst cryptoInst self.hdr rng h_hdr' h_fill
     as ⟨ct1, es, secret, rng1, m, h_ct1, h_es, h_ss, h_ct1_len, h_es_len, h_ss_len⟩
   step*
-  · simp only [Array.val_to_slice, Array.make_val, map_cons, map_nil, flatten_cons, flatten_nil,
-      append_nil, cons_append, nil_append, length_cons, Array.property, UScalar.ofNatCore_val_eq,
-      Nat.reduceAdd]
+  · -- `info = sckaKeyLabel ‖ to_be_bytes epoch` (41 bytes) fits in memory.
+    simp only [Array.val_to_slice, Array.make_val, map_cons, map_nil, flatten_cons, flatten_nil,
+      append_nil]
+    change (sckaKeyLabel ++ to_be_bytes self.epoch).length ≤ Usize.max
+    rw [sckaKeyInfo_length]
     scalar_tac
   · refine ⟨v_post, h_ct1_len, h_es_len, secret1_post1, ⟨m, h_ct1, h_es, ?_⟩, auth_post,
       auth_post1, ?_⟩
