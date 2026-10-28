@@ -278,7 +278,6 @@ public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.InitialState
 public import Spqr.Specs.Lib.MsgPreamble
 public import Spqr.Specs.Lib.Recv
-public import Spqr.Specs.Lib.Recv.ChainWf
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
 public import Spqr.Specs.Lib.SecretOutput.HasSecret
