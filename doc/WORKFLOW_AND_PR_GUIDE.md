@@ -78,6 +78,41 @@ See our [performance tracking guidelines](./PERFORMANCE.md) for more information
 
 ## AI contributions
 
+### Quick Codex review
+
+A collaborator with repository write access can post exactly `!review` as a new
+comment in an open PR's conversation (including fork PRs). Edits to comments and
+inline review comments do not trigger it. The bot posts a new comment with a quick
+static review using [the AI review questions](AI_PR_REVIEW_QUESTIONS.md) and the
+reviewer, style, and workflow guides from the trusted default-branch revision.
+It reports findings by severity and category, with evidence and precise locations.
+It does not approve PRs or generate specifications.
+
+The bot reads the pinned diff, relevant source through Git, PR metadata, existing
+comments (including performance and sorry-delta reports), and head CI checks. It
+does not run builds, lint, trust audits, extraction, or benchmarks. Its comment
+identifies these limits and the reviewed commits. Full validation and human review
+remain necessary. If either the head or base changes while it works, its comment
+is marked outdated; post a new `!review` to review the updated PR. Failed runs post
+a link to the workflow logs. Each review job has a 15-minute timeout.
+
+To enable the bot, merge `.github/workflows/codex-review.yml`, its prompt, and
+`scripts/codex-review.cjs` into the default branch, enable GitHub Actions, and add
+an Actions secret named `OPENAI_API_KEY` with API access and billing. Optionally
+set the Actions variable `CODEX_REVIEW_MODEL`; otherwise the Codex action chooses
+its default model. API usage is billed to that key. Repository/organization policy
+must permit the workflow's read permissions and the publishing job's
+`pull-requests: write` permission. No separate GitHub PAT or bot account is needed.
+
+The workflow checks the requester's current write permission before using the key.
+It never checks out or runs PR code: Codex uses a read-only sandbox with sudo
+removed, and only the separate publishing job can write comments. PR content is
+untrusted review evidence; it cannot replace the trusted prompt or guides.
+Implementation uses the [official Codex GitHub Action](https://developers.openai.com/codex/github-action).
+Run the bot's offline checks with `node --test scripts/codex-review.test.cjs`.
+
+### Contribution policy
+
 **Specifications:** PRs introducing AI-generated specifications of any kind are strictly prohibited, and their submission may result in a contribution ban at the maintainers' discretion.
 
 **Proofs:** AI-generated proofs are welcome, as long as they are compliant with the style guide and requirements listed in this document. The human submitting the PR is held responsible for the contents of the PR, in particular its adherence to style and contribution guidelines, as well as the performance impact outlined above.
