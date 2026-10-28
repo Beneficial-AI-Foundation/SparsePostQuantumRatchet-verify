@@ -125,6 +125,7 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+public import Spqr.Specs.Braid.StateMachine.EpochDispatch
 public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
@@ -276,6 +277,7 @@ public import Spqr.Specs.Lib.Error.From
 public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.InitialState
 public import Spqr.Specs.Lib.MsgPreamble
+public import Spqr.Specs.Lib.Recv
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
 public import Spqr.Specs.Lib.SecretOutput.HasSecret
@@ -302,10 +304,14 @@ public import Spqr.Specs.Util.Inz
 public import Spqr.Specs.Util.IsNonZero
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.SendCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.SendCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.SendCt1Chunk
+public import Spqr.Specs.V1.Chunked.SendCt.HeaderReceived.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
+public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
