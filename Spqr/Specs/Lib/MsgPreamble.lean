@@ -106,4 +106,48 @@ theorem msg_preamble_spec (msg : alloc.vec.Vec U8) :
           omega
         · rw [‹s2.val = _›, hat₂, hat₁]
 
+/-- Assume `msg` is non-empty, `varintBlockAt msg.val 1 n₁ e` holds with `e ≠ 0`, and
+`varintBlockAt msg.val (1 + n₁) n₂ i` holds with `i < 2 ^ 32`. Then `msg_preamble msg` succeeds
+with version `msg.val[0]!`, epoch `e`, index `i`, and `remaining` equal to
+`msg.val.drop (1 + n₁ + n₂)`. -/
+theorem msg_preamble_of_blocks (msg : alloc.vec.Vec U8) (n₁ n₂ e i : ℕ)
+    (hne : 0 < msg.length)
+    (h₁ : varintBlockAt msg.val 1 n₁ e) (he : e ≠ 0)
+    (h₂ : varintBlockAt msg.val (1 + n₁) n₂ i) (hi : i < 2 ^ 32) :
+    msg_preamble msg ⦃ (r : core.result.Result MsgPreamble Error) =>
+      ∃ p : MsgPreamble, r = .Ok p ∧ p.version = msg.val[0]! ∧ p.epoch.val = e ∧
+        p.index.val = i ∧ p.remaining.val = msg.val.drop (1 + n₁ + n₂) ⦄ := by
+  unfold msg_preamble
+  simp only [CoreOpsTry.branch]
+  have hnemp : alloc.vec.Vec.is_empty Global msg = ok false := by
+    simp only [alloc.vec.Vec.is_empty]
+    have : msg.val ≠ [] := by
+      intro h; simp [alloc.vec.Vec.length, h] at hne
+    simpa [List.isEmpty_iff] using this
+  rw [hnemp]
+  simp only [bind_ok, Bool.false_eq_true, ↓reduceIte]
+  step as ⟨version, hver⟩
+  step with decode_varint_of_block msg.deref 1#usize n₁ e (by rw [vec_deref_val]; simpa using h₁)
+    as ⟨r, at0, w, hr, hwv, hat0⟩
+  have hw0 : ¬ w = 0#u64 := by
+    intro h; apply he; rw [← hwv, h]; rfl
+  subst hr
+  simp only [bind_ok, hw0, ↓reduceIte]
+  step with decode_varint_of_block msg.deref at0 n₂ i (by rw [vec_deref_val, hat0]; exact h₂)
+    as ⟨r1, at1, w1, hr1, hw1v, hat1⟩
+  subst hr1
+  simp only [bind_ok]
+  step as ⟨r2, hr2⟩
+  rcases r2 with idx | err
+  · obtain ⟨-, hidx⟩ := hr2
+    have hle : ¬ at1 > msg.len := by
+      have := h₂.2.2.1
+      scalar_tac
+    simp only [core.result.Result.map_err_Ok, bind_ok, hle, ↓reduceIte]
+    step as ⟨s2, hs2⟩
+    refine ⟨_, rfl, ?_, hwv, by rw [hidx, hw1v], ?_⟩
+    · rw [hver, getElem!_pos msg.val 0 (by scalar_tac)]
+    · simp only [hs2, hat1, hat0]
+  · exfalso; apply hr2; scalar_tac
+
 end spqr

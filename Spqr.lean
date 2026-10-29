@@ -278,12 +278,14 @@ public import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.InitialState
 public import Spqr.Specs.Lib.MsgPreamble
 public import Spqr.Specs.Lib.Recv
+public import Spqr.Specs.Lib.Recv.ParseEq
 public import Spqr.Specs.Lib.SecretOutput.Eq
 public import Spqr.Specs.Lib.SecretOutput.Fmt
 public import Spqr.Specs.Lib.SecretOutput.HasSecret
 public import Spqr.Specs.Lib.SecretOutput.RecvSecret
 public import Spqr.Specs.Lib.SecretOutput.Secret
 public import Spqr.Specs.Lib.SecretOutput.SendSecret
+public import Spqr.Specs.Lib.Send
 public import Spqr.Specs.Lib.StatePb
 public import Spqr.Specs.Lib.StateVersion
 public import Spqr.Specs.Lib.Version.DISABLED
@@ -314,6 +316,7 @@ public import Spqr.Specs.V1.Chunked.SendCt.HeaderReceived.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
@@ -327,6 +330,7 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
 public import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
+public import Spqr.Specs.V1.Chunked.States.Serialize.Message.NotInjective
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom

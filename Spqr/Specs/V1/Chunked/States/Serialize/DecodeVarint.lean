@@ -323,4 +323,120 @@ theorem decode_varint_spec
     exact ⟨by scalar_tac, by scalar_tac, i3.val, ‹_›, h1, by scalar_tac, by scalar_tac,
       ‹_›, h2, h3⟩
 
+/-! ## Completeness
+
+The specs above say what a successful decode consumed. The theorems below give the converse:
+a well-formed block at the cursor is decoded, with its value and length. -/
+
+/-- One iteration of `decode_varint`'s loop that starts below the scan bound with the flag
+clear always continues. -/
+theorem decode_varint_loop_body_cont
+    (from1 : Slice Std.U8) (at1 max_i : Std.Usize)
+    (out : Std.U64) (i : Std.Usize)
+    (hmax10 : max_i.val ≤ 10)
+    (hmaxlen : at1.val + max_i.val ≤ from1.length)
+    (hlt : i.val < max_i.val) :
+    decode_varint_loop.body from1 at1 max_i out i false ⦃ cf => ∃ s, cf = .cont s ⦄ := by
+  unfold decode_varint_loop.body
+  have hlt' : i < max_i := by scalar_tac
+  have hc : (UScalar.hcast IScalarTy.I32 i).val = (i.val : ℤ) := by
+    rw [UScalar.hcast_val_eq]; simp only [IScalarTy.numBits]
+    apply Int.bmod_eq_of_le <;> omega
+  simp only [hlt', ↓reduceIte, Bool.false_eq_true]
+  step*
+
+/-- If a well-formed block of `n ≤ max_i` bytes decoding to `v` starts at `at1`, then
+`decode_varint`'s loop reads exactly that block: it returns `(v, n, true)`. -/
+theorem decode_varint_loop_of_block
+    (from1 : Slice Std.U8) (at1 max_i : Std.Usize) (n v : ℕ)
+    (hmax10 : max_i.val ≤ 10)
+    (hmaxlen : at1.val + max_i.val ≤ from1.length)
+    (hn : n ≤ max_i.val)
+    (hblk : varintBlockAt from1.val at1.val n v) :
+    decode_varint_loop from1 0#u64 0#usize false at1 max_i ⦃
+      (p : Std.U64 × Std.Usize × Bool) => p.1.val = v ∧ p.2.1.val = n ∧ p.2.2 = true ⦄ := by
+  obtain ⟨hn1, -, -, hv, hterm, hcont⟩ := hblk
+  unfold decode_varint_loop
+  apply loop.spec_decr_nat
+    (measure := fun (p : Std.U64 × Std.Usize × Bool) => max_i.val - p.2.1.val)
+    (inv := fun (p : Std.U64 × Std.Usize × Bool) =>
+      p.2.1.val ≤ n ∧
+      p.1.val = varintVal from1.val at1.val p.2.1.val % 2 ^ 64 ∧
+      (p.2.2 = true ↔ p.2.1.val = n))
+  · intro ⟨out', i', done'⟩ hinv
+    dsimp only at hinv
+    obtain ⟨hi, hval, hdone⟩ := hinv
+    have hout : out'.val < 2 ^ (7 * i'.val) := by
+      rw [hval]
+      exact varintVal_mod_lt from1.val at1.val (by omega)
+    cases done' with
+    | true =>
+      -- The flag is set, so the whole block was read and the loop stops.
+      have hin : i'.val = n := hdone.mp rfl
+      apply WP.spec_mono
+        (decode_varint_loop_body_spec from1 at1 max_i out' i' true hmax10 hmaxlen hout)
+      intro cf hcf
+      cases cf with
+      | done s =>
+        subst hcf
+        exact ⟨by rw [hval, hin, hv], hin, rfl⟩
+      | cont s =>
+        obtain ⟨hd, -⟩ := hcf
+        simp at hd
+    | false =>
+      -- The flag is clear, so a byte of the block is still unread and the loop continues.
+      have hin : i'.val < n := by
+        have : i'.val ≠ n := fun h => by simpa using hdone.mpr h
+        omega
+      apply WP.spec_mono (WP.spec_and
+        (decode_varint_loop_body_spec from1 at1 max_i out' i' false hmax10 hmaxlen hout)
+        (decode_varint_loop_body_cont from1 at1 max_i out' i' hmax10 hmaxlen (by omega)))
+      intro cf ⟨hcf, hex⟩
+      cases cf with
+      | done s =>
+        obtain ⟨_, hs⟩ := hex
+        simp at hs
+      | cont s =>
+        obtain ⟨out'', i'', flag⟩ := s
+        obtain ⟨-, -, hi'', hval'', hflag⟩ := hcf
+        dsimp only
+        refine ⟨⟨by omega, ?_, ?_⟩, by omega⟩
+        · rw [hi'']
+          simp only [varintVal]
+          rw [hval'', hval, Nat.mod_add_mod]
+        · rw [hflag, hi'']
+          constructor
+          · intro hb
+            by_contra hne
+            have := hcont i'.val (by omega)
+            omega
+          · intro he
+            have : at1.val + n - 1 = at1.val + i'.val := by omega
+            rw [← this]; exact hterm
+  · dsimp only
+    refine ⟨?_, ?_, ?_⟩ <;> simp [varintVal]; omega
+
+/-- If `varintBlockAt from1.val at1.val n v` holds, then `decode_varint from1 at1` succeeds with
+value `v` and moves the cursor to `at1 + n`. The value is taken modulo `2 ^ 64`, and the block
+need not be minimal. Together with `decode_varint_spec`, the block at the cursor determines the
+result. -/
+theorem decode_varint_of_block
+    (from1 : Slice Std.U8) (at1 : Std.Usize) (n v : ℕ)
+    (hblk : varintBlockAt from1.val at1.val n v) :
+    decode_varint from1 at1 ⦃ (p : (core.result.Result Std.U64 Error) × Std.Usize) =>
+      ∃ w : Std.U64, p.1 = .Ok w ∧ w.val = v ∧ p.2.val = at1.val + n ⦄ := by
+  have hb := hblk
+  obtain ⟨hn1, hn10, hlen, -, -, -⟩ := hb
+  unfold decode_varint
+  have hlt : ¬ at1 ≥ Slice.len from1 := by scalar_tac
+  simp only [hlt, ↓reduceIte, core.cmp.min, MAX_VARINT_BYTES_LEN]
+  step as ⟨i2, hi2⟩
+  have hmin : (core.cmp.impls.OrdUsize.min 10#usize i2).val = min 10 (from1.length - at1.val) := by
+    simp only [core.cmp.impls.OrdUsize.min]
+    split <;> scalar_tac
+  step with decode_varint_loop_of_block from1 at1 (core.cmp.impls.OrdUsize.min 10#usize i2) n v
+    (by scalar_tac) (by scalar_tac) (by scalar_tac) hblk
+  simp only [done1_post, ↓reduceIte]
+  step*
+
 end spqr
