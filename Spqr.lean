@@ -284,6 +284,7 @@ public import Spqr.Specs.Lib.SecretOutput.HasSecret
 public import Spqr.Specs.Lib.SecretOutput.RecvSecret
 public import Spqr.Specs.Lib.SecretOutput.Secret
 public import Spqr.Specs.Lib.SecretOutput.SendSecret
+public import Spqr.Specs.Lib.Send
 public import Spqr.Specs.Lib.StatePb
 public import Spqr.Specs.Lib.StateVersion
 public import Spqr.Specs.Lib.Version.DISABLED
