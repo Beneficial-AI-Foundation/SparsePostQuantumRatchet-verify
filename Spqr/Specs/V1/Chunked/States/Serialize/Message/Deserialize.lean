@@ -104,4 +104,18 @@ theorem Message.deserialize_spec
     obtain ⟨_, rfl⟩ : ∃ e, r = .Err e := ‹_›
     close_err
 
+/-- A non-empty body whose tag byte is `0` deserializes to the payload-free message
+`{ epoch, payload := None }`, whatever bytes follow the tag. -/
+theorem Message.deserialize_none (epoch : Std.U64) (from1 : Slice Std.U8)
+    (hpos : 0 < from1.length) (h0 : from1.val[0]! = 0#u8) :
+    Message.deserialize epoch from1 ⦃ r => r = .Ok ⟨epoch, .None⟩ ⦄ := by
+  unfold Message.deserialize
+  simp only [core.result.Result.Insts.CoreOpsTry.branch]
+  step*
+  have hi : i.val = 0 := by
+    rw [‹i = _›, ← getElem!_pos from1.val 0 (by scalar_tac), h0]; rfl
+  rw [hi] at r_post
+  subst r_post
+  simp [core.result.Result.map_err_Ok]
+
 end spqr.v1.chunked.states.serialize
