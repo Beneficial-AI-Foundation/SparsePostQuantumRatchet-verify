@@ -328,9 +328,11 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeVarint
+public import Spqr.Specs.V1.Chunked.States.Serialize.EncodedBlocks
 public import Spqr.Specs.V1.Chunked.States.Serialize.MAX_VARINT_BYTES_LEN
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.NotInjective
+public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Roundtrip
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
