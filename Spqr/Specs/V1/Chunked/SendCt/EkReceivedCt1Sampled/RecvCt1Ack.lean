@@ -8,7 +8,6 @@ module
 public import SrcTranslated.Funs
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
-public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Spqr.Auxiliary.Aeneas.Vec
 /-!
 # Spec theorem for
@@ -76,7 +75,8 @@ So the encoder is pinned to the actual ciphertext and tag: an implementation enc
 arbitrary bytes, or a MAC over different data, is excluded.
 
 The proof unfolds `recv_ct1_ack`, dispatches `massert` (trivial from `h_epoch`), then applies
-`send_ct2_spec` and `send_ct2_encoder_spec` via `step*`.
+`send_ct2_spec` and `send_ct2_encoder_spec` with explicit `step with` calls, and transports the
+encoder clauses across `Vec.deref` with `alloc.vec.Vec.deref_val`.
 
 **Source**: spqr/src/v1/chunked/send_ct.rs (lines 236:4-243:5)
 -/
