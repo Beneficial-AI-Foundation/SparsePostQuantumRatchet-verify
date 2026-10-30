@@ -311,6 +311,7 @@ public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.RecvNextEpoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct2Sampled.SendCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.RecvCt1Ack
 public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.SendCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.HeaderReceived.SendCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.HeaderReceived.Epoch
@@ -320,6 +321,7 @@ public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
+public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
