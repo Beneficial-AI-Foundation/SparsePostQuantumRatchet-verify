@@ -1,5 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import Spqr.Auxiliary.Aeneas.Loop
 public import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Auxiliary.Aeneas.Slice
@@ -107,6 +108,8 @@ public import Spqr.Specs.Aeneas.SliceIter
 public import Spqr.Specs.Aeneas.SliceIteratorNext
 public import Spqr.Specs.Aeneas.SliceListToVec
 public import Spqr.Specs.Aeneas.TryFromSliceToArray
+public import Spqr.Specs.Aeneas.VecAppend
+public import Spqr.Specs.Aeneas.VecAsSlice
 public import Spqr.Specs.Aeneas.VecClone
 public import Spqr.Specs.Aeneas.VecDerefMut
 public import Spqr.Specs.Aeneas.VecExtendFromSlice
