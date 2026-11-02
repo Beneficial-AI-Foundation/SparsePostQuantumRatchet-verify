@@ -1,0 +1,32 @@
+# Self-heal: when a PR's Lean build fails after a pin or extraction change (e.g. an Aeneas or Lean
+# bump), self-healing-fv tries to repair the broken proofs and writes the result as a "Repair"
+# section into this repo's sorry-delta comment. It never pushes and never edits statements; a PR
+# that does not qualify gets nothing posted.
+# Off for one PR: the `no-self-heal` label. Off for the repo: the repository variable SELF_HEAL=off.
+# How it works: https://github.com/Beneficial-AI-Foundation/self-healing-fv/blob/main/docs/ACTIONS.md
+name: Self-heal
+on:
+  workflow_run:
+    workflows: ["Lean Verification", "Aeneas extraction"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr: {description: "PR number", required: true}
+concurrency:
+  group: self-heal-${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+  actions: read
+jobs:
+  self-heal:
+    if: vars.SELF_HEAL != 'off' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.pull_requests[0].number)
+    uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@eaadbc1c721d11792110df40748f53752d8df7f4
+    with:
+      target: spqr
+      pr: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+      per_run_usd: "15"
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
