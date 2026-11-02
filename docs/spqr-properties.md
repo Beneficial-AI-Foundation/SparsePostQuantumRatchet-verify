@@ -14,14 +14,15 @@ References:
   spec defers to in §1.1.
 - **Code**: `src/` at `dd8e6b9`, which carries Signal SPQR v1.6.0 (upstream `06959b4`).
   Line numbers refer to that commit. Until 2026-10-15 the catalog cited `d47083c`.
-- **Lean**: `Spqr/Specs/` at the same commit. Aeneas output is in `SrcTranslated/`.
+- **Lean**: `Spqr/` on `main`. Aeneas output is in `SrcTranslated/`. Line numbers in
+  `Spqr/` and `SrcTranslated/` refer to `main` at `27166f8` (2026-11-02).
 
 Status values:
 
 | Status | Meaning |
 |--------|---------|
-| Proved | Theorem on `main`, no `sorry`, and no hand-written axiom beyond the six §1 documents: `hkdf_to_slice_spec`, `encode_state_pb_spec`, `decode_state_pb_total`, `libcrux_hmac.hmac_sha256_tag32_spec`, `KeyPairCompressedBytes.from_seed_spec` and `alloc.fmt.format_spec`. Closures can also contain the Aeneas library's `core.fmt.Formatter` axiom and `native_decide` artifacts of extracted definitions, and `bv_decide` artifacts (ruling S-16, extended 2026-10-15). §1 carries each one's location, postcondition and whether it is avoidable; this cell names them only so that a `Proved` row can be checked against its own definition |
-| Proved (branch) | Theorem exists only on a branch, not on `main`: `la/lean-v1-protocol-proofs` (draft PR #46) or a property branch (`la/prop-<n>`). The proofs on `la/lean-v1-protocol-proofs` also use the liveness axioms in that branch's `Spqr/Specs/External.lean`, three of which assert that defined functions (`PolyEncoder.next_chunk`, `KeysUnsampled.send_hdr_chunk`, `HeaderReceived.send_ct1_chunk`) never fail. The last two are false as stated, since both reach `generate`, which can fail; they need a premise, not just a proof. Merging them requires replacing all three with theorems. A property branch adds no axiom; its row says what its closure contains. |
+| Proved | Theorem on `main`, no `sorry`, and no hand-written axiom beyond the five §1 documents: `hkdf_to_slice_spec`, `encode_state_pb_spec`, `decode_state_pb_total`, `libcrux_hmac.hmac_sha256_tag32_spec` and `alloc.fmt.format_spec`. (`KeyPairCompressedBytes.from_seed_spec` was the sixth; it is a theorem since #661.) Closures can also contain the Aeneas library's `core.fmt.Formatter` axiom and `native_decide` artifacts of extracted definitions, and `bv_decide` artifacts (ruling S-16, extended 2026-10-15). §1 carries each one's location, postcondition and whether it is avoidable; this cell names them only so that a `Proved` row can be checked against its own definition |
+| Proved (branch) | Theorem exists only on a property branch, not on `main`, usually with an open draft PR. A property branch adds no axiom; its row says what its closure contains. The proofs of the closed draft PR #46 (`la/lean-v1-protocol-proofs`) do not count: they used liveness axioms, two of them false as stated. |
 | Open | Statement fixed, no theorem yet |
 | Axiom | Cannot be a theorem: the code calls an opaque library function |
 
@@ -32,8 +33,8 @@ there means "no theorem *and* no settled statement". states-pb-roundtrip is the 
 covers. No new status value is introduced: the §12 index vocabulary is unchanged,
 and a `Domain:` or `Finding:` line never changes a row's status by itself.
 
-Property IDs are stable identifiers shared with the issue tracker. Gaps in
-the numbering are retired items.
+Rows are keyed by name. The old numeric IDs (`PROP-n` and the requirement-style IDs)
+are retired and are not reused.
 
 ---
 
@@ -54,19 +55,21 @@ Opaque items and how they are handled:
 
 | Item | Handling |
 |------|----------|
-| `kdf::hkdf_to_slice` | Lean `noncomputable opaque` (`SrcTranslated/FunsExternal.lean:2336`); behaviour given by `axiom hkdf_to_slice_spec` (`Spqr/Specs/Kdf/HkdfToSlice.lean:29`) in terms of an RFC 5869 model with `opaque HMAC_SHA256`. One of three hand-written axioms under `Spqr/` (the other two are in the prost row below). |
-| `incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275` | Opaque stub (`noncomputable opaque`, `SrcTranslated/FunsExternal.lean:2343`; contains `log::*` under `cfg(not(hax))`). `encaps2` itself is extracted. |
-| `PolyDecoder::decoded_message` | Extracted (`SrcTranslated/Funs.lean:8804`) from a patched body (`translation-patches/polynomial-PolyDecoder-decoded_message.patch`). No spec yet; erasure-decode-any-n is no longer blocked by an axiom. |
-| libcrux `validate_pk_bytes`, `decapsulate_compressed_key`, `encapsulate1/2`, `hmac`, size constants | Opaque stubs (`noncomputable opaque` in `SrcTranslated/FunsExternal.lean`), not axioms: `hmac` (`:1626`), `encapsulate1/2` (`:1872`, `:1734`), `decapsulate_compressed_key` (`:1884`), `validate_pk_bytes` (`:1863`), and the size constants `pk1_len`, `pk2_len`, `encaps_state_len`, `Ciphertext1/2::len`, `SHARED_SECRET_SIZE` (`:1684-1728`). Built against libcrux-ml-kem 0.0.10 and libcrux-hmac 0.0.8. |
-| `libcrux_hmac.hmac_sha256_tag32_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:1673`, not an aeneas signature stub: it carries a postcondition, namely that the returned tag is 32 bytes (`⦃ (r : alloc.vec.Vec U8) => r.length = 32 ⦄`). **Unavoidable**: `libcrux_hmac.hmac` is itself opaque, so there is nothing to prove the postcondition from. Specialised to `.Sha256` with `some 32#usize`, the only shapes the crate calls, so it adds no surplus assumption. Not unsound. It is in the axiom closure of `mac_hdr_spec` and `mac_ct_spec`, which carry the **Proved** status of mac-inputs. |
-| `KeyPairCompressedBytes.from_seed_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:1751`, postcondition `⦃ fun kp => kp.value.length = mlkem768Params.decapsulationKeyBytes ⦄`. **Avoidable**: `from_seed` is a `def` returning `ok default`, and `value` is a length-indexed array (`SrcTranslated/TypesExternal.lean:140`), so the postcondition follows from `Array.length_eq` — the same one-liner already used at `SrcTranslated/FunsExternal.lean:1769`. It is an axiom today only because it was written as the `-- TODO: add cryptographic properties of from_seed_spec` placeholder, not because of any obstruction; it is true, hence not unsound. It is in the axiom closure of `generate_spec`, which `docs/proof-targets.md:97` records as discharged at baseline. **Retiring it is Phase 4 work under AXIOM-01..06.** |
-| prost `Message` impls for `PqRatchetState` | Not reached by any proof. `lib.rs` routes all state encoding and decoding through `encode_state_pb` / `decode_state_pb` (patch `lib-state_pb.patch`; `noncomputable opaque` at `SrcTranslated/FunsExternal.lean:2352,2357`). **Hand-written** axioms `encode_state_pb_spec` (`Spqr/Specs/Lib/StatePb.lean:40`: encoding succeeds and decodes back to the encoded state) and `decode_state_pb_total` (`:45`: decoding never panics). **Unavoidable** while prost is opaque. That prost's encode/decode round-trips `PqRatchetState` is assumed, not checked here. Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
-| `alloc::fmt::format` | **Hand-written** `@[step] axiom alloc.fmt.format_spec` at `SrcTranslated/FunsExternal.lean:1209`: formatting succeeds, the string is unspecified. Needed because upstream v1.6.0 builds error strings with `format!` (`src/v1/chunked/states/serialize.rs:116`, `src/lib.rs:183`, both formatting a `u8`). Avoidable only by modelling `alloc.fmt.format`. In the closure of `Message.deserialize_spec` (message-wire-format). Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
+| `kdf::hkdf_to_slice` | Lean `noncomputable opaque` (`SrcTranslated/FunsExternal.lean:2649`); behaviour given by `axiom hkdf_to_slice_spec` (`Spqr/Specs/Kdf/HkdfToSlice.lean:29`) in terms of an RFC 5869 model with `opaque HMAC_SHA256`. One of three hand-written axioms under `Spqr/` (the other two are in the prost row below). |
+| `incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275` | Opaque stub (`noncomputable opaque`, `SrcTranslated/FunsExternal.lean:2654`; contains `log::*` under `cfg(not(hax))`). `encaps2` itself is extracted. |
+| `PolyDecoder::decoded_message` | Extracted (`SrcTranslated/Funs.lean:8806`) from a patched body (`translation-patches/polynomial-PolyDecoder-decoded_message.patch`). Specified since #683 (`Spqr/Specs/Encoding/Polynomial/PolyDecoder/DecodedMessage/`), with `binary_search` specified for points (`binary_search_Pt_spec`). |
+| libcrux ML-KEM: `from_seed`, `pk1`, `pk2`, `sk`, `validate_pk_bytes`, `encapsulate1/2`, `decapsulate_compressed_key` | Concrete `def`s since #661 (2026-10-20), not stubs: FIPS 203 models in `SrcTranslated/FunsExternal.lean:1866-2185`, each with a proved spec theorem, over the record `Fips203.stdPrimitives` (`Spqr/Crypto/Fips203/Primitives.lean:72`). `stdPrimitives` is an `opaque` constant for the FIPS 202 hash functions, not an axiom: no theorem can depend on what SHA-3 or SHAKE compute. Built against libcrux-ml-kem 0.0.10. |
+| libcrux `hmac` and the size constants `Ciphertext1::len`, `Ciphertext2::len`, `pk2_len` | Opaque stubs (`noncomputable opaque` at `SrcTranslated/FunsExternal.lean:1727`, `:1811`, `:1819`, `:1843`), not axioms. `pk1_len`, `encaps_state_len` and `SHARED_SECRET_SIZE` are `def`s. Theorems that need the three opaque sizes take them as a premise (`MlkemSizes` in `Spqr/Specs/Braid/StateMachine/Refinement.lean`). Built against libcrux-hmac 0.0.8. |
+| `libcrux_hmac.hmac_sha256_tag32_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:1774`, not an aeneas signature stub: it carries a postcondition, namely that the returned tag is 32 bytes (`⦃ (r : alloc.vec.Vec U8) => r.length = 32 ⦄`). **Unavoidable**: `libcrux_hmac.hmac` is itself opaque, so there is nothing to prove the postcondition from. Specialised to `.Sha256` with `some 32#usize`, the only shapes the crate calls, so it adds no surplus assumption. Not unsound. It is in the axiom closure of `mac_hdr_spec` and `mac_ct_spec`, which carry the **Proved** status of mac-inputs. |
+| `KeyPairCompressedBytes.from_seed_spec` | A theorem since #661 (`SrcTranslated/FunsExternal.lean:1912`), no longer an axiom. Removed from the allowlist 2026-10-27. |
+| `incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec` | **Hand-written** `@[step] axiom` at `SrcTranslated/FunsExternal.lean:2688`: the hax contract of the opaque function, a result of length 2080 if any. Not in the allowlist, because no gated theorem reaches it yet. |
+| prost `Message` impls for `PqRatchetState` | Not reached by any proof. `lib.rs` routes all state encoding and decoding through `encode_state_pb` / `decode_state_pb` (patch `lib-state_pb.patch`; `noncomputable opaque` at `SrcTranslated/FunsExternal.lean:2698,2703`). **Hand-written** axioms `encode_state_pb_spec` (`Spqr/Specs/Lib/StatePb.lean:40`: encoding succeeds and decodes back to the encoded state) and `decode_state_pb_total` (`:45`: decoding never panics). **Unavoidable** while prost is opaque. That prost's encode/decode round-trips `PqRatchetState` is assumed, not checked here. Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
+| `alloc::fmt::format` | **Hand-written** `@[step] axiom alloc.fmt.format_spec` at `SrcTranslated/FunsExternal.lean:1310`: formatting succeeds, the string is unspecified. Needed because upstream v1.6.0 builds error strings with `format!` (`src/v1/chunked/states/serialize.rs:116`, `src/lib.rs:183`, both formatting a `u8`). Avoidable only by modelling `alloc.fmt.format`. In the closure of `Message.deserialize_spec` (message-wire-format). Admitted to the gate-4 allowlist 2026-10-15 (user decision; block "Trusted base added on main, admitted 2026-10-15"). |
 
 Hand-written `sorry`s on `main`: none (`grep -rn sorry Spqr SrcTranslated` is empty
 at `dd8e6b9`). The map-iterator `next := sorry` instance (aeneas#1043) is gone since
 the re-extraction (#658). Closures can also contain `bv_decide` artifacts
-(`spqr.util.inz_spec._native.bv_decide.ax_1_14`, in `inz_spec` and through it
+(`spqr.util.inz_spec._native.bv_decide.ax_1_13`, in `inz_spec` and through it
 `verify_hdr_spec` / `verify_ct_spec`). These are covered by ruling S-16 as extended
 2026-10-15 to `._native.bv_decide.ax_*` artifacts (user decision).
 
@@ -137,7 +140,11 @@ Source: Spec §1.1; SCKA Def. 3.1
 Reduces to: both parties' `EpochSecret.secret` for epoch `t` equal
 `KDF_OK(ss, t)` for the same ML-KEM shared secret `ss`, which needs kem-correctness
 (KEM roundtrip) and kdf-ok-sites (both KDF_OK sites identical). Status: **Open**.
-Requires the KEM axiom of kem-correctness.
+kem-correctness is no longer an axiom, but it holds only under the K-PKE noise bound. So a
+deterministic statement carries that bound as a premise for each epoch's key pair and
+message. A statement without the premise is probabilistic: the parties disagree with
+probability at most `q · ε`, which needs the SCKA correctness game of the SCKA paper
+(Def. 3.1, App. B.1) and a model of the code's randomness.
 
 ### epoch-uniqueness: Per-participant epoch uniqueness
 
@@ -172,6 +179,42 @@ emit when they succeed); the trace part is `epochs_nodup`, via
 axiom and `native_decide` artifacts of extracted definitions. Scope: the crate with overflow checks, or a release run in which no call
 overflows (Spec §3.8); `States`, not the public API. Statement ACCEPT:
 `docs/statement-reviews/epochs-unique-3.md` (round 3; round 2 also ACCEPT).
+
+What is not claimed: a run that restarts from an older saved state. Uniqueness is false
+there. From one saved state `s`, two continuations that both emit a key emit it at the same
+epoch, `keyFloor s` (`epochs_consecutive`). From `HeaderReceived(e)` the second secret comes
+from fresh randomness (`encaps1`, `src/v1/unchunked/send_ct.rs:129`), so one epoch gets two
+different secrets. A caller must persist each new state and must never return to an older
+one. Neither the crate nor ML-KEM Braid states this. The effects and the Signal analysis are
+in `docs/sec-01-wire-malleability.md`, section "State rollback".
+
+### api-epochs-consecutive: Epochs over the public API
+
+epoch-uniqueness is about `States`. The public API decodes the state from bytes, runs one
+step and encodes the state again on every call (`spqr::send`, `src/lib.rs:264-325`, and
+`spqr::recv`, `src/lib.rs:355-486`). This row lifts the epoch result to that API.
+
+Take any sequence of successful `spqr::send` and `spqr::recv` calls by one party, in which
+each call's input state is the state bytes that the previous call returned. Then the epoch
+secrets that the calls pass to `Chain::add_epoch` carry consecutive epochs. So the
+`assert!` in `add_epoch` (`src/chain.rs:356-375`) never fails.
+
+The proof needs three support results:
+
+1. If `States::from_pb` succeeds on the output of `States::into_pb`, it gives the same
+   variant and the same inner epoch. So `keyFloor` survives the save. A full round trip is
+   not needed, and states-pb-roundtrip stays open.
+2. The prost codec gives back the encoded state. This is the axiom `encode_state_pb_spec`.
+3. Version negotiation ends before the first key. The `Ordering::Less` arm of `recv` resets
+   the state to `init_a` or `init_b` (`src/lib.rs:422-445`). A v1 `recv` clears
+   `version_negotiation`, and every key comes after a v1 `recv`. This invariant is not proved.
+
+What is not claimed: a run that restarts from an older saved state (see the note on
+epoch-uniqueness), and the message keys (message-keys-unique).
+
+Status: **Open**. No statement yet. Needs epoch-uniqueness and chain-epoch-sync.
+
+Source: SCKA Fig. 1; src/lib.rs:264-325; src/lib.rs:355-486; src/v1/chunked/states/serialize.rs:10-90; src/chain.rs:356-375
 
 ### epoch-agreement: Epoch agreement
 
@@ -225,10 +268,20 @@ Source: Spec §1.2; src/incremental_mlkem768.rs:34-171
 
 The three key components must be bound to one `generate` call; an axiom
 quantifying over independent `hdr`, `ek`, `dk` is too strong. Status:
-**Axiom** (`encapsulate1`, `encapsulate2`, `decapsulate_compressed_key` are
-libcrux stubs). `generate_spec` (`Spqr/Specs/IncrementalMlkem768/Generate.lean`)
-is **Proved**: `ek` and `hdr` are the corresponding slices of `dk`, with the
-sizes above.
+**Open, no longer an axiom** (2026-11-02). Since #661 the libcrux KEM functions are
+FIPS 203 models, not stubs. `Fips203.Refinement.ssBytes_roundTrip`
+(`Spqr/Crypto/Fips203/Refinement/LibcruxDecaps.lean:97`) proves the roundtrip for
+`from_seed`, `encapsulate1/2` and `decapsulate_compressed_key`, under the K-PKE noise
+bound at the derived randomness (`h_noise`, FIPS 203 §6). What is left is to compose it
+with `generate_spec`, `encaps1_spec`, `encaps2_spec` and `decaps_spec`
+(`Spqr/Specs/IncrementalMlkem768/`). The statement must keep the noise bound as a
+premise over the seed and the message. Without it the claim is not provable, because
+the hash functions are opaque, and for the real SHA-3 and SHAKE it almost certainly
+has counterexamples (ML-KEM-768 fails with probability about 2^-164.8 for each input,
+over 2^768 inputs). The probability that the premise fails is a separate,
+probabilistic statement. `generate_spec`
+(`Spqr/Specs/IncrementalMlkem768/Generate.lean`) is **Proved**: `ek` and `hdr` are the
+corresponding slices of `dk`, with the sizes above.
 
 ### kem-header-binding: Header binding
 
@@ -238,8 +291,17 @@ SHA3-256(ek)` for the FIPS 203 encoding of `ek`).
 
 Source: Spec §1.2.1; src/incremental_mlkem768.rs:28-30
 
-Status: **Axiom** (`validate_pk_bytes` is a libcrux stub). The crate now builds
-against libcrux-ml-kem 0.0.10; whether `validate_pk_bytes` changed since 0.0.7 is not
+Status: **Open, no longer an axiom** (2026-11-02). Since #661 `validate_pk_bytes` is a
+concrete model (`SrcTranslated/FunsExternal.lean:2043`): it accepts iff `hdr` has 64 bytes,
+`ek` has 1152 bytes, `hdr[32..64] = H(ek ‖ hdr[0..32])`, and `ek` passes the FIPS 203
+modulus check. The forward half (a key pair from `generate` passes) follows from
+`pk1HashValid_pk1Bytes` and `pk2Valid_pk2Bytes`
+(`Spqr/Crypto/Fips203/Refinement/EncapsBytes.lean:365-428`), `generate_spec` and
+`ek_matches_header_spec`. The converse as worded ("`hdr` is libcrux's header for the key
+pair") is stronger than what the check tests: it accepts any seed half with a matching
+hash and any `ek` that passes the modulus check, whether or not some key pair has it. The
+row needs restating against the two checks before a statement review. The model follows
+libcrux-ml-kem 0.0.7 (`src/ind_cca/incremental.rs:297-339`); whether 0.0.10 differs is not
 checked. The exact byte string hashed must be taken from libcrux, not from the spec prose
 "`ek_seed || ek_vector`": FIPS 203 places the seed last in the encoded key.
 
@@ -260,8 +322,10 @@ Evidence: Spqr/Specs/Encoding/Polynomial/Pt/{Serialize,Deserialize}.lean
 If a message fits in `N` codewords, `PolyDecoder` reconstructs it from any
 `N` distinct codewords (§3.6). Status: **Open**. `decoded_message` is extracted
 (from the patched body in `translation-patches/polynomial-PolyDecoder-decoded_message.patch`)
-but has no spec; the surrounding encoder/decoder functions have specs
-(`Spqr/Specs/Encoding/{Encoder,Decoder,Polynomial}/`).
+and has a spec since #683 (`Spqr/Specs/Encoding/Polynomial/PolyDecoder/DecodedMessage/`); the
+surrounding encoder/decoder functions have specs
+(`Spqr/Specs/Encoding/{Encoder,Decoder,Polynomial}/`). What is open is the statement over any
+`N` distinct codewords.
 
 Source: Spec §3.6; src/encoding/polynomial.rs:918-976
 Evidence: Spqr/Specs/Encoding/{Encoder,Decoder,Polynomial}/
@@ -288,7 +352,13 @@ Evidence: Spqr/Math/Gf16/Field.lean:36; Spqr/Specs/Encoding/Gf/
 `HEADER_SIZE = 64`, `EK_SIZE = 1152`, `CT1_SIZE = 960`, `CT2_SIZE = 128` for
 ML-KEM-768. Code: `HEADER_SIZE = pk1_len()`, `ENCAPSULATION_KEY_SIZE = pk2_len()`
 (`incremental_mlkem768.rs:13,15`), `ensures` clauses 960/2080/32/128 on
-`encaps1`/`encaps2`. Status: **Open** (constant evaluation).
+`encaps1`/`encaps2`. Status: **Open**, partly proved. `HEADER_SIZE_spec`
+(`Spqr/Specs/IncrementalMlkem768/HEADER_SIZE.lean`) gives `HEADER_SIZE = 64`, and
+`encaps1_spec` and `encaps2_spec` give the output sizes 960, 2080 (`encapsStateSize`), 32
+(`sharedSecretSize`) and 128. `ENCAPSULATION_KEY_SIZE`,
+`CIPHERTEXT1_SIZE` and `CIPHERTEXT2_SIZE` come from `pk2_len`, `Ciphertext1::len` and
+`Ciphertext2::len`, which are opaque, so they cannot be evaluated; braid-machine-refinement takes
+them as the premise `MlkemSizes`.
 
 Source: Spec §2.2; src/incremental_mlkem768.rs:8-15
 
@@ -382,8 +452,7 @@ index, and returns the remaining bytes. `Message::deserialize(epoch, from)`
 returns `Message { epoch, payload }`, ignoring trailing bytes. **Proved** as
 `Message.serialize_spec`, `msg_preamble_spec` and `Message.deserialize_spec`
 (`Spqr/Specs/V1/Chunked/States/Serialize/Message/`, `Spqr/Specs/Lib/MsgPreamble.lean`). The
-composed roundtrip is **Proved (branch)** on `la/prop-35` (`57fc83c`, 2026-10-27, stacked on
-`la/struct-02a`; draft PR #755, closes #754), all five gates PASS: for `m` with `0 < m.epoch` and a `Ct1Ack` flag, if any, equal
+composed roundtrip is **Proved** (#755, on `main` as `521c276`, closes #754): for `m` with `0 < m.epoch` and a `Ct1Ack` flag, if any, equal
 to `true`, `serialize m i` succeeds, `msg_preamble` parses its output to a preamble with
 version `1`, epoch `m.epoch` and index `i`, and `Message::deserialize` on that epoch and the
 remaining bytes returns `m` (`Message.serialize_parse_roundtrip`,
@@ -450,8 +519,7 @@ negotiation, `lib.rs:365-382`), so this adds no further collision.
 
 A negative result **discharges** this row; that is why it is stated separately from
 canonical-parse-injective: what is to be recorded is that the converse fails, with the witnesses
-named. Status: **Proved (branch)** on `la/struct-02a` (`2ddd203`, 2026-10-27), all five gates
-PASS: `Message.serialize_parse_not_injective` in
+named. Status: **Proved** (#753, on `main` as `63c4fee`): `Message.serialize_parse_not_injective` in
 `Spqr/Specs/V1/Chunked/States/Serialize/Message/NotInjective.lean`, docstring and signature identical to the
 ACCEPTed statement (round 5, 2026-10-27, docstring-only change from round 4). Support:
 `recv_eq_of_parse_eq` (`Spqr/Specs/Lib/Recv/ParseEq.lean`) and the corollary
@@ -485,7 +553,7 @@ after the chunk block for the others.
 
 This is the half of the converse of message-roundtrip that is true and useful, and it rests on the
 same `varintBytes`-to-`varintBlockAt` agreement lemma that message-roundtrip needs, which is why
-both sit in Phase 3. That lemma is now `varintBlockAt_of_map` on `la/prop-35`. Status: **Open**; the restated statement has an ACCEPT
+both sit in Phase 3. That lemma is now `varintBlockAt_of_map` (`Serialize/EncodedBlocks.lean`, on `main` since #755). Status: **Open**; the restated statement has an ACCEPT
 (round 3, against `dd8e6b9`).
 
 Source: src/v1/chunked/states/serialize.rs:93-153; src/v1/chunked/states/serialize.rs:171-219; src/lib.rs:507-590
@@ -648,14 +716,25 @@ spec's `Receive` at state name and key presence; `recv_of_eq_unexpected` is tota
 
 ### transition-refinement: Transition refinement
 
-Obligations: `transition-refinement-1-5`, `transition-refinement-6-13`
+Obligations: `braid-machine-refinement`, `transition-refinement-1-5`, `transition-refinement-6-13`
 
 Each spec transition is implemented by the named code path with the same
 effect on the state's epoch, authenticator and payload. Transitions 11 and 12
 and the `EkSentCt1Received` send arm assert the **code**'s emission and
 acceptance sets, not the spec's, per the provisional D3 and D4 decisions in §11.
 
-Source: Spec §2.5; src/v1/chunked/states.rs:115-533; src/v1/chunked/states.rs:175-186; src/v1/chunked/states.rs:465-468; src/v1/chunked/states.rs:485-496
+`braid-machine-refinement` states this once for every transition. An abstract
+machine is written from §2.5 and §2.6 with the values of each state. It takes the
+primitives as parameters: the incremental KEM of §1.2, and the erasure code, `MAC`,
+`PROTOCOL_INFO`, `ToBytes`, `KDF_AUTH` and `KDF_OK` of §2.2, with the authenticator of
+§2.4 built from them. D2, D3 and D4 are applied as the code behaves. For primitives
+that agree with the code's, `init_a` and `init_b` refine `InitAlice` and `InitBob`, and
+every successful `send` or `recv` is a step of the machine with the same message and
+key. Some primitives agree with the code, so the result is not vacuous. D1 and D6 are in
+the code's primitives, not in the machine. The two halves `transition-refinement-1-5`
+and `transition-refinement-6-13` are its proof, split by transition.
+
+Source: Spec §1.2; Spec §2.2; Spec §2.3; Spec §2.4; Spec §2.5; Spec §2.6; src/v1/chunked/states.rs:56-64; src/v1/chunked/states.rs:115-533; src/v1/chunked/states.rs:175-186; src/v1/chunked/states.rs:465-468; src/v1/chunked/states.rs:485-496; src/v1/chunked/send_ek.rs:52-232; src/v1/chunked/send_ct.rs:60-306; src/v1/unchunked/send_ek.rs:75-173; src/v1/unchunked/send_ct.rs:90-209; src/authenticator.rs:34-105; src/incremental_mlkem768.rs:28-175; src/util.rs:20-33
 
 | # | Spec | Code entry | Notes |
 |---|------|-----------|-------|
@@ -671,7 +750,16 @@ Source: Spec §2.5; src/v1/chunked/states.rs:115-533; src/v1/chunked/states.rs:1
 | 12 | EkReceivedCt1Sampled.Receive EkCt1Ack | `states.rs:464` | decided (D3): accepts `Ct1Ack(true)` as well as `EkCt1Ack` (`states.rs:465-468`) |
 | 13 | Ct2Sampled.Receive epoch + 1 | `states.rs:514-527` | |
 
-Status: **Open** for all 13.
+Status: braid-machine-refinement is **Proved (branch)** on `la/braid-machine-refinement`
+(draft PR #781, closes #780) as `init_refines`, `send_refines`, `recv_refines` and `run_refines`
+(`Spqr/Specs/Braid/StateMachine/Refinement.lean`), with the machine in
+`Spqr/Specs/Braid/StateMachine/Model.lean` and D2–D4 as `Braid.Deviation`
+(`Spqr/Specs/Braid/Deviations.lean`). `recv_refines` and `run_refines` also assume `MlkemSizes`
+(see kem-constants). The results cover successful steps only. `codeAgrees_exists` shows that some
+primitives agree with the code; it does not show `MlkemSizes` or that a related successful step
+exists. The closures add only `hkdf_to_slice_spec`, `hmac_sha256_tag32_spec` and the Aeneas
+`core.fmt.Formatter` stub beyond Lean's axioms and the S-16 artifacts. Review: ACCEPT 2026-11-02 (round 8), `docs/statement-reviews/braid-machine-refinement-8.md`,
+statement SHA `d1434b22`. `transition-refinement-1-5` and `transition-refinement-6-13` are **Open**.
 
 Decided statement for the send arms (D3), quotable as a theorem: every send arm
 other than 1 and 7 emits the payload type the spec prescribes, except
@@ -682,9 +770,8 @@ statement for the receive arms (D3, D4): transition 12 accepts
 `Ct1Ack(true) | EkCt1Ack(_)` and transition 11 accepts `Ek | EkCt1Ack`, in both
 cases a strict superset of the spec's single accepted type, with any other
 payload at the matching epoch leaving the state unchanged. The `EkSentCt1Received` send
-arm is partly proved on `la/lean-v1-protocol-proofs` (draft PR #46) as
-`send_EkSentCt1Received_ct1_ack`: `Ok`, payload `Ct1Ack(true)`, `key = None`, state and
-rng unchanged. It does not state the message epoch.
+arm is covered by `send_refines` (PR #781): the machine's `EkSentCt1Received` arm sends
+`Ct1Ack` at the state's epoch with no key and the state unchanged.
 
 State contents match the spec's per-state lists, with one representational
 difference: `ek_seed` and `hek` are held as a single 64-byte `hdr`
@@ -781,6 +868,10 @@ ek `ENCAPSULATION_KEY_SIZE` (`chunked/send_ct.rs:99`), ct1 `CIPHERTEXT1_SIZE`
 (`chunked/send_ek.rs:87`), ct2 `CIPHERTEXT2_SIZE + MACSIZE`
 (`chunked/send_ek.rs:171-172`). Status: **Open**.
 
+This row fixes `pts_needed` where a decoder is created. reachable-states-pb-valid extends it
+along every run: the decoders of every reachable state keep these sizes, which is the decoder
+part of `States.PbValid` in states-pb-roundtrip.
+
 Source: Spec §2.2; src/v1/chunked/send_ct.rs:72-73; src/v1/chunked/send_ct.rs:99; src/v1/chunked/send_ek.rs:87; src/v1/chunked/send_ek.rs:171-172; src/v1/chunked/send_ek.rs:212-213
 
 ### key-epoch: Key epoch
@@ -806,7 +897,9 @@ Source: Spec §2.5; src/v1/chunked/states.rs:203-220; src/v1/chunked/states.rs:3
 Authenticator::new(k, 1) }`, with B2A `NoHeaderReceived { epoch: 1, auth:
 Authenticator::new(k, 1), header_decoder }` (`initial_state`, `lib.rs:211-235`, which
 calls `init_inner`, `lib.rs:197-208`; `unchunked/send_ek.rs:78-79`,
-`unchunked/send_ct.rs:94-95`). Status: **Open**.
+`unchunked/send_ct.rs:94-95`). Status: **Open**. `initial_state_spec_v1` and `init_inner_spec_v1`
+(#678, `Spqr/Specs/Lib/InitialState.lean`, `InitInner.lean`) give the dispatch to `init_a` /
+`init_b` and the encoding, but not the epoch and authenticator of the state.
 
 Source: Spec §2.6; src/lib.rs:197-235; src/v1/unchunked/send_ek.rs:78-79; src/v1/unchunked/send_ct.rs:94-95
 
@@ -841,15 +934,16 @@ here are grounded in the code.
 | send-key-gc | When `send_key` moves `send_epoch` forward it pops links older than `EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH = 1` and clears the send seed of every earlier link; receive seeds are untouched, and `KeyHistory` entries are removed on `get` or trimmed by `gc` | `src/chain.rs:395-406`; `src/chain.rs:318`; `src/chain.rs:145-168`; `src/chain.rs:200` | **Open** |
 | key-history-alignment | `KeyHistory.data.len() % 36 = 0` (`KEY_SIZE = 4 + 32`, `chain.rs:130`) is preserved by `add`, `get`, `gc` | `src/chain.rs:128-208` | **Proved** (`add_spec`, `get_loop_spec`, `gc_loop_spec` carry the alignment) |
 | key-history-get-after-add | `get` after `add` of a fresh counter returns the stored 32-byte key and removes the entry | `src/chain.rs:184-207` | **Open**; `get_loop_spec` gives the per-slot behaviour |
-| states-pb-roundtrip | `States::from_pb(States::into_pb(s)) = ok s` for all 11 variants | `src/v1/chunked/states/serialize.rs:10-90`; `src/v1/chunked/send_ek/serialize.rs:10-112`; `src/v1/chunked/send_ct/serialize.rs:11-151` | **Open**; per-state `into_pb`/`from_pb` specs exist for all unchunked states and for chunked `KeysUnsampled` and `KeysSampled`; model-level `roundtrip_fromPb_intoPb` theorems exist for several states, some under a `WellFormed` field-length hypothesis |
 | chain-pb-roundtrip | `Chain::from_pb(c.into_pb()) = ok c` for every `c` whose links each hold an empty or 32-byte `next` in both directions (`chain.rs:308-310` rejects any other length) | `src/chain.rs:299-316`; `src/chain.rs:424-462` | **Open** over the extracted functions. Proved on the functional models (`roundtrip_fromPb_intoPb`, `Spqr/Specs/Chain/Chain/FunctionalModels.lean:206`), which `from_pb_spec` and `into_pb_spec` link to the code; the composition is not stated. The model theorem also assumes `links.head = 0` and `links.length = links.buf.length`: these are hypotheses about the Lean `VecDeque` layout, not part of the Rust statement, since Rust `VecDeque` equality ignores layout. The code-level theorem must remove them or compare up to layout |
 | chain-epoch-sync | Along any run of one party's state machine, feeding the emitted keys in order to `add_epoch` never fails, the `assert!(epoch_secret.epoch == self.current_epoch + 1)` included, provided the chain starts one epoch behind the run (`current_epoch + 1 = keyFloor s`, true for `Chain::new` with either init state) and the link buffer has room; the chain ends one behind the run. Over the state machine and `add_epoch` only: no `send_key`/`recv_key`, no serialization, chain present | `src/lib.rs:295-299`; `src/lib.rs:463-466`; `src/chain.rs:356-375`; `src/chain.rs:333-354` | **Open**; statement drafted (`docs/statements/chain-epoch-sync.md`), review pending; needs epoch-uniqueness and add-epoch |
 
-Finding: the states-pb-roundtrip statement above is **false as written** (found 2026-09-15), for
-two independent reasons (a third was found later, #567). The row is annotated rather than restated: its corrected
-statement is deferred to Phase 7 (STRUCT-03, ROADMAP Phase 7 criterion 3), its
-asserted conclusion is left untouched, and its status stays `Open` in the sense the
-§1 legend now records — no theorem *and* no settled statement.
+Finding: the original states-pb-roundtrip statement, `States::from_pb(States::into_pb(s)) = ok s`
+for all 11 variants, is **false as written** (found 2026-09-15), for
+two independent reasons (a third was found later, #567). The row was first annotated rather than
+restated, with the corrected statement deferred to Phase 7 (STRUCT-03, ROADMAP Phase 7
+criterion 3). The `### states-pb-roundtrip:` section below is that restatement (2026-10-30).
+Until its review accepts it, the status stays `Open` in the sense the §1 legend records: no
+theorem and no settled statement.
 
 1. `PolyDecoder::into_pb` narrows `pts_needed` with `as u32`
    (`src/encoding/polynomial.rs:819`), and the merged `into_pb_spec` carries the
@@ -888,6 +982,93 @@ code already asserts rather than inventing one. The variant-specific decoder-siz
 checks and representability are still open design. `States` protobuf injectivity is a
 corollary of this row on whatever domain Phase 7 designs, not a separate property.
 
+### states-pb-roundtrip: Chunked state protobuf round trip
+
+Restated 2026-10-30. The original statement, formerly a row of the table above, is false as
+written (see the `Finding:` above). Statement record: `docs/statements/states-pb-roundtrip.md`, ACCEPT 2026-10-30
+(`docs/statement-reviews/states-pb-roundtrip-1.md`).
+
+Assume that libcrux reports the ML-KEM 768 sizes (`Ciphertext1::<960>::len() = 960`,
+`Ciphertext2::<128>::len() = 128`, `pk2_len() = 1152`). Take a chunked state `s` that is valid
+for the protobuf form:
+
+1. Each byte vector of its unchunked part has the length that the unchunked `from_pb` checks
+   (`dk` 2400, `ek` 1152, `ct1` 960, `hdr` 64, `es` 2080, whichever the state has).
+2. Each polynomial encoder in it has no polynomial without coefficients, and its coefficient
+   vectors are short enough for `into_pb` to size its buffers.
+3. Each polynomial decoder in it has the `pts_needed` that the state's `from_pb` checks (480
+   for `HeaderSent`, 80 for `EkSentCt1Received`, 48 for `NoHeaderReceived`, 576 for
+   `HeaderReceived`, `Ct1Sampled` and `Ct1Acknowledged`), holds strictly increasing abscissae
+   in every slot, and has slots short enough for `into_pb`.
+
+Then `States::into_pb(s)` succeeds, and `States::from_pb` on its output returns `Ok(s)`. As a
+corollary, `States::into_pb` is injective on valid states. Off the domain the round trip
+fails in four ways, each with a witness that breaks one condition only: a wrong byte-vector
+length and an empty encoder polynomial give `Err(StateDecode)`, a wrong `pts_needed` that fits
+in `u32` gives `Err(MsgDecode)`, and a `pts_needed` above `u32::MAX` comes back narrowed, as
+`Ok` of a different state.
+
+What is not claimed: that the states the protocol reaches are valid. That is the separate
+row reachable-states-pb-valid, and lifting this row to `spqr::send` and `spqr::recv` needs it.
+
+Status: **Open**. Statement accepted, no theorem yet. Per-state `into_pb`/`from_pb` specs exist
+for all unchunked states and for chunked `KeysUnsampled` and `KeysSampled`. Model-level
+`roundtrip_fromPb_intoPb` theorems exist for the unchunked states, some under a `WellFormed`
+field-length hypothesis.
+
+Source: src/v1/chunked/states/serialize.rs:10-90; src/v1/chunked/send_ek/serialize.rs:10-112; src/v1/chunked/send_ct/serialize.rs:11-151; src/v1/unchunked/send_ek/serialize.rs:9-93; src/v1/unchunked/send_ct/serialize.rs:9-113; src/encoding/polynomial.rs:35-47; src/encoding/polynomial.rs:332-366; src/encoding/polynomial.rs:562-641; src/encoding/polynomial.rs:817-866; src/incremental_mlkem768.rs:8-15; src/authenticator.rs:34
+
+### reachable-states-pb-valid: Reachable states are encodable
+
+states-pb-roundtrip holds on the states that satisfy `States.PbValid`. This row says that the
+protocol never leaves that set. Assume that libcrux reports the ML-KEM 768 sizes, as in
+states-pb-roundtrip. Let `s₀` be the state that `States::init_a` or `States::init_b` returns
+(`src/v1/chunked/states.rs:58-64`), and let `s` end any run of successful `send` and `recv`
+calls from `s₀` (a `Run s₀ s ks`, `Spqr/Specs/Braid/StateMachine/Run.lean`), with any RNG and
+any messages. Then `s` satisfies `States.PbValid`. So states-pb-roundtrip applies to every
+state that `spqr::send` and `spqr::recv` save. Statement record:
+`docs/statements/reachable-states-pb-valid.md`, ACCEPT 2026-10-30
+(`docs/statement-reviews/reachable-states-pb-valid-1.md`).
+
+The row is stated over runs from an initial state because `States.PbValid` alone is not
+preserved by every step. It allows an encoder in the `Points` state with an empty slot, and
+the first `next_chunk` past the stored points turns that slot into a polynomial with no
+coefficients (`src/encoding/polynomial.rs:656-679`, `:282-290`). No reachable state has such
+an encoder. The proof uses a stronger invariant, as a support lemma.
+
+Each part of `States.PbValid` needs its own argument:
+
+1. Byte-vector lengths. The `dk`, `ek`, `hdr`, `es` and `ct1` that a transition stores come
+   from key generation, from `encaps1`, or from a decoded message whose length the decoder
+   fixes. The lengths therefore rest on the KEM function specs and on decoder-sizes.
+2. Encoders. Every encoder comes from `PolyEncoder::encode_bytes` on a message of a fixed
+   length, and `next_chunk` may move it from the `Points` state to the `Polys` state by
+   interpolation (`src/encoding/polynomial.rs:645-690`). The row needs every interpolated
+   polynomial to have at least one coefficient. That is the open question in reason 3 of
+   the states-pb-roundtrip finding: whether `encode_bytes` can reach an encoder with an empty
+   polynomial. The four encoded messages are 96, 1152, 960 and 160 bytes
+   (`src/v1/chunked/send_ek.rs:62`, `:91`, `src/v1/chunked/send_ct.rs:130`, `:162`), so each
+   of the 16 slots gets at least three points, and the answer is expected to be no. It is not
+   checked.
+3. Decoders. decoder-sizes gives the `pts_needed` of each decoder at creation, and
+   `add_chunk` keeps `pts_needed` and keeps every slot sorted (`push_spec_sorted`,
+   `Spqr/Specs/Encoding/Polynomial/PolyDecoder/PointsValid.lean`). A slot holds at most one
+   point per 16-bit abscissa, so the size bounds of `States.PbValid` hold on any `usize` of 32
+   bits or more.
+
+What is not claimed: states that are not reached from `init_a` or `init_b`, such as a state
+decoded from bytes that a party did not write. `from_pb` accepts some states outside
+`States.PbValid`. For example, it does not check that a decoder slot is sorted, since
+`SortedSet::push` sorts it.
+
+Status: **Open**. Statement accepted, no theorem yet. Needs decoder-sizes, kem-constants (or the size premise of
+states-pb-roundtrip), the KEM function specs for the stored lengths, and the `States.PbValid`
+definition in `docs/statements/states-pb-roundtrip.md`. Supports states-pb-roundtrip at the
+API, and through it the API forms of api-epochs-consecutive, message-keys-unique and
+chain-epoch-sync, and the `SendAssumptions` premise of `send_spec`.
+
+Source: src/v1/chunked/states.rs:58-64; src/v1/chunked/states.rs:115-533; src/v1/chunked/send_ek.rs:52-232; src/v1/chunked/send_ct.rs:70-306; src/encoding/polynomial.rs:557-763; src/encoding/polynomial.rs:788-977
+
 chain-pb-roundtrip was **false as originally written** after upstream v1.6.0:
 `ChainEpochDirection::from_pb` (`src/chain.rs:307-316`) rejects a `next` that is neither
 empty nor 32 bytes, while `into_pb` copies it verbatim (`src/chain.rs:299-305`), so a
@@ -902,6 +1083,30 @@ wraparound by assumption (`hax_lib::assume!(current_epoch < u64::MAX)` in
 `overflow-checks`, and the Lean theorems take non-overflow as a hypothesis. It
 is not proved anywhere and does not need to be at 64 bits; state it as an
 assumption.
+
+### message-keys-unique: Message keys are not reused
+
+Take any sequence of successful public API calls by one party, as in
+api-epochs-consecutive. Then `spqr::send` never returns two message keys with the same
+epoch and index. And `spqr::recv` never returns a message key for an epoch and index that
+an earlier call in the sequence already returned. The claim is about the labels, epoch and
+index, only. A proof that the key values differ needs a collision assumption on HKDF, and
+the catalog has no such axiom.
+
+Send side: `Chain::send_key` rejects an epoch below `send_epoch` (send-key-epoch-decreased)
+and takes the next counter of that epoch's send chain (`src/chain.rs:390-414`). Receive
+side: `ChainEpochDirection::key` returns `KeyAlreadyRequested` for the current counter and
+takes an older key out of the `KeyHistory` (`src/chain.rs:248-297`, `src/chain.rs:185-207`).
+This side needs key-history-get-after-add, and an invariant that the `KeyHistory` never holds
+two entries for one counter.
+
+What is not claimed: runs after a rollback, which replay the keys (see the note on
+epoch-uniqueness).
+
+Status: **Open**. No statement yet. Needs api-epochs-consecutive, key-history-get-after-add
+and chain-direction-key.
+
+Source: SCKA Fig. 2; src/lib.rs:295-300; src/lib.rs:400-412; src/lib.rs:460-468; src/chain.rs:128-207; src/chain.rs:248-297; src/chain.rs:390-422
 
 ---
 
@@ -953,9 +1158,9 @@ inline.
 
 | Name | Section | Status |
 |------|---------|--------|
-| session-key-agreement | 2 | Open (needs kem-correctness axiom) |
-| kem-correctness | 3 | Axiom; `generate_spec` proved |
-| kem-header-binding | 3 | Axiom |
+| session-key-agreement | 2 | Open (needs kem-roundtrip, under the noise bound) |
+| kem-correctness | 3 | Open, no longer an axiom; `generate_spec` and `ssBytes_roundTrip` proved |
+| kem-header-binding | 3 | Open, no longer an axiom; needs restating |
 | add-epoch | 10 | Proved |
 | send-key-gc | 10 | Open |
 | key-history-alignment | 10 | Proved |
@@ -974,16 +1179,17 @@ inline.
 | epoch-idx | 10 | Proved |
 | recv-epoch-dispatch | 8 | Proved |
 | auth-init | 7 | Proved |
-| message-wire-format | 6 | Proved (components); roundtrip Proved (branch) |
+| message-wire-format | 6 | Proved |
 | epoch-zero-rejected | 6 | Proved (preamble check); underflow half Open |
-| states-pb-roundtrip | 10 | Open |
+| states-pb-roundtrip | 10 | Open; statement accepted |
+| reachable-states-pb-valid | 10 | Open; statement accepted |
 | chain-pb-roundtrip | 10 | Open (restated domain); proved on the functional models |
 | mac-inputs | 7 | Proved |
 | kdf-labels | 5 | Proved (labels); KDF_OK literal Open |
 | kdf-auth-inputs | 5 | Proved |
 | mac-failure | 7 | Open |
-| kem-constants | 5 | Open |
-| transition-refinement | 8 | Open |
+| kem-constants | 5 | Open; `HEADER_SIZE` and the `encaps1`/`encaps2` sizes proved |
+| transition-refinement | 8 | braid-machine-refinement Proved (branch, PR #781); the two halves Open |
 | decoder-sizes | 8 | Open |
 | key-epoch | 8 | Proved, support lemmas of epoch-uniqueness |
 | structural-liveness | 8 | Open |
@@ -992,8 +1198,10 @@ inline.
 | point-roundtrip | 4 | Proved |
 | erasure-decode-any-n | 4 | Open |
 | gf16-field-agreement | 4 | Proved |
-| wire-not-injective | 6 | Proved (branch) |
+| wire-not-injective | 6 | Proved |
 | canonical-parse-injective | 6 | Open |
+| api-epochs-consecutive | 2 | Open; no statement yet |
+| message-keys-unique | 10 | Open; no statement yet |
 | D1–D6 | 11 | Deviations; a provisional decision recorded per row, pending Signal |
 
 ---
