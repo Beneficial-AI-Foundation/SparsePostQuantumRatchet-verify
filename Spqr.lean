@@ -124,6 +124,7 @@ public import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+public import Spqr.Specs.Braid.Deviations
 public import Spqr.Specs.Braid.Scka.EpochUniqueness
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
