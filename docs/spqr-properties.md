@@ -611,7 +611,17 @@ Source: Spec §2.4; src/authenticator.rs:66-105; src/v1/unchunked/send_ct.rs:192
 `verify_hdr(ep, hdr, mac_hdr(ep, hdr)) = Ok(())` and likewise for `ct`.
 `verify_*` uses the constant-time `util::compare` (`util.rs:25-33`) and returns
 `InvalidHdrMac` / `InvalidCtMac` otherwise. **Proved**: `verify_ct_spec` and
-`verify_hdr_spec` state `Ok ↔ mac_* = ok expected_mac`.
+`verify_hdr_spec` state `Ok ↔ mac_* = ok expected_mac`, assuming that the received MAC has 32
+bytes and that the key and the data have at most `U32.max` bytes.
+
+The 32-byte premise is needed. `util::compare` loops over the length of its first argument
+only, and `verify_hdr` / `verify_ct` pass the received MAC as that argument. Its hax `requires`
+(equal lengths, `util.rs:22-24`) is not checked at either call. So a received MAC shorter than 32
+bytes is compared as a prefix of the expected one, and `verify_*` can return `Ok(())` for it.
+On states reached from `init_a` or `init_b` this does not happen: the decoders fix the message
+sizes, so the MAC slice always has 32 bytes. braid-machine-refinement carries these sizes in
+`Refines` for this reason (PR #781). A state restored from bytes with other decoder sizes is not
+covered; see reachable-states-pb-valid.
 
 Source: Spec §2.4; src/authenticator.rs:57; src/authenticator.rs:82; src/util.rs:25-33
 
@@ -866,7 +876,12 @@ Decoders are created with the spec's message sizes: header
 `HEADER_SIZE + MACSIZE` (`chunked/send_ct.rs:72-73`, `chunked/send_ek.rs:212-213`),
 ek `ENCAPSULATION_KEY_SIZE` (`chunked/send_ct.rs:99`), ct1 `CIPHERTEXT1_SIZE`
 (`chunked/send_ek.rs:87`), ct2 `CIPHERTEXT2_SIZE + MACSIZE`
-(`chunked/send_ek.rs:171-172`). Status: **Open**.
+(`chunked/send_ek.rs:171-172`). Status: **Open**. braid-machine-refinement (PR #781) proves
+the point counts where `init_a`, `init_b`, `send` and `recv` build these decoders: 48 points for
+the header decoder, 480 for `ct1` and 80 for `ct2` (from `PolyDecoder::new`, which needs
+`len_bytes / 2` points). The `ek` decoder's size comes from the opaque `pk2_len`, so it needs the
+`MlkemSizes` premise. The row is not closed: those facts are inside `Refines`, not stated on
+their own.
 
 This row fixes `pts_needed` where a decoder is created. reachable-states-pb-valid extends it
 along every run: the decoders of every reachable state keep these sizes, which is the decoder
@@ -1112,8 +1127,13 @@ Source: SCKA Fig. 2; src/lib.rs:295-300; src/lib.rs:400-412; src/lib.rs:460-468;
 
 ## 11. Deviations from the spec
 
-Each deviation has a stable ID and a short name. Lean comments and PR text use the name,
-because readers there do not have this catalog.
+Each deviation has a stable ID and a short name. PR text uses the name, because readers there
+do not have this catalog. In Lean, D2, D3 and D4 are the constructors `futureEpochError`,
+`ct1AckAccepted` and `lateEkChunk` of `Braid.Deviation` (`Spqr/Specs/Braid/Deviations.lean`,
+PR #781), whose docstrings carry the comparison with §2.5. Declarations that state or follow one
+carry `@[braid_deviation …]`, which Lean checks against the constructors. D1 and D6 are not in
+`Braid.Deviation`: they live in the code's primitives (`CodeAgrees` in
+`Spqr/Specs/Braid/StateMachine/Refinement.lean`), not in the machine.
 
 | ID | Name | Where | Spec | Code | Impact | Source |
 |----|------|-------|------|------|--------|--------|
