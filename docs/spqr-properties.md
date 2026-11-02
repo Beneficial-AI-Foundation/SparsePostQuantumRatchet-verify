@@ -229,22 +229,30 @@ for every `States` variant, `send` puts `state.epoch()` in `msg.epoch`
 This covers the equal-version path. When the peer's version is above ours, `recv`
 returns the epoch-0 chain key (`lib.rs:383-420`) and no `t_rcv` is computed from
 `msg.epoch`.
-Status: **Open**. Note that the spec's own pseudocode computes `t_rcv` as
+Status: **Open**; statement drafted (`docs/statements/epoch-agreement.md`, Lean block SHA
+`bbdce0c5`), not yet reviewed. Note that the spec's own pseudocode computes `t_rcv` as
 `state.epoch - 1` of the receiver, which differs from `t_snd` for delayed
-messages; the code's choice is the one that satisfies the property.
+messages; the code's choice is the one that satisfies the property. Recorded as D7
+(`receiving-epoch-from-message`, §11).
 
 ### epoch-knowledge: Sender and receiver epoch knowledge
 
 When `Send` returns `t_snd` (resp. `Receive` returns `t_rcv`), the caller has
-emitted keys for that epoch and all earlier ones.
+emitted keys for epochs `1 … t`, and its chain holds a link for every epoch from `0` to `t`. Epoch
+0 has no SCKA key: its link comes from the initial key, through `Chain::new`.
 
-Source: Spec §1.1; src/lib.rs:297; src/lib.rs:465
+Source: Spec §1.1; SCKA Fig. 1; SCKA Fig. 2; src/lib.rs:297; src/lib.rs:465; src/chain.rs:333-375
 
 With `t_snd = msg.epoch - 1` this says: a party at state epoch `e` has emitted
 keys for epochs `1..e-1`. Trace property over the v1 machine plus the chain
 (`chain.add_epoch` is called with every emitted key, `lib.rs:297,465`).
-Status: **Open**. The `epochs_consecutive` lemma of epoch-uniqueness is groundwork: it already says a
-run's keys come out at consecutive epochs from `keyFloor s`, with no gaps.
+Status: **Open**; statement drafted (`docs/statements/epoch-knowledge.md`). Review round 1 (2026-11-02): HUMAN_RULING on epoch 0, `docs/statement-reviews/epoch-knowledge-1.md`. Ruled 2026-11-02 (user): epoch 0 has no SCKA key, as in the SCKA paper's Fig. 1; the chain holds epoch 0 from `Chain::new`, as in its Fig. 2 and `src/chain.rs:333-354`. Restated; ACCEPT 2026-11-02, round 2, `docs/statement-reviews/epoch-knowledge-2.md` (statement SHA `893c3db8`).
+The statement is over `States` and `Chain`, not the public API: the epoch a `send` or `recv`
+reports, `msg.epoch - 1`, is covered by the keys the run emitted, and a chain fed those keys
+reaches it, which is the precondition of `chain.send_key` / `recv_key` (`lib.rs:299`,
+`lib.rs:467`). Needs epoch-uniqueness (proved: `emitted_epochs_below_keyFloor` gives the
+emitted epochs), add-epoch (proved) and chain-epoch-sync (drafted). It does not need
+transition-refinement. Lifting it to the API is api-epochs-consecutive's job.
 
 ---
 
@@ -290,6 +298,10 @@ from the key pair whose vector part is `ek` (§1.2.1: `hdr = ek_seed ‖
 SHA3-256(ek)` for the FIPS 203 encoding of `ek`).
 
 Source: Spec §1.2.1; src/incremental_mlkem768.rs:28-30
+
+The spec writes the hash as `SHA3-256(ek_seed ‖ ek_vector)`; the code hashes the FIPS 203
+encoding `ek_vector ‖ ek_seed` and also checks lengths and the encoding. Recorded as D8
+(`ek-check-fips-order`, §11).
 
 Status: **Open, no longer an axiom** (2026-11-02). Since #661 `validate_pk_bytes` is a
 concrete model (`SrcTranslated/FunsExternal.lean:2043`): it accepts iff `hdr` has 64 bytes,
@@ -618,10 +630,15 @@ The 32-byte premise is needed. `util::compare` loops over the length of its firs
 only, and `verify_hdr` / `verify_ct` pass the received MAC as that argument. Its hax `requires`
 (equal lengths, `util.rs:22-24`) is not checked at either call. So a received MAC shorter than 32
 bytes is compared as a prefix of the expected one, and `verify_*` can return `Ok(())` for it.
-On states reached from `init_a` or `init_b` this does not happen: the decoders fix the message
-sizes, so the MAC slice always has 32 bytes. braid-machine-refinement carries these sizes in
-`Refines` for this reason (PR #781). A state restored from bytes with other decoder sizes is not
-covered; see reachable-states-pb-valid.
+This does not happen through the public API. The decoders fix the message sizes, so the MAC
+slice always has 32 bytes. On states reached from `init_a` or `init_b` that holds by
+construction, and braid-machine-refinement carries these sizes in `Refines` for this reason
+(PR #781). For a state decoded from bytes, `from_pb` rejects any header, `ct1` or `ct2` decoder
+of another size (`send_ct/serialize.rs:18`, `send_ek/serialize.rs:52`,
+`send_ek/serialize.rs:95`). The gap is only for internal states built by other means.
+`Authenticator::from_pb` does not check the key lengths (`authenticator/serialize.rs:16`), so a
+decoded state can still miss the 32-byte MAC-key fact of `Refines`; see
+reachable-states-pb-valid.
 
 Source: Spec §2.4; src/authenticator.rs:57; src/authenticator.rs:82; src/util.rs:25-33
 
@@ -806,7 +823,23 @@ run in an error instead of leaving the state untouched, and liveness cannot be
 claimed for it. One `Greater` arm is exceptional and the claim depends on it:
 `Ct2Sampled` at exactly `msg.epoch == epoch + 1` transitions to
 `KeysUnsampled(epoch + 1)` (`states.rs:514-527`), which is how side B carries the
-epoch forward and reaches `KeysUnsampled_B(e+1)`. Status: **Open**.
+epoch forward and reaches `KeysUnsampled_B(e+1)`. Status: **Open**, no statement.
+
+Needs, beyond the D2 decision and initial-states:
+
+1. A two-party model: two runs, a channel and a fairness condition. None exists; `Run` is one
+   party.
+2. kem-correctness, with its noise premise. In transition 5 the receiver decapsulates, updates its
+   authenticator with the result and then checks the MAC on `ct1 ‖ ct2` (`unchunked/send_ek.rs:150-160`).
+   If its shared secret differs from the sender's, the check fails and the run ends in `Err`.
+   The header MAC of the next epoch depends on the same update. So liveness across epochs needs
+   both parties' authenticators to agree at every epoch, which is session-key-agreement's
+   argument, and holds only under the K-PKE noise bound.
+3. The converse of braid-machine-refinement: `send` succeeds on every reachable state, and
+   `recv` succeeds wherever the machine's `Receive()` does. PR #781 proves only the forward
+   direction.
+4. Decoder completion: erasure-decode-any-n, and that the encoder emits distinct codewords, so
+   that enough in-order chunks complete each decoder.
 
 Source: Spec §2.6; src/v1/chunked/states.rs:115-533
 
@@ -1131,9 +1164,11 @@ Each deviation has a stable ID and a short name. PR text uses the name, because 
 do not have this catalog. In Lean, D2, D3 and D4 are the constructors `futureEpochError`,
 `ct1AckAccepted` and `lateEkChunk` of `Braid.Deviation` (`Spqr/Specs/Braid/Deviations.lean`,
 PR #781), whose docstrings carry the comparison with §2.5. Declarations that state or follow one
-carry `@[braid_deviation …]`, which Lean checks against the constructors. D1 and D6 are not in
-`Braid.Deviation`: they live in the code's primitives (`CodeAgrees` in
-`Spqr/Specs/Braid/StateMachine/Refinement.lean`), not in the machine.
+carry `@[braid_deviation …]`, which Lean checks against the constructors. D1, D6 and D8 are not
+in `Braid.Deviation`: they live in the code's primitives (`CodeAgrees` in
+`Spqr/Specs/Braid/StateMachine/Relation.lean`), not in the machine. D7 is not in it either: it is
+in `lib.rs`, and neither the code's `States` nor the abstract machine returns the epoch it is
+about.
 
 | ID | Name | Where | Spec | Code | Impact | Source |
 |----|------|-------|------|------|--------|--------|
@@ -1143,8 +1178,10 @@ carry `@[braid_deviation …]`, which Lean checks against the constructors. D1 a
 | D4 | `late-ek-chunk` | `Ct1Acknowledged.recv` (`states.rs:485-493`) | accepts `EkCt1Ack` | also accepts `Ek` chunks | Out-of-order delivery; comment at `states.rs:486-489`. Integrity still checked by ek-integrity. | Spec §2.5; `src/v1/chunked/states.rs:485-493` |
 | D5 | `mac-failure-no-abort` | MAC failure (§2.4) | "should not proceed with the session and should negotiate a new session" | returns `Err`; caller keeps the previous state and may retry | Weaker than the spec; the session is not aborted by the library. | Spec §2.4; `src/v1/unchunked/send_ct.rs:107`; `src/v1/unchunked/send_ek.rs:160` |
 | D6 | `protocol-info-no-mac` | the `PROTOCOL_INFO` label literal, at its five sites (`authenticator.rs:47,68,93`, `unchunked/send_ct.rs:131`, `unchunked/send_ek.rs:152`) | §2.2 prescribes `PROTOCOL_INFO` as the concatenation of a protocol identifier, a string representation of KEM and a string representation of MAC, `_`-delimited — the spec's own example is `MyProtocol_MLKEM768_SHA-256`. Only the string *representations* are defined by the implementer; the component set is prescribed. | `Signal_PQCKA_V1_MLKEM768` — a protocol identifier and a KEM representation, and no MAC representation | `PROTOCOL_INFO` feeds both KDF_AUTH and KDF_OK, so a spec-conformant peer building a three-component literal derives a different `root_key`, a different `mac_key` and different session keys, and **cannot interoperate** — the same class as D1, not a naming preference. A second, latent consequence: with the MAC component omitted, two deployments that differ only in their MAC derive identical keys, so the literal does not domain-separate them. That one is dormant today because SPQR fixes MAC = HMAC-SHA256. | Spec §2.2; `src/authenticator.rs:47`; `src/v1/unchunked/send_ct.rs:131`; `src/v1/unchunked/send_ek.rs:152` |
+| D7 | `receiving-epoch-from-message` | `spqr::recv` (`lib.rs:462`); `spqr::send` (`lib.rs:299`) for comparison | `Receive` returns `receiving_epoch = state.epoch - 1` of the receiver (every `Receive` in §2.5; `Ct2Sampled.Receive` computes it after transition (13)) | the epoch of the chain key is `msg.epoch - 1` of the received message; `States::recv` returns no epoch (`states.rs:52-55`) | The two agree for a message at the receiver's epoch, for transition (13), and on the send side. They differ for a delayed message from an earlier epoch: after transition (5) Alice is at `e + 1`, and a message of Bob's tagged `e` gives `e` in the spec and `e - 1` in the code. Bob's `sending_epoch` for it was `e - 1`, so the code satisfies §1.1 "Epoch agreement" and the §2.5 pseudocode does not. The spec contradicts itself here, and the code takes the §1.1 side. | Spec §1.1; Spec §2.5; src/lib.rs:299; src/lib.rs:462 |
+| D8 | `ek-check-fips-order` | `ek_matches_header` (`incremental_mlkem768.rs:28-30`), called from `Ct1Sent::recv_ek` (`unchunked/send_ct.rs:160-169`) | §1.2.1 describes an ML-KEM encapsulation key as a 32-byte seed followed by the vector, and §1.2.1 and §2.5 check `SHA3-256(ek_seed ‖ ek_vector) = hek` | libcrux `validate_pk_bytes` hashes the FIPS 203 encoding `ek_vector ‖ ek_seed`, and also rejects wrong lengths and an `ek_vector` that is not a canonical encoding (`Fips203.Refinement.pk2Valid`) | FIPS 203 encodes `ek` as the vector followed by the seed, and ML-KEM encapsulation needs `H(ek)` of that encoding, which §1.2.1 calls "the hash of the full encapsulation key". So the spec's order most likely comes from a wrong description of the layout, and the code is the correct reading. The extra checks are a tightening, as in D2: a key that §2.5 accepts can be rejected. | Spec §1.2.1; Spec §2.5; src/incremental_mlkem768.rs:28-30; src/v1/unchunked/send_ct.rs:160-169 |
 
-Decisions recorded for the six rows. Each is a **project** decision taken so the
+Decisions recorded for the eight rows. Each is a **project** decision taken so the
 properties have one side to assert; none of them is a Signal ruling, and none of them
 authorises a `src/` change:
 
@@ -1156,20 +1193,25 @@ authorises a `src/` change:
 | D4 | `late-ek-chunk` | The properties assert the code: `Ct1Acknowledged.recv` also accepts `Ek` chunks, for out-of-order delivery, with encapsulation-key integrity still checked on completion (ek-integrity). Provisional and pending a Signal ruling; settling it needs the spec to document the extra accepted type or the code to drop it. | Provisional (2026-09-15) |
 | D5 | `mac-failure-no-abort` | The properties assert the code: MAC failure returns `Err` — `Error::MacVerifyFailed` at the public API — and the library does not abort the session, so the caller keeps its previous serialized state and may retry. The obligations this puts on the caller are written out once, as the caller contract in **mac-failure, section 7**; this row does not restate it. Provisional and pending a Signal ruling, and the code remains weaker than §2.4 until then; settling it needs the written contract adopted, or the library to abort the session itself. | Provisional (2026-09-15) |
 | D6 | `protocol-info-no-mac` | The properties assert the code: the two-component literal `Signal_PQCKA_V1_MLKEM768` at all five label sites, carrying a protocol identifier and a KEM representation and no MAC representation. §2.2 prescribes the component set — a protocol identifier, a string representation of KEM and a string representation of MAC — and leaves only the string representations to the implementer, so the omission is a deviation and not an implementer choice. This row and D1 are the two where adopting the code accepts a real interoperability cost rather than a bookkeeping one. Provisional and pending a Signal ruling; settling it needs either a code fix adding the MAC representation to the literal, or a spec erratum permitting a two-component literal. | Provisional (2026-09-16) |
+| D7 | `receiving-epoch-from-message` | The properties assert the code: the epoch of the chain key for a received message is `msg.epoch - 1` of that message, which is the §1.1 property, and not the receiver's `state.epoch - 1` of the §2.5 pseudocode. Provisional and pending a Signal ruling; settling it needs a spec erratum that makes §2.5 return the message's epoch, or a statement that §1.1 holds only for in-order delivery. | Provisional (2026-11-02) |
+| D8 | `ek-check-fips-order` | The properties assert the code: the `ek` check is libcrux `validate_pk_bytes`, which hashes `ek_vector ‖ ek_seed` (the FIPS 203 encoding) and checks the lengths and the canonical encoding of `ek_vector`. Provisional and pending a Signal ruling; settling it needs a spec erratum for the key layout and the hash order in §1.2.1 and §2.5, and a statement on whether the extra checks are part of the protocol. | Provisional (2026-11-02) |
 
 Resolution for each is a decision, not a proof: D1 needs either a code fix
 or a spec erratum; D2 needs the spec to mandate strictness or the code to
 adopt the no-op; D3 and D4 need the spec to document the extra message
 handling or the code to drop it; D5 needs the caller's contract written down;
 D6 needs either a code fix adding the MAC representation or a spec erratum
-permitting a two-component literal.
+permitting a two-component literal; D7 needs a spec erratum for `receiving_epoch` or a
+restriction of §1.1 to in-order delivery; D8 needs a spec erratum for the key layout and the hash
+order.
 Those candidate resolutions stand, and are retained for the outward-facing note
 to Signal (DEV-05, deferred). What has changed is that each row now carries a
 provisional decision in the second table above: the properties assert the code as
 implemented, which is a recorded project decision pending a Signal ruling and not a
 finding that the code is right. If Signal rules otherwise, the affected property
 statements — kdf-auth-inputs (D1), recv-epoch-dispatch, transition-refinement and structural-liveness (D2, D3, D4), mac-failure
-(D5) and kdf-labels (D6) — are restated, which is why each of them names its D-row
+(D5), kdf-labels (D6), epoch-agreement (D7), and kem-header-binding, ek-integrity and
+transition-refinement (D8) — are restated, which is why each of them names its D-row
 inline.
 
 ---
@@ -1192,7 +1234,7 @@ inline.
 | hkdf-output-lengths | 5 | Proved |
 | epoch-uniqueness | 2 | Proved |
 | epoch-agreement | 2 | Open |
-| epoch-knowledge | 2 | Open |
+| epoch-knowledge | 2 | Open; statement ACCEPTed (round 2) |
 | kdf-ok-sites | 5 | Open |
 | ek-integrity | 8 | Open |
 | initial-states | 9 | Open |
@@ -1222,7 +1264,7 @@ inline.
 | canonical-parse-injective | 6 | Open |
 | api-epochs-consecutive | 2 | Open; no statement yet |
 | message-keys-unique | 10 | Open; no statement yet |
-| D1–D6 | 11 | Deviations; a provisional decision recorded per row, pending Signal |
+| D1–D8 | 11 | Deviations; a provisional decision recorded per row, pending Signal |
 
 ---
 
