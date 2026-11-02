@@ -130,6 +130,8 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
+public import Spqr.Specs.Braid.StateMachine.Model
+public import Spqr.Specs.Braid.StateMachine.Relation
 public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
