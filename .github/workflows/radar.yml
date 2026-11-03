@@ -9,7 +9,7 @@ on:
 #
 # The comment is posted with a token of the `baif-radar` machine user
 # (secret RADAR_COMMENT_TOKEN: fine-grained PAT limited to this repository
-# with "Issues: read and write" and "Pull requests: read"). Radar only
+# with "Issues: read and write" and "Pull requests: read and write"). Radar only
 # honours commands whose author association is allowed by its server
 # configuration; `baif-radar` is an organization member, whereas
 # `github-actions[bot]` comments carry association NONE and would be rejected.

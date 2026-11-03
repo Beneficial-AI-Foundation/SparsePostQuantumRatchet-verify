@@ -26,7 +26,7 @@ and would be rejected, so the workflow posts the comment as the existing
 `baif-radar` machine user instead. This requires the repository secret
 `RADAR_COMMENT_TOKEN`: a fine-grained personal access token of `baif-radar`,
 limited to this repository, with "Issues: read and write" and
-"Pull requests: read". The workflow fails if the secret is missing. When
+"Pull requests: read and write". The workflow fails if the secret is missing. When
 enabling or rotating the token, verify on a PR that Radar returns a report for
 the current commit. If it rejects the request, use a manual `!radar` comment
 from an authorized reviewer in the meantime; do not relax Radar's command
