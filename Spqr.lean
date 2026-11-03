@@ -333,6 +333,7 @@ public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.SendHdrChunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
+public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.SendHdrChunk
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
