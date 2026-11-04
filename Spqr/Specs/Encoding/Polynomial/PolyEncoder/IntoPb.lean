@@ -586,14 +586,18 @@ theorem intoPbPostCond_intoPb
   · have h_ov := h_overflow_points points rfl
     unfold IntoPbPostCond FunctionalModels.intoPb
     simp only
-    refine ⟨trivial, by simp [alloc.vec.Vec.new], by simp, fun j hj => ?_⟩
+    refine ⟨trivial, by simp [alloc.vec.Vec.new],
+      by simp only [alloc.vec.Vec.length]; rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]; simp,
+      fun j hj => ?_⟩
     have hj' : j < points.val.length := hj
     have hb := h_ov j hj
     rw [Array.getElem!_Nat_eq] at hb
-    rw [alloc.vec.Vec.getElem!_Nat_eq (alloc.vec.Vec.from _ _) j, alloc.vec.Vec.from_val,
-      List.getElem!_map_eq _ _ _ hj', Array.getElem!_Nat_eq]
+    rw [alloc.vec.Vec.getElem!_Nat_eq (alloc.vec.Vec.ofList _) j,
+      alloc.vec.Vec.ofList_val _ (by scalar_tac), List.getElem!_map_eq _ _ _ hj',
+      Array.getElem!_Nat_eq]
     simp only [alloc.vec.Vec.length] at hb
-    obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _
+    obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff
+      (Poly.FunctionalModels.serialize { coefficients := (points.val[j]!).value })
       (points.val[j]!).value.val (by omega)).mp rfl
     refine ⟨hl, fun k hk' => ?_⟩
     have e := hk k hk'
@@ -603,12 +607,15 @@ theorem intoPbPostCond_intoPb
   · have h_ov := h_overflow_polys polys rfl
     unfold IntoPbPostCond FunctionalModels.intoPb
     simp only
-    refine ⟨trivial, by simp [alloc.vec.Vec.new], by simp, fun j hj => ?_⟩
+    refine ⟨trivial, by simp [alloc.vec.Vec.new],
+      by simp only [alloc.vec.Vec.length]; rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]; simp,
+      fun j hj => ?_⟩
     have hj' : j < polys.val.length := hj
     have hb := h_ov j hj
     rw [Array.getElem!_Nat_eq] at hb
-    rw [alloc.vec.Vec.getElem!_Nat_eq (alloc.vec.Vec.from _ _) j, alloc.vec.Vec.from_val,
-      List.getElem!_map_eq _ _ _ hj', Array.getElem!_Nat_eq]
+    rw [alloc.vec.Vec.getElem!_Nat_eq (alloc.vec.Vec.ofList _) j,
+      alloc.vec.Vec.ofList_val _ (by scalar_tac), List.getElem!_map_eq _ _ _ hj',
+      Array.getElem!_Nat_eq]
     unfold Poly.degree at hb ⊢
     simp only [alloc.vec.Vec.length] at hb
     obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff
@@ -634,7 +641,7 @@ theorem eq_intoPb_of_intoPbPostCond (self : PolyEncoder)
     simp only [proto.pq_ratchet.PolynomialEncoder.mk.injEq]
     refine ⟨hidx, ?_, alloc.vec.Vec.ext _ _ (by simp [alloc.vec.Vec.new, hpolys])⟩
     apply alloc.vec.Vec.ext
-    rw [alloc.vec.Vec.from_val]
+    rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]
     apply (List.eq_iff_forall_eq_getElem! _ _).mpr
     simp only [alloc.vec.Vec.length, Array.length] at hlen
     refine ⟨by simpa using hlen, fun j hj => ?_⟩
@@ -655,7 +662,7 @@ theorem eq_intoPb_of_intoPbPostCond (self : PolyEncoder)
     simp only [proto.pq_ratchet.PolynomialEncoder.mk.injEq]
     refine ⟨hidx, alloc.vec.Vec.ext _ _ (by simp [alloc.vec.Vec.new, hpts]), ?_⟩
     apply alloc.vec.Vec.ext
-    rw [alloc.vec.Vec.from_val]
+    rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]
     apply (List.eq_iff_forall_eq_getElem! _ _).mpr
     simp only [alloc.vec.Vec.length, Array.length] at hlen
     refine ⟨by simpa using hlen, fun j hj => ?_⟩

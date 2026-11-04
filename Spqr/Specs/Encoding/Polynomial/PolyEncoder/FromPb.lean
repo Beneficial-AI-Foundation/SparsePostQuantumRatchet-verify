@@ -765,12 +765,14 @@ theorem fromPbPostCond_fromPb (pb : proto.pq_ratchet.PolynomialEncoder) :
   swap
   · rw [ite_eq_right hwf]
     unfold FunctionalModels.fromPb
+    dsimp only
     split_ifs with h1 h2
     · exact absurd (Or.inl ((polys_shape_iff pb).mp h1)) hwf
     · exact absurd (Or.inr ((pts_shape_iff pb).mp h2)) hwf
     · rfl
   rw [ite_eq_left hwf]
   unfold FunctionalModels.fromPb
+  dsimp only
   split_ifs with h1 h2
   · obtain ⟨hpts, hlen, hacc⟩ := h1
     simp only [alloc.vec.Vec.length] at hlen
@@ -791,7 +793,7 @@ theorem fromPbPostCond_fromPb (pb : proto.pq_ratchet.PolynomialEncoder) :
       rw [Poly.FunctionalModels.bytesOfCoeffs_coeffsOfBytes _ hev, alloc.vec.Vec.val_ofList]
     obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _
       (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega)).mp heq
-    simp only [Poly.degree, alloc.vec.Vec.length,
+    simp only [Poly.degree, alloc.vec.Vec.length, Function.comp_apply,
       alloc.vec.Vec.ofList_val (Poly.FunctionalModels.coeffsOfBytes (pb.polys.val[j]!).val)
         (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega),
       alloc.vec.Vec.getElem!_Nat_eq] at hl hk ⊢
@@ -818,7 +820,7 @@ theorem fromPbPostCond_fromPb (pb : proto.pq_ratchet.PolynomialEncoder) :
       rw [Poly.FunctionalModels.bytesOfCoeffs_coeffsOfBytes _ hev', alloc.vec.Vec.val_ofList]
     obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _
       (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega)).mp heq
-    simp only [alloc.vec.Vec.length,
+    simp only [alloc.vec.Vec.length, Function.comp_apply,
       alloc.vec.Vec.ofList_val (Poly.FunctionalModels.coeffsOfBytes (pb.pts.val[j]!).val)
         (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega),
       alloc.vec.Vec.getElem!_Nat_eq] at hl hk ⊢
@@ -838,6 +840,7 @@ theorem eq_fromPb_of_fromPbPostCond (pb : proto.pq_ratchet.PolynomialEncoder)
     result = FunctionalModels.fromPb pb := by
   unfold FromPbPostCond at h
   unfold FunctionalModels.fromPb
+  dsimp only
   by_cases hwf : FromPbWellFormed pb
   swap
   · rw [ite_eq_right hwf] at h
@@ -867,6 +870,7 @@ theorem eq_fromPb_of_fromPbPostCond (pb : proto.pq_ratchet.PolynomialEncoder)
       simp only [Array.length_eq] at hj
       have hj' : j < pb.polys.val.length := by scalar_tac
       rw [List.getElem!_map_eq _ _ _ hj']
+      simp only [Function.comp_apply]
       obtain ⟨hl, hk⟩ := hbody j (by simpa using hj)
       simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq, Poly.degree,
         alloc.vec.Vec.length] at hl hk
@@ -896,6 +900,7 @@ theorem eq_fromPb_of_fromPbPostCond (pb : proto.pq_ratchet.PolynomialEncoder)
       simp only [Array.length_eq] at hj
       have hj' : j < pb.pts.val.length := by scalar_tac
       rw [List.getElem!_map_eq _ _ _ hj']
+      simp only [Function.comp_apply]
       obtain ⟨hl, hk⟩ := hbody j (by simpa using hj)
       simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length]
         at hl hk
