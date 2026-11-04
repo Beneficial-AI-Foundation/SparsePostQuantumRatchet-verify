@@ -2,7 +2,7 @@
 
 Use these questions to review a PR in `SparsePostQuantumRatchet-verify`. Answer them from the
 current diff, Rust source, theorem statements, dependencies, and validation results, then report
-only the problems found, grouped and tagged as described in
+findings and their resolution history, grouped and tagged as described in
 [Reporting the review](#reporting-the-review). Ask the author only when a material question
 remains unresolved after that inspection. A passing Lean proof
 establishes its formal statement under its assumptions; review must also assess whether those
@@ -21,8 +21,9 @@ The principles in each section are meant to stay valid as the repository evolves
 
 ## Procedure
 
-Perform these steps before answering the questions. They produce the evidence the questions
-refer to.
+Perform these steps for a full review. They produce the evidence the questions refer to.
+For an explicitly static or quick review, respect its execution limits: inspect available CI
+evidence instead of running prohibited commands, and report any missing validation as unverified.
 
 1. **Fix the revision.** Record the base and head commits of the PR and review exactly that diff:
 
@@ -249,9 +250,9 @@ The commands are in the [procedure](#procedure). These questions interpret their
 ## Reporting the review
 
 The questions above are the investigation checklist, not the outline of the report. The report
-lists only problems. Do not answer the questions one by one, do not restate what the PR does, and
-do not list the checks that passed except in the validation footer. A reader should be able to
-see the verdict and every finding, grouped by severity, without reading anything else.
+lists findings and, on re-review, their resolution history. Do not answer the questions one by
+one, do not restate what the PR does, and list passing checks only in Build or Validation.
+A reader should be able to see the verdict and every finding, grouped by severity, without reading anything else.
 
 ### Severity groups
 
@@ -260,7 +261,9 @@ Group findings under these three headings, in this order, using the vocabulary o
 
 - **Blocking:** a demonstrated counterexample to a specification, an unsatisfiable or
   question-begging premise, an unfaithful model of the Rust behavior, an unjustified change to
-  the trust base, or validation that did not actually pass on the head revision.
+  the trust base, or a confirmed failure of required validation for the reviewed revision.
+  Checks that are pending, were not run, or have no available evidence are unverified, not
+  blocking findings by themselves.
 - **Judgment (blocking or non-blocking):** level of abstraction, usability by callers,
   composition gaps, and performance regressions, in proportion to their impact.
 - **Non-blocking:** naming, placement, reuse, comments, PR format, and style, unless the style
@@ -291,15 +294,15 @@ PRs. The tag names the section of this guide that produced the finding:
 Write each finding as one bullet in this shape:
 
 ```text
-- [`tag`] `path/to/File.lean:LINE` `theorem_name` — one-sentence defect.
+- F001 [`tag`] `path/to/File.lean:LINE` `theorem_name` — one-sentence defect.
   Evidence: counterexample, dependency argument, or Rust lines that define the intended behavior.
   Consequence: what callers, proof meaning, or verification scope lose.
   Ask: the focused question or requested correction, and what evidence would resolve it.
 ```
 
-Keep the first line short enough to scan. Put the reviewed head commit once in the footer, not
-in every finding. If the same defect appears at several places, report it once and list the
-locations.
+Keep the first line short enough to scan. Put the reviewed head commit once in the verdict,
+not in every finding; cite historical commits separately when tracking a resolution. If the same
+defect appears at several places, report it once and list the locations.
 
 **What an AI review may propose.** The workflow prohibits AI-generated specifications. In a
 review this means: an AI may present a counterexample, name the property that is missing in
@@ -319,10 +322,70 @@ Useful author-facing questions after investigation include:
   there a separate success theorem?"
 - "The benchmark compares against a failed base build. Is a successful comparable baseline available?"
 
+### Re-review and stable finding IDs
+
+Assign findings PR-local IDs (`F001`, `F002`, ...). Before assigning an ID, read earlier review
+reports and threads. Reuse the same ID for the same underlying issue across rounds, even if
+its location, wording, category, or severity changes. Allocate new IDs after the highest existing
+ID; never renumber or recycle IDs. If older findings lack IDs, assign them once and link each
+to its original report or thread. If prior reports used colliding IDs, qualify them with their
+original report link and record an explicit mapping to unique IDs. If review history is
+unavailable, disclose that limitation and qualify provisional IDs with the current report's
+identifier; do not claim continuity or resolution of unseen findings.
+
+On each re-review:
+
+1. Record the previous review's head, the current head, and links to prior reports. Inspect the
+   actual changes between those revisions and the current PR diff against its base, including
+   affected callers, dependencies, and validation evidence. After a rebase or force-push, inspect
+   the current code rather than assuming old line numbers or commit ancestry still apply.
+2. Recheck every previously open finding against the current code and evidence. An author's
+   statement or a thread marked resolved is not proof of a fix. Revisit previously closed
+   findings when affected by new changes; reopen a recurrence under its original ID.
+3. Review new changes for new defects, not just compliance with earlier asks. Give distinct new
+   defects new IDs and include them in the normal severity groups.
+4. Include a finding history table carrying forward all known IDs, with one of these states:
+   - `fixed`: evidence shows the defect was corrected. Cite the fixing commit when identifiable,
+     the current head where the fix was checked, and the relevant code or check result.
+   - `still present`: current-head evidence confirms the defect remains, including a recurrence.
+   - `withdrawn`: the earlier finding was mistaken or no longer applicable, rather than fixed.
+     Explain why, citing the original reviewed commit and the current evidence.
+   - `awaiting human decision`: conflicting requirements or unresolved judgment need adjudication.
+     Cite the competing evidence and the exact decision needed. If evidence is insufficient to
+     establish either persistence or resolution, use this state with that limitation explicit;
+     do not label the defect confirmed or fixed.
+
+If this round requires a change that contradicts an earlier requirement, link both findings or
+threads, quote the incompatible wording, and identify their rounds and reviewed commits. Explain
+why both requirements cannot hold, mark the affected findings `awaiting human decision`, and ask
+the responsible human to choose. Do not silently reverse the earlier instruction or ask the
+author to alternate between incompatible fixes. Record a later human decision with its source;
+then verify the resulting code before marking a finding fixed or withdrawn.
+
+Only currently demonstrated blocking findings count in the verdict. Fixed and withdrawn items
+remain in the history table, not the active severity groups. List pending human decisions
+separately and explicitly even when the verdict says no blocking finding; that verdict does not
+resolve them or approve the PR. Finding state is independent of Build and Validation: a static
+code fix can be confirmed while the build remains unverified.
+
 ### Report layout
+
+Report review findings and build status independently. No blocking finding does not mean the
+PR builds; a passing build does not mean its specifications or models are correct. Neither
+result alone constitutes approval to merge.
+
+Use `passed` or `failed` for the build only when supported by an observed result for the
+reviewed revision. Otherwise use `unverified` and explain whether the build is pending, was not
+run, or its evidence is unavailable. Identify the source (reviewer-run command or CI) and tested
+commit; if CI tested a merge commit, identify that commit and its relationship to the reviewed
+head. Results from an older head do not establish the current build status. Report lint,
+audits, extraction, and other checks separately in Validation; a passing build does not imply
+those checks passed.
 
 ```text
 Verdict: <no blocking finding | N blocking finding(s)> on <head commit> (base <base commit>).
+Build: <passed | failed | unverified> — <evidence source and tested commit, or reason unverified>.
+Review round: <round identifier>; previous review: <report link and head commit, or first review>.
 
 Blocking
 - ...
@@ -333,15 +396,24 @@ Judgment
 Non-blocking
 - ...
 
-Validation: <commands from the procedure that ran on the head, each with pass/fail>.
+Finding history (on re-review)
+| ID | State | Original report / reviewed commit | Current evidence / checked commit |
+| --- | --- | --- | --- |
+| F001 | <fixed / still present / withdrawn / awaiting human decision> | <link / SHA> | <evidence / SHA> |
+
+Pending human decisions (omit if none)
+- <finding IDs; conflicting quotations and report links; rounds and commits; decision needed>
+
+Validation: <other checks, each with passed/failed/unverified, evidence source, and tested commit>.
 Unverified: <material boundaries not checked, or "none">.
 ```
 
 The verdict line comes first. If no blocking problem is demonstrated, say so without claiming
-full protocol security. The validation line names the commands that actually ran and their
-results; it does not repeat the PR body's claims. Recheck claimed fixes against the updated diff
-rather than accepting an author reply. An AI review remains assistance for the responsible human
-reviewer.
+full protocol security. Build and Validation distinguish commands you ran from observed CI
+results; do not present author claims as verified evidence. Missing validation limits the review
+and must remain explicit even when no blocking finding is reported. Recheck claimed fixes
+against the updated diff rather than accepting an author reply. An AI review remains assistance
+for the responsible human reviewer.
 
 ## Appendix: historical examples
 
