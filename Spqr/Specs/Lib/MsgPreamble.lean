@@ -119,7 +119,7 @@ theorem msg_preamble_of_blocks (msg : alloc.vec.Vec U8) (n₁ n₂ e i : ℕ)
         p.index.val = i ∧ p.remaining.val = msg.val.drop (1 + n₁ + n₂) ⦄ := by
   unfold msg_preamble
   simp only [CoreOpsTry.branch]
-  have hnemp : alloc.vec.Vec.is_empty Global msg = ok false := by
+  have hnemp : alloc.vec.Vec.is_empty alloc.alloc.Global msg = ok false := by
     simp only [alloc.vec.Vec.is_empty]
     have : msg.val ≠ [] := by
       intro h; simp [alloc.vec.Vec.length, h] at hne

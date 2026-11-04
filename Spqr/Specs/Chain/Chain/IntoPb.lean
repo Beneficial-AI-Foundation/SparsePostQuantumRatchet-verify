@@ -35,7 +35,7 @@ One iteration of the link-conversion loop. If the deque is empty the loop stops 
 `links`. -/
 @[step]
 theorem body_spec
-    (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch)
     (hwf : chain_links.head.val + chain_links.length.val ≤ chain_links.buf.val.length)
     (hcap : links.val.length + chain_links.length.val ≤ Usize.max) :
@@ -72,7 +72,7 @@ the loop returns `links` followed by the conversions (`epochIntoPb`) of the live
 `chain_links`, in order. -/
 @[step]
 theorem into_pb_loop_spec
-    (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch)
     (hwf : chain_links.head.val + chain_links.length.val ≤ chain_links.buf.val.length)
     (hcap : links.val.length + chain_links.length.val ≤ Usize.max) :

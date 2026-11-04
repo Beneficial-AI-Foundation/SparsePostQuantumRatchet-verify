@@ -385,7 +385,7 @@ theorem HeaderSent_recv_ct1_chunk_outcome (st : send_ek.HeaderSent) (e : Std.U64
 /-- The code's split of a completed message `m` at `i` is `take i` / `drop i`. -/
 private theorem split_vals {m : alloc.vec.Vec Std.U8} {i : Std.Usize} {s s1 s2 : Slice Std.U8}
     {lo hi : alloc.vec.Vec Std.U8}
-    (hs : alloc.vec.Vec.as_slice Global m = ok s)
+    (hs : alloc.vec.Vec.as_slice alloc.alloc.Global m = ok s)
     (hs1 : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U8) s
       { start := i } = ok s1)
     (hhi : alloc.slice.Slice.to_vec core.clone.CloneU8 s1 = ok hi)

@@ -20,7 +20,8 @@ namespace Aeneas.Std.alloc.vec.Vec
 
 /-- A successful `append` returns the elements of `v1` followed by those of `v2`. -/
 theorem append_ok_val {α : Type} {v1 v2 r1 r2 : alloc.vec.Vec α}
-    (h : alloc.vec.Vec.append Global v1 v2 = ok (r1, r2)) : r1.val = v1.val ++ v2.val := by
+    (h : alloc.vec.Vec.append alloc.alloc.Global v1 v2 = ok (r1, r2)) :
+    r1.val = v1.val ++ v2.val := by
   simp only [alloc.vec.Vec.append] at h
   split at h
   · simp only [ok.injEq, Prod.mk.injEq] at h
