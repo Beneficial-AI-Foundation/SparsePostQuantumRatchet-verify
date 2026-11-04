@@ -321,7 +321,6 @@ public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.RecvHdrChunk
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
-public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.RecvCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.Epoch
