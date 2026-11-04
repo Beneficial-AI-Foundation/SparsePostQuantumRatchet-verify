@@ -23,7 +23,7 @@ permissions:
 jobs:
   self-heal:
     if: vars.SELF_HEAL != 'off' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.pull_requests[0].number)
-    uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@eaadbc1c721d11792110df40748f53752d8df7f4
+    uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@da3220583eae792e3568efb1592e72cce3367c53
     with:
       target: spqr
       pr: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
