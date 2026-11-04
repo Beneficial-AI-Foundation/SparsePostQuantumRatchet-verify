@@ -599,7 +599,7 @@ structure chain.Chain where
   dir : proto.pq_ratchet.Direction
   current_epoch : Std.U64
   send_epoch : Std.U64
-  links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global
+  links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global
   next_root : alloc.vec.Vec Std.U8
   params : proto.pq_ratchet.ChainParams
 
