@@ -283,7 +283,7 @@ theorem recv_ct2_chunk_spec (self : EkSentCt1Received) (epoch : U64) (chunk : en
   | some msg =>
     have h_len : msg.length = 160 := h_decoded_len receiving_ct2 msg o_post
     have h_len' : msg.val.length = 160 := h_len
-    step with alloc.vec.Vec.as_slice_spec Global msg as ⟨s, h_s⟩
+    step with alloc.vec.Vec.as_slice_spec alloc.alloc.Global msg as ⟨s, h_s⟩
     have h_s_len : s.length = 160 := by simp only [Slice.length, h_s, h_len']
     step with h_ct2_size as ⟨i, h_i⟩
     have h_i' : i = 128#usize := by scalar_tac

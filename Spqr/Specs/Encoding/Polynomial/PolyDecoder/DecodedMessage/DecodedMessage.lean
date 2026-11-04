@@ -386,7 +386,7 @@ theorem body_spec
           let sv1 ← sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
             Pt.Insts.CoreCmpOrd (a.val[poly.val]'(by simp; omega))
           let v1 ← sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref Pt.Insts.CoreCmpOrd sv1
-          let s1 ← alloc.vec.Vec.as_slice Global v1
+          let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global v1
           let i3 ← encoding.polynomial.PolyDecoder.necessary_points
             { pts_needed := i, pts := a, is_complete := b } poly
           let points ← core.slice.index.SliceIndexRangeToUsizeSlice.index { «end» := i3 } s1
