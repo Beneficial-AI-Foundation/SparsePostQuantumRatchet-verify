@@ -17,8 +17,8 @@ serialized encapsulation state `es = ŷ ‖ e₂ ‖ m` produced by `encaps1`, i
 second ciphertext half `c₂`.
 
 The extracted body in `SrcTranslated/Funs.lean` proceeds in three steps:
-* call the opaque `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 es` and fall
-  back to `es` when it returns `None` — the endianness workaround for libcrux issue #1275;
+* call `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 es` and fall back to
+  `es` when it returns `None` — the endianness workaround for libcrux issue #1275;
 * `try_into` the (possibly fixed) state and `ek` into fixed-size arrays of 2080 and 1152 bytes
   and unwrap both `Result`s (`expect`) — with the length preconditions these cannot fail;
 * call libcrux's incremental `encapsulate2` and copy the ciphertext into an owned `Vec`.
@@ -28,18 +28,16 @@ The extracted body in `SrcTranslated/Funs.lean` proceeds in three steps:
 `Fips203.Refinement.ct2List st pk` — round 2 of FIPS 203 Algorithm 17
 (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `st` and the NTT-domain
 vector `t̂` decoded from `pk = ByteEncode₁₂(t̂)` — where `pk` holds the bytes of `ek` and `st`
-holds the bytes of the state actually consumed: the fixed state when the opaque endianness
-workaround returned `Some`, and `es` itself otherwise.  The workaround is SPQR's own Rust
-(`#[hax_lib::opaque]`) and is kept uninterpreted in `SrcTranslated/FunsExternal.lean`; the only
-fact used about it is its hax contract (success, any `Some` has 2080 bytes), the trusted axiom
-`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec`.  The spec therefore
-holds for **every** admitted (2080-byte) state, including the byte-swapped ones the Rust repairs:
-it does not assume the workaround returns `None`.
+holds the bytes of the state actually consumed: the fixed state when the endianness workaround
+returned `Some`, and `es` itself otherwise. `encaps2_spec` uses only the contract theorem
+`potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec` (success, any `Some` has
+2080 bytes), so it holds for every 2080-byte state, including the byte-swapped ones the Rust
+repairs.
 
-When `es` is the serialised round-1 state of `encaps1` on a generated key and the workaround is
-the identity (`None`), `ct2Bytes_stateOut_pk2Bytes` and `ct_eq_ct1Bytes_append_ct2Bytes` of
-Bridge 6.3 identify the output with `ct[960 : 1088]` of the monolithic
-`ML-KEM.Encaps_internal(ek, m)`.
+When `es` is the serialised round-1 state of `encaps1`, `encaps2EffectiveState_stateOut` shows
+that the effective state is `es` itself, and `ct2Bytes_stateOut_pk2Bytes` and
+`ct_eq_ct1Bytes_append_ct2Bytes` of Bridge 6.3 identify the output with `ct[960 : 1088]` of the
+monolithic `ML-KEM.Encaps_internal(ek, m)`.
 
 **Source**: `src/incremental_mlkem768.rs`, lines 71:0-79:1 -/
 
@@ -81,6 +79,17 @@ noncomputable def encaps2EffectiveState
       es
   ok (mf.elim es.val (fun fixed => fixed.val))
 
+open spqr.incremental_mlkem768 in
+/-- On every state that the FIPS 203 model of `encapsulate1` writes, the effective state of
+`encaps2` is `es` itself. -/
+theorem encaps2EffectiveState_stateOut (hdr : List U8) (h_hdr : 64 ≤ hdr.length)
+    (m : Fin 32 → UInt8) (es : alloc.vec.Vec U8)
+    (h_es : es.val = Fips203.Refinement.toU8List (Fips203.Refinement.stateOut hdr h_hdr m)) :
+    encaps2EffectiveState es = ok es.val := by
+  simp only [encaps2EffectiveState,
+    potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_stateOut hdr h_hdr m es h_es,
+    bind_ok, Option.elim]
+
 /-- Postcondition predicate for `encaps2`: the result is the 128-byte
 second ciphertext half `c₂` computed from the effective state and the
 encapsulation key, via FIPS 203 round 2 (Bridge 6.3). -/
@@ -110,11 +119,10 @@ selected) and `pk` (the bytes of `ek`) with `result = Fips203.Refinement.ct2List
 `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))` on the decoded
 state `(ŷ, e₂, m)` and `t̂`.
 
-The endianness workaround is uninterpreted (it is `#[hax_lib::opaque]` SPQR Rust, see
-`SrcTranslated/FunsExternal.lean`); the proof uses only its hax contract — the trusted axiom
+The proof uses only the contract theorem
 `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec` (success, and any `Some`
-has 2080 bytes).  In particular the theorem makes **no** assumption on whether the workaround
-returns `None` or `Some`; `Encaps2Post` records the state actually consumed through
+has 2080 bytes), so it holds for every 2080-byte state. It makes no assumption on whether the
+workaround returns `None` or `Some`; `Encaps2Post` records the state actually consumed through
 `encaps2EffectiveState`. -/
 theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
     (h_ek : ek.length = 1152) (h_es : es.length = 2080) :
@@ -131,7 +139,6 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
           pk.val = ek.val ∧
           result.val = Fips203.Refinement.ct2List st pk) ∧
       result.length = 128 ⦄ from h
-  -- The workaround stays uninterpreted: obtain an arbitrary `mf` satisfying the hax contract.
   obtain ⟨mf, h_eq, h_len⟩ :=
     WP.spec_imp_exists
       (potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec es h_es)

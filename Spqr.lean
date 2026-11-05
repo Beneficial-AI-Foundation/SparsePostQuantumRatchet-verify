@@ -102,6 +102,7 @@ public import Spqr.Specs.Aeneas.IntoIteratorSlice
 public import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Specs.Aeneas.SliceChunks
 public import Spqr.Specs.Aeneas.SliceChunksExact
 public import Spqr.Specs.Aeneas.SliceConcat
 public import Spqr.Specs.Aeneas.SliceConcatListAux
