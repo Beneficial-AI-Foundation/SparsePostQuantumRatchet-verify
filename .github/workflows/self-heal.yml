@@ -12,9 +12,6 @@ on:
   workflow_dispatch:
     inputs:
       pr: {description: "PR number", required: true}
-concurrency:
-  group: self-heal-${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
-  cancel-in-progress: true
 permissions:
   contents: read
   pull-requests: write
@@ -30,6 +27,10 @@ jobs:
       ((github.event.workflow_run.name == 'Lean Verification' &&
       (github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'timed_out')) ||
       (github.event.workflow_run.name == 'Aeneas extraction' && github.event.workflow_run.conclusion == 'success'))))
+    # Job-level, so a run whose job the `if` skips does not cancel a running repair.
+    concurrency:
+      group: self-heal-${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+      cancel-in-progress: true
     uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@fbfcd771f307426ec3c50facbfec40239001b0fe
     with:
       target: spqr
