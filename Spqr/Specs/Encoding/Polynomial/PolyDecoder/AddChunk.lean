@@ -536,6 +536,52 @@ theorem add_chunk_spec
   simp only [show (0#usize : Usize).val = 0 from rfl, Nat.zero_add] at h
   exact h
 
+/-- The postcondition of `add_chunk_spec` as a named relation between the decoder before
+(`pd0`) and after (`pd`) absorbing `chunk`, for reuse by callers of `add_chunk` (e.g. the
+chunked V1 state transitions):
+
+  - `pts_needed` and `is_complete` are preserved;
+  - there is a chain `selfs 0 = pd0, …, selfs 16 = pd` of intermediate decoders in which the
+    `j`-th two-byte pair of `chunk` becomes the point
+    `(x, y) = (chunk.index, 256 · chunk.data[2j] + chunk.data[2j+1])` of polynomial `j`, and is
+    inserted into `pts[j]` (append / replace / `sortedInsert`) iff
+    `chunk.index < np ∨ |pts[j]| < np` for `np = necessary_points(j)`; otherwise the step is
+    the identity. -/
+def AddChunkPost (pd0 : PolyDecoder) (chunk : encoding.Chunk) (pd : PolyDecoder) : Prop :=
+  pd.pts_needed = pd0.pts_needed ∧
+  pd.is_complete = pd0.is_complete ∧
+  ∃ (selfs : Nat → PolyDecoder),
+    selfs 0 = pd0 ∧
+    selfs 16 = pd ∧
+    ∀ (j : Nat), j < 16 →
+      let total_idx := chunk.index.val * 16 + j
+      let poly := total_idx % 16
+      let poly_idx := total_idx / 16
+      let np := pd0.pts_needed.val / 16 +
+        (if poly < pd0.pts_needed.val % 16 then 1 else 0)
+      (selfs (j + 1)).pts_needed = pd0.pts_needed ∧
+      (selfs (j + 1)).is_complete = pd0.is_complete ∧
+      poly < 16 ∧
+      poly_idx = chunk.index.val ∧
+      ∃ (p : Pt),
+        p.x.value.val = poly_idx ∧
+        p.y.value.val = (chunk.data[j * 2]!) * 256 + (chunk.data[j * 2 + 1]!) ∧
+        (if poly_idx < np ∨ ((selfs j).pts.val[poly]!).val.length < np
+         then
+           (∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
+           IsSortedPushResult ((selfs j).pts.val[poly]!).val
+             ((selfs (j + 1)).pts.val[poly]!).val p
+         else
+           selfs (j + 1) = selfs j)
+
+/-- `add_chunk_spec` restated through the named relation `AddChunkPost`. -/
+theorem add_chunk_spec_post
+    (self : PolyDecoder) (chunk : encoding.Chunk)
+    (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 → (self.pts[k]!).length + 17 ≤ Usize.max) :
+    add_chunk self chunk ⦃ (result : PolyDecoder) => AddChunkPost self chunk result ⦄ :=
+  add_chunk_spec self chunk h_overflow h_push_cap
+
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
 /-! ## `add_chunk` preserves the `PointsValid` invariant
