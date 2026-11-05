@@ -22,8 +22,15 @@ permissions:
   actions: read
 jobs:
   self-heal:
-    if: vars.SELF_HEAL != 'off' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.pull_requests[0].number)
-    uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@da3220583eae792e3568efb1592e72cce3367c53
+    # Only a failed (or timed-out) Lean build, or a passed extraction (it may finish after the Lean
+    # build), on a PR; or a manual dispatch. The select job then checks both on the PR's head.
+    if: >-
+      vars.SELF_HEAL != 'off' && (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.pull_requests[0].number &&
+      ((github.event.workflow_run.name == 'Lean Verification' &&
+      (github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'timed_out')) ||
+      (github.event.workflow_run.name == 'Aeneas extraction' && github.event.workflow_run.conclusion == 'success'))))
+    uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@fbfcd771f307426ec3c50facbfec40239001b0fe
     with:
       target: spqr
       pr: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
