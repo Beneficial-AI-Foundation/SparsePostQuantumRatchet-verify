@@ -11,6 +11,7 @@ import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FunctionalModels
 import Spqr.Specs.Aeneas.GF16New
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
@@ -572,17 +573,29 @@ theorem loop_spec
 
 end spqr.encoding.polynomial.PolyEncoder.from_pb_loop1
 
+/-! # Spec theorem for `spqr::encoding::polynomial::{PolyEncoder}::from_pb`
+
+Rebuilds a `PolyEncoder` from its protobuf representation: exactly one of `pb.pts` and
+`pb.polys` must hold 16 even-length byte strings (non-empty ones for `polys`), which are decoded
+two bytes at a time into a `Points` or a `Polys` state; every other shape is
+`PolynomialError::SerializationInvalid`. The result is pinned to the pure functional model
+`FunctionalModels.fromPb`, which in turn calls the functional model of the `Poly`
+deserialisation; `from_pb_spec_postcond` is the byte-level stepping stone. The reverse direction
+is `into_pb`.
+
+**Source**: spqr/src/encoding/polynomial.rs -/
+
 namespace spqr.encoding.polynomial.PolyEncoder
 
-/-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::from_pb`**
+/-- **Byte-level spec theorem for `spqr::encoding::polynomial::PolyEncoder::from_pb`**
 • The call always succeeds (no panic).
 • If `pb` is well-formed, then the result is `Ok` with an encoder that serializes back to
   `pb`, stated via `PolyEncoder.IntoPbPostCond`; the `| .Err _ => False` branch rules out failure.
 • On any other `pb` the result is `Err PolynomialError.SerializationInvalid`, the only error
   value `from_pb` can produce.
+• Stepping stone to `from_pb_spec`, which pins the result to the functional model.
 -/
-@[step]
-theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
+theorem from_pb_spec_postcond (pb : proto.pq_ratchet.PolynomialEncoder) :
     from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
       FromPbPostCond pb result ⦄ := by
   unfold FromPbPostCond from_pb
@@ -702,18 +715,224 @@ theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
         · exact h_polys' h_nil
       simp only [WP.spec_ok, ite_eq_right h_nwf]
 
-/-- The old spec theorem for `from_pb`, kept to establish that the refactor lost nothing: it is
-now a corollary of the generalised `from_pb_spec` via `WP.spec_mono. Not `@[step]` anymore, so that
-new proofs consume the now more general, high-level `from_pb_spec` that includes the error case.
+/-- The `Polys` shape test of `FunctionalModels.fromPb` is the first disjunct of
+`FromPbWellFormed`. -/
+private theorem polys_shape_iff (pb : proto.pq_ratchet.PolynomialEncoder) :
+    (pb.pts.val = [] ∧ pb.polys.length = 16 ∧
+        ∀ v ∈ pb.polys.val, v.val ≠ [] ∧ v.length % 2 = 0) ↔
+      (pb.pts.val = [] ∧ pb.polys.length = 16 ∧
+        ∀ j < 16, (pb.polys[j]!).length ≠ 0 ∧ (pb.polys[j]!).length % 2 = 0) := by
+  refine and_congr_right fun _ => and_congr_right fun hlen => ?_
+  simp only [alloc.vec.Vec.length] at hlen
+  rw [List.forall_mem_iff_getElem]
+  constructor
+  · intro h j hj
+    have := h j (by omega)
+    rw [List.Inhabited_getElem_eq_getElem! _ _ (by omega)] at this
+    simpa only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length, ne_eq,
+      List.length_eq_zero_iff] using this
+  · intro h j hj
+    have := h j (by omega)
+    rw [List.Inhabited_getElem_eq_getElem! _ _ hj]
+    simpa only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length, ne_eq,
+      List.length_eq_zero_iff] using this
+
+/-- The `Points` shape test of `FunctionalModels.fromPb` is the second disjunct of
+`FromPbWellFormed`. -/
+private theorem pts_shape_iff (pb : proto.pq_ratchet.PolynomialEncoder) :
+    (pb.polys.val = [] ∧ pb.pts.length = 16 ∧ ∀ v ∈ pb.pts.val, v.length % 2 = 0) ↔
+      (pb.polys.val = [] ∧ pb.pts.length = 16 ∧ ∀ j < 16, (pb.pts[j]!).length % 2 = 0) := by
+  refine and_congr_right fun _ => and_congr_right fun hlen => ?_
+  simp only [alloc.vec.Vec.length] at hlen
+  rw [List.forall_mem_iff_getElem]
+  constructor
+  · intro h j hj
+    have := h j (by omega)
+    rw [List.Inhabited_getElem_eq_getElem! _ _ (by omega)] at this
+    simpa only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length] using this
+  · intro h j hj
+    have := h j (by omega)
+    rw [List.Inhabited_getElem_eq_getElem! _ _ hj]
+    simpa only [alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length] using this
+
+/-- **The functional model satisfies the postcondition predicate**
+• `FunctionalModels.fromPb pb` satisfies `PolyEncoder.FromPbPostCond pb`; lets consumers of
+  `from_pb_spec` recover the byte-level facts about the result. -/
+theorem fromPbPostCond_fromPb (pb : proto.pq_ratchet.PolynomialEncoder) :
+    FromPbPostCond pb (FunctionalModels.fromPb pb) := by
+  unfold FromPbPostCond
+  by_cases hwf : FromPbWellFormed pb
+  swap
+  · rw [ite_eq_right hwf]
+    unfold FunctionalModels.fromPb
+    dsimp only
+    split_ifs with h1 h2
+    · exact absurd (Or.inl ((polys_shape_iff pb).mp h1)) hwf
+    · exact absurd (Or.inr ((pts_shape_iff pb).mp h2)) hwf
+    · rfl
+  rw [ite_eq_left hwf]
+  unfold FunctionalModels.fromPb
+  dsimp only
+  split_ifs with h1 h2
+  · obtain ⟨hpts, hlen, hacc⟩ := h1
+    simp only [alloc.vec.Vec.length] at hlen
+    change IntoPbPostCond _ pb
+    unfold IntoPbPostCond
+    simp only
+    refine ⟨trivial, hpts, by simp [hlen], fun j hj => ?_⟩
+    simp only [Array.length, Array.from_val, List.length_map] at hj
+    rw [Array.getElem!_Nat_eq, Array.from_val, List.getElem!_map_eq _ _ _ hj,
+      alloc.vec.Vec.getElem!_Nat_eq pb.polys j]
+    have hmem : pb.polys.val[j]! ∈ pb.polys.val := by
+      rw [← List.Inhabited_getElem_eq_getElem! _ _ hj]
+      exact List.getElem_mem hj
+    obtain ⟨-, hev⟩ := hacc _ hmem
+    have hprop := (pb.polys.val[j]!).property
+    have heq : pb.polys.val[j]! = alloc.vec.Vec.ofList (Poly.FunctionalModels.bytesOfCoeffs
+        (Poly.FunctionalModels.coeffsOfBytes (pb.polys.val[j]!).val)) := by
+      rw [Poly.FunctionalModels.bytesOfCoeffs_coeffsOfBytes _ hev, alloc.vec.Vec.val_ofList]
+    obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _
+      (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega)).mp heq
+    simp only [Poly.degree, alloc.vec.Vec.length, Function.comp_apply,
+      alloc.vec.Vec.ofList_val (Poly.FunctionalModels.coeffsOfBytes (pb.polys.val[j]!).val)
+        (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega),
+      alloc.vec.Vec.getElem!_Nat_eq] at hl hk ⊢
+    refine ⟨hl, fun k hk' => ?_⟩
+    have e := hk k hk'
+    rw [List.Inhabited_getElem_eq_getElem! _ _ hk'] at e
+    exact ⟨e, by rw [e], by rw [e]⟩
+  · obtain ⟨hpolys, hlen, hev⟩ := h2
+    simp only [alloc.vec.Vec.length] at hlen
+    change IntoPbPostCond _ pb
+    unfold IntoPbPostCond
+    simp only
+    refine ⟨trivial, hpolys, by simp [hlen], fun j hj => ?_⟩
+    simp only [Array.length, Array.from_val, List.length_map] at hj
+    rw [Array.getElem!_Nat_eq, Array.from_val, List.getElem!_map_eq _ _ _ hj,
+      alloc.vec.Vec.getElem!_Nat_eq pb.pts j]
+    have hmem : pb.pts.val[j]! ∈ pb.pts.val := by
+      rw [← List.Inhabited_getElem_eq_getElem! _ _ hj]
+      exact List.getElem_mem hj
+    have hev' := hev _ hmem
+    have hprop := (pb.pts.val[j]!).property
+    have heq : pb.pts.val[j]! = alloc.vec.Vec.ofList (Poly.FunctionalModels.bytesOfCoeffs
+        (Poly.FunctionalModels.coeffsOfBytes (pb.pts.val[j]!).val)) := by
+      rw [Poly.FunctionalModels.bytesOfCoeffs_coeffsOfBytes _ hev', alloc.vec.Vec.val_ofList]
+    obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _
+      (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega)).mp heq
+    simp only [alloc.vec.Vec.length, Function.comp_apply,
+      alloc.vec.Vec.ofList_val (Poly.FunctionalModels.coeffsOfBytes (pb.pts.val[j]!).val)
+        (by rw [Poly.FunctionalModels.coeffsOfBytes_length]; omega),
+      alloc.vec.Vec.getElem!_Nat_eq] at hl hk ⊢
+    refine ⟨hl, fun k hk' => ?_⟩
+    have e := hk k hk'
+    rw [List.Inhabited_getElem_eq_getElem! _ _ hk'] at e
+    exact ⟨e, by rw [e], by rw [e]⟩
+  · exact absurd hwf (by
+      rintro (h' | h')
+      exacts [h1 ((polys_shape_iff pb).mpr h'), h2 ((pts_shape_iff pb).mpr h')])
+
+/-- **The postcondition predicate determines the result**
+• Any `result` satisfying `PolyEncoder.FromPbPostCond pb result` is `FunctionalModels.fromPb pb`:
+  the error case is pinned, and in the `Ok` case the byte layout leaves no freedom. -/
+theorem eq_fromPb_of_fromPbPostCond (pb : proto.pq_ratchet.PolynomialEncoder)
+    (result : core.result.Result PolyEncoder PolynomialError) (h : FromPbPostCond pb result) :
+    result = FunctionalModels.fromPb pb := by
+  unfold FromPbPostCond at h
+  unfold FunctionalModels.fromPb
+  dsimp only
+  by_cases hwf : FromPbWellFormed pb
+  swap
+  · rw [ite_eq_right hwf] at h
+    split_ifs with h1 h2
+    · exact absurd (Or.inl ((polys_shape_iff pb).mp h1)) hwf
+    · exact absurd (Or.inr ((pts_shape_iff pb).mp h2)) hwf
+    · exact h
+  rw [ite_eq_left hwf] at h
+  split_ifs with h1 h2
+  · rcases result with ⟨ridx, points | polys⟩ | e
+    · unfold IntoPbPostCond at h
+      simp only at h
+      obtain ⟨-, -, hlen, -⟩ := h
+      simp only [h1.1, alloc.vec.Vec.length, Array.length_eq] at hlen
+      scalar_tac
+    · unfold IntoPbPostCond at h
+      simp only at h
+      obtain ⟨hidx, -, -, hbody⟩ := h
+      obtain ⟨hpts, hlen, hacc⟩ := h1
+      simp only [alloc.vec.Vec.length] at hlen
+      simp only [core.result.Result.Ok.injEq, PolyEncoder.mk.injEq, EncoderState.Polys.injEq]
+      refine ⟨hidx.symm, ?_⟩
+      apply Aeneas.Std.Array.ext
+      rw [Array.from_val]
+      apply (List.eq_iff_forall_eq_getElem! _ _).mpr
+      refine ⟨by simp [hlen], fun j hj => ?_⟩
+      simp only [Array.length_eq] at hj
+      have hj' : j < pb.polys.val.length := by scalar_tac
+      rw [List.getElem!_map_eq _ _ _ hj']
+      simp only [Function.comp_apply]
+      obtain ⟨hl, hk⟩ := hbody j (by simpa using hj)
+      simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq, Poly.degree,
+        alloc.vec.Vec.length] at hl hk
+      have hprop := (pb.polys.val[j]!).property
+      have hb : 2 * (polys.val[j]!).coefficients.val.length ≤ Usize.max := by omega
+      have heq : pb.polys.val[j]! = alloc.vec.Vec.ofList
+          (Poly.FunctionalModels.bytesOfCoeffs (polys.val[j]!).coefficients.val) :=
+        (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _ hb).mpr ⟨hl, fun k hk' => by
+          rw [List.Inhabited_getElem_eq_getElem! _ _ hk']
+          exact (hk k hk').1⟩
+      rw [heq,
+        alloc.vec.Vec.ofList_val _ ((Poly.FunctionalModels.bytesOfCoeffs_length _).trans_le hb),
+        Poly.FunctionalModels.coeffsOfBytes_bytesOfCoeffs, alloc.vec.Vec.val_ofList]
+    · exact h.elim
+  · rcases result with ⟨ridx, points | polys⟩ | e
+    · unfold IntoPbPostCond at h
+      simp only at h
+      obtain ⟨hidx, -, -, hbody⟩ := h
+      obtain ⟨hpolys, hlen, hev⟩ := h2
+      simp only [alloc.vec.Vec.length] at hlen
+      simp only [core.result.Result.Ok.injEq, PolyEncoder.mk.injEq, EncoderState.Points.injEq]
+      refine ⟨hidx.symm, ?_⟩
+      apply Aeneas.Std.Array.ext
+      rw [Array.from_val]
+      apply (List.eq_iff_forall_eq_getElem! _ _).mpr
+      refine ⟨by simp [hlen], fun j hj => ?_⟩
+      simp only [Array.length_eq] at hj
+      have hj' : j < pb.pts.val.length := by scalar_tac
+      rw [List.getElem!_map_eq _ _ _ hj']
+      simp only [Function.comp_apply]
+      obtain ⟨hl, hk⟩ := hbody j (by simpa using hj)
+      simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length]
+        at hl hk
+      have hprop := (pb.pts.val[j]!).property
+      have hb : 2 * (points.val[j]!).value.val.length ≤ Usize.max := by omega
+      have heq : pb.pts.val[j]! = alloc.vec.Vec.ofList
+          (Poly.FunctionalModels.bytesOfCoeffs (points.val[j]!).value.val) :=
+        (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _ hb).mpr ⟨hl, fun k hk' => by
+          rw [List.Inhabited_getElem_eq_getElem! _ _ hk']
+          exact (hk k hk').1⟩
+      rw [heq,
+        alloc.vec.Vec.ofList_val _ ((Poly.FunctionalModels.bytesOfCoeffs_length _).trans_le hb),
+        Poly.FunctionalModels.coeffsOfBytes_bytesOfCoeffs, alloc.vec.Vec.val_ofList]
+    · unfold IntoPbPostCond at h
+      simp only at h
+      obtain ⟨-, -, hlen, -⟩ := h
+      simp only [h2.1, alloc.vec.Vec.length, Array.length_eq] at hlen
+      scalar_tac
+    · exact h.elim
+  · exact absurd hwf (by
+      rintro (h' | h')
+      exacts [h1 ((polys_shape_iff pb).mpr h'), h2 ((pts_shape_iff pb).mpr h')])
+
+/-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::from_pb`**
+• The call always succeeds (no panic).
+• The extracted function agrees with its associated high-level functional model
+  `FunctionalModels.fromPb` (see def).
 -/
-theorem from_pb_spec_old_partial
-    (pb : proto.pq_ratchet.PolynomialEncoder)
-    (h_polys_nonempty : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length ≠ 0)
-    (h_polys_even : pb.pts.val = [] → ∀ j < pb.polys.length, (pb.polys[j]!).length % 2 = 0)
-    (h_pts_even : pb.polys.val = [] → ∀ j < pb.pts.length, (pb.pts[j]!).length % 2 = 0) :
+@[step]
+theorem from_pb_spec (pb : proto.pq_ratchet.PolynomialEncoder) :
     from_pb pb ⦃ (result : core.result.Result PolyEncoder PolynomialError) =>
-      FromPbPostCondOldPartial pb result ⦄ :=
-  WP.spec_mono (from_pb_spec pb)
-    (from_pb_new_implies_old_partial pb h_polys_nonempty h_polys_even h_pts_even)
+      result = FunctionalModels.fromPb pb ⦄ :=
+  WP.spec_mono (from_pb_spec_postcond pb) (eq_fromPb_of_fromPbPostCond pb)
 
 end spqr.encoding.polynomial.PolyEncoder

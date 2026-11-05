@@ -256,6 +256,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
