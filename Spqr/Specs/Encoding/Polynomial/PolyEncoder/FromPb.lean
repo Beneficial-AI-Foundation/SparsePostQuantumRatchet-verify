@@ -91,7 +91,7 @@ theorem body_spec
         WP.spec_imp_exists (Usize.add_spec (x := iter.count) (y := 1#usize) (by scalar_tac))
       exact ⟨c', hc', by scalar_tac⟩
     simp only [hc_eq, bind_ok]
-    step as ⟨r, hr⟩
+    step with Poly.deserialize_spec_postcond as ⟨r, hr⟩
     have h_el : iter.iter.slice[iter.iter.i] = v[iter.iter.i]! := by
       rw [alloc.vec.Vec.getElem!_Nat_eq, getElem!_pos v.val _ h_i]
       simp only [← h_slice]
