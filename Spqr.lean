@@ -9,6 +9,7 @@ public import Spqr.Auxiliary.Aeneas.SpecRefl
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Auxiliary.Aeneas.VecOfList
 public import Spqr.Auxiliary.SpecTags
 public import Spqr.Crypto.Fips203.Conversion.BitsToBytes
 public import Spqr.Crypto.Fips203.Conversion.ByteDecode
@@ -220,6 +221,7 @@ public import Spqr.Specs.Encoding.Polynomial.Poly.Clone
 public import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
 public import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
+public import Spqr.Specs.Encoding.Polynomial.Poly.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolate
 public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
 public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
@@ -332,11 +334,17 @@ public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
+public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.SendHdrChunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
+public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.SendHdrChunk
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
