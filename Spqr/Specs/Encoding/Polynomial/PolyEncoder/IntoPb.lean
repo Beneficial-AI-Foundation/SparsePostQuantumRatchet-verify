@@ -374,7 +374,7 @@ theorem body_spec
       rw [← List.Inhabited_getElem_eq_getElem! (hi := h_j_lt)]
     have h_ser := h_ser_overflow iter.start.val h_j_lt
     step as ⟨p, h_p⟩
-    step as ⟨v1, h_len, _, _, h_enc⟩
+    step with Poly.serialize_spec_postcond as ⟨v1, h_len, _, _, h_enc⟩
     step as ⟨v2, h_v2⟩
     rw [h_getelem, ← h_p]
     exact ⟨h_lt, h_start1, h_end1, v1, h_v2, h_len, h_enc⟩
