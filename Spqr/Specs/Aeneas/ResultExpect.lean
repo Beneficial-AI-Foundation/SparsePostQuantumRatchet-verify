@@ -25,3 +25,9 @@ theorem core.result.Result.expect_ok_spec {T E : Type}
     core.result.Result.expect inst (core.result.Result.Ok v : core.result.Result T E) msg
     ⦃ (result : T) => result = v ⦄ := by
   simp [core.result.Result.expect, WP.spec_ok]
+
+/-- A successful `expect` was applied to `.Ok`. -/
+theorem core.result.Result.eq_Ok_of_expect_eq_ok {T E : Type} {inst : core.fmt.Debug E}
+    {r : core.result.Result T E} {msg : Str} {x : T}
+    (h : core.result.Result.expect inst r msg = Aeneas.Std.Result.ok x) : r = .Ok x := by
+  cases r <;> simp_all [core.result.Result.expect]

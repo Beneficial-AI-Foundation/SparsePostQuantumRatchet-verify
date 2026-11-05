@@ -8,7 +8,10 @@ module
 public import SrcTranslated.Funs
 public meta import Spqr.Auxiliary.SpecTags
 public import Spqr.Auxiliary.Aeneas.Result
+public import Spqr.Specs.Braid.Deviations
 public import Spqr.Auxiliary.Aeneas.SpecImpExists
+import Spqr.Auxiliary.Aeneas.Slice
+import Spqr.Specs.Aeneas.VecAsSlice
 
 /-! # `States::recv` against ML-KEM Braid §2.5
 
@@ -32,8 +35,8 @@ When `msg.epoch ≠ e`, the arm decides without reading the payload.
 
 All three theorems are total. `recv_of_lt` and `recv_Ct2Sampled_next_epoch` agree with §2.5, so
 they carry the attributes `correctness_spec` and `braid_spec "§2.5"`. `recv_of_gt` states
-Deviation `future-epoch-error`, where the code differs from §2.5, so it carries neither
-attribute.
+`Braid.Deviation.futureEpochError`, where the code differs from §2.5, so it carries
+`braid_deviation` instead.
 
 ## Messages from the state's own epoch
 
@@ -48,13 +51,14 @@ acts on. In eight of the eleven states, some payload satisfies it. In `KeysUnsam
   presence are the ones `specRecvEq s msg.payload` gives. If the call returns, it returns `Err`
   exactly when `specRecvEq s msg.payload` is `none` (`recv_of_eq_refines`).
 
-`specRecvEq` is the §2.5 `Receive` at the level of state names and key presence, plus Deviations
-`ct1ack-accepted` and `late-ek-chunk`. When a chunk completes a decoder, it takes the transition if
-the state's check passes on the completed message (`States.Accepts`), and it is `none` if the check
-fails (`States.Rejects`). The decoder and the checks are the code's calls: `add_chunk` and
-`decoded_message` for the decoder, `recv_ct2` for `Decaps`, `KDF_OK`, `Update` and `VfyCt`,
-`verify_hdr` for `VfyHdr`, and `ek_matches_header` for `SHA3-256(ek_seed || ek_vector) = hek`.
-`HeaderSent` has no check. That `specRecvEq` follows §2.5 is our reading of §2.5, not a theorem.
+`specRecvEq` is the §2.5 `Receive` at the level of state names and key presence, plus
+`Braid.Deviation.ct1AckAccepted` and `Braid.Deviation.lateEkChunk`. When a chunk completes a
+decoder, it takes the transition if the state's check passes on the completed message
+(`States.Accepts`), and it is `none` if the check fails (`States.Rejects`). The decoder and the
+checks are the code's calls: `add_chunk` and `decoded_message` for the decoder, `recv_ct2` for
+`Decaps`, `KDF_OK`, `Update` and `VfyCt`, `verify_hdr` for `VfyHdr`, and `ek_matches_header` for
+`SHA3-256(ek_seed || ek_vector) = hek`. `HeaderSent` has no check. That `specRecvEq` follows §2.5 is
+our reading of §2.5, not a theorem.
 
 ## What the theorems do not show
 
@@ -63,8 +67,8 @@ fails (`States.Rejects`). The decoder and the checks are the code's calls: `add_
   `src/v1/chunked/send_ek.rs:91-92` and transition (12) at `src/incremental_mlkem768.rs:75-76`.
   Ruling this out needs state invariants and specifications of the opaque libcrux calls.
 * `States.Accepts s p` and `States.Rejects s p` hold only if the chunk in `p` completes the decoder
-  of `s`. Transitions (3), (5), (6), (9), (10) and (11), and Deviation `late-ek-chunk`, need one of
-  them. For these pairs of state and payload, if the chunk does not complete the decoder,
+  of `s`. Transitions (3), (5), (6), (9), (10) and (11), and `Braid.Deviation.lateEkChunk`, need one
+  of them. For these pairs of state and payload, if the chunk does not complete the decoder,
   `recv_of_eq_refines` says only that the state keeps its name. The exception is `Ct1Sampled` on
   `EkCt1Ack`, which takes transition (8). That the peer's chunks complete the decoder after enough
   calls is not proved. So `recv_of_eq_refines` also holds for a run in which the decoder never
@@ -77,105 +81,14 @@ fails (`States.Rejects`). The decoder and the checks are the code's calls: `add_
 
 ## Deviations from §2.5
 
-`States::recv` differs from §2.5 in three places. The theorems state what the code does, and each
-place is marked with the deviation's name, for example "Deviation `future-epoch-error`". The five
-theorems cover every value of `msg.epoch` relative to `e`. In each case they give the code's next
-state name, key presence and `Ok`/`Err`. We compare these with §2.5 by reading it: by hand for
-`msg.epoch ≠ e`, and through `specRecvEq` for `msg.epoch = e`, whose arms we read as §2.5 plus
-Deviations `ct1ack-accepted` and `late-ek-chunk`. Under this reading, the three deviations are the
-only differences. This holds for calls that return, with the code's decoder and checks taken as
-the spec's.
-
-* `future-epoch-error`: a message from a later epoch, except in `Ct2Sampled` at `e + 1`.
-* `ct1ack-accepted`: `Ct1Ack true` in `EkReceivedCt1Sampled` takes transition (12).
-* `late-ek-chunk`: an `Ek` chunk in `Ct1Acknowledged` goes to the `ek` decoder.
-
-Each deviation has four parts. *§2.5* and *Code* say what the sources do. *Effect* is our
-reasoning from the cited pages and lines, and is not proved. *Proved* says what the theorems
-show. In this section, paths are relative to `src/` at `dd8e6b9`. Call the party that runs
-`recv` the receiver, and the other party the peer. A *normal run* satisfies three conditions:
-
-1. The parties start in the states that `init_a` and `init_b` return
-   (`v1/chunked/states.rs:58-64`), as *InitAlice* and *InitBob* of §2.6 do (p. 23).
-2. Each party's successful calls form one chain: a call gets the state that the previous
-   successful call of that party returned.
-3. Every message that a party's `recv` gets is the output of the other party's `send` in this
-   session, possibly out of order.
-
-### Deviation `future-epoch-error`: a message from a later epoch
-
-* §2.5: every `Receive` function ignores a message with `msg.epoch > e`, for example
-  *KeysUnsampled.Receive* (p. 11). The exception is transition (13) (p. 23).
-* Code: every arm returns `Err(EpochOutOfRange msg.epoch)`, for example
-  `v1/chunked/states.rs:283-285`. The exception is at `v1/chunked/states.rs:514-526`.
-  `spqr::recv` returns the error at `lib.rs:460` with no new state and no key. The caller's
-  serialized state is borrowed and does not change (`lib.rs:355`).
-* Effect: the code reports the message as an error, where §2.5 drops it.
-* Proved: `recv_of_gt`. What `spqr::recv` does with the error is read from the code and is not
-  proved.
-
-### Deviation `ct1ack-accepted`: `Ct1Ack true` in `EkReceivedCt1Sampled`
-
-* §2.5: *EkReceivedCt1Sampled.Receive* acts only on `EkCt1Ack` (p. 21), and
-  *EkSentCt1Received.Send* sends a message of type `None` (p. 15). §2.3 defines `Ct1Ack`
-  (p. 8), but §2.5 does not use it.
-* Code: `EkSentCt1Received` sends `Ct1Ack(true)` (`v1/chunked/states.rs:175-186`), and
-  `EkReceivedCt1Sampled` takes transition (12) on it (`v1/chunked/states.rs:465-474`). The code
-  gives no reason. No sender builds `Ct1Ack(false)`, and the wire format cannot carry it: the
-  serializer drops the flag (`v1/chunked/states/serialize.rs:128`), and the deserializer always
-  gives `Ct1Ack(true)` (`v1/chunked/states/serialize.rs:208`).
-* Effect: in a normal run the arm is never reached. The peer enters `EkSentCt1Received` only on
-  a `Ct2` chunk (`v1/chunked/states.rs:338-344`), and only `Ct2Sampled` sends one
-  (`v1/chunked/states.rs:267`). No transition leads from `Ct2Sampled` back to
-  `EkReceivedCt1Sampled` at the same epoch. A lost `EkCt1Ack` does not need the arm either,
-  because `Ct1Received` sends an `EkCt1Ack` chunk on every `send`
-  (`v1/chunked/states.rs:162-173`).
-
-  Outside a normal run the arm can be reached. Three examples:
-  - (a) The peer, in `Ct1Received`, gets a `Ct2` chunk that the receiver did not send. The peer
-    checks no MAC or hash on this first chunk (`v1/chunked/send_ek.rs:165-180`, §2.5 p. 14).
-    It enters `EkSentCt1Received` and sends `Ct1Ack(true)`.
-  - (b) The receiver calls `recv` again with its earlier `EkReceivedCt1Sampled` state, while
-    the peer is in `EkSentCt1Received`. A caller can do this because `spqr::send` and
-    `spqr::recv` take the serialized state by reference (`lib.rs:264`, `lib.rs:355`).
-  - (c) The receiver gets a `Ct1Ack` message that the peer did not send.
-
-  In (a) and (b), assume also that no older message arrives. Then §2.5 stalls: the peer sends
-  `None`, and the receiver sends `Ct1` chunks, which the peer ignores (p. 15), and waits for
-  `EkCt1Ack` (p. 21). The code takes transition (12) instead. Whether the session then completes
-  is not analyzed. In (b), the new `ct2` encoder equals the first one, because `encaps2` and
-  `mac_ct` take no random input (`v1/unchunked/send_ct.rs:177-197`, `incremental_mlkem768.rs:71`,
-  `authenticator.rs:66`). It starts again at chunk index 0 (`encoding/polynomial.rs:709`).
-
-  §2.5 also takes transition (12) on any `EkCt1Ack` message with the receiver's epoch, without
-  reading its chunk (p. 21). This compares one transition. It is not a security result.
-* Proved: if a `Ct1Ack true` message has the receiver's epoch and `States.recv` on
-  `EkReceivedCt1Sampled` returns, then by `recv_of_eq_refines` it returns `Ok` with next state
-  `Ct2Sampled` and no key. The theorems do not cover `send` or runs, so the claim that the arm is
-  never reached is not proved.
-
-### Deviation `late-ek-chunk`: an `Ek` chunk in `Ct1Acknowledged`
-
-* §2.5: *Ct1Acknowledged.Receive* acts only on `EkCt1Ack` (pp. 21-22).
-* Code: `Ek` chunks go to the same decoder as `EkCt1Ack` chunks. When the decoder completes,
-  the code runs the check of transition (11), and if the check passes, it takes the step of
-  (11) (`v1/chunked/states.rs:486-507`). The comment at `v1/chunked/states.rs:486-489` gives
-  the reason: messages can arrive out of order.
-* Effect: the receiver is in `Ct1Acknowledged` after an `EkCt1Ack` chunk that did not complete
-  its decoder (transition (8)). In a normal run, an `Ek` chunk that arrives now was sent before
-  that `EkCt1Ack` chunk, because it sends `Ek` chunks in `HeaderSent` and then `EkCt1Ack` chunks in
-  `Ct1Received` (`v1/chunked/states.rs:150-173`). Both come from one encoder, which
-  `v1/chunked/send_ek.rs:141` moves from `HeaderSent` into `Ct1Received`. §2.5 drops the late
-  chunk: its decoder keeps the chunks from `Ct1Sampled` (p. 20) and then adds only `EkCt1Ack`
-  chunks (pp. 21-22). The code adds it. If the late chunk has an index that the decoder lacks,
-  the code can complete `ek` with fewer `EkCt1Ack` chunks than §2.5 needs. Outside a normal
-  run, the code also adds an `Ek` chunk that the peer did not send. If the decoder then
-  completes with a key that fails the check, `recv` returns `Err`.
-* Proved: `recv_of_eq_refines` on `Ct1Acknowledged` and an `Ek` message with the receiver's epoch,
-  if `States.recv` returns. If no message completes the decoder, the next state is named
-  `Ct1Acknowledged`. If the completed message passes `ek_matches_header`, the next state is named
-  `Ct2Sampled` and no key is emitted. If it does not pass, the result is `Err`. The claims under
-  *Effect* are not proved.
+`States::recv` differs from §2.5 in three places, the constructors of `Braid.Deviation`
+(`Spqr/Specs/Braid/Deviations.lean`), which say what each source does. The theorems state what
+the code does, and each place carries the constructor's name. The five theorems cover every value
+of `msg.epoch` relative to `e`. In each case they give the code's next state name, key presence
+and `Ok`/`Err`. We compare these with §2.5 by reading it: by hand for `msg.epoch ≠ e`, and through
+`specRecvEq` for `msg.epoch = e`, whose arms we read as §2.5 plus `ct1AckAccepted` and
+`lateEkChunk`. Under this reading, the three deviations are the only differences. This holds for
+calls that return, with the code's decoder and checks taken as the spec's.
 
 ## References
 
@@ -213,7 +126,8 @@ theorem recv_of_lt (s : States) (msg : Message) (h : msg.epoch.val < s.epochOf.v
 
 /-- Let `e` be the epoch of `s`, let `msg.epoch > e`, and if `s` is `Ct2Sampled`, let
 `msg.epoch ≠ e + 1`. Then `States.recv s msg` returns `Err(EpochOutOfRange msg.epoch)`.
-§2.5 ignores such a message instead: Deviation `future-epoch-error` in the module doc. -/
+§2.5 ignores such a message instead: `Braid.Deviation.futureEpochError`. -/
+@[braid_deviation Braid.Deviation.futureEpochError]
 theorem recv_of_gt (s : States) (msg : Message) (h : s.epochOf.val < msg.epoch.val)
     (hnext : ∀ st, s = .Ct2Sampled st → msg.epoch.val ≠ st.uc.epoch.val + 1) :
     States.recv s msg = ok (.Err (Error.EpochOutOfRange msg.epoch)) := by
@@ -248,10 +162,11 @@ theorem recv_Ct2Sampled_next_epoch (st : send_ct.Ct2Sampled) (msg : Message)
 
 /-! ## Messages from the state's own epoch -/
 
-/-- `s.Expects p` holds when `States::recv` in state `s` acts on payload `p` of a message from
-the epoch of `s`. The pairs are those that pass a `msg.type ==` test of a `Receive` function in
-ML-KEM Braid §2.5, plus `Ct1Ack true` in `EkReceivedCt1Sampled` (`ct1ack-accepted`) and `Ek` in
-`Ct1Acknowledged` (`late-ek-chunk`). -/
+/-- `s.Expects p` holds when `States::recv` in state `s` acts on payload `p` of a message from the
+epoch of `s`. The pairs are those that pass a `msg.type ==` test of a `Receive` function in ML-KEM
+Braid §2.5, plus `Ct1Ack true` in `EkReceivedCt1Sampled` (`Braid.Deviation.ct1AckAccepted`) and `Ek`
+in `Ct1Acknowledged` (`Braid.Deviation.lateEkChunk`). -/
+@[braid_deviation Braid.Deviation.ct1AckAccepted Braid.Deviation.lateEkChunk]
 def States.Expects : States → MessagePayload → Prop
   | .KeysSampled _, .Ct1 _ => True
   | .HeaderSent _, .Ct1 _ => True
@@ -261,9 +176,9 @@ def States.Expects : States → MessagePayload → Prop
   | .Ct1Sampled _, .Ek _ => True
   | .Ct1Sampled _, .EkCt1Ack _ => True
   | .EkReceivedCt1Sampled _, .EkCt1Ack _ => True
-  | .EkReceivedCt1Sampled _, .Ct1Ack true => True  -- deviation ct1ack-accepted
+  | .EkReceivedCt1Sampled _, .Ct1Ack true => True  -- Deviation.ct1AckAccepted
   | .Ct1Acknowledged _, .EkCt1Ack _ => True
-  | .Ct1Acknowledged _, .Ek _ => True              -- deviation late-ek-chunk
+  | .Ct1Acknowledged _, .Ek _ => True              -- Deviation.lateEkChunk
   | _, _ => False
 
 /-- `decodes d c m` holds when chunk `c` completes decoder `d` with message `m`: the code's
@@ -361,18 +276,18 @@ def States.name : States → SpecState
   | .Ct2Sampled _ => .Ct2Sampled
 
 open Classical in
-/-- `specRecvEq s p` is ML-KEM Braid §2.5 `Receive` in state `s` on payload `p` of a message
-from the epoch of `s`, extended by Deviations `ct1ack-accepted` and `late-ek-chunk`. Its decoder
-and checks are the code's, through `States.Accepts` and `States.Rejects`, not the spec's. The
-result is the next state's name and whether a key is emitted, or `none` when `s.Rejects p` holds.
-`none` stands at the places of the spec's `raise` in the `ek` check and its `FAIL` in `VfyHdr` or
-`VfyCt` (§2.4, p. 9), with the code's checks. What the session does after a failure (§2.4, p. 9)
-is outside `specRecvEq`.
+/-- `specRecvEq s p` is ML-KEM Braid §2.5 `Receive` in state `s` on payload `p` of a message from
+the epoch of `s`, extended by `Braid.Deviation.ct1AckAccepted` and `Braid.Deviation.lateEkChunk`.
+Its decoder and checks are the code's, through `States.Accepts` and `States.Rejects`, not the
+spec's. The result is the next state's name and whether a key is emitted, or `none` when `s.Rejects
+p` holds. `none` stands at the places of the spec's `raise` in the `ek` check and its `FAIL` in
+`VfyHdr` or `VfyCt` (§2.4, p. 9), with the code's checks. What the session does after a failure
+(§2.4, p. 9) is outside `specRecvEq`.
 The comments on the arms give the spec's transition numbers, or the deviation that adds the arm.
 
-* Transitions (2), (4) and (12), and Deviation `ct1ack-accepted`, need no completed message
+* Transitions (2), (4) and (12), and `Braid.Deviation.ct1AckAccepted`, need no completed message
   and are taken directly.
-* Transitions (3), (5), (6), (9), (10), (11), and Deviation `late-ek-chunk`, are taken when
+* Transitions (3), (5), (6), (9), (10), (11), and `Braid.Deviation.lateEkChunk`, are taken when
   `States.Accepts` holds. The result is `none` when `States.Rejects` holds. When no message
   completes the decoder, neither holds and the state keeps its name. The exception is `Ct1Sampled`
   on `EkCt1Ack`, which then takes transition (8).
@@ -381,6 +296,7 @@ The comments on the arms give the spec's transition numbers, or the deviation th
 Only transition (5) emits a key. `States.Accepts` and `States.Rejects` read the code's calls.
 A call that returns excludes the panic cases. It does not make the code's decoder and checks
 agree with the spec's. -/
+@[braid_deviation Braid.Deviation.ct1AckAccepted Braid.Deviation.lateEkChunk]
 noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecState × Bool) :=
   let stay := some (s.name, false)
   let complete (n : SpecState) (key : Bool) (otherwise : Option (SpecState × Bool)) :=
@@ -395,10 +311,10 @@ noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecSta
   | .Ct1Sampled _, .EkCt1Ack _ =>
       complete .Ct2Sampled false (some (.Ct1Acknowledged, false))        -- (9), (8)
   | .EkReceivedCt1Sampled _, .EkCt1Ack _ => some (.Ct2Sampled, false)    -- (12)
-  -- deviation ct1ack-accepted
+  -- Deviation.ct1AckAccepted
   | .EkReceivedCt1Sampled _, .Ct1Ack true => some (.Ct2Sampled, false)
   | .Ct1Acknowledged _, .EkCt1Ack _ => complete .Ct2Sampled false stay   -- (11)
-  -- deviation late-ek-chunk
+  -- Deviation.lateEkChunk
   | .Ct1Acknowledged _, .Ek _ => complete .Ct2Sampled false stay
   | _, _ => stay
 
@@ -413,34 +329,6 @@ theorem specRecvEq_of_not_expects {s : States} {p : MessagePayload} (hp : ¬ s.E
 
 The code's slicing of a completed message, and the uniqueness of the message a chunk
 completes. -/
-
-private theorem as_slice_val {v : alloc.vec.Vec Std.U8} {s : Slice Std.U8}
-    (h : alloc.vec.Vec.as_slice Global v = ok s) : s.val = v.val := by
-  simp only [alloc.vec.Vec.as_slice, ok.injEq] at h; subst h; exact Slice.from_val _ _
-
-private theorem index_from_val {s s1 : Slice Std.U8} {i : Std.Usize}
-    (h : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U8) s
-      { start := i } = ok s1) : s1.val = s.val.drop i.val := by
-  simp only [Slice.index_SliceIndexRangeFromUsizeSliceInst,
-    core.slice.index.SliceIndexRangeFromUsizeSlice.index] at h
-  split at h
-  · simp only [ok.injEq] at h; subst h; exact Slice.from_val _ _
-  · exact absurd h fail_not_ok
-
-private theorem index_to_val {s s1 : Slice Std.U8} {i : Std.Usize}
-    (h : core.slice.index.Slice.index (core.slice.index.SliceIndexRangeToUsizeSlice Std.U8) s
-      { «end» := i } = ok s1) : s1.val = s.val.take i.val := by
-  simp only [Slice.index_SliceIndexRangeToUsizeSliceInst,
-    core.slice.index.SliceIndexRangeToUsizeSlice.index] at h
-  split at h
-  · simp only [ok.injEq] at h; subst h; simp [List.slice]
-  · exact absurd h fail_not_ok
-
-private theorem to_vec_val {s : Slice Std.U8} {v : alloc.vec.Vec Std.U8}
-    (h : alloc.slice.Slice.to_vec core.clone.CloneU8 s = ok v) : v.val = s.val := by
-  obtain ⟨w, hw, hp⟩ := WP.spec_imp_exists
-    (alloc.slice.Slice.to_vec_spec core.clone.CloneU8 s (fun _ _ => rfl))
-  rw [hw, ok.injEq] at h; subst h; rw [hp]; rfl
 
 /-- A chunk completes a decoder with at most one message: `add_chunk` and `decoded_message` are
 functions. -/
@@ -506,8 +394,10 @@ private theorem split_vals {m : alloc.vec.Vec Std.U8} {i : Std.Usize} {s s1 s2 :
     (hlo : alloc.slice.Slice.to_vec core.clone.CloneU8 s2 = ok lo) :
     lo.val = m.val.take i.val ∧ hi.val = m.val.drop i.val := by
   refine ⟨?_, ?_⟩
-  · rw [to_vec_val hlo, index_to_val hs2, as_slice_val hs]
-  · rw [to_vec_val hhi, index_from_val hs1, as_slice_val hs]
+  · rw [Slice.to_vec_U8_ok_val hlo, Slice.index_range_to_ok_val hs2,
+      alloc.vec.Vec.as_slice_ok_val hs]
+  · rw [Slice.to_vec_U8_ok_val hhi, Slice.index_range_from_ok_val hs1,
+      alloc.vec.Vec.as_slice_ok_val hs]
 
 /-- If `EkSentCt1Received::recv_ct2_chunk st e c` returns `r`, then:
 
@@ -708,8 +598,9 @@ theorem Ct1Sampled_recv_ek_chunk_outcome (st : send_ct.Ct1Sampled) (e : Std.U64)
 * `Ok StillReceiving` means that chunk `c` completes no message in the decoder
   `st.receiving_ek`.
 * `Ok Done` means that a completed message passes the `ek` check. On an `EkCt1Ack` payload this
-  is transition (11). On an `Ek` payload it is Deviation `late-ek-chunk`.
+  is transition (11). On an `Ek` payload it is `Braid.Deviation.lateEkChunk`.
 * `Err` means that a completed message fails the check. -/
+@[braid_deviation Braid.Deviation.lateEkChunk]
 theorem Ct1Acknowledged_recv_ek_chunk_outcome (st : send_ct.Ct1Acknowledged) (e : Std.U64)
     (c : encoding.Chunk) {r : core.result.Result send_ct.Ct1AcknowledgedRecvChunk Error}
     (h : send_ct.Ct1Acknowledged.recv_ek_chunk st e c = ok r) :
@@ -781,11 +672,12 @@ theorem recv_of_eq_unexpected (s : States) (msg : Message) (h : msg.epoch = s.ep
       Nat.compare_eq_eq.2 rfl, Bool.false_eq_true, ite_false]
   all_goals rfl
 
-/-- If `msg.epoch = s.epochOf` and `States.recv s msg` returns `r`, then `r` agrees with
-`specRecvEq s msg.payload`, our model of §2.5 `Receive` extended by Deviations
-`ct1ack-accepted` and `late-ek-chunk`. An `Ok` result has the next state's name and key
-presence that `specRecvEq` gives. An `Err` result occurs exactly when `specRecvEq` gives `none`. -/
-@[correctness_spec, braid_spec "§2.5"]
+/-- If `msg.epoch = s.epochOf` and `States.recv s msg` returns `r`, then `r` agrees with `specRecvEq
+s msg.payload`, our model of §2.5 `Receive` extended by `Braid.Deviation.ct1AckAccepted` and
+`Braid.Deviation.lateEkChunk`. An `Ok` result has the next state's name and key presence that
+`specRecvEq` gives. An `Err` result occurs exactly when `specRecvEq` gives `none`. -/
+@[correctness_spec, braid_spec "§2.5",
+  braid_deviation Braid.Deviation.ct1AckAccepted Braid.Deviation.lateEkChunk]
 theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
     (r : core.result.Result Recv Error) (hr : States.recv s msg = ok r) :
     match r with
