@@ -2651,44 +2651,38 @@ noncomputable opaque hkdf_to_slice : Slice Std.U8 → Slice Std.U8 → Slice Std
 
 end spqr.kdf
 
-/-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
-    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1
+/-- [core::slice::{[T]}::chunks]:
+    Source: '/rustc/library/core/src/slice/mod.rs', lines 1156:4-1156:66
+    Name pattern: [core::slice::{[@T]}::chunks]
 
-    SPQR's own (not libcrux's) endianness workaround for libcrux issue #1275, marked
-    `#[hax_lib::opaque]` in the Rust source.  It scans the `error₂` region
-    `es[1536 .. 2048]` in 2-byte little-endian words:
-    * `0x0000` / `0xFFFF` are skipped (identical in both endiannesses);
-    * `0x0001` / `0x0002` / `0xFFFE` ⇒ the state is correctly encoded, return `None`;
-    * `0x0100` / `0x0200` / `0xFEFF` ⇒ the state is byte-swapped, return
-      `Some (flip_endianness_of_encapsulation_state es)`;
-    * any other word ⇒ "weird state", return `None`.
+    Panics on `chunk_size = 0`. Otherwise returns the chunks of `chunk_size` elements, in order,
+    followed by the shorter remainder if it is non-empty. -/
+@[rust_fun "core::slice::{[@T]}::chunks"]
+def core.slice.Slice.chunks {T : Type _} (s : Slice T) (chunk_size : Std.Usize) :
+    Result (core.slice.iter.Chunks T) :=
+  if hcs : chunk_size.val > 0 then
+    let result := List.toChunksExact chunk_size.val hcs s.val
+    let full := result.1.attach.map fun ⟨c, hc⟩ => Slice.from c (by
+        have := List.toChunksExact_chunk_length hcs s.val c hc
+        scalar_tac)
+    let rem : List (Slice T) :=
+      if result.2 = [] then []
+      else [Slice.from result.2 (by
+        have := List.toChunksExact_remainder_length hcs s.val
+        scalar_tac)]
+    ok { chunks := full ++ rem }
+  else fail .panic
 
-    The function is kept **uninterpreted** here: on byte-swapped states it genuinely returns
-    `Some`, so any concrete stub (e.g. `fun _ => ok none`) would be an unsound model and would
-    let downstream specs claim `encaps2` consumes `es` itself on states the Rust repairs.  The
-    only property assumed is the hax contract (`potentially_fix_state_…_spec` below). -/
-@[rust_fun "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275"]
-noncomputable opaque
-  incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-  : alloc.vec.Vec Std.U8 → Result (Option (alloc.vec.Vec Std.U8))
-
-/-- **Trusted spec axiom for `potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`**:
-
-Exactly the hax contract from `src/incremental_mlkem768.rs`, lines 85-90:
-- **requires**: `es.len() == 2080`
-- **ensures**: `|result| if let Some(es) = result { es.len() == 2080 } else { true }`
-
-Under the length precondition the call succeeds (the only panic site is
-`assert_eq!(es.len(), 2080)`, discharged by `h_es`; `chunks(2)` on the 512-byte region and
-`try_into` on each 2-byte chunk cannot fail) and returns `mf : Option (Vec U8)` such that any
-`Some v` has `v.length = 2080` (`flip_endianness_of_encapsulation_state` preserves length, see
-`flip_endianness_of_encapsulation_state_spec`).  Nothing is assumed about *which* of
-`None` / `Some (flipped es)` is returned. -/
-@[step]
-axiom incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec
-    (es : alloc.vec.Vec Std.U8) (h_es : es.length = 2080) :
-    incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 es
-      ⦃ (mf : Option (alloc.vec.Vec Std.U8)) => ∀ v ∈ mf, v.length = 2080 ⦄
+/-- [core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Chunks<'a, T>, &'a [T]>}::next]:
+    Source: '/rustc/library/core/src/slice/iter.rs', lines 1503:4-1503:41 -/
+@[rust_fun
+  "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Chunks<'a, @T>, &'a [@T]>}::next"]
+def core.slice.iter.Chunks.Insts.CoreIterTraitsIteratorIteratorSharedASlice.next
+    {T : Type _} (self : core.slice.iter.Chunks T) :
+    Result ((Option (Slice T)) × (core.slice.iter.Chunks T)) :=
+  match self.chunks with
+  | [] => ok (none, self)
+  | chunk :: chunks => ok (some chunk, { chunks })
 
 /- See `Spqr/Specs/Lib/StatePb.lean`: these wrap prost's `encode_to_vec`/`decode` for the ratchet
 state (translation patch `lib-state_pb.patch`). -/

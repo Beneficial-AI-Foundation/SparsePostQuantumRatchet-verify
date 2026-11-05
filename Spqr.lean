@@ -273,6 +273,7 @@ public import Spqr.Specs.IncrementalMlkem768.Encaps2
 public import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 public import Spqr.Specs.IncrementalMlkem768.Generate
 public import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
+public import Spqr.Specs.IncrementalMlkem768.PotentiallyFixState
 public import Spqr.Specs.Kdf.HkdfToSlice
 public import Spqr.Specs.Kdf.HkdfToVec
 public import Spqr.Specs.Lib.ChainFrom

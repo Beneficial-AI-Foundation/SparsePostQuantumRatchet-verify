@@ -8,6 +8,7 @@ public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
 public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
 public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Specs.IncrementalMlkem768.PotentiallyFixState
 /-! # Spec theorem for `incremental_mlkem768::encaps2`
 
 `encaps2` is round 2 of ML-KEM-768 encapsulation packaged for the SPQR ratchet: given the
@@ -76,7 +77,7 @@ is expressed monadically with `Option.elim`. -/
 noncomputable def encaps2EffectiveState
     (es : alloc.vec.Vec Std.U8) : Result (List Std.U8) := do
   let mf ←
-    _root_.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+    spqr.incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
       es
   ok (mf.elim es.val (fun fixed => fixed.val))
 
@@ -131,7 +132,6 @@ theorem encaps2_spec (ek es : alloc.vec.Vec Std.U8)
           result.val = Fips203.Refinement.ct2List st pk) ∧
       result.length = 128 ⦄ from h
   -- The workaround stays uninterpreted: obtain an arbitrary `mf` satisfying the hax contract.
-  open _root_.incremental_mlkem768 in
   obtain ⟨mf, h_eq, h_len⟩ :=
     WP.spec_imp_exists
       (potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_spec es h_es)
