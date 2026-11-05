@@ -22,3 +22,18 @@ open Aeneas Aeneas.Std
 @[scalar_tac_simps, grind =] theorem _root_.Aeneas.Std.alloc.vec.Vec.deref_length {α : Type}
     (v : alloc.vec.Vec α) : (alloc.vec.Vec.deref v).length = v.length := by
   simp [alloc.vec.Vec.deref]
+
+namespace Aeneas.Std.alloc.vec.Vec
+
+open Result
+
+/-- A successful `push` adds one element. -/
+theorem push_ok_length {α : Type} {v v' : alloc.vec.Vec α} {x : α}
+    (h : alloc.vec.Vec.push v x = ok v') : v'.val.length = v.val.length + 1 := by
+  unfold alloc.vec.Vec.push at h
+  dsimp only at h
+  split at h
+  · simp only [ok.injEq] at h; subst h; simp
+  · exact absurd h fail_not_ok
+
+end Aeneas.Std.alloc.vec.Vec
