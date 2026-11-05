@@ -59,3 +59,21 @@ theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residua
   | Err e =>
     simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] at h
     cases hf : inst.from e <;> simp_all [Bind.bind]
+
+/-- If `branch r` returns `cf`, `f cf` returns `Ok x`, and `f` maps every `Break res` to
+`from_residual res`, then `r` is `Ok v` for some `v`, and `f (Continue v)` returns `Ok x`. -/
+theorem core.result.Result.Insts.CoreOpsTry.continue_of_ok {T E F U : Type}
+    {inst : core.convert.From F E} {r : core.result.Result T E}
+    {f : core.ops.control_flow.ControlFlow (core.result.Result Never E) T →
+      Result (core.result.Result U F)} {x : U}
+    (h : ∃ cf, core.result.Result.Insts.CoreOpsTry.branch r = Result.ok cf ∧
+      f cf = Result.ok (.Ok x))
+    (hb : ∀ res, f (.Break res) =
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual U inst res) :
+    ∃ v, r = .Ok v ∧ f (.Continue v) = Result.ok (.Ok x) := by
+  obtain ⟨cf, hcf, h⟩ := h
+  cases cf with
+  | Continue v => exact ⟨v, branch_eq_continue hcf, h⟩
+  | Break res =>
+    rw [hb] at h
+    exact (core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_ne_ok h).elim

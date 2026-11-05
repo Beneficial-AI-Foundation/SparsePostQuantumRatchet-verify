@@ -80,7 +80,7 @@ theorem from_pb_spec (pb : proto.pq_ratchet.v1_state.chunked.KeysSampled) :
         res = match r with | .Ok v => .Ok v | .Err _ => .Err Error.StateDecode ⦄ := by
     cases r <;> simp [from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError,
       from_pb.closure.Insts.CoreOpsFunctionFnOnceTuplePolynomialErrorError.call_once]
-  step* <;> grind [PolyEncoder.FromPbPostCond,
+  step* <;> grind [PolyEncoder.fromPbPostCond_fromPb, PolyEncoder.FromPbPostCond,
     unchunked.send_ek.serialize.HeaderSent.FunctionalModels.fromPb,
     authenticator.serialize.Authenticator.FunctionalModels.fromPb]
 
