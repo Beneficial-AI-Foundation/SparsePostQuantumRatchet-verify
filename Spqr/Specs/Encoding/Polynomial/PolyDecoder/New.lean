@@ -7,6 +7,7 @@ module
 
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Decoder for PolyDecoder}::new`
 
@@ -85,5 +86,14 @@ theorem new_spec_valid (len_bytes : Std.Usize) :
       | core.result.Result.Err _ => True ⦄ := by
   unfold new
   exact new_with_poly_count_spec_valid len_bytes 16#usize
+
+/-- A new decoder for an even number of bytes needs half as many points. -/
+theorem new_pts_needed {n : Std.Usize} {d : encoding.polynomial.PolyDecoder}
+    (hn : n.val % 2 = 0)
+    (h : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new n = ok (.Ok d)) :
+    d.pts_needed.val = n.val / 2 := by
+  have := WP.post_of_ok (encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new_spec n) h
+  simp only [hn, ↓reduceIte] at this
+  rw [this.1]; rfl
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
