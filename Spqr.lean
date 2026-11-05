@@ -132,8 +132,8 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
 public import Spqr.Specs.Braid.StateMachine.Model
-public import Spqr.Specs.Braid.StateMachine.Relation
 public import Spqr.Specs.Braid.StateMachine.Refinement
+public import Spqr.Specs.Braid.StateMachine.Relation
 public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
@@ -333,6 +333,7 @@ public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.RecvHdrChunk
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.RecvCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.RecvCt2Chunk
