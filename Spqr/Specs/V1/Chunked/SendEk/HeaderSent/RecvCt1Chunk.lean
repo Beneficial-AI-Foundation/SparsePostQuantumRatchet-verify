@@ -50,10 +50,14 @@ assertion already discharged in step 1 — and is otherwise a pure record constr
 The main theorem `recv_ct1_chunk_spec` follows the predicate-lifting style of
 `Specs/Encoding/Decoder/DecodedMessage.lean`: it is parametrised by a postcondition
 `decodedPost` for `PolyDecoder::decoded_message` on the updated decoder (hypothesis
-`h_decoded`).  `h_decoded` is stated for every decoder that agrees with `self.receiving_ct1` on
-`pts_needed` and `is_complete` and whose slots are `PointsValid` — exactly what `add_chunk_spec`
-and `add_chunk_spec_valid` guarantee about the updated decoder — so the registered
-`decoded_message_spec` can be plugged in; `recv_ct1_chunk_spec_concrete` does so under the
+`h_decoded`).  `h_decoded` is stated for every decoder `pd` with
+`addChunkPost self.receiving_ct1 chunk pd` and `PointsValid pd.pts` — exactly what
+`add_chunk_spec` and `add_chunk_spec_valid` guarantee about the updated decoder — so the
+registered `decoded_message_spec` can be plugged in.  Quantifying over `addChunkPost` (rather
+than merely over `pts_needed`/`is_complete` agreement) keeps the branch-specific projections
+below satisfiable: the `none`/`some` outcome of `decoded_message` depends on the points of the
+updated decoder, which `addChunkPost` fixes.  `recv_ct1_chunk_spec_concrete` instantiates
+`decodedPost` with the registered `decoded_message_spec` under the
 `#[hax_lib::refine]` invariant of the Rust `HeaderSent`,
 `receiving_ct1.pts_needed == CIPHERTEXT1_SIZE / 2`, i.e. `pts_needed = 480`, from which the
 decoded `ct1` has exactly `2 · 480 = 960` bytes — the `#[hax_lib::refine(ct1.len() == 960)]`
@@ -177,11 +181,10 @@ open Spqr.V1.Chunked.SendEk.HeaderSent
       platform widths, and is discharged by `scalar_tac`;
     – `h_valid` — every slot of `self.receiving_ct1.pts` is `SlotSorted` (the `SortedSet`
       invariant), which `add_chunk_spec_valid` carries to the updated decoder;
-    – `h_decoded` — the assumed behaviour of `decoded_message` on any decoder that agrees with
-      `self.receiving_ct1` on `pts_needed` and `is_complete` and satisfies `PointsValid` (which
-      is all `add_chunk_spec` / `add_chunk_spec_valid` guarantee about the shape of the updated
-      decoder); see `recv_ct1_chunk_spec_concrete` for the instantiation with
-      `decoded_message_spec`.
+    – `h_decoded` — the assumed behaviour of `decoded_message` on any decoder `pd` satisfying
+      `addChunkPost self.receiving_ct1 chunk pd` and `PointsValid pd.pts`, which is exactly what
+      is known about the updated decoder; see `recv_ct1_chunk_spec_concrete` for the
+      instantiation with `decoded_message_spec`.
   Under these hypotheses the call never panics.  No length hypothesis on the decoded `ct1` is
   needed: `EkSent::recv_ct1` only asserts the epoch (the `ct1.len() == 960` conjunct of its hax
   contract is a struct refinement, see `recv_ct1_chunk_spec_done_wellFormed`).
@@ -205,8 +208,7 @@ theorem recv_ct1_chunk_spec (self : HeaderSent) (epoch : U64) (chunk : encoding.
       (self.receiving_ct1.pts[k]!).length + 17 ≤ Usize.max)
     (h_valid : PolyDecoder.PointsValid self.receiving_ct1.pts)
     (h_decoded : ∀ (pd : PolyDecoder),
-      pd.pts_needed = self.receiving_ct1.pts_needed →
-      pd.is_complete = self.receiving_ct1.is_complete →
+      addChunkPost self.receiving_ct1 chunk pd →
       PolyDecoder.PointsValid pd.pts →
       PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message pd ⦃
         (o : Option (alloc.vec.Vec U8)) => decodedPost pd o ⦄) :
@@ -222,7 +224,7 @@ theorem recv_ct1_chunk_spec (self : HeaderSent) (epoch : U64) (chunk : encoding.
     as ⟨receiving_ct1, h_pn, h_ic, selfs, h_s0, h_s16, h_chain, h_valid'⟩
   have h_add : addChunkPost self.receiving_ct1 chunk receiving_ct1 :=
     ⟨h_pn, h_ic, selfs, h_s0, h_s16, h_chain⟩
-  step with h_decoded receiving_ct1 h_pn h_ic h_valid'
+  step with h_decoded receiving_ct1 h_add h_valid'
   cases o with
   | none =>
     simp only [WP.spec_ok, recvCt1ChunkPost, true_and]
@@ -249,8 +251,7 @@ theorem recv_ct1_chunk_spec_still_receiving (self : HeaderSent) (epoch : U64)
       (self.receiving_ct1.pts[k]!).length + 17 ≤ Usize.max)
     (h_valid : PolyDecoder.PointsValid self.receiving_ct1.pts)
     (h_decoded_none : ∀ (pd : PolyDecoder),
-      pd.pts_needed = self.receiving_ct1.pts_needed →
-      pd.is_complete = self.receiving_ct1.is_complete →
+      addChunkPost self.receiving_ct1 chunk pd →
       PolyDecoder.PointsValid pd.pts →
       PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message pd ⦃
         (o : Option (alloc.vec.Vec U8)) => o = none ⦄) :
@@ -291,8 +292,7 @@ theorem recv_ct1_chunk_spec_done (self : HeaderSent) (epoch : U64) (chunk : enco
       (self.receiving_ct1.pts[k]!).length + 17 ≤ Usize.max)
     (h_valid : PolyDecoder.PointsValid self.receiving_ct1.pts)
     (h_decoded_some : ∀ (pd : PolyDecoder),
-      pd.pts_needed = self.receiving_ct1.pts_needed →
-      pd.is_complete = self.receiving_ct1.is_complete →
+      addChunkPost self.receiving_ct1 chunk pd →
       PolyDecoder.PointsValid pd.pts →
       PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message pd ⦃
         (o : Option (alloc.vec.Vec U8)) => ∃ ct1, o = some ct1 ∧ decodedProp ct1 ⦄) :
@@ -333,6 +333,7 @@ the decoder is complete or some slot lacks points; `some ct1` with `ct1.length =
 
 **Source**: spqr/src/v1/chunked/send_ek.rs (lines 131:4-149:5)
 -/
+@[step]
 theorem recv_ct1_chunk_spec_concrete (self : HeaderSent) (epoch : U64) (chunk : encoding.Chunk)
     (h_epoch : epoch = self.uc.epoch)
     (h_push_cap : ∀ (k : Nat), k < 16 →
@@ -352,8 +353,8 @@ theorem recv_ct1_chunk_spec_concrete (self : HeaderSent) (epoch : U64) (chunk : 
               PolyDecoder.Insts.SpqrEncodingDecoder.BytesDecode pd.pts pd.pts_needed out.val 0)
         result ⦄ := by
   apply recv_ct1_chunk_spec self epoch chunk _ h_epoch h_push_cap h_valid
-  intro pd h_pn _ h_pv
-  have h_pn' : pd.pts_needed.val = 480 := by rw [h_pn, h_pts_needed]
+  intro pd h_add h_pv
+  have h_pn' : pd.pts_needed.val = 480 := by rw [h_add.1, h_pts_needed]
   apply WP.spec_mono (PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_spec pd h_pv
     (by rw [h_pn']; scalar_tac))
   intro o h
@@ -409,6 +410,6 @@ theorem recv_ct1_chunk_fail_of_epoch_ne (self : HeaderSent) (epoch : U64)
     (chunk : encoding.Chunk)
     (h_epoch : epoch ≠ self.uc.epoch) :
     recv_ct1_chunk self epoch chunk = fail Error.assertionFailure := by
-  simp [recv_ct1_chunk, massert, h_epoch]
+  simp only [recv_ct1_chunk, massert, h_epoch, ↓reduceIte, bind_fail]
 
 end spqr.v1.chunked.send_ek.HeaderSent
