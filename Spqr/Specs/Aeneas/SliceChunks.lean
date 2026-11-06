@@ -10,6 +10,8 @@ public import Spqr.Specs.Aeneas.SliceChunksExact
 
 /-!
 # Spec theorems for `core::slice::{[@T]}::chunks` with chunk size 2
+
+The file also shows that `u16::from_le_bytes` depends only on the two bytes of its array.
 -/
 
 @[expose] public section

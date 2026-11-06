@@ -23,8 +23,7 @@ The extracted body in `SrcTranslated/Funs.lean` proceeds in three steps:
   and unwrap both `Result`s (`expect`) — with the length preconditions these cannot fail;
 * call libcrux's incremental `encapsulate2` and copy the ciphertext into an owned `Vec`.
 
-**FIPS 203 value semantics** (Phase 7.3 of `doc/plan.md`, via Bridge 6.3
-`Spqr/Crypto/Fips203/Refinement/LibcruxEncaps2.lean`): the output is
+By `Spqr/Crypto/Fips203/Refinement/LibcruxEncaps2.lean`, the output is
 `Fips203.Refinement.ct2List st pk` — round 2 of FIPS 203 Algorithm 17
 (`Fips203.mlkemEncapsPhase2`) on the state `(ŷ, e₂, m)` decoded from `st` and the NTT-domain
 vector `t̂` decoded from `pk = ByteEncode₁₂(t̂)` — where `pk` holds the bytes of `ek` and `st`
@@ -34,12 +33,13 @@ returned `Some`, and `es` itself otherwise. `encaps2_spec` uses only the contrac
 2080 bytes), so it holds for every 2080-byte state, including the byte-swapped ones the Rust
 repairs.
 
-When `es` is the serialised round-1 state of `encaps1`, `encaps2EffectiveState_stateOut` shows
-that the effective state is `es` itself, and `ct2Bytes_stateOut_pk2Bytes` and
-`ct_eq_ct1Bytes_append_ct2Bytes` of Bridge 6.3 identify the output with `ct[960 : 1088]` of the
-monolithic `ML-KEM.Encaps_internal(ek, m)`.
+When `es` is a state that the FIPS 203 model of `encapsulate1` writes,
+`encaps2EffectiveState_stateOut` shows that the effective state is `es` itself. If in addition the
+header is `pk1Bytes seed` and `ek` is `pk2Bytes seed` of one generated key,
+`ct2Bytes_stateOut_pk2Bytes` and `ct_eq_ct1Bytes_append_ct2Bytes` identify the output with
+`ct[960 : 1088]` of the monolithic `ML-KEM.Encaps_internal(ek, m)`.
 
-**Source**: `src/incremental_mlkem768.rs`, lines 71:0-79:1 -/
+Source: `src/incremental_mlkem768.rs`, lines 71:0-79:1. -/
 
 @[expose] public section
 
@@ -92,7 +92,7 @@ theorem encaps2EffectiveState_stateOut (hdr : List U8) (h_hdr : 64 ≤ hdr.lengt
 
 /-- Postcondition predicate for `encaps2`: the result is the 128-byte
 second ciphertext half `c₂` computed from the effective state and the
-encapsulation key, via FIPS 203 round 2 (Bridge 6.3). -/
+encapsulation key, via FIPS 203 round 2. -/
 def Encaps2Post
     (ek es : alloc.vec.Vec Std.U8)
     (result : alloc.vec.Vec Std.U8) : Prop :=
@@ -110,12 +110,10 @@ namespace spqr.incremental_mlkem768
 
 open Spqr.IncrementalMlkem768
 
-/-- **Spec theorem for `incremental_mlkem768.encaps2`**:
-
-Assuming the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`), `encaps2` succeeds and
-returns the 128-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17
-(Bridge 6.3): there are fixed-size arrays `st` (the possibly fixed state the workaround
-selected) and `pk` (the bytes of `ek`) with `result = Fips203.Refinement.ct2List st pk`, i.e.
+/-- Assume the Rust `requires` (`es.len() = 2080`, `ek.len() = 1152`). Then `encaps2` succeeds
+and returns the 128-byte second ciphertext half `c₂` of round 2 of FIPS 203 Algorithm 17: there
+are fixed-size arrays `st` (the possibly fixed state the workaround selected) and `pk` (the bytes
+of `ek`) with `result = Fips203.Refinement.ct2List st pk`, i.e.
 `c₂ = ByteEncode_{d_v}(Compress_{d_v}(NTT⁻¹(t̂ᵀ∘ŷ) + e₂ + Decompress₁(m)))` on the decoded
 state `(ŷ, e₂, m)` and `t̂`.
 
