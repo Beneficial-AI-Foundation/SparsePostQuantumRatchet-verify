@@ -336,10 +336,12 @@ public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.FunctionalModels
 public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.RecvCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.RecvCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.SendHdrChunk
