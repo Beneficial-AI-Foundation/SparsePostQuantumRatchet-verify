@@ -52,7 +52,6 @@ The result satisfies:
 
   `result = none`
 -/
-@[step]
 theorem init_inner_spec_v0 (d : proto.pq_ratchet.Direction) (auth_key : Slice Std.U8) :
     init_inner proto.pq_ratchet.Version.V0 d auth_key
     ⦃ (result : Option proto.pq_ratchet.pq_ratchet_state.Inner) =>
@@ -111,7 +110,6 @@ The result satisfies:
   `| some (Inner.V1 vs) => ∃ nhr, vs.inner_state = some (InnerState.NoHeaderReceived nhr)`
   `| _ => False`
 -/
-@[step]
 theorem init_inner_spec_v1_b2a (auth_key : Slice Std.U8)
     (h_len : auth_key.length + 32 ≤ Usize.max) :
     init_inner proto.pq_ratchet.Version.V1 proto.pq_ratchet.Direction.B2A auth_key
