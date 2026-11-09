@@ -9,40 +9,36 @@ public import SrcTranslated.Funs
 import Spqr.Specs.V1.Unchunked.SendEk.Serialize.HeaderSent.IntoPb
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FunctionalModels
 
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::into_pb`
 
 Converts a chunked `KeysSampled` state from its in-memory Rust form
 (`spqr::v1::chunked::send_ek::KeysSampled`) into the protobuf form
-(`spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled`) used for saving it to disk.
-The chunked state has two fields, each converted separately and wrapped in `Some` since the
-corresponding protobuf fields are optional. The unchunked part `uc` is converted with
-`HeaderSent::into_pb`, which copies `epoch`, `ek` and `dk` verbatim and converts `auth` with
-`Authenticator::into_pb`, which copies `root_key` and `mac_key`. The chunking part `sending_hdr`
-is converted with `PolyEncoder::into_pb`. That copies the chunk counter `idx` unchanged and turns
-the numbers the encoder is holding into raw bytes: each number fits in 16 bits and is written as
-two bytes, high byte first. The encoder is always in exactly one of two states, and only the
-matching protobuf list is filled, a `Points` encoder writes into `pts` and leaves `polys` empty,
-a `Polys` encoder writes into `polys` and leaves `pts` empty.
+(`spqr::proto::pq_ratchet::v1_state::chunked::KeysSampled`) used for saving it to disk. The
+chunked state has two fields, each converted separately and wrapped in `Some` since the
+corresponding protobuf fields are optional: the unchunked part `uc` with the unchunked
+`HeaderSent::into_pb` and the encoder `sending_hdr` with `PolyEncoder::into_pb`, whose two overflow
+hypotheses this spec inherits. The result is pinned to the pure functional model
+`FunctionalModels.intoPb`, which in turn calls the functional models of the component
+conversions. The reverse direction is `from_pb`.
 
-**Source:** "src/v1/chunked/send_ek/serialize.rs"
+**Source**: spqr/src/v1/chunked/send_ek/serialize.rs
 -/
 
 @[expose] public section
 
-open Aeneas Aeneas.Std Result Aeneas.Std.WP
-open spqr.encoding.polynomial
+open Aeneas Aeneas.Std Result
 namespace spqr.v1.chunked.send_ek.serialize.KeysSampled
 
 /-- **Spec theorem for `spqr::v1::chunked::send_ek::serialize::KeysSampled::into_pb`**
-• The call succeeds (no panic) given the two overflow hypotheses inherited from
-  `PolyEncoder::into_pb` for `self.sending_hdr`: `2 * len ≤ Usize.max` per serialized item.
-• Both optional protobuf fields of the result are always populated; the `| _ => False` branch
-  rules out `none` in either position.
-• The unchunked part `uc_pb` is pinned down as an explicit record literal copied from `self.uc`.
-• The chunking part `hdr_pb` is pinned down at the detailed value level by
-  `PolyEncoder.IntoPbPostCond self.sending_hdr hdr_pb`. -/
+• The call always succeeds (no panic) under the two overflow hypotheses inherited from
+  `PolyEncoder::into_pb` for `self.sending_hdr`: `2 * len ≤ Usize.max` on the coefficient count
+  `len` of every stored point and polynomial.
+• The extracted function agrees with its associated high-level functional model
+  `FunctionalModels.intoPb` (see def).
+-/
 @[step]
 theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
     (h_overflow_points : ∀ points, self.sending_hdr.s = .Points points →
@@ -50,21 +46,8 @@ theorem into_pb_spec (self : v1.chunked.send_ek.KeysSampled)
     (h_overflow_polys : ∀ polys, self.sending_hdr.s = .Polys polys →
       ∀ j < polys.length, 2 * polys[j]!.degree ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.v1_state.chunked.KeysSampled) =>
-      match result with
-      | { uc := some uc_pb, sending_hdr := some hdr_pb } =>
-          uc_pb = { epoch := self.uc.epoch,
-                    auth := some { root_key := self.uc.auth.root_key,
-                                   mac_key := self.uc.auth.mac_key },
-                    ek := self.uc.ek, dk := self.uc.dk } ∧
-          PolyEncoder.IntoPbPostCond self.sending_hdr hdr_pb
-      | _ => False ⦄ := by
-  unfold into_pb
+      result = FunctionalModels.intoPb self ⦄ := by
+  unfold into_pb FunctionalModels.intoPb
   step*
-  refine ⟨?_, ?_⟩
-  · grind [cases proto.pq_ratchet.v1_state.unchunked.HeaderSent,
-      unchunked.send_ek.serialize.HeaderSent.FunctionalModels.intoPb,
-      authenticator.serialize.Authenticator.FunctionalModels.intoPb]
-  · rw [pe_post]
-    exact PolyEncoder.intoPbPostCond_intoPb _ h_overflow_points h_overflow_polys
 
 end spqr.v1.chunked.send_ek.serialize.KeysSampled
