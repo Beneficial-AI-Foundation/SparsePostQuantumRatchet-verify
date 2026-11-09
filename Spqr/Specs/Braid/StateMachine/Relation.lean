@@ -107,8 +107,8 @@ structure CodeAgrees (P : CodePrims) : Prop where
       (Spqr.V1.Unchunked.SendCt.sckaKeyLabel ++ (core.num.U64.to_be_bytes ep).val) 32
 
 /-- The ML-KEM 768 sizes that libcrux reports. `Ciphertext1::<960>::len()` and
-`Ciphertext2::<128>::len()` return their length parameter, and `pk2_len()` returns `1152`. The
-extraction keeps all three opaque. -/
+`Ciphertext2::<128>::len()` return their length parameter, and `pk2_len()` returns `1152`.
+`mlkemSizes` proves it. -/
 def MlkemSizes : Prop :=
   incremental_mlkem768.CIPHERTEXT1_SIZE = ok 960#usize ∧
   incremental_mlkem768.CIPHERTEXT2_SIZE = ok 128#usize ∧
