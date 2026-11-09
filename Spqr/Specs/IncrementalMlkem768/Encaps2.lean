@@ -33,8 +33,11 @@ returned `Some`, and `es` itself otherwise. `encaps2_spec` uses only the contrac
 2080 bytes), so it holds for every 2080-byte state, including the byte-swapped ones the Rust
 repairs.
 
-When `es` is a state that the FIPS 203 model of `encapsulate1` writes,
-`encaps2EffectiveState_stateOut` shows that the effective state is `es` itself. If in addition the
+When the `e₂` words of `es` are signed 16-bit little-endian values in `-2 … 2`, as libcrux-ml-kem
+0.0.10 writes them, `encaps2EffectiveState_signedE2` shows that the effective state is `es` itself.
+`encaps2EffectiveState_stateOut` shows the same for a state that the FIPS 203 model of
+`encapsulate1` writes. The model stores `e₂` in `[0, q)`, so the bytes that libcrux writes do not
+satisfy its premise (issue #800). If in addition the
 header is `pk1Bytes seed` and `ek` is `pk2Bytes seed` of one generated key,
 `ct2Bytes_stateOut_pk2Bytes` and `ct_eq_ct1Bytes_append_ct2Bytes` identify the output with
 `ct[960 : 1088]` of the monolithic `ML-KEM.Encaps_internal(ek, m)`.
@@ -80,8 +83,20 @@ noncomputable def encaps2EffectiveState
   ok (mf.elim es.val (fun fixed => fixed.val))
 
 open spqr.incremental_mlkem768 in
+/-- On a 2080-byte state whose `e₂` words are signed 16-bit little-endian values in `-2 … 2`, the
+effective state of `encaps2` is `es` itself. -/
+theorem encaps2EffectiveState_signedE2 (es : alloc.vec.Vec U8) (h_len : es.val.length = 2080)
+    (h_e2 : ∀ k < 256,
+      (es.val[1536 + 2 * k]!, es.val[1536 + 2 * k + 1]!) ∈ Fips203.Refinement.signedE2Pairs) :
+    encaps2EffectiveState es = ok es.val := by
+  simp only [encaps2EffectiveState,
+    potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_signedE2 es h_len h_e2,
+    bind_ok, Option.elim]
+
+open spqr.incremental_mlkem768 in
 /-- On every state that the FIPS 203 model of `encapsulate1` writes, the effective state of
-`encaps2` is `es` itself. -/
+`encaps2` is `es` itself. The model stores `e₂` in `[0, q)`, so the bytes that libcrux-ml-kem
+0.0.10 writes do not satisfy `h_es` (issue #800). -/
 theorem encaps2EffectiveState_stateOut (hdr : List U8) (h_hdr : 64 ≤ hdr.length)
     (m : Fin 32 → UInt8) (es : alloc.vec.Vec U8)
     (h_es : es.val = Fips203.Refinement.toU8List (Fips203.Refinement.stateOut hdr h_hdr m)) :
