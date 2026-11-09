@@ -9302,32 +9302,6 @@ def incremental_mlkem768.encaps1
   let ss1 := deref_mut_back1 s6
   ok ((v, state1, ss1), rng1)
 
-/-- [spqr::incremental_mlkem768::encaps2]:
-    Source: 'src/incremental_mlkem768.rs', lines 71:0-79:1
-    Visibility: public -/
-def incremental_mlkem768.encaps2
-  (ek : alloc.vec.Vec Std.U8) (es : alloc.vec.Vec Std.U8) :
-  Result (alloc.vec.Vec Std.U8)
-  := do
-  let maybe_fix ←
-    incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
-      es
-  let o ← core.option.Option.as_ref maybe_fix
-  let es1 ← lift (core.option.Option.unwrap_or o es)
-  let s ← alloc.vec.Vec.as_slice Global es1
-  let r ← core.array.TryFromSharedArraySlice.try_from 2080#usize s
-  let a ←
-    core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
-      "size should be correct")
-  let s1 ← alloc.vec.Vec.as_slice Global ek
-  let r1 ← core.array.TryFromSharedArraySlice.try_from 1152#usize s1
-  let a1 ←
-    core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
-      "size should be correct")
-  let ct2 ← libcrux_ml_kem.mlkem768.incremental.encapsulate2 a a1
-  let s2 ← lift (Array.to_slice ct2.value)
-  alloc.slice.Slice.to_vec core.clone.CloneU8 s2
-
 /-- [spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state]: loop body 0:
     Source: 'src/incremental_mlkem768.rs', lines 149:4-151:5 -/
 @[rust_loop_body]
@@ -9392,6 +9366,99 @@ def incremental_mlkem768.flip_endianness_of_encapsulation_state
       { start := 0#usize, «end» := i4 } 2#usize
   incremental_mlkem768.flip_endianness_of_encapsulation_state_loop iter
     fixed_es
+
+/-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]: loop body 0:
+    Source: 'src/incremental_mlkem768.rs', lines 117:4-138:1 -/
+@[rust_loop_body]
+def
+  incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_loop.body
+  (es : alloc.vec.Vec Std.U8) (iter : core.slice.iter.Chunks Std.U8) :
+  Result (ControlFlow (core.slice.iter.Chunks Std.U8) (Option (alloc.vec.Vec
+    Std.U8)))
+  := do
+  let (o, iter1) ←
+    core.slice.iter.Chunks.Insts.CoreIterTraitsIteratorIteratorSharedASlice.next
+      iter
+  match o with
+  | none => ok (done none)
+  | some c =>
+    let r ←
+      core.array.TryFromArrayCopySlice.try_from 2#usize core.marker.CopyU8 c
+    let a ←
+      core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
+        "chunk should be size 2")
+    let i ← lift (core.num.U16.from_le_bytes a)
+    match i with
+    | 0#uscalar => ok (cont iter1)
+    | 65535#uscalar => ok (cont iter1)
+    | 1#uscalar => ok (done none)
+    | 2#uscalar => ok (done none)
+    | 65534#uscalar => ok (done none)
+    | 256#uscalar =>
+      let v ← incremental_mlkem768.flip_endianness_of_encapsulation_state es
+      ok (done (some v))
+    | 512#uscalar =>
+      let v ← incremental_mlkem768.flip_endianness_of_encapsulation_state es
+      ok (done (some v))
+    | 65279#uscalar =>
+      let v ← incremental_mlkem768.flip_endianness_of_encapsulation_state es
+      ok (done (some v))
+    | _ => ok (done none)
+
+/-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]: loop 0:
+    Source: 'src/incremental_mlkem768.rs', lines 117:4-138:1 -/
+@[rust_loop]
+def
+  incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_loop
+  (iter : core.slice.iter.Chunks Std.U8) (es : alloc.vec.Vec Std.U8) :
+  Result (Option (alloc.vec.Vec Std.U8))
+  := do
+  loop
+    (fun iter1 =>
+      incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_loop.body
+      es iter1)
+    iter
+
+/-- [spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275]:
+    Source: 'src/incremental_mlkem768.rs', lines 92:0-138:1 -/
+def
+  incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+  (es : alloc.vec.Vec Std.U8) : Result (Option (alloc.vec.Vec Std.U8)) := do
+  let left_val := alloc.vec.Vec.len es
+  massert (left_val = 2080#usize)
+  let i ← 2080#usize - 32#usize
+  let s ←
+    alloc.vec.Vec.index (core.slice.index.SliceIndexRangeUsizeSlice Std.U8) es
+      { start := 1536#usize, «end» := i }
+  let iter ← core.slice.Slice.chunks s 2#usize
+  incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275_loop
+    iter es
+
+/-- [spqr::incremental_mlkem768::encaps2]:
+    Source: 'src/incremental_mlkem768.rs', lines 71:0-79:1
+    Visibility: public -/
+def incremental_mlkem768.encaps2
+  (ek : alloc.vec.Vec Std.U8) (es : alloc.vec.Vec Std.U8) :
+  Result (alloc.vec.Vec Std.U8)
+  := do
+  let maybe_fix ←
+    incremental_mlkem768.potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275
+      es
+  let o ← core.option.Option.as_ref maybe_fix
+  let es1 ← lift (core.option.Option.unwrap_or o es)
+  let s ← alloc.vec.Vec.as_slice Global es1
+  let r ← core.array.TryFromSharedArraySlice.try_from 2080#usize s
+  let a ←
+    core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
+      "size should be correct")
+  let s1 ← alloc.vec.Vec.as_slice Global ek
+  let r1 ← core.array.TryFromSharedArraySlice.try_from 1152#usize s1
+  let a1 ←
+    core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
+      "size should be correct")
+  let ct2 ← libcrux_ml_kem.mlkem768.incremental.encapsulate2 a a1
+  let s2 ← lift (Array.to_slice ct2.value)
+  alloc.slice.Slice.to_vec core.clone.CloneU8 s2
 
 /-- [spqr::incremental_mlkem768::decaps]:
     Source: 'src/incremental_mlkem768.rs', lines 158:0-171:1
