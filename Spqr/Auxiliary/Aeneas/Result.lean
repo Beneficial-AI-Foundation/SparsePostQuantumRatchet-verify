@@ -30,22 +30,20 @@ end Aeneas.Std
 
 open Aeneas.Std
 
-/-- Equation for `Result::branch` on an `Ok`. -/
-@[simp]
+/-- Equation for `Result::branch` on an `Ok`.  Not a `simp` lemma: proofs that step through a
+`?` with `branch_eq_continue` / `branch_eq_break` rely on `branch` staying folded. -/
 theorem core.result.Result.Insts.CoreOpsTry.branch_Ok {T E : Type} (v : T) :
     core.result.Result.Insts.CoreOpsTry.branch (E := E) (.Ok v) = Result.ok (.Continue v) :=
   rfl
 
-/-- Equation for `Result::branch` on an `Err`. -/
-@[simp]
+/-- Equation for `Result::branch` on an `Err`.  Not a `simp` lemma, see `branch_Ok`. -/
 theorem core.result.Result.Insts.CoreOpsTry.branch_Err {T E : Type} (e : E) :
     core.result.Result.Insts.CoreOpsTry.branch (T := T) (.Err e) =
       Result.ok (.Break (.Err e)) :=
   rfl
 
 /-- Equation for `Result::from_residual` with the identity `From` instance: the error is
-propagated unchanged. -/
-@[simp]
+propagated unchanged.  Not a `simp` lemma, see `branch_Ok`. -/
 theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_same
     {T E : Type} (e : E) :
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual

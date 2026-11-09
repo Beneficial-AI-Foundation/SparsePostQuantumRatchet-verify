@@ -221,8 +221,9 @@ def recvEkChunkPre (uc : unchunked.send_ct.Ct1Sent) (pd : encoding.polynomial.Po
 
 /-- Preconditions of the handler that `States::recv` calls on a same-epoch message, one field
 per acting state / payload pair, guarded by the shape of `self` and `msg.payload`; a pair not
-listed here calls no handler.  Each field is exactly the hypothesis list of the handler's
-`*_spec_concrete` theorem (minus `h_epoch`, which the dispatcher establishes): chunk-index
+listed here calls no handler.  Each field is exactly the hypothesis list of the handler's spec
+theorem — `*_spec_concrete` where one exists, otherwise `*_spec` (`KeysSampled`, `Ct1Received`,
+`EkReceivedCt1Sampled`) — minus `h_epoch`, which the dispatcher establishes: chunk-index
 overflow bounds, `PolyDecoder` well-formedness (`PointsValid`, per-set capacity, `pts_needed`),
 the values of the opaque ML-KEM size constants, and the buffer lengths / scalar bounds of the
 unchunked payload. -/
@@ -305,6 +306,9 @@ theorem recvEqPost_of_eq (self : States) (msg : Message) (r : core.result.Result
       Nat.compare_eq_eq.2 rfl, Bool.false_eq_true, ite_false, ite_true] at hr
   -- pairs the dispatcher does not act on: the state is returned unchanged
   all_goals try (rw [ok.injEq] at hr; subst hr; rfl)
+  -- `Ct1Sampled` desugars `let (chunk, ack) = match msg.payload { … }` into a nested match
+  -- that `simp only` leaves folded; the `change` states its value for the non-acting payloads.
+  -- It depends on the extracted shape of that pattern and must be revisited on re-extraction.
   case Ct1Sampled.None st | Ct1Sampled.Hdr st | Ct1Sampled.Ct1Ack.false st
       | Ct1Sampled.Ct1Ack.true st | Ct1Sampled.Ct1 st | Ct1Sampled.Ct2 st =>
     change ok (core.result.Result.Ok { key := none, state := States.Ct1Sampled st }) = ok r at hr
@@ -432,7 +436,7 @@ theorem recv_eq_ok_of_eq (self : States) (msg : Message) (h : msg.epoch = self.e
       rcases v with _ | _ <;> exact ⟨_, rfl⟩
     · rw [branch_Err, bind_ok]; exact ⟨_, from_residual_same e⟩
 
-/-- **Spec theorem for `spqr.v1.chunked.states.States.recv`** (same epoch): under the handler
+/-- **Same-epoch lemma for `spqr.v1.chunked.states.States.recv`**: under the handler
 preconditions, `recv` on a message from the state's own epoch returns a value satisfying
 `recvEqPost self msg` — the result is pinned to the value returned by the handler of the
 matched state / payload pair. -/
@@ -443,9 +447,9 @@ theorem recv_spec_of_eq (self : States) (msg : Message) (h : msg.epoch = self.ep
   rw [hr, WP.spec_ok]
   exact recvEqPost_of_eq self msg r h hr
 
-/-! ## Spec theorems -/
+/-! ## The epoch-mismatch dispatch -/
 
-/-- **Spec theorem for `spqr.v1.chunked.states.States.recv`** (epoch mismatch):
+/-- **Epoch-mismatch lemma for `spqr.v1.chunked.states.States.recv`**:
 
 When `msg.epoch ≠ States.epochOf self` no payload handler is called, so the call is total:
 
@@ -479,6 +483,8 @@ theorem recv_spec_of_ne (self : States) (msg : Message) (h : msg.epoch ≠ self.
       cases self with
       | Ct2Sampled st => simp only [hnext' st rfl, ↓reduceIte]
       | _ => rfl
+
+/-! ## Spec theorem -/
 
 /-- **Spec theorem for `spqr.v1.chunked.states.States.recv`**:
 
@@ -517,6 +523,12 @@ bounds, the values of the opaque ML-KEM size constants.  They are what a bare `S
 does not establish; under them every handler returns (`recv_eq_ok_of_eq`) and the result is
 `recvEqPost` (`recv_spec_of_eq`).  The epoch-mismatch paths are total and need nothing
 (`recv_spec_of_ne`, `recvPre_of_ne`).
+
+The postcondition pins the result to the handler's return value and deliberately states no
+property of the successor state itself.  A caller needing facts about `result.state` (epoch,
+authenticator, decoder well-formedness, …) obtains the equation `handler … = ok r` from
+`recvEqPost` and applies the handler's own spec theorem to it; `key_some_of_recvPost` isolates
+the single key-emitting path.
 
 **Source**: spqr/src/v1/chunked/states.rs (lines 275:4-533:5)
 -/
