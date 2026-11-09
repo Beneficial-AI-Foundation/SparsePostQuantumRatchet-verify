@@ -347,6 +347,7 @@ public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.RecvCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.SendHdrChunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
