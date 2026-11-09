@@ -8,13 +8,13 @@
   },
   "source": {
     "repo": "https://github.com/truonghoangle/SparsePostQuantumRatchet.git",
-    "commit": "e4928c5a2d267a20d5f43b3c9c9e704f96672e53",
+    "commit": "e3876c6c12ded0dbe0a3bd9ea986cb2e93357e46",
     "language": "rust",
     "package": "spqr",
     "package-version": "1.6.0",
     "package-path": ""
   },
-  "timestamp": "2026-11-09T06:51:15Z",
+  "timestamp": "2026-11-09T07:31:24Z",
   "data": {
     "probe:alloc/https://github.com/rust-lang/rust/library/alloc/collections/btree/map/entry/impl#[`Entry<'a,/K,/V,/A>`]and_modify()": {
       "display-name": "and_modify",
