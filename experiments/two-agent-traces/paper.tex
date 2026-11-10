@@ -1,0 +1,262 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\setlength{\emergencystretch}{2em}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newcommand{\Run}{\ensuremath{\mathsf{Run}}}
+\newcommand{\Trace}{\ensuremath{\mathsf{TraceRun}}}
+\newcommand{\Step}{\ensuremath{\mathsf{Step}}}
+\newcommand{\erase}{\ensuremath{\mathsf{outputs}}}
+\newcommand{\silent}{\ensuremath{\mathsf{silentCount}}}
+\newcommand{\None}{\ensuremath{\mathsf{none}}}
+\newcommand{\Some}{\ensuremath{\mathsf{some}}}
+\newcommand{\cat}{\mathbin{+\!+}}
+\title{Preserving Silent Calls in SPQR Runs\\A Two-Agent Definition and Review Experiment}
+\author{Local research experiment\\AI-assisted development and independent agent review}
+\date{10 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+The existing SPQR verification development represents a finite run by its initial state,
+final state, and list of emitted epoch secrets. Successful calls that emit no key contribute
+no entry to that list. We introduce a conservative refinement recording one optional output
+per successful call. We prove that existential erasure of these traces is exactly the existing
+run relation, that every specified trace boundary admits an intermediate state, and that
+trace length equals emitted-key count plus silent-call count. The definitions and proofs are
+checked in Lean against the repository's existing transition relation. A second agent reviews
+the construction, its trust dependencies, and the limits of its interpretation. This is a
+small local formalization experiment, with no claim of literature novelty, optimality, or
+additional cryptographic security.
+\end{abstract}
+
+\section{Problem and experimental method}
+A useful definition exposes the information needed by later proofs without changing the
+behaviors already modeled. Here the target is the relation \Run\ in the local SPQR
+verification repository~\cite{run}. Its output index records emitted keys in order, but has
+no position for a successful call producing no key. Induction on a derivation can still
+reason about such calls; the issue is what information the relation's explicit indices
+expose, not the absence of silent transitions from the existing semantics.
+
+The user requested two agents: one to improve or introduce definitions and derive theorems,
+and another to review those results. The author agent produced a separate Lean file and
+an author report. The reviewer examined the existing semantics, checked the new statements
+and proofs, and produced a separate review. The coordinating agent assembled this paper and
+its reproducible artifacts. These roles provide a review workflow, not evidence of statistical
+independence or a substitute for human review.
+
+We interpret ``better'' relative to two concrete criteria: retaining successful-call positions
+and preserving exactly the old relation after erasure. We do not optimize over all possible
+definitions. Production definitions remain unchanged. All experimental files live under
+\texttt{experiments/two-agent-traces/}, on branch
+\path{experiment/two-agent-trace-definitions}.
+
+\section{Existing semantics and the refined definition}
+Let $S$ be the existing type \texttt{States} and $K$ the type \texttt{EpochSecret}.
+Write $\Step(s,t,o)$ for the existing relation with $o\in\operatorname{Option}(K)$.
+It holds when a send or receive call succeeds at both the Aeneas and Rust result levels,
+returns state $t$, and returns optional key $o$. Send witnesses include RNG interfaces and
+states; receive witnesses include the message. These witnesses are not explicit indices of
+our trace either. The relation concerns one party, arbitrary initial states, and successful
+calls only.
+
+For an optional key $o$, put $\operatorname{list}(\None)=[]$ and
+$\operatorname{list}(\Some(k))=[k]$. The existing relation has constructors
+\[
+\frac{}{\Run(s,s,[])}\qquad
+\frac{\Step(s,u,o)\quad\Run(u,t,ks)}
+ {\Run(s,t,\operatorname{list}(o)\cat ks)}.
+\]
+Consequently, a silent call contributes no element to the emitted-key list.
+
+\begin{definition}[Successful-call trace]
+A trace is a list $\tau\in\operatorname{List}(\operatorname{Option}(K))$.
+Define the relation $\Trace$ by
+\[
+\frac{}{\Trace(s,s,[])}\qquad
+\frac{\Step(s,u,o)\quad\Trace(u,t,\tau)}
+ {\Trace(s,t,o::\tau)}.
+\]
+Define erasure recursively by
+$\erase([])=[]$ and
+$\erase(o::\tau)=\operatorname{list}(o)\cat\erase(\tau)$.
+\end{definition}
+
+Every trace entry now corresponds to one successful call, including a silent call.
+The explicit trace does not distinguish send from receive, record messages, or constrain a
+sequence of RNG states across calls beyond what the original relation requires. It is an
+optional-output history, not a full execution log. No uniqueness of intermediate states is asserted.
+
+\section{Conservativity and composition}
+\begin{theorem}[Exact recovery of the existing relation]
+For all $s,t\in S$ and $ks\in\operatorname{List}(K)$,
+\[
+\Run(s,t,ks)\quad\Longleftrightarrow\quad
+\exists\tau,\ \Trace(s,t,\tau)\ \land\ \erase(\tau)=ks.
+\]
+\end{theorem}
+\begin{proof}
+For the forward direction, induct on the old run. The empty run lifts to the empty trace.
+For a constructor with head output $o$, lift the tail to $\tau$ and prepend $o$.
+The erasure equation follows from its recursive definition. For the reverse direction,
+induct on the trace derivation: each constructor becomes the corresponding old run
+constructor, whose index prepends $\operatorname{list}(o)$ rather than $o$.
+Substitute the supplied erasure equality.
+\end{proof}
+
+This is a logical equivalence of relations, with an existential trace witness. It does not
+assert a unique trace or a canonical executable extraction function from proof terms.
+It establishes compatibility with every property already stated purely over the old run's
+endpoints and emitted keys: given such a property for \Run, apply it to the erased trace.
+This observation does not reprove any existing protocol invariant.
+
+\begin{proposition}[Erasure and composition]
+For all traces $x,y$,
+$\erase(x\cat y)=\erase(x)\cat\erase(y)$.
+If $\Trace(s,u,x)$ and $\Trace(u,t,y)$, then $\Trace(s,t,x\cat y)$.
+\end{proposition}
+\begin{proof}
+The erasure equation follows by induction on $x$ and associativity of list concatenation.
+The relational claim follows by induction on the first trace derivation, retaining each
+head transition and appending the second derivation at its empty tail.
+\end{proof}
+
+\section{Exact decomposition at call boundaries}
+\begin{theorem}[Trace splitting]
+For all states $s,t$ and traces $x,y$,
+\[
+\Trace(s,t,x\cat y)\quad\Longleftrightarrow\quad
+\exists u,\ \Trace(s,u,x)\land\Trace(u,t,y).
+\]
+\end{theorem}
+\begin{proof}
+For the forward direction induct on $x$, generalizing $s$. If $x=[]$, take $u=s$.
+If $x=o::x'$, invert the trace constructor to obtain its first transition and remaining
+trace. Apply the induction hypothesis to that remainder and prepend the first transition
+to its prefix. The reverse direction is trace composition.
+\end{proof}
+
+\begin{theorem}[Cut after a specified number of calls]
+If $\Trace(s,t,\tau)$, then for every natural number $n$ there is a state $u$ such that
+\[
+\Trace(s,u,\operatorname{take}(n,\tau))\ \land\
+\Trace(u,t,\operatorname{drop}(n,\tau)).
+\]
+\end{theorem}
+\begin{proof}
+Use $\operatorname{take}(n,\tau)\cat\operatorname{drop}(n,\tau)=\tau$
+and apply trace splitting.
+\end{proof}
+
+For $n\leq |\tau|$, the prefix contains exactly $n$ successful calls; for $n>|\tau|$,
+list operations saturate, giving the whole trace and an empty suffix. The theorem provides
+existence, not uniqueness, of $u$. A boundary counts successful calls, not elapsed time,
+network deliveries, failed calls, or emitted keys.
+
+As a list illustration, take
+$\tau=[\None,\Some(k_1),\None,\Some(k_2)]$.
+Its erasure is $[k_1,k_2]$, and a cut at three calls retains
+$[\None,\Some(k_1),\None]$ as the prefix. If this list has a trace derivation, the cut
+theorem supplies a corresponding intermediate state. The example itself does not establish
+that this particular list is realizable by SPQR.
+
+\section{Exact accounting and information loss}
+\begin{definition}[Silent-call count]
+Define $\silent([])=0$, $\silent(\None::\tau)=1+\silent(\tau)$, and
+$\silent(\Some(k)::\tau)=\silent(\tau)$.
+\end{definition}
+\begin{theorem}[Call accounting]
+For every optional-output list $\tau$,
+\[
+|\tau|=|\erase(\tau)|+\silent(\tau),\qquad |\erase(\tau)|\leq|\tau|.
+\]
+\end{theorem}
+\begin{proof}
+Induct on $\tau$ and split on its head option. A \None\ increments only the silent count;
+a \Some\ increments only the emitted-key count. Natural-number arithmetic yields the
+equality, and nonnegativity yields the inequality.
+\end{proof}
+For a valid trace, this list identity becomes an exact accounting statement about successful
+calls. It is not a progress bound: neither the definition nor this theorem bounds the number
+of silent calls needed to produce a key.
+
+Erasure is not injective on unrestricted lists, since $\erase([])=\erase([\None])=[]$
+although the two lists differ. This is separately proved in Lean. It does not prove the
+existence of two realizable traces with the same endpoints and erased outputs. In particular,
+no silent self-loop is assumed. This distinction is a central constraint from the review.
+
+\section{Formal artifact and review}
+All new declarations are in the namespace
+\path{spqr.v1.chunked.states.TraceExperiment}. Table~\ref{tab:map} maps mathematical
+results to their Lean declarations; names in the table are relative to that namespace.
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+Result & Lean declaration \\
+\midrule
+Conservativity & \texttt{run\_iff\_exists\_trace} \\
+Erasure of a valid trace & \texttt{TraceRun.toRun} \\
+Lifting an old run & \texttt{Run.exists\_trace} \\
+Erasure of concatenation & \texttt{outputs\_append} \\
+Composition & \texttt{TraceRun.append} \\
+Splitting equivalence & \texttt{traceRun\_append\_iff} \\
+Arbitrary call cut & \texttt{TraceRun.cut} \\
+Exact call count & \texttt{length\_eq\_outputs\_add\_silent} \\
+Lower bound on call count & \texttt{outputs\_length\_le} \\
+List erasure noninjectivity & \texttt{outputs\_not\_injective} \\
+\bottomrule
+\end{tabular}
+\caption{Correspondence between the paper and checked declarations.}\label{tab:map}
+\end{table}
+
+The author supplies \texttt{TraceRun.lean} and \texttt{AUTHOR.md}; the reviewer supplies
+\texttt{REVIEW.md} and separate checks. The review assesses conservativity, successful-call
+scope, existential rather than unique witnesses, and the difference between arbitrary lists
+and executable histories. Final commands and trust-audit results are recorded with the
+artifact so that validation is reproducible rather than inferred from prose.
+
+The pinned repository toolchain is Lean \texttt{v4.35.0-rc4}.\par
+Base revision: {\small\texttt{e38c4ce87a10c12d709a79962d75ac03ec295182}}.\par
+The experiment imports the existing run module and adds no new axioms or admitted proofs.
+That statement concerns the new development: it does not certify all external cryptographic
+functions or every assumption elsewhere in the repository. The independent axiom audit reports \texttt{propext}, \texttt{Classical.choice},
+\texttt{Quot.sound}, \path{Aeneas.Std.core.fmt.Formatter}, and 19 inherited
+private translated \texttt{\_native.decide.ax\_N} axiom constants for the seven run-related
+results. No audited result depends on \texttt{sorryAx}. Pure list results have smaller
+dependency sets, detailed in the review. Thus these proofs are not axiom-free.
+The mathematical proofs use
+the existing step relation parametrically, without proving that a concrete send or receive
+call succeeds.
+
+\section{Limitations and outcome}
+This experiment establishes a small refinement suited to reasoning at successful-call
+boundaries. The old definition remains useful for properties depending only on emitted
+keys. The refinement costs an additional trace index and supporting lemmas, and does not
+supply liveness, computational security, two-party agreement, or resource bounds. It does
+not record failed calls or explicit action labels. A richer action trace would require a
+separate definition and another conservativity argument.
+
+The new results are additions to this experiment, not claims of mathematical novelty in the
+literature. They use elementary inductive arguments, now checked against the concrete
+repository relation. The review narrows their interpretation and documents what would
+require further evidence. No global ``best definition'' claim follows from the experiment.
+
+\begingroup
+\small
+\raggedright
+\begin{thebibliography}{9}
+\bibitem{run} SPQR verification repository, local base revision cited above.
+\texttt{Spqr/Specs/Braid/StateMachine/Run.lean}.
+Existing definitions of \texttt{Step}, \texttt{Run}, and run composition.
+\bibitem{artifact} Two-agent trace experiment, accompanying local artifacts.
+\texttt{experiments/two-agent-traces/TraceRun.lean},
+\texttt{AUTHOR.md}, and \texttt{REVIEW.md}, 2026.
+\end{thebibliography}
+\endgroup
+\end{document}
