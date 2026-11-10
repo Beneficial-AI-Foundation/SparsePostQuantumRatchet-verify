@@ -28,7 +28,8 @@ final state, and list of emitted epoch secrets. Successful calls that emit no ke
 no entry to that list. We introduce a conservative refinement recording one optional output
 per successful call. We prove that existential erasure of these traces is exactly the existing
 run relation, that every specified trace boundary admits an intermediate state, and that
-trace length equals emitted-key count plus silent-call count. The definitions and proofs are
+trace length equals emitted-key count plus silent-call count. A second round defines a
+prefix epoch clock and proves exact epoch progress at call boundaries and across intervals. The definitions and proofs are
 checked in Lean against the repository's existing transition relation. A second agent reviews
 the construction, its trust dependencies, and the limits of its interpretation. This is a
 small local formalization experiment, with no claim of literature novelty, optimality, or
@@ -230,9 +231,124 @@ functions or every assumption elsewhere in the repository. The independent axiom
 private translated \texttt{\_native.decide.ax\_N} axiom constants for the seven run-related
 results. No audited result depends on \texttt{sorryAx}. Pure list results have smaller
 dependency sets, detailed in the review. Thus these proofs are not axiom-free.
-The mathematical proofs use
-the existing step relation parametrically, without proving that a concrete send or receive
-call succeeds.
+The first-round mathematical proofs use the existing step relation parametrically.
+The second round, below, additionally uses the existing epoch invariant. Neither round
+proves that a concrete send or receive call succeeds.
+
+\section{Round two: an epoch clock at successful-call boundaries}
+The first round is structural: it treats the transition relation parametrically.
+The second round connects the refined index to the existing SPQR epoch invariant.
+Write $F(s)=\mathsf{keyFloor}(s)$ for the epoch that a next emitted key would carry.
+This is a natural number defined by the existing development, not a new protocol field.
+For pending states it is the state's epoch; for states that already emitted their epoch's
+key it is that epoch plus one. The existing theorem \texttt{epochs\_consecutive} states
+that an old run emitting $ks$ has consecutive key epochs starting at $F(s)$ and ends with
+$F(t)=F(s)+|ks|$.
+
+\begin{definition}[Prefix epoch clock]
+For a trace $\tau$ and an initial floor $f$, define
+\[
+ C(f,\tau,n)=f+|\erase(\operatorname{take}(n,\tau))|.
+\]
+This clock measures epoch progress after a prefix of successful calls. It counts key
+emissions rather than physical time. When $n>|\tau|$, its value saturates at the value
+for the complete trace.
+\end{definition}
+
+The clock can be computed from the initial floor and optional-output list without
+choosing intermediate states. Relating it to the actual state requires a valid trace
+hypothesis and the existing epoch invariant. Neither the clock definition nor the
+invariant guarantees that a key-emitting call ever succeeds.
+
+\begin{theorem}[Epoch at a call boundary]
+If $\Trace(s,t,\tau)$, then for every $n$ there exists $u$ such that
+\[
+\Trace(s,u,\operatorname{take}(n,\tau))\ \land\
+\Trace(u,t,\operatorname{drop}(n,\tau))\ \land\ F(u)=C(F(s),\tau,n).
+\]
+Moreover, if $\Trace(s,u,p)$ and $\Trace(s,v,p)$ then $F(u)=F(v)$.
+\end{theorem}
+\begin{proof}
+The structural cut theorem supplies a prefix and suffix. Apply the existing endpoint
+identity to the erased prefix to obtain
+$F(u)=F(s)+|\erase(\operatorname{take}(n,\tau))|$.
+For the second assertion, both floors equal $F(s)+|\erase(p)|$.
+\end{proof}
+The uniqueness assertion concerns the floor only, not the full intermediate state.
+
+\begin{theorem}[Epoch of a positioned emission]
+If $\Trace(s,t,p\cat(\Some(k)::q))$, then
+\[
+ k.\mathsf{epoch}=F(s)+|\erase(p)|
+ = C(F(s),p\cat(\Some(k)::q),|p|),
+\]
+where the epoch on the left is interpreted as its natural-number value. The emitting
+call has zero-based position $|p|$, and this clock is its value immediately before
+that call.
+\end{theorem}
+\begin{proof}
+Split the trace after $p$ and invert the first constructor of its suffix. The existing
+one-step theorem \texttt{Step.keyFloor\_step} identifies the emitted epoch with the
+intermediate floor. Prefix endpoint accounting gives the first equality; taking exactly
+$|p|$ entries of the full trace gives the second.
+\end{proof}
+
+\begin{theorem}[Exact interval progress and silence]
+For every state $s$ and lists $p,m,q$, put $\tau=p\cat m\cat q$. Then
+\[
+ C(F(s),\tau,|p|+|m|)=C(F(s),\tau,|p|)+|\erase(m)|.
+\]
+The two boundary clocks are equal if and only if every entry of $m$ is $\None$.
+If $\Trace(s,t,\tau)$, then $F(t)=F(s)$ if and only if every entry of $\tau$ is $\None$.
+\end{theorem}
+\begin{proof}
+The two relevant prefixes are $p$ and $p\cat m$. Erasure respects concatenation,
+so their output lengths differ by $|\erase(m)|$. Cancellation in the natural numbers
+shows equality exactly when this length is zero. Induction on a list establishes
+that erasure is empty precisely when every entry is $\None$. For the final assertion,
+apply the same reasoning to the endpoint identity for a valid trace.
+\end{proof}
+
+The interval clock identities hold for arbitrary lists; their interpretation as actual
+state progress requires trace validity. An unchanged floor does not mean that the full
+state is unchanged. Likewise, a silent interval need not be short, and the theorem supplies
+no time bound or eventual-emission guarantee.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+Round-two result & Lean declaration \\
+\midrule
+Endpoint epoch accounting & \texttt{TraceRun.keyFloor\_eq} \\
+Clock at a cut & \texttt{TraceRun.cut\_epochClock} \\
+Unique boundary floor & \texttt{TraceRun.boundary\_keyFloor\_unique} \\
+Positioned emission & \texttt{TraceRun.emission\_epoch} \\
+Prefix clock identity & \texttt{epochClock\_prefix} \\
+Emission matches clock & \texttt{TraceRun.emission\_epochClock} \\
+Interval accounting & \texttt{epochClock\_interval} \\
+Empty erasure characterization & \texttt{outputs\_eq\_nil\_iff} \\
+Unchanged interval clock & \texttt{epochClock\_interval\_eq\_iff} \\
+Unchanged endpoint floor & \texttt{TraceRun.keyFloor\_eq\_iff\_silent} \\
+\bottomrule
+\end{tabular}
+\caption{The ten round-two theorems in \texttt{EpochTrace.lean}.}
+\end{table}
+
+The Lean definition \texttt{epochClock} takes an initial state $s$ rather than the
+explicit natural-number parameter $f$ used above; its value is exactly $C(F(s),\tau,n)$.
+The new file imports the unchanged first-round module and the repository's existing
+\texttt{KeyFloor} module. These results are derived from that existing invariant;
+they do not independently re-establish its per-transition case analysis.
+
+The second reviewer round independently checked all ten new theorems, boundary and
+saturation examples, and their axiom dependencies. The six protocol-connected results have
+exactly the same 23 reported axiom constants as the existing
+\texttt{epochs\_consecutive} and \texttt{Step.keyFloor\_step}; the other four
+results have only subsets of the standard axioms. No result depends on
+\texttt{sorryAx}, and no new axioms were introduced. Detailed checks and findings are
+recorded in \texttt{ROUND2\_REVIEW.md}. The first-round source and historical
+review remain unchanged.
 
 \section{Limitations and outcome}
 This experiment establishes a small refinement suited to reasoning at successful-call
@@ -256,7 +372,8 @@ require further evidence. No global ``best definition'' claim follows from the e
 Existing definitions of \texttt{Step}, \texttt{Run}, and run composition.
 \bibitem{artifact} Two-agent trace experiment, accompanying local artifacts.
 \texttt{experiments/two-agent-traces/TraceRun.lean},
-\texttt{AUTHOR.md}, and \texttt{REVIEW.md}, 2026.
+\texttt{AUTHOR.md}, \texttt{REVIEW.md}, \texttt{EpochTrace.lean},
+\texttt{ROUND2\_AUTHOR.md}, and \texttt{ROUND2\_REVIEW.md}, 2026.
 \end{thebibliography}
 \endgroup
 \end{document}
