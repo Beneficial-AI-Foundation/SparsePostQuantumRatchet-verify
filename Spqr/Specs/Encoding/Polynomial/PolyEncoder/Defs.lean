@@ -36,34 +36,26 @@ instance instInhabitedPoint : Inhabited encoding.polynomial.Point :=
 noncomputable def chunkWord (data : List U8) (j : Nat) : GF216 :=
   Nat.toGF216 (256 * data[2 * j]! + data[2 * j + 1]!)
 
-/-- **Encoder-step postcondition**: the shared contract of `PolyEncoder::next_chunk` and of
-the `send_ct*_chunk` wrappers that delegate to it.  `self` is the encoder *before* the step,
-`self'` the encoder *after*, and `chunk` the emitted chunk.
+/-- The chunk index that `next_chunk` emits: the `u32` counter cast to `u16`. -/
+def wireIndex (self : PolyEncoder) : Nat := self.idx.val % 2 ^ 16
 
-* `chunk.index = self.idx`, `chunk.data.length = 32`, and `self'.idx = (self.idx + 1) mod 2³²`.
-* `Polys polys` phase: the state is unchanged and every chunk word is `polys[j](idx)`.
-* `Points pts` phase: exactly one of
-  - **cache hit** — `idx < |pts[j]|` for every `j`, the state is unchanged
-    (`self'.s = self.s`), and every chunk word is the stored point `pts[j][idx]`; or
-  - **interpolation** — the state becomes `Polys polys'` where `polys'[j]` is the Lagrange
-    interpolant of `pts[j]`, the coefficient counts are bounded, and every chunk word is either
-    a stored point served before the transition or `polys'[j](idx)`.
-
-Both `Points` alternatives constrain `chunk.data` and `self'.s`, so no branch is vacuous. -/
+/-- The postcondition of one `next_chunk` call. `self` is the encoder before the call,
+`self'` the encoder after it, and `chunk` the emitted chunk. Every use of the index is the
+wire index `self.wireIndex`. Only the counter update uses the full `u32` counter. -/
 def NextChunkPostCond (self self' : PolyEncoder) (chunk : encoding.Chunk) : Prop :=
-  chunk.index.val = self.idx.val ∧
+  chunk.index.val = self.wireIndex ∧
   chunk.data.length = 32 ∧
   self'.idx.val = (self.idx.val + 1) % U32.size ∧
   match self.s with
   | .Polys polys =>
       self'.s = self.s ∧
       ∀ (j : Nat), j < 16 →
-        chunkWord chunk.data j = (polys[j]!).toGF216Poly.eval (self.idx.val.toGF216)
+        chunkWord chunk.data j = (polys[j]!).toGF216Poly.eval (self.wireIndex.toGF216)
   | .Points pts =>
       (self'.s = self.s ∧
         ∀ (j : Nat), j < 16 →
-          self.idx.val < (pts[j]!).value.length ∧
-          chunkWord chunk.data j = ((pts[j]!).value[self.idx.val]!).toGF216) ∨
+          self.wireIndex < (pts[j]!).value.length ∧
+          chunkWord chunk.data j = ((pts[j]!).value[self.wireIndex]!).toGF216) ∨
       (∃ polys', self'.s = .Polys polys' ∧
         (∀ (j : Nat), j < 16 →
           polys'[j]!.toGF216Poly =
@@ -73,9 +65,27 @@ def NextChunkPostCond (self self' : PolyEncoder) (chunk : encoding.Chunk) : Prop
         (∀ (j : Nat), j < 16 →
           (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
         (∀ (j : Nat), j < 16 →
-          (self.idx.val < (pts[j]!).value.length ∧
-            chunkWord chunk.data j = ((pts[j]!).value[self.idx.val]!).toGF216) ∨
-          chunkWord chunk.data j = (polys'[j]!).toGF216Poly.eval (self.idx.val.toGF216)))
+          (self.wireIndex < (pts[j]!).value.length ∧
+            chunkWord chunk.data j = ((pts[j]!).value[self.wireIndex]!).toGF216) ∨
+          chunkWord chunk.data j = (polys'[j]!).toGF216Poly.eval (self.wireIndex.toGF216)))
+
+/-- The premises of `next_chunk_spec`: in the `Points` phase every point vector has an
+admissible interpolation size, and in the `Polys` phase every coefficient count is bounded. -/
+def NextChunkReady (self : PolyEncoder) : Prop :=
+  (∀ pts, self.s = .Points pts →
+    ∀ (j : Nat), j < 16 →
+      let len := (pts[j]!).value.length
+      len = 0 ∨ len = 1 ∨ len = 3 ∨ len = 5 ∨ len = 30 ∨ len = 34 ∨ len = 36) ∧
+  (∀ polys, self.s = .Polys polys →
+    ∀ (j : Nat), j < 16 → (polys[j]!).coefficients.length + 1 ≤ Usize.max)
+
+/-- `n` consecutive `next_chunk` calls on one encoder, returning the chunks in call order. -/
+def nextChunks : Nat → PolyEncoder → Result (List encoding.Chunk × PolyEncoder)
+  | 0, e => ok ([], e)
+  | n + 1, e => do
+    let (c, e₁) ← Insts.SpqrEncodingEncoder.next_chunk e
+    let (cs, e₂) ← nextChunks n e₁
+    ok (c :: cs, e₂)
 
 /-- **Postcondition predicate for `PolyEncoder.into_pb`**
 

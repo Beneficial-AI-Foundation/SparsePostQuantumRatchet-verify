@@ -31,9 +31,6 @@ namespace spqr.v1.chunked.send_ct.Ct2Sampled
 /-- **Spec theorem for `spqr.v1.chunked.send_ct.Ct2Sampled.send_ct2_chunk`**:
 
 Unfolds `send_ct2_chunk` and delegates to `next_chunk_spec`. Preconditions:
-- `h_idx_fits`: encoder index fits in `u16`. Rust's `self.idx as u16`
-  (src/encoding/polynomial.rs:759) truncates silently, so indices ≥ 2¹⁶ (reachable only after
-  65 536 chunks of a single `ct2`) are deliberately out of scope rather than an error case.
 - `h_admissible`: in `Points` phase, each point-vector length ∈ `{0,1,3,5,30,34,36}`. The
   encoder built by `send_ct2_encoder` encodes `ct2 ‖ mac` (128 + 32 bytes = 80 points), so
   `encode_bytes_spec` gives every `pts[j]` length 5.
@@ -52,7 +49,6 @@ interpolation identity, where each chunk word is either a stored point served be
 transition or an evaluation of the interpolated polynomial at `idx`). -/
 @[step]
 theorem send_ct2_chunk_spec (self : Ct2Sampled)
-    (h_idx_fits : self.sending_ct2.idx.val ≤ U16.max)
     (h_admissible : ∀ pts, self.sending_ct2.s = .Points pts →
         ∀ (j : Nat), j < 16 →
           let len := (pts[j]!).value.length
@@ -66,7 +62,7 @@ theorem send_ct2_chunk_spec (self : Ct2Sampled)
       PolyEncoder.NextChunkPostCond self.sending_ct2 result.sending_ct2 chunk ⦄ := by
   unfold send_ct2_chunk
   step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec self.sending_ct2
-    h_idx_fits h_admissible h_coeff_bound
+    h_admissible h_coeff_bound
   exact chunk_post
 
 end spqr.v1.chunked.send_ct.Ct2Sampled

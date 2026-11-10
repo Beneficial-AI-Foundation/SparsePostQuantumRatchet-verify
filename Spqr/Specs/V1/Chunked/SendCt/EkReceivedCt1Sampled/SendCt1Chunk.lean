@@ -61,13 +61,6 @@ namespace spqr.v1.chunked.send_ct.EkReceivedCt1Sampled
 • Returns `({ self with sending_ct1 := sending_ct1' }, chunk)`.
 
 • The function succeeds under exactly the preconditions of `next_chunk_spec`:
-    – `h_idx_fits`: the current encoder index fits in a `u16`
-      (`self.sending_ct1.idx.val ≤ U16.max`), so the cast performed by `next_chunk` is lossless.
-      This restriction is inherited from `next_chunk_spec`: Rust truncates with
-      `self.idx as u16` (spqr/src/encoding/polynomial.rs), so after 2¹⁶ unacknowledged chunks
-      `chunk.index` wraps while `idx` keeps counting.  Those states are accepted by Rust but
-      are outside this contract; the index relation would need to be stated modulo 2¹⁶ to cover
-      them, which should be done in the supporting contract first;
     – `h_admissible`: if the encoder is still in the `Points` phase, every one of the sixteen
       point-vectors has one of the admissible lengths `0, 1, 3, 5, 30, 34, 36` so that Lagrange
       interpolation is well-defined;
@@ -84,14 +77,14 @@ The result satisfies the postcondition:
 
 where `NextChunkPostCond` (defined once in `PolyEncoder.Defs` and shared verbatim with
 `next_chunk_spec`, `Ct1Sampled.send_ct1_chunk_spec`, and `send_ct2_chunk_spec`) states
-`chunk.index.val = self.sending_ct1.idx.val`, `chunk.data.length = 32`,
+`chunk.index.val = self.sending_ct1.wireIndex` (the counter mod 2¹⁶), `chunk.data.length = 32`,
 `result.sending_ct1.idx.val = (self.sending_ct1.idx.val + 1) % U32.size`, and the
 phase-dependent encoder invariant:
 
   • `Polys polys` phase — the polynomials are left unchanged
     (`result.sending_ct1.s = self.sending_ct1.s`) and for every `j < 16` the `j`-th 16-bit
     big-endian word of the chunk is the evaluation of the `j`-th polynomial at the index:
-      `chunkWord chunk.data j = polys[j].toGF216Poly.eval (self.sending_ct1.idx.val.toGF216)`
+      `chunkWord chunk.data j = polys[j].toGF216Poly.eval (self.sending_ct1.wireIndex.toGF216)`
   • `Points pts` phase — either the encoder stays in `Points` (cache hit, mirroring Rust's
     `pts[poly].value[idx]` lookup that leaves the state untouched:
     `result.sending_ct1.s = self.sending_ct1.s`) and every chunk word is the stored point
@@ -115,7 +108,6 @@ syntactically untouched) and the remaining goal is exactly the inherited postcon
 -/
 @[step]
 theorem send_ct1_chunk_spec (self : EkReceivedCt1Sampled)
-    (h_idx_fits : self.sending_ct1.idx.val ≤ U16.max)
     (h_admissible : ∀ pts, self.sending_ct1.s = .Points pts →
         ∀ (j : Nat), j < 16 →
           let len := (pts[j]!).value.length
@@ -129,7 +121,7 @@ theorem send_ct1_chunk_spec (self : EkReceivedCt1Sampled)
       PolyEncoder.NextChunkPostCond self.sending_ct1 result.sending_ct1 chunk ⦄ := by
   unfold send_ct1_chunk
   step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec self.sending_ct1
-    h_idx_fits h_admissible h_coeff_bound
+    h_admissible h_coeff_bound
   exact chunk_post
 
 end spqr.v1.chunked.send_ct.EkReceivedCt1Sampled

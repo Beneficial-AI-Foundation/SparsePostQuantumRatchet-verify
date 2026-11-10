@@ -52,11 +52,11 @@ theorem next_chunk_spec
 /-- **`next_chunk` spec for `Option<PolyEncoder>`**:
 
 Lifts `PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec` through the `Option` wrapper via
-`next_chunk_spec_lift`. The result stays `Some` and the inner postcondition (chunk index, 32-byte
-data, wrapping index increment, polynomial evaluation / Lagrange interpolation) holds verbatim. -/
+`next_chunk_spec_lift`, for every value of the counter. The result stays `Some` and the inner
+postcondition (chunk index `pe0.wireIndex`, 32-byte data, wrapping counter increment, polynomial
+evaluation / Lagrange interpolation at the wire index) holds verbatim. -/
 theorem next_chunk_spec_poly_encoder
     (pe0 : PolyEncoder)
-    (h_idx_fits : pe0.idx.val ≤ U16.max)
     (h_admissible : ∀ pts, pe0.s = .Points pts →
         ∀ (j : Nat), j < 16 →
           let len := (pts[j]!).value.length
@@ -70,7 +70,7 @@ theorem next_chunk_spec_poly_encoder
         ((chunk, result) : encoding.Chunk × (Option PolyEncoder)) =>
       match result with
       | some pe =>
-        chunk.index.val = pe0.idx.val ∧
+        chunk.index.val = pe0.wireIndex ∧
         chunk.data.val.length = 32 ∧
         pe.idx.val = (pe0.idx.val + 1) % U32.size ∧
         match pe0.s with
@@ -78,14 +78,14 @@ theorem next_chunk_spec_poly_encoder
             pe.s = pe0.s ∧
             ∀ (j : Nat), j < 16 →
               Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
-                (polys[j]!).toGF216Poly.eval (pe0.idx.val.toGF216)
+                (polys[j]!).toGF216Poly.eval (pe0.wireIndex.toGF216)
         | .Points pts =>
             -- Either stayed in Points (cache hit) with constrained bytes …
             (pe.s = pe0.s ∧
               ∀ (j : Nat), j < 16 →
-                pe0.idx.val < (pts[j]!).value.length ∧
+                pe0.wireIndex < (pts[j]!).value.length ∧
                 Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
-                  ((pts[j]!).value[pe0.idx.val]!).toGF216) ∨
+                  ((pts[j]!).value[pe0.wireIndex]!).toGF216) ∨
             -- … or transitioned to Polys with Lagrange identity; each chunk word is either
             -- a cache hit (served before the transition) or an evaluation of the interpolant
             (∃ polys', pe.s = .Polys polys' ∧
@@ -97,11 +97,11 @@ theorem next_chunk_spec_poly_encoder
               (∀ (j : Nat), j < 16 →
                 (polys'[j]!).coefficients.length + 1 ≤ Usize.max) ∧
               (∀ (j : Nat), j < 16 →
-                (pe0.idx.val < (pts[j]!).value.length ∧
+                (pe0.wireIndex < (pts[j]!).value.length ∧
                   Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
-                    ((pts[j]!).value[pe0.idx.val]!).toGF216) ∨
+                    ((pts[j]!).value[pe0.wireIndex]!).toGF216) ∨
                 Nat.toGF216 (256 * chunk.data.val[2 * j]! + chunk.data.val[2 * j + 1]!) =
-                  (polys'[j]!).toGF216Poly.eval (pe0.idx.val.toGF216)))
+                  (polys'[j]!).toGF216Poly.eval (pe0.wireIndex.toGF216)))
       | none => False ⦄ := by
   unfold next_chunk
   simp only [Aeneas.Std.core.option.Option.take]
@@ -109,7 +109,7 @@ theorem next_chunk_spec_poly_encoder
   have h_tmp_eq : tmp = pe0 := by injection h_eq with h; exact h.symm
   simp only [h_tmp_eq]
   have h_inner := PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec pe0
-    h_idx_fits h_admissible h_coeff_bound
+    h_admissible h_coeff_bound
   step with h_inner
   obtain ⟨h1, h2, h3, h4⟩ := ‹(chunk.index : Nat) = _ ∧ _›
   refine ⟨h1, h2, h3, ?_⟩
