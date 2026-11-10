@@ -14,10 +14,11 @@ public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 
 `Ct2Sampled` wraps unchunked `Ct2Sent` plus a `PolyEncoder` that erasure-codes `ct2 ‖ mac`.
 `send_ct2_chunk` calls `next_chunk` on the encoder, returns the chunk, and advances the encoder
-while leaving the unchunked state unchanged. Each chunk word is `polys[j](idx)` in GF(2¹⁶).
-If still in `Points` phase, the stored point `pts[j][idx]` is served and the state stays
-`Points` while `idx` is below the stored point count; Lagrange interpolation (and the switch
-to `Polys`) only happens once `idx` reaches it (src/encoding/polynomial.rs:646–650).
+while leaving the unchunked state unchanged. Let `w = idx mod 2¹⁶` be the wire index of the
+`u32` counter `idx`. Each chunk word is `polys[j](w)` in GF(2¹⁶). If still in `Points` phase,
+the stored point `pts[j][w]` is served and the state stays `Points` while `w` is below the
+stored point count; Lagrange interpolation (and the switch to `Polys`) only happens once `w`
+reaches it (src/encoding/polynomial.rs:646–650).
 
 **Source**: spqr/src/v1/chunked/send_ct.rs (lines 288:4-295:5)
 -/
@@ -41,12 +42,12 @@ Trust note: the proof inherits the `native_decide` auxiliary axioms of `chunk_at
 
 Postcondition: `result.uc = self.uc` together with
 `PolyEncoder.NextChunkPostCond self.sending_ct2 result.sending_ct2 chunk`, the predicate
-shared with `next_chunk_spec` and `send_ct1_chunk_spec`: `chunk.index = idx`,
-`chunk.data.length = 32`, encoder index increments mod 2³², and the phase-dependent invariant
+shared with `next_chunk_spec` and `send_ct1_chunk_spec`: `chunk.index = wireIndex`,
+`chunk.data.length = 32`, the counter increments mod 2³², and the phase-dependent invariant
 (`Polys`: state unchanged, chunk words = polynomial evaluations; `Points`: either stayed in
 Points with chunk words = stored points, or transitioned to Polys with the Lagrange
 interpolation identity, where each chunk word is either a stored point served before the
-transition or an evaluation of the interpolated polynomial at `idx`). -/
+transition or an evaluation of the interpolated polynomial at the wire index). -/
 @[step]
 theorem send_ct2_chunk_spec (self : Ct2Sampled)
     (h_admissible : ∀ pts, self.sending_ct2.s = .Points pts →

@@ -56,7 +56,7 @@ namespace spqr.v1.chunked.send_ek.KeysSampled
   which yields a pair `(chunk, sending_hdr')`.
 • Returns `({ self with sending_hdr := sending_hdr' }, chunk)`.
 
-• The function succeeds under exactly the preconditions of `next_chunk_spec`:
+• The function succeeds under the preconditions of `next_chunk_spec`:
     – `h_admissible`: if the encoder is still in the `Points` phase, every one of the sixteen
       point-vectors has one of the admissible lengths `0, 1, 3, 5, 30, 34, 36` so that Lagrange
       interpolation is well-defined (an encoder built by `encode_bytes` from the 96-byte
@@ -88,11 +88,11 @@ phase-dependent encoder invariant:
       `chunkWord chunk.data j =
           polys[j].toGF216Poly.eval (self.sending_hdr.wireIndex.toGF216)`
   • `Points pts` phase — either the encoder stays in `Points` (cache hit) and every chunk word
-    is the stored point `pts[j][idx]`, or it transitions to `Polys polys'` where
+    is the stored point `pts[j][wireIndex]`, or it transitions to `Polys polys'` where
       `polys'[j].toGF216Poly =
           ∑ k < |pts[j]|, C (pts[j][k].toGF216) * scaledLagrangeBasis |pts[j]| k`,
     the coefficient count is bounded, and each chunk word is either a cache hit or an
-    evaluation of the interpolant at `idx`
+    evaluation of the interpolant at the wire index
 
 The proof unfolds `send_hdr_chunk` and applies `next_chunk_spec` with the supplied hypotheses;
 the `uc`-preservation conjunct is closed by reflexivity (`{ self with sending_hdr }` leaves the

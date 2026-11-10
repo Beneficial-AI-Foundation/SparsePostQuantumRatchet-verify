@@ -30,15 +30,16 @@ progress on decoding `ek` — and the state type is unchanged by the transition:
 `ct1` chunks until either `ek` is fully decoded (`recv_ek_chunk`) or A acknowledges `ct1`.
 
 Mathematically the chunk is the evaluation of the sixteen GF(2¹⁶) polynomials held by the
-encoder at the point `x = idx`:  the `j`-th 16-bit word of the chunk data is
-`polys[j](idx)` in `GF216 = GaloisField 2 16`, and the chunk is tagged with `index = idx`.  The
-encoder's index is then wrapping-incremented modulo 2³².  If the encoder is still in the
-`Points` phase (as a fresh encoder from `encode_bytes` always is) the behaviour is conditional
-(src/encoding/polynomial.rs:646–650): while `idx` is below the stored point count the stored
-point `pts[j][idx]` is returned verbatim and the state stays `Points`; only once `idx` reaches
-the point count are the polynomials Lagrange-interpolated from the stored points, the state
-switches to `Polys`, and the word is the evaluation of the interpolant.  Both cases are
-captured by `PolyEncoder.NextChunkPostCond`, inherited from `PolyEncoder::next_chunk`.
+encoder at the wire index `w = idx mod 2¹⁶`, where `idx` is the encoder's `u32` counter:  the
+`j`-th 16-bit word of the chunk data is `polys[j](w)` in `GF216 = GaloisField 2 16`, and the
+chunk is tagged with `index = w`.  The counter is then wrapping-incremented modulo 2³².  If the
+encoder is still in the `Points` phase (as a fresh encoder from `encode_bytes` always is) the
+behaviour is conditional (src/encoding/polynomial.rs:646–650): while `w` is below the stored
+point count the stored point `pts[j][w]` is returned verbatim and the state stays `Points`;
+only once `w` reaches the point count are the polynomials Lagrange-interpolated from the
+stored points, the state switches to `Polys`, and the word is the evaluation of the
+interpolant.  Both cases are captured by `PolyEncoder.NextChunkPostCond`, inherited from
+`PolyEncoder::next_chunk`.
 
 **Source**: spqr/src/v1/chunked/send_ct.rs (lines 202:4-217:5)
 -/
@@ -60,7 +61,7 @@ namespace spqr.v1.chunked.send_ct.Ct1Sampled
   which yields a pair `(chunk, sending_ct1')`.
 • Returns `({ self with sending_ct1 := sending_ct1' }, chunk)`.
 
-• The function succeeds under exactly the preconditions of `next_chunk_spec`:
+• The function succeeds under the preconditions of `next_chunk_spec`:
     – `h_admissible`: if the encoder is still in the `Points` phase, every one of the sixteen
       point-vectors has one of the admissible lengths `0, 1, 3, 5, 30, 34, 36` so that Lagrange
       interpolation is well-defined;
@@ -91,11 +92,11 @@ phase-dependent encoder invariant:
   • `Points pts` phase — either the encoder stays in `Points` (cache hit, mirroring Rust's
     `pts[poly].value[idx]` lookup that leaves the state untouched:
     `result.sending_ct1.s = self.sending_ct1.s`) and every chunk word is the stored point
-    `pts[j][idx]` (so `idx < |pts[j]|`), or it transitions to `Polys polys'` where
+    `pts[j][wireIndex]` (so `wireIndex < |pts[j]|`), or it transitions to `Polys polys'` where
       `polys'[j].toGF216Poly =
           ∑ k < |pts[j]|, C (pts[j][k].toGF216) * scaledLagrangeBasis |pts[j]| k`,
     the coefficient count is bounded, and each chunk word is either a cache hit or an
-    evaluation of the interpolant at `idx`.  In both alternatives the retained encoder
+    evaluation of the interpolant at the wire index.  In both alternatives the retained encoder
     state and every chunk word are pinned down, so pending `ct1` data is preserved.
 
 The proof unfolds `send_ct1_chunk` and applies `next_chunk_spec` with the supplied hypotheses;

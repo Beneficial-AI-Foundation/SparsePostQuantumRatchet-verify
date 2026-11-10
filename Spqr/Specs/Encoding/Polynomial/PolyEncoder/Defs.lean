@@ -41,7 +41,8 @@ def wireIndex (self : PolyEncoder) : Nat := self.idx.val % 2 ^ 16
 
 /-- The postcondition of one `next_chunk` call. `self` is the encoder before the call,
 `self'` the encoder after it, and `chunk` the emitted chunk. Every use of the index is the
-wire index `self.wireIndex`. Only the counter update uses the full `u32` counter. -/
+wire index `self.wireIndex`. Only the counter update uses the full `u32` counter. Each chunk
+word is a stored point or a polynomial evaluation at `self.wireIndex`. -/
 def NextChunkPostCond (self self' : PolyEncoder) (chunk : encoding.Chunk) : Prop :=
   chunk.index.val = self.wireIndex ∧
   chunk.data.length = 32 ∧

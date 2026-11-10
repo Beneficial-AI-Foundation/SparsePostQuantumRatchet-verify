@@ -46,8 +46,6 @@ theorem next_chunk_spec
   step as ⟨i, h_i⟩
   have h_w : i.val = self.wireIndex := by
     rw [h_i, UScalar.cast_val_eq, UScalarTy.U16_numBits_eq, wireIndex]
-  have h_i_lt : i.val < 2 ^ 16 := by
-    rw [h_w, wireIndex]; exact Nat.mod_lt _ (by norm_num)
   step with chunk_at_spec self i (by scalar_tac) h_admissible h_coeff_bound
     as ⟨chunk, self1, h_post⟩
   obtain ⟨h_index, h_len, h_idx1, h_match⟩ := h_post
