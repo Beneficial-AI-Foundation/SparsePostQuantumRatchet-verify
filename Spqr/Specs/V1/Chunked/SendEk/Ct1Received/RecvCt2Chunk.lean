@@ -51,9 +51,8 @@ satisfies the `#[hax_lib::refine]` struct invariant of `EkSentCt1Received`,
 complete, and every slot is `SlotSorted` (`PointsValid`) — exactly the hypotheses that the
 follow-up transition `EkSentCt1Received::recv_ct2_chunk` requires of its state.
 
-One fact is not derivable from any registered spec and is taken as an explicit hypothesis:
-`CIPHERTEXT2_SIZE` is extracted as the opaque `libcrux_ml_kem::…::Ciphertext2::len`, so its
-value `128` is assumed via `h_ct2_size` (as in `SendEk/EkSentCt1Received/RecvCt2Chunk.lean`).
+The value `128` of `CIPHERTEXT2_SIZE` is the premise `h_ct2_size`. `CIPHERTEXT2_SIZE_spec`
+proves it.
 All other callees (`MACSIZE`, `usize` arithmetic, `PolyDecoder::new`, `expect`, `add_chunk`)
 are discharged by their registered specs.  The `h_push_cap` guard of `add_chunk_spec` is not
 assumed: every slot of the fresh decoder is empty, so it holds trivially.
@@ -137,7 +136,7 @@ open Spqr.V1.Chunked.SendEk.Ct1Received
     – `h_epoch : epoch = self.uc.epoch` — the hax precondition, discharging the `assert_eq!`;
     – `h_overflow` — the `usize` guard of `add_chunk_spec`: the base index
       `chunk.index * 16 + 16` fits in a `usize`;
-    – `h_ct2_size` — the value of the opaque `CIPHERTEXT2_SIZE`.
+    – `h_ct2_size` — the value of `CIPHERTEXT2_SIZE` (`CIPHERTEXT2_SIZE_spec`).
   The `h_push_cap` guard of `add_chunk_spec` is *not* assumed: every slot of the fresh decoder
   is empty (`PolyDecoder.Insts.SpqrEncodingDecoder.push_cap_of_replicate_default`).  Under
   these hypotheses the call never panics.

@@ -74,8 +74,8 @@ decoded `ct1` has exactly `2 · 480 = 960` bytes — the `#[hax_lib::refine(ct1.
 invariant of `unchunked::EkSentCt1Received` demanded downstream by `recv_ct2`.
 
 All callees (`add_chunk`, `decoded_message`, `recv_ct1`) are discharged by their registered
-specs; no opaque constant is involved, since `CIPHERTEXT1_SIZE` is only consulted when the
-decoder is *constructed* (`KeysSampled::recv_ct1_chunk`), not here.
+specs. `CIPHERTEXT1_SIZE` is not called here: it is read when the decoder is constructed
+(`KeysSampled::recv_ct1_chunk`).
 
 **Source**: spqr/src/v1/chunked/send_ek.rs (lines 131:4-149:5)
 -/
