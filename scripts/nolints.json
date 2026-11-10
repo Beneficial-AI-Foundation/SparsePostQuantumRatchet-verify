@@ -97,4 +97,10 @@
  ["defsWithUnderscore",
   "spqr.v1.chunked.send_ek.serialize.KeysSampled.FunctionalModels.fromPb"],
  ["defsWithUnderscore",
-  "spqr.v1.chunked.send_ek.serialize.KeysSampled.FunctionalModels.WellFormed"]]
+  "spqr.v1.chunked.send_ek.serialize.KeysSampled.FunctionalModels.WellFormed"],
+ ["defsWithUnderscore",
+  "spqr.v1.chunked.send_ek.serialize.Ct1Received.FunctionalModels.intoPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.chunked.send_ek.serialize.Ct1Received.FunctionalModels.fromPb"],
+ ["defsWithUnderscore",
+  "spqr.v1.chunked.send_ek.serialize.Ct1Received.FunctionalModels.WellFormed"]]
