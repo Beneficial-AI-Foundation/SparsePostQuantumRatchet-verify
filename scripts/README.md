@@ -5,6 +5,7 @@
 - **`npm run aeneas-install`** — Download the aeneas + charon binaries from the pinned GitHub release into `.aeneas/`, and install the Rust nightly `charon-driver` needs. Skips the download if the installed version already matches the pinned tag.
 - **`npm run aeneas-extract`** — Run the extraction pipeline: apply the Rust translation patches → charon (Rust → LLBC) → revert the patches → aeneas (LLBC → Lean) → post-extraction tweaks. Refuses to run if the installed aeneas does not match the pinned tag.
 - **`npm run src-diff`** — Generate `src-modifications.diff` comparing local `src/` against the pinned upstream commit.
+- **`npm run split-probe-lean`** — Reproducibly split complete Lean source files from `.verilib/probes/lean_extract.json` into dependency-safe generation and test sets under `data/probe-lean-split/`, emitting only `def` declarations. `generation-files.txt` and `test-files.txt` contain the complete file partition; the JSONL files contain the definitions to generate or test. No file occurs on both sides, and the generation file set is dependency-closed. Pass options after `--`, for example `npm run split-probe-lean -- --seed 42 --generation-ratio 0.8`.
 - **`npm run patches-check`** — Check the translation patches: each applies on its own, all apply and revert in forward and reverse order, and the working tree is unchanged afterwards.
 
 ## Configuration

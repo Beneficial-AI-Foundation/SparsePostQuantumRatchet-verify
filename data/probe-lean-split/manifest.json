@@ -1,0 +1,33 @@
+{
+  "actual_generation_definition_ratio": 0.3407142857142857,
+  "actual_generation_file_ratio": 0.3324022346368715,
+  "counts": {
+    "cyclic_components": 0,
+    "eligible_definitions": 1400,
+    "eligible_files": 358,
+    "generation_definitions": 477,
+    "generation_files": 119,
+    "strongly_connected_components": 358,
+    "test_definitions": 923,
+    "test_files": 239
+  },
+  "dependency_edges": {
+    "generation_to_test": 0,
+    "test_to_generation": 728
+  },
+  "filters": {
+    "is_hidden": false,
+    "is_ignored": false,
+    "is_in_package": true,
+    "is_relevant": true,
+    "kind": "def",
+    "requires_code_path": true
+  },
+  "ordering": "seeded random topological order of file-dependency SCCs",
+  "requested_generation_ratio": 0.5,
+  "schema": "probe-lean/dependency-split",
+  "schema_version": "1.0",
+  "seed": 20261110,
+  "source": ".verilib/probes/lean_extract.json",
+  "source_sha256": "f13480a061f7fc6ba78155b3642137af899b42bd2d1e12ebd60493b36b82d426"
+}

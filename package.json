@@ -5,6 +5,7 @@
     "aeneas-install": "tsx scripts/aeneas-install.ts",
     "aeneas-extract": "tsx scripts/aeneas-extract.ts",
     "src-diff": "tsx scripts/src-diff.ts",
+    "split-probe-lean": "python3 scripts/split-probe-lean.py",
     "verification-status": "lake exe status",
     "typecheck": "tsc --noEmit",
     "patches-check": "tsx scripts/patches-check.ts"

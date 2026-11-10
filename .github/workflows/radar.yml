@@ -22,17 +22,45 @@ concurrency:
 jobs:
   request:
     name: Request Radar benchmark
-    # Radar builds the PR head on its runner, so only request benchmarks for
-    # PRs authored by repository owners, members, or collaborators. Others can
-    # still receive a manual `!radar` from an authorized reviewer.
-    if: >-
-      github.event.pull_request.draft == false &&
-      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
-               github.event.pull_request.author_association)
+    permissions:
+      pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # Evaluate current metadata inside the job so event-time metadata cannot
+      # silently skip it. Ineligible PRs never reach the comment-token steps.
+      - name: Check current PR eligibility
+        id: eligibility
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const eventPR = context.payload.pull_request;
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: eventPR.number,
+            });
+            const reasons = [];
+            if (pr.state !== 'open') reasons.push('PR is closed');
+            if (pr.draft) reasons.push('PR is a draft');
+            if (!['OWNER', 'MEMBER', 'COLLABORATOR'].includes(pr.author_association)) {
+              reasons.push('author association is not eligible');
+            }
+            if (pr.head.sha !== eventPR.head.sha || pr.base.ref !== eventPR.base.ref) {
+              reasons.push('event revision has been superseded');
+            }
+            core.info(JSON.stringify({
+              event: { draft: eventPR.draft, association: eventPR.author_association },
+              current: { draft: pr.draft, association: pr.author_association },
+            }));
+            core.setOutput('allowed', reasons.length === 0 ? 'true' : 'false');
+            const message = reasons.length === 0
+              ? 'Current PR is eligible for an automatic Radar request.'
+              : `Radar not requested: ${reasons.join('; ')}.`;
+            core.info(message);
+            await core.summary.addRaw(message).write();
+
       - name: Check that the Radar comment token is configured
+        if: steps.eligibility.outputs.allowed == 'true'
         env:
           RADAR_COMMENT_TOKEN: ${{ secrets.RADAR_COMMENT_TOKEN }}
         run: |
@@ -42,6 +70,7 @@ jobs:
           fi
 
       - name: Request benchmark for the current PR revision
+        if: steps.eligibility.outputs.allowed == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.RADAR_COMMENT_TOKEN }}
@@ -54,9 +83,12 @@ jobs:
 
             // A queued event may refer to a closed PR or an older revision.
             if (pr.state !== 'open' || pr.draft ||
+                !['OWNER', 'MEMBER', 'COLLABORATOR'].includes(pr.author_association) ||
                 pr.head.sha !== eventPR.head.sha ||
                 pr.base.ref !== eventPR.base.ref) {
-              core.info('Skipping a closed, draft, or superseded PR event.');
+              const message = 'Radar not requested: PR became ineligible or event was superseded.';
+              core.info(message);
+              await core.summary.addRaw(message).write();
               return;
             }
 

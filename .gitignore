@@ -16,6 +16,7 @@ TypesExternal_Template.lean
 # Node
 node_modules/
 dist/
+__pycache__/
 
 # MacOS
 .DS_Store

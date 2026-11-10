@@ -1,0 +1,143 @@
+pub mod spqr
+pub enum spqr::AuthenticatorError
+pub spqr::AuthenticatorError::AuthenticatorMacKeyMissing
+pub spqr::AuthenticatorError::AuthenticatorMacKeyPresent
+pub spqr::AuthenticatorError::AuthenticatorRootKeyMissing
+pub spqr::AuthenticatorError::AuthenticatorRootKeyPresent
+pub spqr::AuthenticatorError::InvalidCtMac
+pub spqr::AuthenticatorError::InvalidHdrMac
+impl core::convert::From<spqr::AuthenticatorError> for spqr::Error
+pub fn spqr::Error::from(spqr::AuthenticatorError) -> Self
+pub enum spqr::CurrentVersion
+pub spqr::CurrentVersion::NegotiationComplete(spqr::Version)
+pub spqr::CurrentVersion::StillNegotiating
+pub spqr::CurrentVersion::StillNegotiating::min_version: spqr::Version
+pub spqr::CurrentVersion::StillNegotiating::version: spqr::Version
+#[repr(i32)] pub enum spqr::Direction
+pub spqr::Direction::A2B = 0
+pub spqr::Direction::B2A = 1
+impl spqr::Direction
+pub fn spqr::Direction::as_str_name(&self) -> &'static str
+pub fn spqr::Direction::from_str_name(&str) -> core::option::Option<Self>
+impl spqr::Direction
+pub fn spqr::Direction::from_i32(i32) -> core::option::Option<spqr::Direction>
+pub fn spqr::Direction::is_valid(i32) -> bool
+impl spqr::Direction
+pub fn spqr::Direction::switch(&self) -> Self
+impl core::convert::From<spqr::Direction> for i32
+pub fn i32::from(spqr::Direction) -> i32
+impl core::convert::TryFrom<i32> for spqr::Direction
+pub type spqr::Direction::Error = prost::error::UnknownEnumValue
+pub fn spqr::Direction::try_from(i32) -> core::result::Result<spqr::Direction, prost::error::UnknownEnumValue>
+impl core::default::Default for spqr::Direction
+pub fn spqr::Direction::default() -> spqr::Direction
+pub enum spqr::EncodingError
+pub spqr::EncodingError::ChunkDataDecodingError
+pub spqr::EncodingError::ChunkIndexDecodingError
+pub spqr::EncodingError::PolynomialError(spqr::PolynomialError)
+impl core::convert::From<spqr::EncodingError> for spqr::Error
+pub fn spqr::Error::from(spqr::EncodingError) -> spqr::Error
+impl core::convert::From<spqr::PolynomialError> for spqr::EncodingError
+pub fn spqr::EncodingError::from(spqr::PolynomialError) -> Self
+pub enum spqr::Error
+pub spqr::Error::ChainNotAvailable
+pub spqr::Error::EncodingDecoding(spqr::EncodingError)
+pub spqr::Error::EpochOutOfRange(spqr::Epoch)
+pub spqr::Error::ErroneousDataReceived
+pub spqr::Error::InvalidParams(&'static str)
+pub spqr::Error::KeyAlreadyRequested(u32)
+pub spqr::Error::KeyJump(u32, u32)
+pub spqr::Error::KeyTrimmed(u32)
+pub spqr::Error::MacVerifyFailed
+pub spqr::Error::MinimumVersion
+pub spqr::Error::MsgDecode
+pub spqr::Error::NotImplemented
+pub spqr::Error::SendKeyEpochDecreased(u64, u64)
+pub spqr::Error::Serialization(spqr::SerializationError)
+pub spqr::Error::StateDecode
+pub spqr::Error::VersionMismatch
+impl core::convert::From<spqr::AuthenticatorError> for spqr::Error
+pub fn spqr::Error::from(spqr::AuthenticatorError) -> Self
+impl core::convert::From<spqr::EncodingError> for spqr::Error
+pub fn spqr::Error::from(spqr::EncodingError) -> spqr::Error
+impl core::convert::From<spqr::SerializationError> for spqr::Error
+pub fn spqr::Error::from(spqr::SerializationError) -> Self
+pub enum spqr::PolynomialError
+pub spqr::PolynomialError::MessageLengthEven
+pub spqr::PolynomialError::MessageLengthTooLong
+pub spqr::PolynomialError::SerializationInvalid
+impl core::convert::From<spqr::PolynomialError> for spqr::EncodingError
+pub fn spqr::EncodingError::from(spqr::PolynomialError) -> Self
+impl core::convert::From<spqr::PolynomialError> for spqr::SerializationError
+pub fn spqr::SerializationError::from(spqr::PolynomialError) -> spqr::SerializationError
+pub enum spqr::SecretOutput
+pub spqr::SecretOutput::None
+pub spqr::SecretOutput::Recv(spqr::Secret)
+pub spqr::SecretOutput::Send(spqr::Secret)
+impl spqr::SecretOutput
+pub fn spqr::SecretOutput::has_secret(&self) -> bool
+pub fn spqr::SecretOutput::recv_secret(&self) -> core::option::Option<&spqr::Secret>
+pub fn spqr::SecretOutput::secret(&self) -> core::option::Option<&spqr::Secret>
+pub fn spqr::SecretOutput::send_secret(&self) -> core::option::Option<&spqr::Secret>
+pub enum spqr::SerializationError
+pub spqr::SerializationError::Deserialization
+pub spqr::SerializationError::EncodingDecoding
+impl core::convert::From<spqr::PolynomialError> for spqr::SerializationError
+pub fn spqr::SerializationError::from(spqr::PolynomialError) -> spqr::SerializationError
+impl core::convert::From<spqr::SerializationError> for spqr::Error
+pub fn spqr::Error::from(spqr::SerializationError) -> Self
+#[repr(i32)] pub enum spqr::Version
+pub spqr::Version::V0 = 0
+pub spqr::Version::V1 = 1
+impl spqr::Version
+pub const spqr::Version::DISABLED: spqr::Version
+pub const spqr::Version::MAX: spqr::Version
+impl spqr::Version
+pub fn spqr::Version::as_str_name(&self) -> &'static str
+pub fn spqr::Version::from_str_name(&str) -> core::option::Option<Self>
+impl spqr::Version
+pub fn spqr::Version::from_i32(i32) -> core::option::Option<spqr::Version>
+pub fn spqr::Version::is_valid(i32) -> bool
+impl core::convert::From<spqr::Version> for i32
+pub fn i32::from(spqr::Version) -> i32
+impl core::convert::From<spqr::Version> for u8
+pub fn u8::from(spqr::Version) -> u8
+impl core::convert::TryFrom<i32> for spqr::Version
+pub type spqr::Version::Error = prost::error::UnknownEnumValue
+pub fn spqr::Version::try_from(i32) -> core::result::Result<spqr::Version, prost::error::UnknownEnumValue>
+impl core::convert::TryFrom<u8> for spqr::Version
+pub type spqr::Version::Error = alloc::string::String
+pub fn spqr::Version::try_from(u8) -> core::result::Result<Self, Self::Error>
+impl core::default::Default for spqr::Version
+pub fn spqr::Version::default() -> spqr::Version
+pub struct spqr::ChainParams
+pub spqr::ChainParams::max_jump: u32
+pub spqr::ChainParams::max_ooo_keys: u32
+impl core::default::Default for spqr::ChainParams
+pub fn spqr::ChainParams::default() -> Self
+pub struct spqr::EpochSecret
+pub spqr::EpochSecret::epoch: spqr::Epoch
+pub spqr::EpochSecret::secret: spqr::Secret
+pub struct spqr::Params<'a>
+pub spqr::Params::auth_key: &'a [u8]
+pub spqr::Params::chain_params: spqr::ChainParams
+pub spqr::Params::direction: spqr::Direction
+pub spqr::Params::min_version: spqr::Version
+pub spqr::Params::version: spqr::Version
+pub struct spqr::Recv
+pub spqr::Recv::key: spqr::MessageKey
+pub spqr::Recv::state: spqr::SerializedState
+pub struct spqr::Send
+pub spqr::Send::key: spqr::MessageKey
+pub spqr::Send::msg: spqr::SerializedMessage
+pub spqr::Send::state: spqr::SerializedState
+pub fn spqr::current_version(&spqr::SerializedState) -> core::result::Result<spqr::CurrentVersion, spqr::Error>
+pub fn spqr::empty_state() -> spqr::SerializedState
+pub fn spqr::initial_state(spqr::Params<'_>) -> core::result::Result<spqr::SerializedState, spqr::Error>
+pub fn spqr::recv(&spqr::SerializedState, &spqr::SerializedMessage) -> core::result::Result<spqr::Recv, spqr::Error>
+pub fn spqr::send<R: rand::rng::Rng + rand_core::CryptoRng>(&spqr::SerializedState, &mut R) -> core::result::Result<spqr::Send, spqr::Error>
+pub type spqr::Epoch = u64
+pub type spqr::MessageKey = core::option::Option<alloc::vec::Vec<u8>>
+pub type spqr::Secret = alloc::vec::Vec<u8>
+pub type spqr::SerializedMessage = alloc::vec::Vec<u8>
+pub type spqr::SerializedState = alloc::vec::Vec<u8>
