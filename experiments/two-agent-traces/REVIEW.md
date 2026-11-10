@@ -129,3 +129,15 @@ The coordinator's `build.sh` reproduces the proof compilation, combined reviewer
 fragment and axiom audit, and two-pass PDF build. This paper review concerns the
 mathematical content and trust claims; final PDF rendering is checked by the
 coordinator.
+
+Coordinator's post-review formatting note: the final TeX wraps the bibliography
+in `begingroup`, `small`, and `raggedright` (with a closing `endgroup`) to keep
+both references on page 4. No wording or mathematical content changed. Final
+`paper.tex` SHA-256:
+
+```text
+af37451066cb1ed43120e82090861360176ad2496c4fbd7ad715d7ccb474dfd1
+```
+
+The final four-page PDF rebuilt successfully without LaTeX warnings or overfull
+boxes; the complete proof and audit build also passed.
