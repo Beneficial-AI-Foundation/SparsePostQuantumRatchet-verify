@@ -505,38 +505,62 @@ AI-generated specifications is unchanged by this guide. [#678][678], [#714][714]
 ### Update: recent reviews read on 2026-11-10
 
 These examples come from review reports and author replies, including AI-assisted reviews.
-They describe the reviewed revisions, not independently verified defects in the current code.
+Statuses below summarize that evidence as read on 2026-11-10; they are not a fresh code review.
+When summarizing several rounds, identify each reviewed commit (or date and link when no commit
+is given), distinguish a finding confirmed in that review from an author-reported fix, and state
+whether a later review verified resolution. Do not infer a checked revision from a comment's date.
 
-**Restricting a universal premise can leave it vacuous.** In #770, a completion helper initially
-required successful decoding for every valid decoder with matching scalar fields, including an
-empty decoder. A later review found that restricting to `AddChunkPost` still admitted replacing
-an unequal key: inserting index 35 into points 0 through 34 should reach 36 points, but the
-relation also admitted points 0 through 33 followed by 35, leaving only 35 points. #796 and #797
-had analogous completion cases. Author replies in #770 and #796 reported removing the affected
-helpers; #797 instead tied the premise to the actual intermediate call. These are distinct
-repairs that must be checked on their respective revisions. [#770 review][770-review],
-[#770 follow-up][770-followup], [#796 review][796-review], [#797 re-review][797-rereview]
+**Restricting a universal premise can leave it vacuous.** The completion-helper histories differ:
 
-**Non-vacuity and progress are separate obligations.** Further review of #797 distinguished the
-repaired branch premise from the still-weak concrete postcondition: the latter could still admit
-`StillReceiving` when the new chunk supplied the last missing points. The review classified this
-as a blocking judgment about specification strength, not a Rust bug. Earlier #770 and #796 reviews
-also found that omitting `PointsValid` prevented callers from applying the contract to the next
-chunk, and examined which contract `step` could use. [#797 progress review][797-progress],
-[#770 review][770-review], [#796 review][796-review]
+- #770: the review of `af632e3` confirmed an unsatisfiable universal decoder premise with a
+  compiled counterexample. Re-review of `d28ff42` found it still unsatisfiable after restriction
+  to `AddChunkPost`: inserting index 35 into points 0 through 34 should reach 36 points, but the
+  relation also admitted points 0 through 33 followed by 35, leaving only 35 points. This second
+  counterexample was checked against definitions, not compiled. The 2026-11-05 author reply
+  reported removing the helper and deferring the shared-contract strengthening; resolution is
+  unverified here. [Initial review][770-review], [re-review][770-followup], [author reply][770-fix]
+- #796: the review of `866d204` reported the analogous replacement counterexample for
+  `recv_ct2_chunk_spec_decoded_shape`, checked against definitions, not compiled. The 2026-11-05
+  author reply reported removing that helper; resolution is unverified here.
+  [Review][796-review], [author reply][796-fix]
+- #797: after the 2026-11-05 author reply claimed that restriction to `addChunkPost` removed
+  vacuity, re-review of `9022e38` still found the completion premise unsatisfiable (counterexample
+  checked against definitions, not compiled). The 2026-11-06 reply then reported tying the
+  premise to the actual intermediate call. The 2026-11-09 progress review explicitly accepted
+  that branch-premise repair, but did not identify a checked commit; it raised the separate
+  postcondition gap below. [First fix claim][797-first-fix], [re-review][797-rereview],
+  [actual-result fix claim][797-fix], [progress review][797-progress]
 
-**A model encoding premise need not hold for library output.** Review of #802 questioned whether
-unsigned residue encoding matched libcrux 0.0.10's signed `i16` output. The author acknowledged
-that the library buffer did not satisfy the premise and reported adding theorem-level scope
-documentation and separate signed-encoding results. Check the encoding boundary and affected
-downstream claims even when the model theorem itself is valid. [#802 discussion][802-encoding]
+**Non-vacuity and progress are separate obligations.** The 2026-11-09 review of #797 reported
+that the concrete postcondition still admitted `StillReceiving` when the new chunk supplied the
+last missing points. It classified this as a blocking judgment about specification strength,
+not a Rust bug, despite accepting the branch-premise repair. A later author reply that day
+reported strengthening the outcomes and progress guarantees; neither comment pins a commit, and
+that later fix is unverified here. [Progress review][797-progress], [author reply][797-progress-fix]
 
-**Validate the reported operation, not just its label.** #771 and #772 reported that import
-regeneration changed duplicate imports despite successful builds. #793 requested visible
-enforcement of the failed-build condition for an automated repair workflow with write permissions;
-the reply described checks in the implementation and additional guards in the caller. Treat those
-replies as leads for code inspection, not independent validation. [#772 review][772-review],
-[#793 review][793-review]
+Earlier reviews of #770 (`af632e3`) and #796 (`866d204`) also found that omitting `PointsValid`
+prevented contract reuse for the next chunk; #796 additionally questioned `step` registration.
+The #796 author reply reported repairing both usability issues; their resolution is unverified
+here. The cited #770 re-review does not explicitly verify the earlier `PointsValid` finding's
+resolution, so its omission is not treated as confirmation. [#770 review][770-review],
+[#770 re-review][770-followup], [#796 review][796-review], [#796 reply][796-fix]
+
+**A model encoding premise need not hold for library output.** The 2026-11-08 comment on #802
+questioned whether unsigned residue encoding matched libcrux 0.0.10's signed `i16` output; it did
+not pin a reviewed commit. The 2026-11-09 author reply acknowledged that the library buffer did
+not satisfy the premise and identified `8d0d5b9` as adding theorem-level scope documentation and
+separate signed-encoding results. Those changes are author-reported, not independently verified
+here, and do not claim that the unsigned premise now holds for library output.
+[Review comment][802-encoding], [author reply][802-fix]
+
+**Validate the reported operation, not just its label.** Review of #772 at `4736653` confirmed
+that import regeneration removed a duplicate despite successful builds; resolution is unverified
+here. Review of #793 at `856a839` requested visible enforcement of the failed-build condition
+for an automated repair workflow with write permissions; this was a request to make enforcement
+explicit, not a demonstrated missing runtime guard. The 2026-11-05 author reply described existing
+implementation checks and added caller guards without pinning a fixing commit. That response is
+an author-reported clarification and change, with enforcement unverified here.
+[#772 review][772-review], [#793 review][793-review], [#793 reply][793-fix]
 
 [770-review]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/770#pullrequestreview-5726201609
 [770-followup]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/770#pullrequestreview-5778958551
@@ -546,6 +570,14 @@ replies as leads for code inspection, not independent validation. [#772 review][
 [797-rereview]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#pullrequestreview-5795860794
 [797-progress]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6731354135
 [802-encoding]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/802#issuecomment-6723261242
+
+[770-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/770#issuecomment-6648562361
+[796-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/796#issuecomment-6649429248
+[797-first-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6649718442
+[797-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6679963046
+[797-progress-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6731626434
+[802-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/802#issuecomment-6743550123
+[793-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/793#issuecomment-6658834820
 
 [30]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/30
 [31]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/31
