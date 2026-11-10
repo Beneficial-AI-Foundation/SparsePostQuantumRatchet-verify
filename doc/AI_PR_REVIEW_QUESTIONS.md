@@ -17,7 +17,8 @@ or substitute for a human approval. The limits on what an AI review may propose 
 
 The principles in each section are meant to stay valid as the repository evolves. The
 [appendix](#appendix-historical-examples) ties them to past issues and PRs, as read on
-2026-10-23. Append newer examples there rather than rewriting the principles.
+2026-10-23, with a dated update from recent reviews read on 2026-11-10. Extend the checks when
+new evidence exposes a gap, and keep revision-specific examples in the appendix.
 
 ## Procedure
 
@@ -39,6 +40,10 @@ refer to.
    [workflow guide](WORKFLOW_AND_PR_GUIDE.md#pr-workflow-and-formatting): one issue per PR unless
    related, `Closes #...` in the footer, body starting with "This PR", roughly 500 LOC, and no
    meaningful pushes after the PR was marked ready for review.
+   Read earlier reviews, inline threads, and author replies as well. For each previous finding,
+   check whether the current code fixes it, leaves it present, or shows that it was mistaken.
+   Re-run the original counterexample against the revised premises and exported postcondition;
+   an author reply or resolved thread alone does not establish a fix.
 3. **Build and lint the head.** For Lean changes the baseline is:
 
    ```bash
@@ -50,6 +55,8 @@ refer to.
    build the changed modules explicitly, for example `lake build Spqr.Specs.Lib.InitialState`. For
    added, removed, or renamed Lean files, run `lake exe mk_all --git` and confirm the root import
    files in the diff match the result.
+   Report whether regeneration changed files, not merely whether it ran; a generated import
+   discrepancy is distinct from a Lean build failure. Keep generated audit manifests out of commits.
 4. **Audit the trust base on base and head.** The audit scans every module reachable from
    `Spqr.lean` and writes `sorry-manifest.txt` into the working tree. It overwrites that file; do
    not commit it. Run it on both revisions and diff the manifests the same way CI does:
@@ -66,6 +73,10 @@ refer to.
    `#print axioms <theorem>` in a scratch file. Expected builtin axioms are `propext`,
    `Classical.choice`, and `Quot.sound`; anything else is a trust change to report under
    question 6.
+   An unchanged textual count of `axiom` or `sorry` is not a base audit: imports, declaration
+   bodies, and dependencies can change the trust base without adding those keywords. If reusing
+   an earlier audit, identify its exact revision and dependency configuration; otherwise mark
+   the missing comparison unverified.
 5. **Check extraction inputs when they change.** For diffs touching `translation-patches/`,
    `Cargo.toml` charon metadata, `src/`, or generated `Types.lean`, `Funs.lean`, or
    `translation.json`, follow [scripts/README.md](../scripts/README.md) for the patch, extraction,
@@ -139,6 +150,16 @@ Historical examples for each question are listed in the [appendix](#appendix-his
   Conversely, does an abstraction erase details needed by callers?
 - Are existential witnesses sufficiently constrained? An existential is not inherently weak:
   inspect whether its predicate determines the relevant values before requesting a rewrite.
+- Does a higher-order premise quantify over the actual intermediate result, or over every state
+  allowed by a relation? Test empty, incomplete, and complete states admitted by that relation.
+  Adding validity or matching scalar fields may still leave unrelated states in its domain,
+  making a requirement that all of them decode successfully unsatisfiable.
+- Does a collection-update relation distinguish insertion of a fresh key from replacement of an
+  equal key? Sortedness alone does not prevent replacement at a different key. Check cardinality
+  and preserved entries in the final-missing-element case as well as on duplicate input.
+- After a premise is tied to the actual intermediate call, does the exported postcondition also
+  expose the facts callers need? Fixing a vacuous branch helper does not by itself strengthen the
+  concrete contract or establish progress. Review those obligations separately.
 
 ## Extraction and handwritten external models
 
@@ -177,6 +198,10 @@ Historical examples for each question are listed in the [appendix](#appendix-his
   to verify, or only abstract model functions?
 - For ML-KEM changes, do byte order, signed coefficients, matrix indices, lengths, validation,
   error variants, and compatibility repair paths match the pinned implementation?
+- Is an encoding premise established for bytes actually produced by the pinned library, rather
+  than only for a mathematical model's canonical encoding? Distinguish signed machine-word
+  encoding from unsigned residues. Put known correspondence limits and their tracking issue in
+  the affected theorem docstrings, and identify which downstream results depend on the premise.
 - Are randomness witnesses tied to the actual RNG output and successor state? Does a conditional
   noise/recovery theorem clearly state its hypothesis rather than imply unconditional success?
 - Are claims of "any primitive instantiation" supported by actual parameters, rather than a
@@ -210,6 +235,13 @@ Historical examples for each question are listed in the [appendix](#appendix-his
   enumerated against a named revision and section?
 - Does every composition step connect one function's postcondition to the next function's
   precondition? Is a shared pure model or reusable predicate preferable to duplicated contracts?
+- Can the returned state be passed to the same operation again using only the exported contract?
+  In a still-receiving branch, retain established decoder validity and other recurring premises;
+  a fact available inside the proof but absent from the postcondition is unavailable to callers.
+- When a chunk supplies the final missing points, can callers rule out continued waiting under
+  the intended conditions? Separate enough points, successful decoding, and acceptance of the
+  decoded payload; completion can still legitimately return a validation error. A weak contract
+  that permits waiting is a specification-strength gap, not evidence of a Rust implementation bug.
 - Are protocol-level theorems placed and tagged as Braid properties rather than forced into
   the per-function `@[step]` convention?
 
@@ -224,6 +256,13 @@ Historical examples for each question are listed in the [appendix](#appendix-his
 - Are function contracts registered with `@[step]` when appropriate? Can a downstream caller
   use them? A documented tactic-performance exception merits inspection rather than automatic
   rejection. Pure constants may appropriately use equation/simp lemmas instead of artificial WP.
+- If both lifted and concrete contracts exist, try `step` on a representative caller with the
+  advertised premises. Does registration leave an unconstrained predicate and a higher-order
+  proof obligation? Prefer the usable contract for automation, and assess exceptions with an
+  actual caller rather than assuming the attribute alone establishes usability.
+- Reuse shared postcondition predicates and their wrapper lemmas together. A local copy can
+  retain an old weakness after the shared contract is repaired; check related consumers before
+  claiming that a shared fix has propagated.
 - Are imports minimal while exposing the definitions consumers actually need under the module
   system? Were root imports regenerated when Lean files were added, renamed, or removed?
 - Are flexible nonterminal tactics replaced by explicit lemma sets where practical? Are
@@ -239,6 +278,10 @@ The commands are in the [procedure](#procedure). These questions interpret their
   masking a missing import or unbuilt module?
 - Does CI preserve the failing exit code through pipes and invoke every required job for fork
   and branch PRs? Do caches contain completed build outputs with appropriate keys?
+- For automated repair or review workflows, are claimed trigger conditions enforced for the
+  current PR head, including required failure and prerequisite success checks? Trace manual and
+  automatic entry paths, and inspect which jobs receive write permissions and model credentials.
+  A description saying "after a failed build" is not evidence that the workflow enforces it.
 - Does the proof's cost come from repeated arguments, broad imports, expensive automation,
   or computation that could be replaced by a symbolic argument?
 - Are benchmark base and head builds both successful and comparable in toolchain, runner, and
@@ -268,6 +311,10 @@ Group findings under these three headings, in this order, using the vocabulary o
 
 A historical disagreement or keyword match is a prompt to investigate, not a finding by itself.
 State the group explicitly so the human reviewer can override it.
+When a new contract inherits a weak shared relation, locate the new caller-facing consequence
+and distinguish it from the pre-existing root cause. State explicitly whether a judgment finding
+blocks, and count it in the verdict if it does. Do not classify a missing progress guarantee as
+an implementation counterexample or a vacuous theorem without evidence for that stronger claim.
 
 ### Category tags
 
@@ -454,6 +501,83 @@ roughly 500-line target was discussed as guidance, with exceptions for coherent 
 found the chain parameters untied to the input; only the next revision resolved it. Recent AI
 review comments presented themselves as assistance to human review; the workflow prohibiting
 AI-generated specifications is unchanged by this guide. [#678][678], [#714][714], [#715][715]
+
+### Update: recent reviews read on 2026-11-10
+
+These examples come from review reports and author replies, including AI-assisted reviews.
+Statuses below summarize that evidence as read on 2026-11-10; they are not a fresh code review.
+When summarizing several rounds, identify each reviewed commit (or date and link when no commit
+is given), distinguish a finding confirmed in that review from an author-reported fix, and state
+whether a later review verified resolution. Do not infer a checked revision from a comment's date.
+
+**Restricting a universal premise can leave it vacuous.** The completion-helper histories differ:
+
+- #770: the review of `af632e3` confirmed an unsatisfiable universal decoder premise with a
+  compiled counterexample. Re-review of `d28ff42` found it still unsatisfiable after restriction
+  to `AddChunkPost`: inserting index 35 into points 0 through 34 should reach 36 points, but the
+  relation also admitted points 0 through 33 followed by 35, leaving only 35 points. This second
+  counterexample was checked against definitions, not compiled. The 2026-11-05 author reply
+  reported removing the helper and deferring the shared-contract strengthening; resolution is
+  unverified here. [Initial review][770-review], [re-review][770-followup], [author reply][770-fix]
+- #796: the review of `866d204` reported the analogous replacement counterexample for
+  `recv_ct2_chunk_spec_decoded_shape`, checked against definitions, not compiled. The 2026-11-05
+  author reply reported removing that helper; resolution is unverified here.
+  [Review][796-review], [author reply][796-fix]
+- #797: after the 2026-11-05 author reply claimed that restriction to `addChunkPost` removed
+  vacuity, re-review of `9022e38` still found the completion premise unsatisfiable (counterexample
+  checked against definitions, not compiled). The 2026-11-06 reply then reported tying the
+  premise to the actual intermediate call. The 2026-11-09 progress review explicitly accepted
+  that branch-premise repair, but did not identify a checked commit; it raised the separate
+  postcondition gap below. [First fix claim][797-first-fix], [re-review][797-rereview],
+  [actual-result fix claim][797-fix], [progress review][797-progress]
+
+**Non-vacuity and progress are separate obligations.** The 2026-11-09 review of #797 reported
+that the concrete postcondition still admitted `StillReceiving` when the new chunk supplied the
+last missing points. It classified this as a blocking judgment about specification strength,
+not a Rust bug, despite accepting the branch-premise repair. A later author reply that day
+reported strengthening the outcomes and progress guarantees; neither comment pins a commit, and
+that later fix is unverified here. [Progress review][797-progress], [author reply][797-progress-fix]
+
+Earlier reviews of #770 (`af632e3`) and #796 (`866d204`) also found that omitting `PointsValid`
+prevented contract reuse for the next chunk; #796 additionally questioned `step` registration.
+The #796 author reply reported repairing both usability issues; their resolution is unverified
+here. The cited #770 re-review does not explicitly verify the earlier `PointsValid` finding's
+resolution, so its omission is not treated as confirmation. [#770 review][770-review],
+[#770 re-review][770-followup], [#796 review][796-review], [#796 reply][796-fix]
+
+**A model encoding premise need not hold for library output.** The 2026-11-08 comment on #802
+questioned whether unsigned residue encoding matched libcrux 0.0.10's signed `i16` output; it did
+not pin a reviewed commit. The 2026-11-09 author reply acknowledged that the library buffer did
+not satisfy the premise and identified `8d0d5b9` as adding theorem-level scope documentation and
+separate signed-encoding results. Those changes are author-reported, not independently verified
+here, and do not claim that the unsigned premise now holds for library output.
+[Review comment][802-encoding], [author reply][802-fix]
+
+**Validate the reported operation, not just its label.** Review of #772 at `4736653` confirmed
+that import regeneration removed a duplicate despite successful builds; resolution is unverified
+here. Review of #793 at `856a839` requested visible enforcement of the failed-build condition
+for an automated repair workflow with write permissions; this was a request to make enforcement
+explicit, not a demonstrated missing runtime guard. The 2026-11-05 author reply described existing
+implementation checks and added caller guards without pinning a fixing commit. That response is
+an author-reported clarification and change, with enforcement unverified here.
+[#772 review][772-review], [#793 review][793-review], [#793 reply][793-fix]
+
+[770-review]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/770#pullrequestreview-5726201609
+[770-followup]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/770#pullrequestreview-5778958551
+[772-review]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/772#pullrequestreview-5726581843
+[793-review]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/793#pullrequestreview-5783609219
+[796-review]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/796#pullrequestreview-5779429399
+[797-rereview]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#pullrequestreview-5795860794
+[797-progress]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6731354135
+[802-encoding]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/802#issuecomment-6723261242
+
+[770-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/770#issuecomment-6648562361
+[796-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/796#issuecomment-6649429248
+[797-first-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6649718442
+[797-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6679963046
+[797-progress-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/797#issuecomment-6731626434
+[802-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/802#issuecomment-6743550123
+[793-fix]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/793#issuecomment-6658834820
 
 [30]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/30
 [31]: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/pull/31
