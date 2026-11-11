@@ -18,7 +18,6 @@ The refinement theorems of `Refinement.lean` are stated with the definitions of 
 
 * `CodeAgrees P`: each primitive of `P : CodePrims` returns what the code's function returns
   wherever that function succeeds;
-* `MlkemSizes`: libcrux reports the ML-KEM 768 sizes 960, 128 and 1152;
 * `absAuth`, `absMsg` and `absKey`: the model's authenticator, message and key for the code's;
 * `Refines s σ`: a code state `s` and a machine state `σ` are the same state with equal values,
   and `s` has the sizes of the last section.
@@ -105,14 +104,6 @@ structure CodeAgrees (P : CodePrims) : Prop where
   kdfOk : ∀ (ss : Bytes) (ep : Std.U64),
     P.kdfOk ss ep.val = crypto.hkdf (List.replicate 32 0#u8) ss
       (Spqr.V1.Unchunked.SendCt.sckaKeyLabel ++ (core.num.U64.to_be_bytes ep).val) 32
-
-/-- The ML-KEM 768 sizes that libcrux reports. `Ciphertext1::<960>::len()` and
-`Ciphertext2::<128>::len()` return their length parameter, and `pk2_len()` returns `1152`.
-`mlkemSizes` proves it. -/
-def MlkemSizes : Prop :=
-  incremental_mlkem768.CIPHERTEXT1_SIZE = ok 960#usize ∧
-  incremental_mlkem768.CIPHERTEXT2_SIZE = ok 128#usize ∧
-  incremental_mlkem768.ENCAPSULATION_KEY_SIZE = ok 1152#usize
 
 /-- The model's authenticator for the code's. -/
 def absAuth (a : authenticator.Authenticator) : Auth := ⟨a.root_key.val, a.mac_key.val⟩

@@ -132,7 +132,6 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
-public import Spqr.Specs.Braid.StateMachine.MlkemSizes
 public import Spqr.Specs.Braid.StateMachine.Model
 public import Spqr.Specs.Braid.StateMachine.Refinement
 public import Spqr.Specs.Braid.StateMachine.Relation
