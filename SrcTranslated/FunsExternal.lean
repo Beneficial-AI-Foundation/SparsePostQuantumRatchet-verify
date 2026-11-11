@@ -1804,20 +1804,38 @@ noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Error.Insts.CoreFm
     Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<LEN>}::len]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 161:4-161:31
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.10/src/ind_cca/incremental/types.rs', lines 161:4-161:31
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext1<@LEN>}::len"]
-noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
-  (LEN : Std.Usize) : Result Std.Usize
+def libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len
+  (LEN : Std.Usize) : Result Std.Usize :=
+  -- `pub const fn len() -> usize { LEN }`
+  ok LEN
+
+/-- `Ciphertext1::<LEN>::len()` returns `LEN`. -/
+@[step]
+theorem libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len_spec (LEN : Std.Usize) :
+    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len LEN ⦃ (r : Std.Usize) =>
+      r = LEN ⦄ := by
+  simp only [libcrux_ml_kem.ind_cca.incremental.types.Ciphertext1.len, WP.spec_ok]
 
 /-- [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<LEN>}::len]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/ind_cca/incremental/types.rs', lines 174:4-174:31
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.10/src/ind_cca/incremental/types.rs', lines 174:4-174:31
     Name pattern: [libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len] -/
 @[rust_fun
   "libcrux_ml_kem::ind_cca::incremental::types::{libcrux_ml_kem::ind_cca::incremental::types::Ciphertext2<@LEN>}::len"]
-noncomputable opaque libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
-  (LEN : Std.Usize) : Result Std.Usize
+def libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len
+  (LEN : Std.Usize) : Result Std.Usize :=
+  -- `pub const fn len() -> usize { LEN }`
+  ok LEN
+
+/-- `Ciphertext2::<LEN>::len()` returns `LEN`. -/
+@[step]
+theorem libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len_spec (LEN : Std.Usize) :
+    libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len LEN ⦃ (r : Std.Usize) =>
+      r = LEN ⦄ := by
+  simp only [libcrux_ml_kem.ind_cca.incremental.types.Ciphertext2.len, WP.spec_ok]
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk1_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 26:8-26:39
@@ -1837,10 +1855,20 @@ theorem libcrux_ml_kem.mlkem768.incremental.pk1_len_spec :
   rfl
 
 /-- [libcrux_ml_kem::mlkem768::incremental::pk2_len]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 31:8-31:39
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.10/src/mlkem.rs', lines 31:8-31:39
     Name pattern: [libcrux_ml_kem::mlkem768::incremental::pk2_len] -/
 @[rust_fun "libcrux_ml_kem::mlkem768::incremental::pk2_len"]
-noncomputable opaque libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize
+def libcrux_ml_kem.mlkem768.incremental.pk2_len : Result Std.Usize :=
+  -- `RANKED_BYTES_PER_RING_ELEMENT = RANK * BITS_PER_RING_ELEMENT / 8 = 3 * 3072 / 8 = 1152`
+  ok 1152#usize
+
+/-- `pk2_len()` returns `encapsulationKeyBytes` (1152), the length of `ByteEncode₁₂(t̂)`. -/
+@[step]
+theorem libcrux_ml_kem.mlkem768.incremental.pk2_len_spec :
+    libcrux_ml_kem.mlkem768.incremental.pk2_len ⦃ (r : Std.Usize) =>
+      r.val = Spqr.Mlkem.mlkem768Params.encapsulationKeyBytes ⦄ := by
+  simp only [libcrux_ml_kem.mlkem768.incremental.pk2_len, WP.spec_ok]
+  rfl
 
 /-- [libcrux_ml_kem::mlkem768::incremental::encaps_state_len]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libcrux-ml-kem-0.0.7/src/mlkem.rs', lines 59:8-59:48
