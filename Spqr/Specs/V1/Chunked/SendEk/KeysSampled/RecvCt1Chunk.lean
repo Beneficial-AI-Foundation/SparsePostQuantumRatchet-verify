@@ -53,9 +53,8 @@ operations are the two `expect`s, both of which are shown to be on `Ok` values.
 
 Two sizes enter the function:
 
-  * `CIPHERTEXT1_SIZE` is extracted as a wrapper around the opaque
-    `libcrux_ml_kem::…::Ciphertext1::len`, so its value `960` is assumed via `h_ct1_size`
-    (as `ENCAPSULATION_KEY_SIZE` is in `SendCt/NoHeaderReceived/RecvHdrChunk.lean`);
+  * the value `960` of `CIPHERTEXT1_SIZE` is the premise `h_ct1_size`.
+    `CIPHERTEXT1_SIZE_spec` proves it;
   * `ek.len() = 1152` is the `#[hax_lib::refine]` invariant of the unchunked `HeaderSent`
     (`serialize.HeaderSent.FunctionalModels.WellFormed`); the main theorem takes just the
     length `h_ek_len`, and `recv_ct1_chunk_spec_wellFormed` derives from the full invariant the
@@ -107,7 +106,7 @@ namespace spqr.v1.chunked.send_ek.KeysSampled
 
 • Requires:
     – `h_epoch : epoch = self.uc.epoch` — the hax precondition, discharging the `assert_eq!`;
-    – `h_ct1_size` — the value `960` of the opaque `CIPHERTEXT1_SIZE`;
+    – `h_ct1_size` — the value `960` of `CIPHERTEXT1_SIZE` (`CIPHERTEXT1_SIZE_spec`);
     – `h_ek_len : self.uc.ek.length = 1152` — the `HeaderSent` refinement on `ek`.
   Under these hypotheses the call never panics.  The `usize` guards of `add_chunk_spec` need
   no hypothesis: the base index `chunk.index * 16 + 16` fits because `chunk.index : u16`, and

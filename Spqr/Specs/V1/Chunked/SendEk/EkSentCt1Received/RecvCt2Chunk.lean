@@ -62,10 +62,8 @@ the `SortedSet` ordering of every slot (`PointsValid`) and the `#[hax_lib::refin
 which is what makes the two slices `ct2`/`mac` have the lengths `128`/`32` required by
 `recv_ct2`.
 
-One fact is not derivable from any registered spec and is taken as an explicit hypothesis:
-`CIPHERTEXT2_SIZE` is extracted as the opaque `libcrux_ml_kem::…::Ciphertext2::len`, so its
-value `128` is assumed via `h_ct2_size` (as `ENCAPSULATION_KEY_SIZE` is in
-`SendCt/NoHeaderReceived/RecvHdrChunk.lean`).
+The value `128` of `CIPHERTEXT2_SIZE` is the premise `h_ct2_size`. `CIPHERTEXT2_SIZE_spec`
+proves it.
 
 All other callees (`add_chunk`, `as_slice`, range indexing, `to_vec`, `recv_ct2`,
 `HEADER_SIZE`, `PolyDecoder::new`, `expect`) are discharged by their registered specs; the
@@ -222,7 +220,7 @@ open Spqr.V1.Chunked.SendEk.EkSentCt1Received
       updated decoder; `pts_needed`/`is_complete` agreement is the first two conjuncts of
       `addChunkPost`), with its length refinement `h_decoded_len`; see
       `recv_ct2_chunk_spec_concrete` for the instantiation with `decoded_message_spec`;
-    – `h_ct2_size` — the value of the opaque `CIPHERTEXT2_SIZE`;
+    – `h_ct2_size` — the value of `CIPHERTEXT2_SIZE` (`CIPHERTEXT2_SIZE_spec`);
     – `h_dk`, `h_ct1`, `h_uc_epoch`, `h_root` — the guards of `recv_ct2_spec`: the struct
       refinements `dk.len() == 2400`, `ct1.len() == 960`, the hax `assume!(epoch < u64::MAX)`
       and the memory-boundedness of the authenticator ratchet.  The remaining guards
