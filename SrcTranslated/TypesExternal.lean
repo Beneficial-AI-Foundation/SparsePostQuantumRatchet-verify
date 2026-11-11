@@ -166,3 +166,12 @@ def sorted_vec.SortedVec (T : Type) : Type := alloc.vec.Vec T
     when needed. -/
 @[rust_type "sorted_vec::SortedSet"]
 def sorted_vec.SortedSet (T : Type) : Type := sorted_vec.SortedVec T
+
+/-- [core::slice::iter::Chunks]
+    Source: '/rustc/library/core/src/slice/iter.rs', lines 1478:0-1478:28
+    Name pattern: [core::slice::iter::Chunks]
+
+    Model: the chunks that remain to be returned, in order. -/
+@[rust_type "core::slice::iter::Chunks"]
+structure core.slice.iter.Chunks (T : Type _) where
+  chunks : List (Slice T)

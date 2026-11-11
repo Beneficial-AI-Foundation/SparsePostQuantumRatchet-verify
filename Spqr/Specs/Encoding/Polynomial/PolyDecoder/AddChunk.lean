@@ -26,6 +26,8 @@ import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallMut
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+import Spqr.Auxiliary.Aeneas.Loop
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-! # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 
@@ -536,6 +538,126 @@ theorem add_chunk_spec
   simp only [show (0#usize : Usize).val = 0 from rfl, Nat.zero_add] at h
   exact h
 
+/-- The postcondition of `add_chunk_spec` as a named relation between the decoder before
+(`pd0`) and after (`pd`) absorbing `chunk`, for reuse by callers of `add_chunk` (e.g. the
+chunked V1 state transitions):
+
+  - `pts_needed` and `is_complete` are preserved;
+  - there is a chain `selfs 0 = pd0, …, selfs 16 = pd` of intermediate decoders in which the
+    `j`-th two-byte pair of `chunk` becomes the point
+    `(x, y) = (chunk.index, 256 · chunk.data[2j] + chunk.data[2j+1])` of polynomial `j`, and is
+    inserted into `pts[j]` (append / replace / `sortedInsert`) iff
+    `chunk.index < np ∨ |pts[j]| < np` for `np = necessary_points(j)`; otherwise the step is
+    the identity. -/
+def AddChunkPost (pd0 : PolyDecoder) (chunk : encoding.Chunk) (pd : PolyDecoder) : Prop :=
+  pd.pts_needed = pd0.pts_needed ∧
+  pd.is_complete = pd0.is_complete ∧
+  ∃ (selfs : Nat → PolyDecoder),
+    selfs 0 = pd0 ∧
+    selfs 16 = pd ∧
+    ∀ (j : Nat), j < 16 →
+      let total_idx := chunk.index.val * 16 + j
+      let poly := total_idx % 16
+      let poly_idx := total_idx / 16
+      let np := pd0.pts_needed.val / 16 +
+        (if poly < pd0.pts_needed.val % 16 then 1 else 0)
+      (selfs (j + 1)).pts_needed = pd0.pts_needed ∧
+      (selfs (j + 1)).is_complete = pd0.is_complete ∧
+      poly < 16 ∧
+      poly_idx = chunk.index.val ∧
+      ∃ (p : Pt),
+        p.x.value.val = poly_idx ∧
+        p.y.value.val = (chunk.data[j * 2]!) * 256 + (chunk.data[j * 2 + 1]!) ∧
+        (if poly_idx < np ∨ ((selfs j).pts.val[poly]!).val.length < np
+         then
+           (∀ (k : Nat), k ≠ poly → (selfs (j + 1)).pts[k]! = (selfs j).pts.val[k]!) ∧
+           IsSortedPushResult ((selfs j).pts.val[poly]!).val
+             ((selfs (j + 1)).pts.val[poly]!).val p
+         else
+           selfs (j + 1) = selfs j)
+
+/-- `add_chunk_spec` restated through the named relation `AddChunkPost`. -/
+theorem add_chunk_spec_post
+    (self : PolyDecoder) (chunk : encoding.Chunk)
+    (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 → (self.pts[k]!).length + 17 ≤ Usize.max) :
+    add_chunk self chunk ⦃ (result : PolyDecoder) => AddChunkPost self chunk result ⦄ :=
+  add_chunk_spec self chunk h_overflow h_push_cap
+
+/-- After absorbing a single chunk into a fresh (all-empty) decoder, every slot holds at most
+one point: step `j` of the `AddChunkPost` chain touches only polynomial `j` (since
+`(chunk.index * 16 + j) % 16 = j`), and a push into an empty slot yields at most one element
+(`IsSortedPushResult.length_le`).  Callers use it to discharge the `h_push_cap` guard of
+`add_chunk_spec` for the *next* chunk after building a decoder with `new`. -/
+theorem AddChunkPost.slot_length_le_one_of_fresh (pd0 : PolyDecoder) (chunk : encoding.Chunk)
+    (pd : PolyDecoder)
+    (h_fresh : pd0.pts.val = List.replicate 16 default)
+    (h_add : AddChunkPost pd0 chunk pd) :
+    ∀ (k : Nat), k < 16 → (pd.pts[k]!).length ≤ 1 := by
+  obtain ⟨_, _, selfs, h_s0, h_s16, h_chain⟩ := h_add
+  have h_empty0 : ∀ (k : Nat), k < 16 → (pd0.pts[k]!).val = [] := by
+    intro k hk
+    have h_slot : pd0.pts[k]! = default := by
+      simp only [Array.getElem!_Nat_eq, h_fresh]
+      rw [List.getElem!_eq_getElem?_getD, List.getElem?_replicate]
+      simp [hk]
+    rw [h_slot]; rfl
+  -- Invariant along the chain: after `j` steps, slots `< j` have ≤ 1 point and slots `≥ j`
+  -- are still empty.
+  have h_inv : ∀ (j : Nat), j ≤ 16 → ∀ (k : Nat), k < 16 →
+      (k < j → ((selfs j).pts[k]!).length ≤ 1) ∧
+      (j ≤ k → ((selfs j).pts[k]!).val = []) := by
+    intro j
+    induction j with
+    | zero =>
+      intro _ k hk
+      refine ⟨fun h => absurd h (Nat.not_lt_zero _), fun _ => ?_⟩
+      rw [h_s0]
+      exact h_empty0 k hk
+    | succ j ih =>
+      intro hj k hk
+      have ih' := ih (by omega)
+      obtain ⟨_, _, _, _, p, _, _, h_step⟩ := h_chain j (by omega)
+      have h_poly : (chunk.index.val * 16 + j) % 16 = j := by
+        rw [Nat.add_comm, Nat.add_mul_mod_self_right]; exact Nat.mod_eq_of_lt (by omega)
+      simp only [h_poly] at h_step
+      by_cases h_cond : (chunk.index.val * 16 + j) / 16 <
+          pd0.pts_needed.val / 16 + (if j < pd0.pts_needed.val % 16 then 1 else 0) ∨
+          ((selfs j).pts.val[j]!).val.length <
+          pd0.pts_needed.val / 16 + (if j < pd0.pts_needed.val % 16 then 1 else 0)
+      · rw [ite_eq_left h_cond] at h_step
+        obtain ⟨h_other, h_push⟩ := h_step
+        refine ⟨fun hkj => ?_, fun hjk => ?_⟩
+        · by_cases hkj' : k = j
+          · subst hkj'
+            have h_len := h_push.length_le
+            have h_empty := (ih' k hk).2 (le_refl _)
+            simp only [alloc.vec.Vec.length, Array.getElem!_Nat_eq] at h_len h_empty ⊢
+            rw [h_empty, List.length_nil] at h_len
+            exact h_len
+          · have := h_other k hkj'
+            have h_ih := (ih' k hk).1 (by omega)
+            simp only [Array.getElem!_Nat_eq] at this h_ih ⊢
+            rw [this]
+            exact h_ih
+        · have hne : k ≠ j := by omega
+          have := h_other k hne
+          have h_ih := (ih' k hk).2 (by omega)
+          simp only [Array.getElem!_Nat_eq] at this h_ih ⊢
+          rw [this]
+          exact h_ih
+      · rw [ite_eq_right h_cond] at h_step
+        rw [h_step]
+        refine ⟨fun hkj => ?_, fun hjk => (ih' k hk).2 (by omega)⟩
+        by_cases hkj' : k = j
+        · subst hkj'
+          have h_empty := (ih' k hk).2 (le_refl _)
+          simp only [alloc.vec.Vec.length, h_empty, List.length_nil]; omega
+        · exact (ih' k hk).1 (by omega)
+  intro k hk
+  rw [← h_s16]
+  exact ((h_inv 16 (le_refl _) k hk).1 hk)
+
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
 
 /-! ## `add_chunk` preserves the `PointsValid` invariant
@@ -684,5 +806,59 @@ theorem add_chunk_spec_valid
   exact add_chunk_loop.loop_spec_valid chunk { start := 0#usize, «end» := 16#usize } self
     (by scalar_tac) (by scalar_tac) h_overflow
     (by intro k hk; have := h_push_cap k hk; change _ + (16 - 0) + 1 ≤ _; omega) h_valid
+
+/-- A successful `add_chunk` keeps the number of points the decoder needs. -/
+theorem add_chunk_pts_needed {d d' : encoding.polynomial.PolyDecoder} {c : encoding.Chunk}
+    (h : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk d c = ok d') :
+    d'.pts_needed = d.pts_needed := by
+  simp only [encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk,
+    encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop] at h
+  refine loop_ok_post (fun x => x.1.end.val - x.1.start.val)
+    (fun x => x.2.pts_needed = d.pts_needed) (fun y => y.pts_needed = d.pts_needed) _ ?_
+    _ _ rfl h
+  rintro ⟨iter, self⟩ r hi hr
+  simp only [encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_loop.body,
+    Result.bind_eq_ok] at hr
+  obtain ⟨⟨o, iter1⟩, hn, hr⟩ := hr
+  have hns := WP.post_of_ok (core.iter.range.IteratorRange.next_spec iter) hn
+  cases o with
+  | none =>
+    simp only [UScalar.lt_equiv, alloc.vec.Vec.len, Usize.ofNatCore_val_eq, uncurry_apply_pair,
+        ok.injEq] at hr
+    subst hr; exact hi
+  | some i =>
+    have hlt : iter.start.val < iter.end.val := by
+      by_contra hc; exact absurd (hns.1 hc).1 (by simp)
+    obtain ⟨-, hs1, he1⟩ := hns.2 hlt
+    have hm : iter1.end.val - iter1.start.val < iter.end.val - iter.start.val := by
+      rw [he1, hs1]; omega
+    simp only [UScalar.lt_equiv, alloc.vec.Vec.len, Usize.ofNatCore_val_eq,
+        uncurry_apply_pair] at hr
+    simp only [Result.bind_eq_ok] at hr
+    obtain ⟨_, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -, _, -,
+      _, -, _, -, _, -, hr⟩ := hr
+    split at hr
+    · simp only [Result.bind_eq_ok] at hr
+      obtain ⟨⟨ss, back⟩, -, hr⟩ := hr
+      simp only [uncurry_apply_pair] at hr
+      simp only [Result.bind_eq_ok] at hr
+      obtain ⟨⟨_, ss1⟩, -, hr⟩ := hr
+      simp only [uncurry_apply_pair, ok.injEq] at hr
+      subst hr
+      exact ⟨hi, hm⟩
+    · simp only [Result.bind_eq_ok] at hr
+      obtain ⟨_, -, _, -, _, -, _, -, hr⟩ := hr
+      split at hr
+      · simp only [Result.bind_eq_ok] at hr
+        obtain ⟨⟨ss, back⟩, -, hr⟩ := hr
+        simp only [uncurry_apply_pair] at hr
+        simp only [Result.bind_eq_ok] at hr
+        obtain ⟨⟨_, ss1⟩, -, hr⟩ := hr
+        simp only [uncurry_apply_pair, ok.injEq] at hr
+        subst hr
+        exact ⟨hi, hm⟩
+      · simp only [Result.ok.injEq] at hr
+        subst hr
+        exact ⟨hi, hm⟩
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
