@@ -10,7 +10,6 @@ import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
 public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
-import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
@@ -122,7 +121,7 @@ private theorem isSortedPushResult_dropLast_append {α : Type*}
 
 /-- Packaged spec for `sortedInsert` on `Pt`: it always succeeds, the returned index
     and list satisfy the `Usize` bounds (given capacity), and the result is an
-    `IsSortedPushResult`. Bundles `sortedInsert_always_ok` and `sortedInsert_spec`. -/
+    `IsSortedPushResult`. Bundles `sortedInsert_Pt_ok` and `sortedInsert_spec`. -/
 private theorem sortedInsert_push_result (l : List Pt) (p : Pt)
     (h_cap : l.length + 1 ≤ Usize.max) :
     ∃ idx opt newList,
@@ -130,7 +129,7 @@ private theorem sortedInsert_push_result (l : List Pt) (p : Pt)
       (newList.length ≤ Usize.max ∧ idx ≤ Usize.max) ∧
       IsSortedPushResult l newList p := by
   obtain ⟨idx, opt, newList, h_si⟩ :=
-    spqr.encoding.polynomial.PolyDecoder.from_pb_loop0_loop0.sortedInsert_always_ok l p 0
+    sortedInsert_Pt_ok l p 0
   obtain ⟨k, hk_idx, hk_le, hk_prop⟩ :=
     sorted_vec.SortedSet.sortedInsert_spec Pt.Insts.CoreCmpOrd l p 0 h_si
   have h_res : IsSortedPushResult l newList p := ⟨k, hk_le, hk_prop⟩
@@ -151,16 +150,16 @@ private theorem push_sorted_result (ss : sorted_vec.SortedSet Pt) (p : Pt)
     rcases hc : compare p.x.value.val last.x.value.val
     · obtain ⟨idx, opt, newList, h_si, hbnd, h_res⟩ := sortedInsert_push_result ss.val p h_cap
       apply WP.spec_mono (sorted_vec.SortedSet.push_spec_lt _ ss p h_cap last hL
-        (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last)
+        (by rw [← hc]; exact Pt.Insts.CoreCmpOrd.cmp_eq_compare p last)
         idx opt newList h_si hbnd)
       rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
       rw [h]; exact h_res
     · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_eq _ ss p h_cap last hL
-        (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last))
+        (by rw [← hc]; exact Pt.Insts.CoreCmpOrd.cmp_eq_compare p last))
       rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
       rw [h]; exact isSortedPushResult_dropLast_append _ _ hne
     · apply WP.spec_mono (sorted_vec.SortedSet.push_spec_gt _ ss p h_cap last hL
-        (by rw [← hc]; exact PolyDecoder.from_pb_loop0_loop0.cmp_eq p last))
+        (by rw [← hc]; exact Pt.Insts.CoreCmpOrd.cmp_eq_compare p last))
       rintro ⟨⟨_, _⟩, _⟩ ⟨_, _, h⟩
       rw [h]; exact isSortedPushResult_append _ _
 

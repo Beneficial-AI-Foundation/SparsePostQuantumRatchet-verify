@@ -245,6 +245,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedM
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Length
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
