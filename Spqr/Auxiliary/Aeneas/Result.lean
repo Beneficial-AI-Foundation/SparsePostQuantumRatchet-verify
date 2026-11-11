@@ -30,6 +30,36 @@ end Aeneas.Std
 
 open Aeneas.Std
 
+/-- Equation for `Result::branch` on an `Ok`.  Not a `simp` lemma: proofs that step through a
+`?` with `branch_eq_continue` / `branch_eq_break` rely on `branch` staying folded. -/
+theorem core.result.Result.Insts.CoreOpsTry.branch_Ok {T E : Type} (v : T) :
+    core.result.Result.Insts.CoreOpsTry.branch (E := E) (.Ok v) = Result.ok (.Continue v) :=
+  rfl
+
+/-- Equation for `Result::branch` on an `Err`.  Not a `simp` lemma, see `branch_Ok`. -/
+theorem core.result.Result.Insts.CoreOpsTry.branch_Err {T E : Type} (e : E) :
+    core.result.Result.Insts.CoreOpsTry.branch (T := T) (.Err e) =
+      Result.ok (.Break (.Err e)) :=
+  rfl
+
+/-- Equation for `Result::from_residual` with the identity `From` instance: the error is
+propagated unchanged.  Not a `simp` lemma, see `branch_Ok`. -/
+theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_same
+    {T E : Type} (e : E) :
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+      T (core.convert.FromSame E) (.Err e) = Result.ok (.Err e) := by
+  simp [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual]
+
+/-- Inversion of `from_residual_same`: if the `Break` arm of a `?` (with the identity `From`
+instance) returns `r`, then `r` is the propagated error. -/
+theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_same_eq_ok
+    {T E : Type} {e : E} {r : core.result.Result T E}
+    (h : core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+      T (core.convert.FromSame E) (.Err e) = Result.ok r) :
+    r = .Err e := by
+  rw [from_residual_same, Result.ok.injEq] at h
+  exact h.symm
+
 theorem core.result.Result.Insts.CoreOpsTry.branch_eq_continue {T E : Type}
     {r : core.result.Result T E} {v : T}
     (h : core.result.Result.Insts.CoreOpsTry.branch r = Result.ok (.Continue v)) :

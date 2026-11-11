@@ -102,6 +102,7 @@ public import Spqr.Specs.Aeneas.IntoIteratorSlice
 public import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Specs.Aeneas.SliceChunks
 public import Spqr.Specs.Aeneas.SliceChunksExact
 public import Spqr.Specs.Aeneas.SliceConcat
 public import Spqr.Specs.Aeneas.SliceConcatListAux
@@ -267,13 +268,17 @@ public import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.Pt.Eq
 public import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 public import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
+public import Spqr.Specs.IncrementalMlkem768.CIPHERTEXT1_SIZE
+public import Spqr.Specs.IncrementalMlkem768.CIPHERTEXT2_SIZE
 public import Spqr.Specs.IncrementalMlkem768.Decaps
+public import Spqr.Specs.IncrementalMlkem768.ENCAPSULATION_KEY_SIZE
 public import Spqr.Specs.IncrementalMlkem768.EkMatchesHeader
 public import Spqr.Specs.IncrementalMlkem768.Encaps1
 public import Spqr.Specs.IncrementalMlkem768.Encaps2
 public import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 public import Spqr.Specs.IncrementalMlkem768.Generate
 public import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
+public import Spqr.Specs.IncrementalMlkem768.PotentiallyFixState
 public import Spqr.Specs.Kdf.HkdfToSlice
 public import Spqr.Specs.Kdf.HkdfToVec
 public import Spqr.Specs.Lib.ChainFrom
@@ -353,6 +358,9 @@ public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.SendHdrChunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.SendHdrChunk
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.Ct1Received.FromPb
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.Ct1Received.FunctionalModels
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.Ct1Received.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FunctionalModels
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
@@ -372,6 +380,7 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+public import Spqr.Specs.V1.Chunked.States.States.Recv
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct2Sent.RecvNextEpoch

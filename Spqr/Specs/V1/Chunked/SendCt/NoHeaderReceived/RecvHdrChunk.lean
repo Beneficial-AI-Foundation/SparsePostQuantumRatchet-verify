@@ -59,8 +59,8 @@ therefore taken as explicit hypotheses, in the predicate-lifting style of
     makes the two slices `hdr`/`mac` have the lengths `64`/`32` required by `recv_header`.
     `recv_hdr_chunk_spec_concrete` instantiates both with the registered `decoded_message_spec`
     and the refinement `pts_needed = 48`.
-  * `ENCAPSULATION_KEY_SIZE` is extracted as the opaque `libcrux_ml_kem::…::pk2_len`, so its
-    value `1152` is assumed via `h_ek_size`.
+  * the value `1152` of `ENCAPSULATION_KEY_SIZE` is the premise `h_ek_size`.
+    `ENCAPSULATION_KEY_SIZE_spec` proves it.
 
 All other callees (`add_chunk`, `as_slice`, `HEADER_SIZE`, range indexing, `to_vec`,
 `PolyDecoder::new`, `recv_header`, `expect`) are discharged by their registered specs.
@@ -209,9 +209,9 @@ open Spqr.V1.Chunked.SendCt.NoHeaderReceived
   `add_chunk` (`h_overflow`, `h_push_cap`), the `SortedSet` invariant of the decoder slots
   (`h_valid`, preserved by `add_chunk_spec_valid`), the lifted postcondition of
   `decoded_message` (`h_decoded`) with its length refinement (`h_decoded_len`), the value of
-  the opaque `ENCAPSULATION_KEY_SIZE` (`h_ek_size`), and the boundedness of the MAC key
-  inherited from `recv_header_spec` (`h_key`).  Under these hypotheses the call always succeeds
-  (no panic).
+  `ENCAPSULATION_KEY_SIZE` (`h_ek_size`, proved by `ENCAPSULATION_KEY_SIZE_spec`), and the
+  boundedness of the MAC key inherited from `recv_header_spec` (`h_key`).  Under these
+  hypotheses the call always succeeds (no panic).
 
 The result satisfies `recvHdrChunkPost self chunk decodedPost result`.
 

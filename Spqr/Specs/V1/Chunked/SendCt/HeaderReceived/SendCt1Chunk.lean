@@ -75,8 +75,8 @@ namespace spqr.v1.chunked.send_ct.HeaderReceived
     – `h_fill`: the RNG's `fill_bytes` is panic-free;
     – `h_root`: the authenticator root key leaves room for the 32-byte secret.
   No further hypotheses are needed: the preconditions of `encode_bytes_spec` (even length,
-  `≤ 2¹⁶ · 16`) and of `next_chunk_spec` (index fits in `u16`, admissible point-vector lengths)
-  are *discharged internally* from `ct1.length = 960`, `idx = 0`, and `480 / 16 = 30`.
+  `≤ 2¹⁶ · 16`) and of `next_chunk_spec` (admissible point-vector lengths)
+  are *discharged internally* from `ct1.length = 960` and `480 / 16 = 30`.
 
 • **Unchunked state** `st.uc : Ct1Sent` — inherited verbatim from `send_ct1_spec`:
     `st.uc.epoch = self.uc.epoch`, `st.uc.hdr = self.uc.hdr`,
@@ -198,7 +198,6 @@ theorem send_ct1_chunk_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       step with core.result.Result.expect_ok_spec
       subst sending_ct1_post
       step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec ⟨idx, EncoderState.Points pts⟩
-        (by simp [h_idx])
         (by
           intro pts' hpts j hj
           simp only [EncoderState.Points.injEq] at hpts
@@ -208,10 +207,10 @@ theorem send_ct1_chunk_spec {R : Type} (rngInst : rand_1.rng.Rng R)
         (by intro polys h; cases h)
         as ⟨chunk, sending_ct11, h_chunk⟩
       obtain ⟨h_chunk_idx, h_chunk_len, h_idx', h_points⟩ := h_chunk
-      simp only [h_idx] at h_chunk_idx h_idx'
+      simp only [h_idx, PolyEncoder.wireIndex] at h_chunk_idx h_idx'
       -- `next_chunk_spec` yields a disjunction (stayed in `Points` / moved to `Polys`); with
       -- `idx = 0` it is exactly the phase-dependent clause of this contract
-      simp only [h_idx] at h_points
+      simp only [h_idx, PolyEncoder.wireIndex] at h_points
       have h_phase :
           (sending_ct11.s = .Points pts ∧
             ∀ (j : Nat), j < 16 →
