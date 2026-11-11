@@ -1,5 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import Spqr.Auxiliary.Aeneas.Loop
 public import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Auxiliary.Aeneas.Slice
@@ -8,6 +9,7 @@ public import Spqr.Auxiliary.Aeneas.SpecRefl
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Auxiliary.Aeneas.VecOfList
 public import Spqr.Auxiliary.SpecTags
 public import Spqr.Crypto.Fips203.Conversion.BitsToBytes
 public import Spqr.Crypto.Fips203.Conversion.ByteDecode
@@ -100,6 +102,7 @@ public import Spqr.Specs.Aeneas.IntoIteratorSlice
 public import Spqr.Specs.Aeneas.MapIteratorTransformerNext
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Specs.Aeneas.SliceChunks
 public import Spqr.Specs.Aeneas.SliceChunksExact
 public import Spqr.Specs.Aeneas.SliceConcat
 public import Spqr.Specs.Aeneas.SliceConcatListAux
@@ -107,6 +110,8 @@ public import Spqr.Specs.Aeneas.SliceIter
 public import Spqr.Specs.Aeneas.SliceIteratorNext
 public import Spqr.Specs.Aeneas.SliceListToVec
 public import Spqr.Specs.Aeneas.TryFromSliceToArray
+public import Spqr.Specs.Aeneas.VecAppend
+public import Spqr.Specs.Aeneas.VecAsSlice
 public import Spqr.Specs.Aeneas.VecClone
 public import Spqr.Specs.Aeneas.VecDerefMut
 public import Spqr.Specs.Aeneas.VecExtendFromSlice
@@ -121,11 +126,15 @@ public import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FromPb
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.IntoPb
+public import Spqr.Specs.Braid.Deviations
 public import Spqr.Specs.Braid.Scka.EpochUniqueness
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
+public import Spqr.Specs.Braid.StateMachine.Model
+public import Spqr.Specs.Braid.StateMachine.Refinement
+public import Spqr.Specs.Braid.StateMachine.Relation
 public import Spqr.Specs.Braid.StateMachine.Run
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
@@ -213,6 +222,7 @@ public import Spqr.Specs.Encoding.Polynomial.Poly.Clone
 public import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
 public import Spqr.Specs.Encoding.Polynomial.Poly.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
+public import Spqr.Specs.Encoding.Polynomial.Poly.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolate
 public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolateComplete
 public import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolatePrepare
@@ -234,6 +244,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallMut
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.CallOnce
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedMessage
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Length
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.GetPtsNeeded
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
@@ -246,6 +257,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytesBase
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FromPb
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
@@ -262,6 +274,7 @@ public import Spqr.Specs.IncrementalMlkem768.Encaps2
 public import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 public import Spqr.Specs.IncrementalMlkem768.Generate
 public import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
+public import Spqr.Specs.IncrementalMlkem768.PotentiallyFixState
 public import Spqr.Specs.Kdf.HkdfToSlice
 public import Spqr.Specs.Kdf.HkdfToVec
 public import Spqr.Specs.Lib.ChainFrom
@@ -305,6 +318,7 @@ public import Spqr.Specs.Util.Compare
 public import Spqr.Specs.Util.Inz
 public import Spqr.Specs.Util.IsNonZero
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.Epoch
+public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.RecvEkChunk
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.RecvEkChunk
 public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.SendCt1Chunk
@@ -318,23 +332,33 @@ public import Spqr.Specs.V1.Chunked.SendCt.HeaderReceived.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.HeaderReceived.SendCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
-public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.RecvHdrChunk
-public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
-public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
-public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
-public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
-public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.Epoch
-public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.SendEkChunk
-public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.FromPb
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.FunctionalModels
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.IntoPb
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.EkReceivedCt1Sampled.FromPb
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.EkReceivedCt1Sampled.FunctionalModels
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.EkReceivedCt1Sampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.RecvCt2Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.SendEkChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.RecvCt2Chunk
+public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
+public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.SendEkChunk
+public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.Epoch
+public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.RecvCt1Chunk
 public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.SendHdrChunk
+public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.Epoch
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
 public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.SendHdrChunk
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.Ct1Received.FromPb
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.Ct1Received.FunctionalModels
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.Ct1Received.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FromPb
+public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.FunctionalModels
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysSampled.IntoPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.FunctionalModels
@@ -352,6 +376,7 @@ public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.FromPayload
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
 public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+public import Spqr.Specs.V1.Chunked.States.States.Recv
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct2Sent.RecvNextEpoch

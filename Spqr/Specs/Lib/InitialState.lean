@@ -49,7 +49,6 @@ The result satisfies the emptiness postcondition:
 i.e., the returned vector contains no bytes, representing the V0 (disabled) protocol state.
 
 **Source**: spqr/src/lib.rs (lines 219:0-242:1) -/
-@[step]
 theorem initial_state_spec_v0 (params : Params)
     (h_version : params.version = proto.pq_ratchet.Version.V0) :
     initial_state params ⦃ (result : core.result.Result (alloc.vec.Vec U8) Error) =>
