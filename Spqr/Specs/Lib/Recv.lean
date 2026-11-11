@@ -45,16 +45,20 @@ The registered `@[step]` contract is the total `recv_spec`.  Its postcondition `
 **input-relative**: it is stated in terms of the preamble `msg_preamble` parses from `msg` and
 the state `decode_state` decodes from `state`, and on each branch names the exact result —
 which error, which key (`recvKeyPost` at epoch `0` resp. `msg.epoch - 1`), and which re-encoded
-state (as a `decodesTo` fact, the form `decode_state_spec` consumes on the next call).  The
+state (as a `decodesTo` fact).  Note that `decodesTo` alone does not give
+`decode_state r.state = ok (.Ok st)` for the next call: `decode_state` returns the all-`none`
+state on empty bytes without decoding, and nothing here states that the re-encoded bytes are
+non-empty (compare `decode_state_encode_state_pb`, which needs that as a hypothesis).  The
 per-path `recv_spec_<path>` theorems are the branches of `recvPost` restated as standalone
 contracts; `recv_spec_v0` (empty inputs) is a corollary of `recv_spec`.  No other theorem on
 `recv` is `@[step]`, so `step` never faces a choice; the side goal `recvInputsOk` it leaves
-closes by `simp` for an empty state (`recvInputsOk_of_empty`).
+closes by `simp [h]` for an empty state, given `h : state.val = []` (`recvInputsOk_of_empty`).
 
 **Progress.**  `recv_spec` takes no hypothesis on `recv` itself.  The deque well-formedness
 preconditions of `Chain::into_pb` / `Chain::recv_key` are discharged for every chain `recv`
-builds (`chainDequeWf_of_chainFrom`, `chainDequeWf_of_recvKeyPost`); the remaining
-preconditions are on the *inputs*:
+builds (`chainDequeWf_of_chainFrom`, `chainDequeWf_of_recvKeyPost`).  The remaining
+preconditions are stated relative to the *inputs*; the first two are readiness conditions on
+values computed from them, the third is a no-panic assumption on sub-calls:
 
 * `hready` — the counter/bounds conditions of `Chain::recv_key` (`recvKeyReady`) at epoch
   `0` for the chain `chain_from` reconstructs (`Ordering::Greater` path);
@@ -62,8 +66,9 @@ preconditions are on the *inputs*:
   is ready for the epoch secret `States::recv` emits, and `Chain::recv_key` is ready at
   `(msg.epoch - 1, msg.index)`;
 * `recvV1StatesOk` — the three `States::*` sub-calls (`from_pb`, `recv`, `into_pb`) do not
-  panic.  They have no registered specs yet (`Spqr/Specs/V1/Chunked/States/…`); once they
-  exist this hypothesis can be discharged without touching the statement.
+  panic.  This is assumed, not proved: progress on the same-version `V1` path is conditional
+  on it.  `States::recv` has a registered contract (`States.recv_spec`, under `recvPre`) that
+  is not used here yet; `States::from_pb` and `States::into_pb` have no registered specs.
 
 | Path (Rust)                                       | Spec theorem(s)                              |
 |---------------------------------------------------|----------------------------------------------|
@@ -119,7 +124,7 @@ theorem minVersionU8_none_v1 (st : proto.pq_ratchet.PqRatchetState)
     (hvn : st.version_negotiation = none) (hin : ∃ i, st.inner = some i) :
     minVersionU8 st = 1#u8 := by
   obtain ⟨i, hi⟩ := hin
-  simp [minVersionU8, currentVersionU8, hvn, hi]
+  simp only [minVersionU8, hvn, currentVersionU8, hi]
 
 /-- Postcondition of the `Ordering::Greater` path (their version is newer than ours): the chain
 is rebuilt via `chain_from st.chain (Some vn)`; on success the key is pulled from **epoch 0**
@@ -178,9 +183,10 @@ theorem recv_eq_msg_preamble_err (state msg : alloc.vec.Vec U8) (e : Error)
     recv state msg = ok (.Err e) := by
   unfold recv
   rw [hpre]
-  simp [core.result.Result.Insts.CoreOpsTry.branch,
+  simp only [core.result.Result.Insts.CoreOpsTry.branch, UScalar.lt_equiv, bne_iff_ne, ne_eq,
+    UScalar.neq_to_neq_val, core.cmp.impls.OrdU8.cmp, gt_iff_lt, UScalar.ofNatCore_val_eq,
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-    core.convert.FromSame.from]
+    core.convert.FromSame.from, bind_tc_ok, ite_not, bind_ok]
 
 /-- **Equational lemma for `spqr.recv`** (state decode failure):
 `let prenegotiated_state_pb = decode_state(state)?;` — an `Err` from `decode_state` is returned
@@ -193,15 +199,16 @@ theorem recv_eq_decode_state_err (state msg : alloc.vec.Vec U8) (mp : MsgPreambl
   rw [hpre]
   simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
   rw [hdec]
-  simp [
+  simp only [UScalar.lt_equiv, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, core.cmp.impls.OrdU8.cmp,
+    gt_iff_lt, UScalar.ofNatCore_val_eq,
     core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-    core.convert.FromSame.from]
+    core.convert.FromSame.from, bind_tc_ok, ite_not, bind_ok]
 
 /-! ## Version negotiation checks -/
 
 /-- **Equational lemma for `spqr.recv`** (`MinimumVersion`, no negotiation):
 Without a `version_negotiation` the minimum version is the current version
-(`innerVersion st`); a message below it is rejected with `Err MinimumVersion`. -/
+(`currentVersionU8 st`); a message below it is rejected with `Err MinimumVersion`. -/
 theorem recv_eq_minimum_version_no_negotiation (state msg : alloc.vec.Vec U8)
     (mp : MsgPreamble) (ch : Option proto.pq_ratchet.Chain)
     (pb : proto.pq_ratchet.V1State)
@@ -216,7 +223,10 @@ theorem recv_eq_minimum_version_no_negotiation (state msg : alloc.vec.Vec U8)
   simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
   rw [hdec]
   simp only [bind_ok, state_version, Version.V1_discriminant_u8, lift]
-  split <;> simp [hv]
+  split <;> simp only [bind_ok, UScalar.lt_equiv, hv, bne_iff_ne, ne_eq, Nat.not_eq,
+    UScalar.ofNatCore_val_eq, zero_ne_one, not_false_eq_true, one_ne_zero, Order.lt_one_iff,
+    not_lt_zero, or_false, or_self, UScalar.val_not_eq_imp_not_eq, ↓reduceIte, or_true,
+    core.cmp.impls.OrdU8.cmp, gt_iff_lt, massert_True, uncurry_apply_pair]
 
 /-- **Equational lemma for `spqr.recv`** (`MinimumVersion`, still negotiating):
 With a `version_negotiation` the minimum version is `vn.min_version as u8`; a message below it
@@ -257,7 +267,10 @@ theorem recv_eq_version_mismatch (state msg : alloc.vec.Vec U8)
   simp only [bind_ok, state_version, Version.V1_discriminant_u8, lift]
   split
   · rename_i heq; exact absurd heq (by decide)
-  · simp [h0, h1]
+  · simp only [bind_ok, UScalar.lt_equiv, bne_iff_ne, ne_eq, Nat.not_eq, UScalar.ofNatCore_val_eq,
+    h1, not_false_eq_true, ReduceNat.reduceNatEq, Order.lt_one_iff, h0, false_or, true_or, or_self,
+    UScalar.val_not_eq_imp_not_eq, ↓reduceIte, one_ne_zero, zero_ne_one, not_lt_zero, or_true,
+    core.cmp.impls.OrdU8.cmp, gt_iff_lt, massert_True, uncurry_apply_pair, Bool.false_eq_true]
 
 /-! ## The V0 (disabled) path -/
 
@@ -277,7 +290,9 @@ theorem recv_eq_v0_no_negotiation (state msg : alloc.vec.Vec U8)
   rw [hdec]
   simp only [bind_ok, state_version, Version.V0_discriminant_u8, lift]
   split
-  · simp [recvV0Result]
+  · simp only [bind_ok, UScalar.lt_equiv, bne_iff_ne, ne_eq, UScalar.neq_to_neq_val,
+    UScalar.ofNatCore_val_eq, ↓reduceIte, ite_not, uncurry_apply_pair, not_lt_zero, ite_self,
+    recvV0Result]
   · rename_i h; exact absurd rfl h
 
 /-- **Equational lemma for `spqr.recv`** (V0, still negotiating):
@@ -298,7 +313,16 @@ theorem recv_eq_v0_negotiating (state msg : alloc.vec.Vec U8)
   simp only [bind_ok, state_version, Version.V0_discriminant_u8, lift]
   change (if mp.version < _ then _ else _) = _
   rw [ite_eq_right hge]
-  simp [recvV0Result]
+  simp only [bne_iff_ne, ne_eq, UScalar.neq_to_neq_val, UScalar.ofNatCore_val_eq, ↓reduceIte,
+    ite_self, recvV0Result]
+
+/-- An empty persisted state decodes to the all-`none` state (proof helper shared by the
+empty-state lemmas below). -/
+private theorem decode_state_eq_of_empty (state : alloc.vec.Vec U8) (h_empty : state.val = []) :
+    decode_state state =
+      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
+  unfold decode_state
+  simp only [alloc.vec.Vec.is_empty, h_empty, List.isEmpty_nil, bind_ok, ↓reduceIte]
 
 /-- **Spec theorem for `spqr.recv`** (empty persisted state, arbitrary message):
 An empty state decodes to the all-`none` state, so the result is the empty V0 result whenever
@@ -307,10 +331,7 @@ theorem recv_spec_empty_state (state msg : alloc.vec.Vec U8)
     (h_empty : state.val = []) :
     recv state msg ⦃ (result : core.result.Result Recv Error) =>
       result = recvV0Result ∨ result = .Err Error.MsgDecode ⦄ := by
-  have hdec : decode_state state =
-      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
-    unfold decode_state
-    simp [alloc.vec.Vec.is_empty, h_empty]
+  have hdec := decode_state_eq_of_empty state h_empty
   obtain ⟨r, hr, hpost⟩ := WP.spec_imp_exists (msg_preamble_spec msg)
   cases r with
   | Ok mp =>
@@ -319,7 +340,7 @@ theorem recv_spec_empty_state (state msg : alloc.vec.Vec U8)
   | Err e =>
     rw [recv_eq_msg_preamble_err state msg e hr]
     simp only at hpost
-    simp [hpost]
+    simp only [hpost, WP.spec_ok, or_true]
 
 /-! ## `Ordering::Greater`: their version is higher, we stay negotiable -/
 
@@ -368,14 +389,15 @@ theorem recv_eq_greater (state msg : alloc.vec.Vec U8)
     UScalar.val_not_eq_imp_not_eq, h1, hcmp]
   cases cr with
   | Err e =>
-    simp [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-      core.convert.FromSame.from]
+    simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+      core.convert.FromSame.from, bind_tc_ok, bind_ok]
   | Ok c =>
     simp only [bind_ok]
     congr 1
     funext ⟨kr, c'⟩
-    cases kr <;> simp [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-      core.convert.FromSame.from]
+    cases kr <;> simp only [
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+      core.convert.FromSame.from, bind_tc_ok, uncurry_apply_pair, bind_ok]
 
 /-! ## `Ordering::Less`: negotiate down to their version -/
 
@@ -429,18 +451,18 @@ theorem recv_eq_less_v0 (state msg : alloc.vec.Vec U8)
   simp only [bind_ok]
   cases dr with
   | Err e =>
-    simp [core.result.Result.map_err,
-      recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once,
+    simp only [core.result.Result.map_err,
+      recv.closure.Insts.CoreOpsFunctionFnOnceTupleUnknownEnumValueError.call_once, bind_ok,
       core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-      core.convert.FromSame.from]
+      core.convert.FromSame.from, bind_tc_ok]
   | Ok d =>
     simp only [core.result.Result.map_err, bind_ok, hchain]
     cases cr with
     | Err e =>
-      simp [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
-        core.convert.FromSame.from]
+      simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
+        core.convert.FromSame.from, bind_tc_ok, bind_ok]
     | Ok c =>
-      simp [recvV0Result]
+      simp only [bind_ok, recvV0Result]
 
 /-! ## `Ordering::Equal`: same version, process the message -/
 
@@ -787,8 +809,10 @@ def recvV1Post (mp : MsgPreamble)
               (k.val = [] → result = .Ok { state := bytes, key := none }) ∧
               (k.val ≠ [] → result = .Ok { state := bytes, key := some k })
 
-/-- The no-panic obligations of the same-version V1 tail that are **not** yet discharged by
-registered specs: the three `States::*` sub-calls.  Everything chain-side (`chain_from`,
+/-- The no-panic obligations of the same-version V1 tail that are **assumed** rather than
+discharged: the three `States::*` sub-calls.  `States::recv` has a registered contract
+(`States.recv_spec`, under `recvPre`) that is not used here yet; `States::from_pb` and
+`States::into_pb` have no registered specs.  Everything chain-side (`chain_from`,
 `add_epoch`, `recv_key`, `into_pb`, `encode_state_pb`) is covered by `recvV1ChainReady`. -/
 def recvV1StatesOk (mp : MsgPreamble) (pb : proto.pq_ratchet.V1State) : Prop :=
   (∀ scka_msg,
@@ -941,7 +965,6 @@ theorem recv_spec_equal_v1_negotiating (state msg : alloc.vec.Vec U8)
   rw [recv_eq_equal_v1_negotiating state msg mp vn ch pb hpre hdec hge hv1]
   exact recvV1Model_spec mp (some vn) ch pb hst hch
 
-
 /-! ## Total spec theorem -/
 
 /-- Postcondition of `recv` **after** `msg_preamble` and `decode_state` have both succeeded,
@@ -984,10 +1007,10 @@ def recvPost (state msg : alloc.vec.Vec U8) (result : core.result.Result Recv Er
 
 * `Ordering::Greater`: `recv_key (0, msg.index)` is ready on the chain `chain_from`
   reconstructs from `st.chain`/`vn`;
-* `Ordering::Equal`: the three `States::*` sub-calls do not panic (`recvV1StatesOk` — they
-  have no registered specs yet) and the chain side is ready (`recvV1ChainReady`: `msg.epoch ≥ 1`,
-  `add_epoch` ready for the emitted epoch secret, `recv_key` ready at
-  `(msg.epoch - 1, msg.index)`). -/
+* `Ordering::Equal`: the three `States::*` sub-calls do not panic (`recvV1StatesOk` — an
+  assumption on those calls, not yet discharged) and the chain side is ready
+  (`recvV1ChainReady`: `msg.epoch ≥ 1`, `add_epoch` ready for the emitted epoch secret,
+  `recv_key` ready at `(msg.epoch - 1, msg.index)`). -/
 def recvInputsOk (state msg : alloc.vec.Vec U8) : Prop :=
   ∀ mp st, msg_preamble msg = ok (.Ok mp) → decode_state state = ok (.Ok st) →
     ∀ pb, st.inner = some (.V1 pb) →
@@ -1006,30 +1029,29 @@ theorem recvInputsOk_of_inner_none (state msg : alloc.vec.Vec U8)
   cases hpb
 
 /-- `recvInputsOk` holds for an empty persisted state, which decodes to the all-`none` state.
-Registered as a `simp` lemma so that the side goal `recv_spec` leaves on empty inputs closes
-automatically. -/
+Registered as a `simp` lemma: given `h : state.val = []`, `simp [h]` closes the side goal
+`recv_spec` leaves on empty inputs (plain `simp` does not pick `h` up from the context). -/
 @[simp]
 theorem recvInputsOk_of_empty (state msg : alloc.vec.Vec U8) (h_empty : state.val = []) :
     recvInputsOk state msg := by
   refine recvInputsOk_of_inner_none state msg (fun st hdec => ?_)
-  have : decode_state state =
-      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
-    unfold decode_state
-    simp [alloc.vec.Vec.is_empty, h_empty]
+  have := decode_state_eq_of_empty state h_empty
   cases Result.ok_injective (this.symm.trans hdec)
   rfl
 
 /-- **Spec theorem for `spqr.recv`** (total):
 
-Under `recvInputsOk state msg` — preconditions on the *inputs* only — `recv` does not panic
-and its result satisfies `recvPost state msg`: errors of `msg_preamble`/`decode_state` are
-passed through, and otherwise `recvDecodedPost` names the exact result of the branch the
+Under `recvInputsOk state msg` — no hypothesis on `recv` itself, but on the same-version V1
+path it includes the assumption that the `States::*` sub-calls do not panic
+(`recvV1StatesOk`), so progress there is conditional — `recv` does not panic and its result
+satisfies `recvPost state msg`: errors of `msg_preamble`/`decode_state` are passed through,
+and otherwise `recvDecodedPost` names the exact result of the branch the
 parsed preamble and decoded state select (which error; the key from `recv_key` at epoch `0`
 resp. `msg.epoch - 1`; the re-encoded state as a `decodesTo` fact with `version_negotiation`
 kept resp. cleared and `inner` preserved resp. updated).
 
 This is the only `@[step]` contract on `recv`; `recv_spec_v0` (empty inputs) is derived from
-it.  `recvInputsOk` closes by `simp` for an empty state (`recvInputsOk_of_empty`) and by
+it.  `recvInputsOk` closes by `simp [h]` for an empty state (`recvInputsOk_of_empty`) and by
 `recvInputsOk_of_inner_none` for any V0 state.
 
 **Platform.**  Through `recvKeyReady` → `recvKeyPre`, the `Greater` and `Equal` paths inherit
@@ -1039,7 +1061,8 @@ are unsatisfiable and the spec is vacuous there (`recv_key_spec_32` is the 32-bi
 **Source**: spqr/src/lib.rs (lines 361:0-490:1) -/
 @[step]
 theorem recv_spec (state msg : alloc.vec.Vec U8) (hin : recvInputsOk state msg) :
-    recv state msg ⦃ (result : core.result.Result Recv Error) => recvPost state msg result ⦄ := by
+    recv state msg ⦃ (result : core.result.Result Recv Error) =>
+      recvPost state msg result ⦄ := by
   obtain ⟨pr, hpre, -⟩ := WP.spec_imp_exists (msg_preamble_spec msg)
   cases pr with
   | Err e =>
@@ -1080,45 +1103,46 @@ theorem recv_spec (state msg : alloc.vec.Vec U8) (hin : recvInputsOk state msg) 
     simp only
     by_cases hlt : mp.version < IScalar.hcast .U8 vn.min_version
     · rw [recv_eq_minimum_version_negotiating state msg mp vn ch none hpre hdec hlt, WP.spec_ok]
-      simp [hlt]
+      simp only [hlt, ↓reduceIte]
     · rw [recv_eq_v0_negotiating state msg mp vn ch hpre hdec hlt, WP.spec_ok]
-      simp [hlt]
+      simp only [hlt, ↓reduceIte]
   · -- V1, no negotiation: `min_version = 1`
     obtain ⟨-, hv1⟩ := hin pb rfl
     unfold recvDecodedPost minVersionU8 currentVersionU8
     simp only [UScalar.lt_equiv]
     rcases Nat.lt_trichotomy mp.version.val 1 with hlt | heq | hgt
     · rw [recv_eq_minimum_version_no_negotiation state msg mp ch pb hpre hdec hlt, WP.spec_ok]
-      simp [hlt]
+      simp only [UScalar.ofNatCore_val_eq, hlt, ↓reduceIte]
     · rw [recv_eq_equal_v1_no_negotiation state msg mp ch pb hpre hdec heq]
       refine WP.spec_mono (recvV1Model_spec mp none ch pb (hv1 heq).1 (hv1 heq).2)
         (fun r hr => ?_)
-      simp [heq, hr]
+      simp only [heq, UScalar.ofNatCore_val_eq, lt_self_iff_false, ↓reduceIte, Std.compare_self, hr]
     · rw [recv_eq_version_mismatch state msg mp ch pb hpre hdec hgt, WP.spec_ok]
-      simp [Nat.compare_eq_gt.mpr hgt, show ¬ mp.version.val < 1 by omega]
+      simp only [UScalar.ofNatCore_val_eq, show ¬mp.version.val < 1 by omega, ↓reduceIte,
+        Nat.compare_eq_gt.mpr hgt]
   · -- V1, negotiating
     obtain ⟨hready, hv1⟩ := hin pb rfl
     unfold recvDecodedPost minVersionU8
     simp only
     by_cases hge : mp.version < IScalar.hcast .U8 vn.min_version
     · rw [recv_eq_minimum_version_negotiating state msg mp vn ch _ hpre hdec hge, WP.spec_ok]
-      simp [hge]
+      simp only [hge, ↓reduceIte]
     simp only [hge, ↓reduceIte]
     rcases Nat.lt_trichotomy mp.version.val 1 with hlt | heq | hgt
     · -- downgrade to V0
       have hv0 : mp.version.val = 0 := by omega
       refine WP.spec_mono (recv_spec_less_v0 state msg mp vn ch pb hpre hdec hge hv0)
         (fun r hr => ?_)
-      simp [Nat.compare_eq_lt.mpr hlt, hr]
+      simp only [Nat.compare_eq_lt.mpr hlt, hr]
     · rw [recv_eq_equal_v1_negotiating state msg mp vn ch pb hpre hdec hge heq]
       refine WP.spec_mono (recvV1Model_spec mp (some vn) ch pb (hv1 heq).1 (hv1 heq).2)
         (fun r hr => ?_)
-      simp [heq, hr]
+      simp only [heq, Std.compare_self, hr]
     · -- their version is newer
       refine WP.spec_mono
         (recv_spec_greater state msg mp vn ch pb hpre hdec hge hgt (hready vn rfl hgt))
         (fun r hr => ?_)
-      simp [Nat.compare_eq_gt.mpr hgt, hr]
+      simp only [Nat.compare_eq_gt.mpr hgt, hr]
 
 /-- **Spec theorem for `spqr.recv`** (V0 / disabled path):
 
@@ -1134,10 +1158,7 @@ theorem recv_spec_v0 (state msg : alloc.vec.Vec U8)
       result = recvV0Result ⦄ := by
   refine WP.spec_mono (recv_spec state msg (recvInputsOk_of_empty state msg h_empty))
     (fun r hr => ?_)
-  have hdec : decode_state state =
-      ok (.Ok { version_negotiation := none, chain := none, inner := none }) := by
-    unfold decode_state
-    simp [alloc.vec.Vec.is_empty, h_empty]
+  have hdec := decode_state_eq_of_empty state h_empty
   -- An empty message parses to the default preamble (`version = 0`).
   have hpre : ∃ mp : MsgPreamble, msg_preamble msg = ok (.Ok mp) ∧ mp.version = 0#u8 := by
     unfold msg_preamble
