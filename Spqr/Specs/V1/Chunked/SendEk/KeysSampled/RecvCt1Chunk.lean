@@ -236,9 +236,9 @@ serializer require:
   * the `#[hax_lib::refine]` invariant of the unchunked `EkSent` core,
     `serialize.EkSent.FunctionalModels.WellFormed result.uc` (`dk.length = 2400`), together
     with `epoch` and `auth` carried over from `self.uc`;
-  * the encoder index fits in a `u16` (`idx = 0`) and every point-vector has the admissible
-    interpolation size `36`, which are the `h_idx_fits` / `h_admissible` hypotheses of
-    `next_chunk_spec` used by `HeaderSent::send_ek_chunk`.
+  * the encoder index fits in a `u16` (`idx = 0`), and every point-vector has the admissible
+    interpolation size `36`, which is the `h_admissible` hypothesis of `next_chunk_spec` used
+    by `HeaderSent::send_ek_chunk`.
 
 Projection of `recv_ct1_chunk_spec`.
 
