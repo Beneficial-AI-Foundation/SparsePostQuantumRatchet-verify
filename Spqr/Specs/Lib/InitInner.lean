@@ -135,19 +135,9 @@ theorem init_inner_spec_v1_b2a (auth_key : Slice Std.U8)
     core.result.Result.expect]
     split <;> simp_all only [authenticator.Authenticator.MACSIZE_spec, Nat.reduceAdd, bind_ok]
     step*
-    all_goals ((casesm* _ ∧ _); simp_all only [alloc.vec.Vec.length, List.length_cons,
-      List.length_nil, zero_add, Nat.reduceAdd, getElem!_pos])
-    · change (48 : ℕ) ≤ U32.max
-      norm_num [U32.max, U32.numBits, UScalarTy.numBits]
-    · intro j hj
-      have hmem := List.getElem_mem (l := ([default, default, default, default, default,
-          default, default, default, default, default, default, default, default, default,
-          default, default] : List (sorted_vec.SortedSet spqr.encoding.polynomial.Pt)))
-          (n := j) (h := by simpa using hj)
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hmem
-      rcases hmem with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h <;> rw [h] <;>
-        simp only [default, alloc.vec.Vec.from_val, List.length_nil, mul_zero, zero_add, ge_iff_le]
-        <;> scalar_tac
+    intro s hs
+    simp_all only [List.mem_cons, List.not_mem_nil, or_false, or_self]
+    simp [default]
 
 /--
 **Spec theorem for `spqr.init_inner` (V1 case, any direction)**:
