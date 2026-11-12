@@ -40,9 +40,8 @@ a time, each at its place in the order, and a point whose `x` is already there r
 one. For example, the byte strings for `[(5, a), (2, b)]` and for `[(2, c), (5, a), (2, b)]` both
 decode to the slot `[(2, b), (5, a)]`, and encoding that slot gives a third byte string, the one
 for `[(2, b), (5, a)]`. So several protobuf states decode to the same in-memory state, and exactly
-one of them is what encoding it produces. `Canonical` picks out that one: `polys` is `16`, there
-are 16 byte strings, the length of each is divisible by four, and the points of each are ordered
-by `x` without repeats.
+one of them is what encoding it produces. `Canonical` picks out that one: it decodes successfully,
+`polys` is `16`, and the points of each byte string are ordered by `x` without repeats.
 
 The round-trip laws are four separate theorems. The RT1 laws start from an in-memory state and the
 RT2 laws from a protobuf state. Each `a` law says where one model sends its inputs, and each `b`
@@ -153,15 +152,14 @@ def WellFormed (x : PolyDecoder) : Prop :=
   x.pts_needed.val ≤ U32.max ∧ PointsValid x.pts
 
 /-- **Canonicity predicate for `spqr::encoding::polynomial::PolyDecoder`**
-• The protobuf states that survive a round trip, that is, the encodings of well-formed states.
+• The protobuf states that survive a round trip, that is, the encodings of well-formed states:
+  among the protobuf states that decode to the same in-memory state, the one that encoding produces.
+• `fromPb` decodes the state successfully (implicit requirement).
 • `polys` is `16`, since `from_pb` ignores it and `into_pb` writes `16`.
-• `pts` holds exactly 16 byte strings, each of a length divisible by four, since `from_pb`
-  rejects all others.
 • The points of every byte string are sorted by abscissa without repetitions, since `from_pb`
   sorts and deduplicates. -/
 def Canonical (pb : PolynomialDecoder) : Prop :=
-  pb.polys = 16#u32 ∧ pb.pts.length = 16 ∧
-    ∀ v ∈ pb.pts.val, v.length % 4 = 0 ∧ SlotSorted (ptsOfBytes v.val)
+  (∃ x, fromPb pb = .Ok x) ∧ pb.polys = 16#u32 ∧ ∀ v ∈ pb.pts.val, SlotSorted (ptsOfBytes v.val)
 
 /-! ## Codec theorems
 
@@ -253,43 +251,52 @@ theorem bytesOfSlot_val (s : sorted_vec.SortedSet Pt) (h : 4 * s.length ≤ Usiz
 
 /-! ## Round-trip laws -/
 
-/-- **Encoded well-formed in-memory states yield canonical protobuf states (RT1a) for
-`spqr::encoding::polynomial::PolyDecoder`**
-• Every well-formed in-memory state encodes to a canonical protobuf state. -/
-theorem canonical_intoPb (x : PolyDecoder) (h : WellFormed x) : Canonical (intoPb x) := by
-  obtain ⟨-, h⟩ := h
-  rcases x with ⟨n, pts, c⟩
-  have hpts := alloc.vec.Vec.ofList_val (pts.val.map bytesOfSlot)
-    (((List.length_map ..).trans pts.property).trans_le
-      ((UScalar.hrBounds _).trans_eq ((UScalar.rMax_eq_max _).trans UScalar.max_USize_eq)))
-  refine ⟨rfl, (congrArg List.length hpts).trans ((List.length_map _).trans pts.property), ?_⟩
-  simp only [intoPb, hpts, List.forall_mem_map]
-  intro s hs
-  simp [bytesOfSlot_val s ((Nat.mul_le_mul_left 4 (h s hs).length_le).trans
-    (le_trans (by decide) Usize.cMax_bound_concrete.1)), ptsOfBytes_bytesOfPts, h s hs]
-
 /-- **Round trip `fromPb ∘ intoPb` (RT1b) for `spqr::encoding::polynomial::PolyDecoder`**
 • Every well-formed in-memory state survives encoding followed by decoding unchanged. -/
 @[simp]
 theorem roundtrip_fromPb_intoPb (x : PolyDecoder) (h : WellFormed x) :
     fromPb (intoPb x) = .Ok x := by
-  obtain ⟨-, h16, hslots⟩ := canonical_intoPb x h
   rcases x with ⟨n, pts, c⟩
   obtain ⟨hn, hvalid⟩ := h
-  rw [intoPb, fromPb, dite_eq_left ⟨h16, fun v hv => (hslots v hv).1⟩]
+  have hpts := alloc.vec.Vec.ofList_val (pts.val.map bytesOfSlot)
+    (((List.length_map ..).trans pts.property).trans_le
+      ((UScalar.hrBounds _).trans_eq ((UScalar.rMax_eq_max _).trans UScalar.max_USize_eq)))
+  have hslot (s : sorted_vec.SortedSet Pt) (hs : s ∈ pts.val) :
+      (bytesOfSlot s).val = bytesOfPts s.val :=
+    bytesOfSlot_val s ((Nat.mul_le_mul_left 4 (hvalid s hs).length_le).trans
+      (le_trans (by decide) Usize.cMax_bound_concrete.1))
+  -- `fromPb` accepts the encoding: 16 byte strings, each of a length divisible by four.
+  rw [intoPb, fromPb, dite_eq_left (by
+    refine ⟨(congrArg List.length hpts).trans ((List.length_map _).trans pts.property),
+      fun v hv => ?_⟩
+    rw [hpts, List.mem_map] at hv
+    obtain ⟨s, hs, rfl⟩ := hv
+    simp [hslot s hs])]
   simp only [core.result.Result.Ok.injEq, PolyDecoder.mk.injEq, and_true]
   refine ⟨UScalar.eq_of_val_eq (by
     rw [UScalar.cast_val_mod_pow_greater_numBits_eq _ _ (by simp [UScalarTy.numBits]),
       UScalar.cast_val_mod_pow_of_inBounds_eq _ _ (Nat.lt_succ_of_le (U32.max_eq ▸ hn))]),
     Aeneas.Std.Array.ext _ _ ?_⟩
-  rw [Array.from_val, alloc.vec.Vec.ofList_val _ (((List.length_map ..).trans pts.property).trans_le
-      ((UScalar.hrBounds _).trans_eq ((UScalar.rMax_eq_max _).trans UScalar.max_USize_eq))),
-    List.map_map, Function.comp_def]
+  rw [Array.from_val, hpts, List.map_map, Function.comp_def]
   -- Slot by slot: decoding the encoding of a sorted slot gives the slot back.
   refine (List.map_congr_left fun s hs => alloc.vec.Vec.ext _ _ ?_).trans (List.map_id' _)
-  rw [slotOfBytes_val, bytesOfSlot_val s ((Nat.mul_le_mul_left 4 (hvalid s hs).length_le).trans
-      (le_trans (by decide) Usize.cMax_bound_concrete.1)), ptsOfBytes_bytesOfPts,
-    foldl_insertPt_nil (hvalid s hs)]
+  rw [slotOfBytes_val, hslot s hs, ptsOfBytes_bytesOfPts, foldl_insertPt_nil (hvalid s hs)]
+
+/-- **Encoded well-formed in-memory states yield canonical protobuf states (RT1a) for
+`spqr::encoding::polynomial::PolyDecoder`**
+• Every well-formed in-memory state encodes to a canonical protobuf state. -/
+theorem canonical_intoPb (x : PolyDecoder) (h : WellFormed x) : Canonical (intoPb x) := by
+  refine ⟨⟨x, roundtrip_fromPb_intoPb x h⟩, ?_⟩
+  obtain ⟨-, h⟩ := h
+  rcases x with ⟨n, pts, c⟩
+  have hpts := alloc.vec.Vec.ofList_val (pts.val.map bytesOfSlot)
+    (((List.length_map ..).trans pts.property).trans_le
+      ((UScalar.hrBounds _).trans_eq ((UScalar.rMax_eq_max _).trans UScalar.max_USize_eq)))
+  refine ⟨rfl, ?_⟩
+  simp only [intoPb, hpts, List.forall_mem_map]
+  intro s hs
+  simp [bytesOfSlot_val s ((Nat.mul_le_mul_left 4 (h s hs).length_le).trans
+    (le_trans (by decide) Usize.cMax_bound_concrete.1)), ptsOfBytes_bytesOfPts, h s hs]
 
 /-- **Successfully decoded protobuf input states yield well-formed in-memory states (RT2a) for
 `spqr::encoding::polynomial::PolyDecoder`**
@@ -307,9 +314,15 @@ theorem wellFormed_of_fromPb (pb : PolynomialDecoder) (x : PolyDecoder)
 • Every canonical protobuf state survives decoding followed by encoding unchanged. -/
 theorem roundtrip_intoPb_fromPb (pb : PolynomialDecoder) (h : Canonical pb) :
     ∃ x, fromPb pb = .Ok x ∧ intoPb x = pb := by
-  obtain ⟨hpolys, h16, hslots⟩ := h
+  obtain ⟨⟨x, hx⟩, hpolys, hsorted⟩ := h
   rcases pb with ⟨i, polys, pts, c⟩
-  rw [fromPb, dite_eq_left ⟨h16, fun v hv => (hslots v hv).1⟩]
+  -- The protobuf state decodes, so it passes the shape check of `fromPb`.
+  have hc : pts.length = 16 ∧ ∀ v ∈ pts.val, v.length % 4 = 0 := by
+    simp only [fromPb] at hx
+    split at hx
+    · assumption
+    · cases hx
+  rw [fromPb, dite_eq_left hc]
   refine ⟨_, rfl, ?_⟩
   simp only [intoPb, Array.from_val, List.map_map, Function.comp_def, PolynomialDecoder.mk.injEq,
     and_true]
@@ -320,7 +333,7 @@ theorem roundtrip_intoPb_fromPb (pb : PolynomialDecoder) (h : Canonical pb) :
     (congrArg alloc.vec.Vec.ofList ?_).trans (alloc.vec.Vec.val_ofList pts)⟩
   -- Slot by slot: encoding the slot decoded from sorted four-byte points gives the bytes back.
   refine (List.map_congr_left fun v hv => ?_).trans (List.map_id' _)
-  rw [bytesOfSlot, slotOfBytes_val, foldl_insertPt_nil (hslots v hv).2,
-    bytesOfPts_ptsOfBytes _ (hslots v hv).1, alloc.vec.Vec.val_ofList]
+  rw [bytesOfSlot, slotOfBytes_val, foldl_insertPt_nil (hsorted v hv),
+    bytesOfPts_ptsOfBytes _ (hc.2 v hv), alloc.vec.Vec.val_ofList]
 
 end spqr.encoding.polynomial.PolyDecoder.FunctionalModels
