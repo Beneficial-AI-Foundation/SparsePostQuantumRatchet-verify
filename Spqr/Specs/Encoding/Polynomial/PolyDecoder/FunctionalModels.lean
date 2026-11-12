@@ -265,7 +265,7 @@ theorem roundtrip_fromPb_intoPb (x : PolyDecoder) (h : WellFormed x) :
       (bytesOfSlot s).val = bytesOfPts s.val :=
     bytesOfSlot_val s ((Nat.mul_le_mul_left 4 (hvalid s hs).length_le).trans
       (le_trans (by decide) Usize.cMax_bound_concrete.1))
-  -- `fromPb` accepts the encoding: 16 byte strings, each four bytes per point.
+  -- `fromPb` accepts the encoding: 16 byte strings, each of a length divisible by four.
   rw [intoPb, fromPb, dite_eq_left (by
     refine ⟨(congrArg List.length hpts).trans ((List.length_map _).trans pts.property),
       fun v hv => ?_⟩
@@ -314,7 +314,7 @@ theorem wellFormed_of_fromPb (pb : PolynomialDecoder) (x : PolyDecoder)
 • Every canonical protobuf state survives decoding followed by encoding unchanged. -/
 theorem roundtrip_intoPb_fromPb (pb : PolynomialDecoder) (h : Canonical pb) :
     ∃ x, fromPb pb = .Ok x ∧ intoPb x = pb := by
-  obtain ⟨⟨x, hx⟩, hpolys, hslots⟩ := h
+  obtain ⟨⟨x, hx⟩, hpolys, hsorted⟩ := h
   rcases pb with ⟨i, polys, pts, c⟩
   -- The protobuf state decodes, so it passes the shape check of `fromPb`.
   have hc : pts.length = 16 ∧ ∀ v ∈ pts.val, v.length % 4 = 0 := by
@@ -333,7 +333,7 @@ theorem roundtrip_intoPb_fromPb (pb : PolynomialDecoder) (h : Canonical pb) :
     (congrArg alloc.vec.Vec.ofList ?_).trans (alloc.vec.Vec.val_ofList pts)⟩
   -- Slot by slot: encoding the slot decoded from sorted four-byte points gives the bytes back.
   refine (List.map_congr_left fun v hv => ?_).trans (List.map_id' _)
-  rw [bytesOfSlot, slotOfBytes_val, foldl_insertPt_nil (hslots v hv),
+  rw [bytesOfSlot, slotOfBytes_val, foldl_insertPt_nil (hsorted v hv),
     bytesOfPts_ptsOfBytes _ (hc.2 v hv), alloc.vec.Vec.val_ofList]
 
 end spqr.encoding.polynomial.PolyDecoder.FunctionalModels
