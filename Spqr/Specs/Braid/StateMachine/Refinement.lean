@@ -33,6 +33,8 @@ import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Length
 import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
+import Spqr.Specs.IncrementalMlkem768.CIPHERTEXT1_SIZE
+import Spqr.Specs.IncrementalMlkem768.CIPHERTEXT2_SIZE
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Specs.Authenticator.Authenticator.VerifyCt
@@ -51,8 +53,8 @@ The proofs are checked by Lean. A reviewer reads only what the theorems are stat
 
 1. `Model.lean`: the machine. It must match §2.5 and §2.6, and the deviations in
    `Deviations.lean`.
-2. `Relation.lean`: `CodeAgrees`, `MlkemSizes`, `absMsg`, `absKey` and `Refines`, which relate
-   the code to the machine.
+2. `Relation.lean`: `CodeAgrees`, `absMsg`, `absKey` and `Refines`, which relate the code to
+   the machine.
 3. `Run.lean`: `Step` and `Run`, the successful calls and runs of the code.
 4. The statements of `init_refines` and `run_refines` below. Together they say that every run
    of the code from `init_a` or `init_b` is a run of the machine from `InitAlice` or `InitBob`
@@ -67,18 +69,20 @@ Assume `CodeAgrees P`. Then:
 
 * `init_refines`: the states that `init_a` and `init_b` return refine `InitAlice` and `InitBob`;
 * `send_refines`: if `Refines s σ` and `States::send` succeeds on `s`, then for some randomness
-  the machine's `Send()` on `σ` returns a related state, the same message and the same key.
-
-Assume also `MlkemSizes`. Then:
-
+  the machine's `Send()` on `σ` returns a related state, the same message and the same key;
 * `recv_refines`: if `Refines s σ` and `States::recv` succeeds on `s`, then the machine's
   `Receive()` on `σ` succeeds with a related state and the same key;
 * `run_refines`: if `Refines s σ`, then every run of the code from `s` is a run of the machine
   from `σ` with a related end state and the same keys.
 
-`codeAgrees_exists` states that some `P` satisfies `CodeAgrees P`. It does not discharge the
-other premises: it does not show that `MlkemSizes` holds, or that a related state with a
-successful call exists. Its `KeyGen` and `Encaps1` do not satisfy a KEM correctness law.
+`codeAgrees_exists` states that some `P` satisfies `CodeAgrees P`. It does not show that a
+related state with a successful call exists. Its `KeyGen` and `Encaps1` do not satisfy a KEM
+correctness law.
+
+`recv_refines` uses the ciphertext sizes 960 and 128 (`CIPHERTEXT1_SIZE_eq`,
+`CIPHERTEXT2_SIZE_eq`). They hold because `Ciphertext1::len` and `Ciphertext2::len` are
+definitions in `SrcTranslated/FunsExternal.lean`, written by hand from libcrux-ml-kem 0.0.10
+`src/ind_cca/incremental/types.rs:161,174`.
 
 The results cover successful code steps only. They say nothing about calls that the code
 rejects, about progress, or about agreement between the two parties. The machine uses the code's
@@ -836,12 +840,12 @@ theorem recv_ct2_ok (P : CodePrims) (hP : CodeAgrees P) (uc : unchunked.send_ek.
   · rw [Slice.to_vec_U8_ok_val hv]; simpa only [alloc.vec.Vec.deref_val, hsec] using hau
   · exact (Slice.from_val _ _).symm.trans hmc
 
-/-- Assume `CodeAgrees P` and `MlkemSizes`. Let `st` have a 960-byte `ct1` and a `ct2` decoder
+/-- Assume `CodeAgrees P`. Let `st` have a 960-byte `ct1` and a `ct2` decoder
 that needs 80 points. If `EkSentCt1Received::recv_ct2_chunk` on `st` at its epoch and a chunk `c`
 returns `Ok v`, then the model's `receiveEq` on `ct2` chunk `c` returns a state `σ'` that the
 state of `v` refines. The key is none while `ct2` is incomplete (`StillReceiving`), and the code's
 key when `ct2` completes and the model takes transition (5) (`Done`). -/
-theorem ekSentCt1Received_chunk_ok (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes)
+theorem ekSentCt1Received_chunk_ok (P : CodePrims) (hP : CodeAgrees P)
     (st : send_ek.EkSentCt1Received) (c : encoding.Chunk)
     (v : send_ek.EkSentCt1ReceivedRecvChunk) (hct1 : st.uc.ct1.length = 960)
     (hpn : st.receiving_ct2.pts_needed.val = 80)
@@ -867,7 +871,7 @@ theorem ekSentCt1Received_chunk_ok (P : CodePrims) (hP : CodeAgrees P) (hsz : Ml
   | some m =>
     simp only [Result.bind_eq_ok] at h
     obtain ⟨sl, hsl, n, hn, s1, hs1, mac, hmac, s2, hs2, ct2, hct2, r, hr, h⟩ := h
-    have hn128 : n = 128#usize := ok_unique hsz.2.1 hn
+    have hn128 : n = 128#usize := ok_unique incremental_mlkem768.CIPHERTEXT2_SIZE_eq hn
     have hml : m.val.length = 160 := by
       rw [decoded_message_length ho, add_chunk_pts_needed hadd, hpn]
     have hmacv : mac.val = m.val.drop 128 := by
@@ -984,11 +988,11 @@ theorem noHeaderReceived_chunk_ok (P : CodePrims) (hP : CodeAgrees P)
       simp only [hmh', ↓reduceIte, hhdrv]
     · simp only [Refines, hek, and_self]
 
-/-- Assume `CodeAgrees P`, `MlkemSizes` and `Refines s σ`. If `States::recv` succeeds on `s`,
+/-- Assume `CodeAgrees P` and `Refines s σ`. If `States::recv` succeeds on `s`,
 then the model's `Receive()` on `σ` succeeds with a related state and the code's key. -/
 @[correctness_spec, braid_spec "§2.5",
   braid_deviation Deviation.futureEpochError Deviation.ct1AckAccepted Deviation.lateEkChunk]
-theorem recv_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) (s : States)
+theorem recv_refines (P : CodePrims) (hP : CodeAgrees P) (s : States)
     (σ : State _ _) (h : Refines s σ) (msg : Message) (out : Recv)
     (hs : States.recv s msg = ok (.Ok out)) :
     ∃ σ', Braid.receive P σ (absMsg msg) = some (σ', out.key.map absKey) ∧
@@ -1039,7 +1043,7 @@ theorem recv_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) (s :
         have h3 := hP.addChunk _ _ _ hadd
         have h4 := hP.encode _ _ her
         simp only [alloc.vec.Vec.deref, Slice.from_val] at h4
-        have hn960 : n = 960#usize := ok_unique hsz.1 hn
+        have hn960 : n = 960#usize := ok_unique incremental_mlkem768.CIPHERTEXT1_SIZE_eq hn
         have hp : d'.pts_needed.val = 480 := by
           rw [add_chunk_pts_needed hadd, new_pts_needed (by rw [hn960]; rfl) hnew,
             hn960]; rfl
@@ -1057,7 +1061,7 @@ theorem recv_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) (s :
         have h1 := hP.ct2Size n hn
         have h2 := hP.decoderNew _ _ hnew
         have h3 := hP.addChunk _ _ _ hadd
-        have hn128 : n = 128#usize := ok_unique hsz.2.1 hn
+        have hn128 : n = 128#usize := ok_unique incremental_mlkem768.CIPHERTEXT2_SIZE_eq hn
         have hi3v := UScalar.val_of_add_eq_ok hi3
         rw [hn128, authenticator.Authenticator.MACSIZE_spec] at hi3v
         have hp : d'.pts_needed.val = 80 := by
@@ -1165,7 +1169,7 @@ theorem recv_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) (s :
         obtain ⟨r, hr, hs⟩ := hs
         replace hs := continue_of_ok hs fun _ => rfl
         obtain ⟨val, rfl, hs⟩ := hs
-        obtain ⟨σ', h1, h2⟩ := ekSentCt1Received_chunk_ok P hP hsz st c val hct1 hpn hr
+        obtain ⟨σ', h1, h2⟩ := ekSentCt1Received_chunk_ok P hP st c val hct1 hpn hr
         cases val with
         | StillReceiving s =>
           simp only [Result.ok.injEq, core.result.Result.Ok.injEq] at hs; subst hs
@@ -1196,11 +1200,11 @@ theorem recv_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) (s :
     · rw [recv_of_gt s msg hgt (fun st hst hm => hn ⟨st, hst, hm⟩)] at hs
       simp only [ok.injEq, reduceCtorEq] at hs
 
-/-- Assume `CodeAgrees P`, `MlkemSizes` and `Refines s σ`. Then every run of the code from `s` is a
-run of the model from `σ`, with a related end state and the same keys. -/
+/-- Assume `CodeAgrees P` and `Refines s σ`. Then every finite sequence of successful calls from
+`s` (`Run s s' ks`) is a run of the model from `σ`, with a related end state and the same keys. -/
 @[correctness_spec, braid_spec "§2.5",
   braid_deviation Deviation.futureEpochError Deviation.ct1AckAccepted Deviation.lateEkChunk]
-theorem run_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) {s s' : States}
+theorem run_refines (P : CodePrims) (hP : CodeAgrees P) {s s' : States}
     {ks : List EpochSecret} (hr : Run s s' ks) {σ : State _ _} (h : Refines s σ) :
     ∃ σ', Braid.Run P σ σ' (ks.map absKey) ∧ Refines s' σ' := by
   induction hr generalizing σ with
@@ -1217,7 +1221,7 @@ theorem run_refines (P : CodePrims) (hP : CodeAgrees P) (hsz : MlkemSizes) {s s'
       cases out.key <;> simp only [Option.toList_none, List.nil_append, Option.map_none,
           Option.toList_some, List.cons_append, List.map_cons, Option.map_some]
     | recv msg out hs =>
-      obtain ⟨σ₁, h1, h2⟩ := recv_refines P hP hsz _ σ h msg out hs
+      obtain ⟨σ₁, h1, h2⟩ := recv_refines P hP _ σ h msg out hs
       obtain ⟨σ₂, hrun, h₂⟩ := ih h2
       refine ⟨σ₂, ?_, h₂⟩
       have := Braid.Run.cons (Braid.Step.recv σ σ₁ (absMsg msg) _ h1) hrun
