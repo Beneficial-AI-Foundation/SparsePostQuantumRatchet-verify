@@ -102,7 +102,9 @@ def main():
     for module in modules:
         source = module.replace(".", "/") + ".lean"
         run(["lake", "build", module], f"{module}-build")
-        lean = ["lake", "env", "lean", "-j1", source]
+        # `lake lean` supplies lakefile.toml's Lean options (including maxRecDepth).
+        # A bare `lake env lean` does not, and can fail even when `lake build` passes.
+        lean = ["lake", "lean", source, "--", "-j1"]
         run(lean, f"{module}-warmup")
         rss, elapsed = [], []
         for trial in range(1, args.trials + 1):

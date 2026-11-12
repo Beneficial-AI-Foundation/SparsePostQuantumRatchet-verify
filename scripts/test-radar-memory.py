@@ -30,7 +30,7 @@ class RadarMemoryTest(unittest.TestCase):
             bin_dir.mkdir()
             lake = bin_dir / "lake"
             lake.write_text("#!/bin/sh\n"
-                            "if [ \"$1\" = env ] && [ \"$3\" != --version ] && "
+                            "if [ \"$1\" = lean ] && "
                             "[ \"$MUTATE_SOURCE\" = 1 ]; then\n"
                             "  printf 'def changed := 2\\n' >> Spqr.lean\n"
                             "fi\n")

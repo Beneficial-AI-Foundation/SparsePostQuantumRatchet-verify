@@ -58,7 +58,9 @@ Rust 协议运行时的堆内存是另一项指标，需要固定输入的 Rust 
 更新脚本 `ROOTS`／发现规则并审阅清单，避免遗漏。测试库不属于默认 `lake build`，本脚本
 仍逐模块构建它们；如环境缺失导致失败，修复后重跑，不能静默排除。
 
-每个模块先构建自身及依赖（不计入指标），预热一次，再独立执行 `lake env lean -j1`。
+每个模块先构建自身及依赖（不计入指标），预热一次，再执行
+`lake lean 文件.lean -- -j1`。`lake lean` 会带上工作区的 Lean 选项；直接调用
+`lake env lean` 可能与 `lake build` 使用不同的 `maxRecDepth` 等设置而失败。
 默认测三次；`--trials 1` 用于全仓初筛，使用独立 `memory-scan-j1/` 指标前缀；三次复测使用
 `memory-j1/`。两种结果不能直接作为同一性能序列比较。依赖构建、预热或任一次测量失败均
 非零退出，不生成可接受的 JSONL；保留失败日志，修复后使用新的输出路径重跑。
@@ -279,19 +281,20 @@ uname -a > "$out/machine.txt"
 # 准备依赖，失败则停止。此步骤不计入单文件测量。
 lake build "$module" > "$out/build.log" 2>&1
 
-# 统一为热缓存；独立启动 Lean，每次重新检查源文件，不测 Lake 的缓存命中。
-lake env lean -j1 "$file" > "$out/warmup.log" 2>&1
+# 统一为热缓存；每次重新检查源文件，不测 Lake 的缓存命中。
+lake lean "$file" -- -j1 > "$out/warmup.log" 2>&1
 for run in 1 2 3; do
   /usr/bin/time -f 'max_rss_kib=%M\nelapsed_s=%e\nexit=%x' \
     -o "$out/run-${run}.metrics" \
-    lake env lean -j1 "$file" > "$out/run-${run}.log" 2>&1
+    lake lean "$file" -- -j1 > "$out/run-${run}.log" 2>&1
 done
 printf '结果目录：%s\n' "$out"
 cat "$out"/*.metrics
 ```
 
 Linux GNU time 的 `%M` 是最大驻留内存，单位 KiB，除以 1024 得到 MiB。
-这里测的是单文件 Lean 检查（含启动和导入），并非完整构建的同时总内存。
+这里测的是 Lake 启动并执行单文件 Lean 检查的进程峰值（含启动和导入），
+并非完整构建的同时总内存。
 `-j1` 固定了本实验的 Lean 线程数，不能把降低并发本身算作证明优化收益。
 避免同时运行其他编译或大内存任务；所有轮次使用同样的缓存和线程策略。
 
