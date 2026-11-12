@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,39 @@ def discover_modules(repo):
             files.add(entry)
         files.update((repo / root).rglob("*.lean"))
     return sorted(".".join(f.relative_to(repo).with_suffix("").parts) for f in files)
+
+
+def input_files(repo):
+    """All project sources and build configuration that affect a Lean check."""
+    sources = [repo / (module.replace(".", "/") + ".lean")
+               for module in discover_modules(repo)]
+    return sources + [repo / name for name in
+                      ("lakefile.toml", "lake-manifest.json", "lean-toolchain")]
+
+
+def snapshot_inputs(repo, logs, files):
+    hashes = {}
+    for path in files:
+        relative = path.relative_to(repo)
+        content = path.read_bytes()
+        hashes[str(relative)] = hashlib.sha256(content).hexdigest()
+        snapshot = logs / "inputs" / relative
+        snapshot.parent.mkdir(parents=True, exist_ok=True)
+        snapshot.write_bytes(content)
+    (logs / "input-hashes.json").write_text(json.dumps(hashes, indent=2) + "\n")
+    return hashes
+
+
+def check_inputs(repo, hashes):
+    current = {}
+    for path in input_files(repo):
+        relative = str(path.relative_to(repo))
+        current[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    if current != hashes:
+        changed = sorted(set(current) ^ set(hashes) |
+                         {name for name in current.keys() & hashes.keys()
+                          if current[name] != hashes[name]})
+        raise SystemExit("project inputs changed during benchmark: " + ", ".join(changed))
 
 
 def main():
@@ -63,14 +97,10 @@ def main():
     shutil.copy2(__file__, logs / "benchmark.py")
     run(["lake", "env", "lean", "--version"], "lean-version")
     run(["uname", "-a"], "machine")
-    for name in ["lean-toolchain", "lake-manifest.json"]:
-        shutil.copy2(repo / name, logs / name)
+    input_hashes = snapshot_inputs(repo, logs, input_files(repo))
     rows = []
     for module in modules:
         source = module.replace(".", "/") + ".lean"
-        snapshot = logs / "sources" / source
-        snapshot.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(repo / source, snapshot)
         run(["lake", "build", module], f"{module}-build")
         lean = ["lake", "env", "lean", "-j1", source]
         run(lean, f"{module}-warmup")
@@ -92,6 +122,7 @@ def main():
             prefix = "memory-j1" if args.trials == 3 else "memory-scan-j1"
             rows.append({"metric": f"{prefix}/module/{module}//{metric}",
                          "value": value, "unit": unit})
+    check_inputs(repo, input_hashes)
     # Only emit measurements after every module has succeeded.
     with output.open("x") as stream:
         for row in rows:
