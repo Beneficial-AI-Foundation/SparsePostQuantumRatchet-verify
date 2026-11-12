@@ -142,7 +142,13 @@ def fromPb : PolynomialDecoder → core.result.Result PolyDecoder PolynomialErro
 • No length bound: a sorted slot has at most 65536 points, so its encoding always fits into a
   `Vec`. `PolyDecoder` has no refine annotation, and the bound
   `pts.len() <= 2 * MAX_STORED_POLYNOMIAL_DEGREE_V1 + 1` that `into_pb` `hax_lib::assume!`s is
-  deliberately omitted: `from_pb` does not check it, so it would falsify RT2a. -/
+  deliberately omitted: `from_pb` does not check it, so it would falsify RT2a.
+
+**Note:** This predicate establishes well-formedness for **serialisation** only: a well-formed
+decoder survives encoding followed by decoding unchanged, but it need not be in a sensible state.
+The predicate places no condition on `is_complete` and does not tie the number of stored points
+to `pts_needed`. For example, a decoder with 16 empty slots, `pts_needed = 1` and
+`is_complete = true` is still well-formed with respect to this predicate. -/
 def WellFormed (x : PolyDecoder) : Prop :=
   x.pts_needed.val ≤ U32.max ∧ PointsValid x.pts
 
