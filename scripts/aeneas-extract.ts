@@ -146,6 +146,10 @@ async function main(): Promise<void> {
     logFile: path.join(logsDir, "aeneas.log"),
   });
 
+  // Keep the generated definitions in two sequential Lean modules so neither
+  // module checks the entire crate's function body in one Lean process.
+  await run("python3", ["scripts/split-translated-funs.py"], { cwd: root });
+
   console.log(chalk.green(`  Lean files generated in ${config.aeneas_args.dest}/\n`));
 
   // ── Step 3: Lean file tweaks ──────────────────────────────────────────────────

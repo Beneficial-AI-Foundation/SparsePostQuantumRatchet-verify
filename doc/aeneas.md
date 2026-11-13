@@ -35,6 +35,9 @@ lake build
 
 Step 4 also installs the Rust nightly that the bundled `charon-driver` needs (named in the
 bundle's `rust-toolchain`), and syncs `lean-toolchain` if the release uses a different one.
+The extraction script splits the generated `Funs.lean` at a fixed declaration boundary into
+`FunsCore.lean` and `Funs.lean`, so Lean checks the definitions in two processes. Both files
+remain generated artifacts and must be regenerated together.
 
 ## Checking the olean cache is actually used
 

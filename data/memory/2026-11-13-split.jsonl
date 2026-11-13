@@ -1,0 +1,9 @@
+{"metric": "memory-j1/module/SrcTranslated.FunsCore//peak-rss-median", "value": 1796984832, "unit": "B"}
+{"metric": "memory-j1/module/SrcTranslated.FunsCore//peak-rss-max", "value": 1799426048, "unit": "B"}
+{"metric": "memory-j1/module/SrcTranslated.FunsCore//elapsed-median", "value": 8.14, "unit": "s"}
+{"metric": "memory-j1/module/SrcTranslated.Funs//peak-rss-median", "value": 1710948352, "unit": "B"}
+{"metric": "memory-j1/module/SrcTranslated.Funs//peak-rss-max", "value": 1711149056, "unit": "B"}
+{"metric": "memory-j1/module/SrcTranslated.Funs//elapsed-median", "value": 8.3, "unit": "s"}
+{"metric": "memory-j1/module/Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk//peak-rss-median", "value": 1635196928, "unit": "B"}
+{"metric": "memory-j1/module/Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk//peak-rss-max", "value": 1635647488, "unit": "B"}
+{"metric": "memory-j1/module/Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk//elapsed-median", "value": 9.48, "unit": "s"}

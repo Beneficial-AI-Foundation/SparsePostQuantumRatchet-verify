@@ -4,7 +4,7 @@
 
 ## 运行
 
-在仓库根目录执行，环境需要 Linux、GNU time、Python 3、Git 和可用的 Lake 依赖。脚本默认覆盖 `Spqr`、`SrcTranslated`、`HeaderLinter`、`Utils`、`Tests` 中的项目模块；不包含 `.lake/packages` 或独立审计脚本。它逐模块构建依赖、预热一次，再用 `lake env lean -j1 -DmaxRecDepth=10000` 测量。全程使用同一机器、工具链、脚本和测量条件，避免同时运行其他大内存任务。
+在仓库根目录执行，环境需要 Linux、GNU time、Python 3、Git 和可用的 Lake 依赖。脚本默认覆盖 `Spqr`、`SrcTranslated`、`HeaderLinter`、`Utils`、`Tests` 中的项目模块；不包含 `.lake/packages` 或独立审计脚本。它逐模块构建依赖、预热一次，再用 `lake env lean -j1 --setup <模块的 Lake setup.json>` 测量，确保使用 Lake 的模块选项和 linter 配置。全程使用同一机器、工具链、脚本和测量条件，避免同时运行其他大内存任务。
 
 ```bash
 set -euo pipefail
@@ -37,11 +37,11 @@ python3 scripts/radar-memory.py "$PWD" "$session/scan-after.jsonl" \
   --modules-file "$session/all-modules-final.txt" --trials 1
 ```
 
-JSONL 每模块包含 `peak-rss-median`、`peak-rss-max`（字节）和 `elapsed-median`（秒）。`--trials 1` 使用 `memory-scan-j1/` 前缀，三次测量使用 `memory-j1/`；不要跨两种结果计算改善率。检查 `NAME.logs/modules.txt` 与指标数量是否一致，失败运行不能作为基线。已有完整扫描仅在源码、模块清单和测量条件一致时复用；初筛仍不能代替热点的三次基线。
+JSONL 每模块包含 `peak-rss-median`、`peak-rss-max`（字节）和 `elapsed-median`（秒）。`--trials 1` 使用 `memory-scan-j1/` 前缀，三次测量使用 `memory-j1/`；不要跨两种结果计算改善率。检查 `NAME.logs/modules.txt` 与指标数量是否一致，失败运行不能作为基线。已有完整扫描仅在源码、模块清单和测量条件一致时复用；初筛仍不能代替热点的三次基线。旧版脚本仅传入 `maxRecDepth`，没有加载 Lake setup；它的结果不能与当前脚本结果直接比较。
 
 ## 每轮决定
 
-1. 从全仓 RSS 排名选择可修改的热点，固定本轮模块清单。一次只处理一个原因，例如收窄 `simp`／`grind` 搜索、抽取共享证明、给大型不变量命名或减少公开导入。不手改生成的 `Types.lean`／`Funs.lean`。
+1. 从全仓 RSS 排名选择可修改的热点，固定本轮模块清单。一次只处理一个原因，例如收窄 `simp`／`grind` 搜索、抽取共享证明、给大型不变量命名或减少公开导入。不手改生成的 `Types.lean`／`FunsCore.lean`／`Funs.lean`。
 2. 保持定理含义和信任依赖，不新增 `sorry` 或公理。构建受影响模块及下游；保留候选前运行 `lake build`、`lake exe runLinter Spqr`、`lake env lean scripts/Audit.lean` 和 `git diff --check`。
 3. 比较同一模块在 `baseline.jsonl` 与本轮 JSONL 中的三项指标。默认保留门槛：目标 RSS 中位数下降至少 5%，耗时中位数增加不超过 10%，下游无明显回退。收益接近测量波动时，交替重测基线和候选。保留后以候选作为下一轮基线；否则只撤回本轮修改。
 4. 最后比较两次全仓扫描的覆盖、热点和回退；对疑似回退模块分别补做三次测量。模块增删单独记录，不能把少测模块当作改善。修改公共导入、生成方式或工具链时，每轮都做全仓复核。
