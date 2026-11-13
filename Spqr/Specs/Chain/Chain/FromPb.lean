@@ -43,12 +43,7 @@ theorem from_pb.link_from_pb_spec (link : proto.pq_ratchet.chain.Epoch) :
   have hd : ∀ x, chain.ChainEpochDirection.from_pb x =
       ok (chain.ChainEpochDirection.FunctionalModels.fromPb x) :=
     fun x => eq_ok_of_spec (chain.ChainEpochDirection.from_pb_spec x)
-  have hdir : ∀ x, (∃ d, chain.ChainEpochDirection.FunctionalModels.fromPb x = .Ok d) ∨
-      chain.ChainEpochDirection.FunctionalModels.fromPb x = .Err .StateDecode := by
-    intro x
-    rcases h : chain.ChainEpochDirection.FunctionalModels.fromPb x with d | e
-    · exact .inl ⟨d, rfl⟩
-    · exact .inr (by rw [chain.ChainEpochDirection.FunctionalModels.fromPb_err x e h])
+  have hdir := chain.ChainEpochDirection.FunctionalModels.fromPb_cases
   obtain ⟨_ | s, _ | r⟩ := link <;>
     simp only [from_pb.link_from_pb, FunctionalModels.epochFromPb, hd,
       _root_.core.option.Option.ok_or, bind_ok, Option.map,

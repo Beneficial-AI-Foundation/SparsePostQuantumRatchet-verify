@@ -22,6 +22,14 @@ in `IntoPb.lean` and `FromPb.lean` pin the extracted, monadic functions to these
 open Aeneas.Std
 namespace spqr.chain.ChainEpochDirection.FunctionalModels
 
+/-- A direction has a decodable next key: either absent or exactly one 32-byte key. -/
+abbrev ValidNextKey (next : alloc.vec.Vec U8) : Prop :=
+  next.val.isEmpty ∨ next.length = 32
+
+/-- The condition under which serialization and decoding preserve a direction. -/
+abbrev ValidDirection (x : chain.ChainEpochDirection) : Prop :=
+  ValidNextKey x.next
+
 /-- **Functional model of `spqr::chain::ChainEpochDirection::into_pb`**
 • A pure, total, human-readable function on the translated data types.
 -/
@@ -36,7 +44,7 @@ def intoPb (x : chain.ChainEpochDirection) :
 -/
 def fromPb (pb : proto.pq_ratchet.chain.epoch.EpochDirection) :
     core.result.Result chain.ChainEpochDirection Error :=
-  if pb.next.val.isEmpty ∨ pb.next.length = 32 then
+  if ValidNextKey pb.next then
     .Ok { ctr := pb.ctr, next := pb.next, prev := { data := pb.prev } }
   else .Err .StateDecode
 
@@ -48,11 +56,19 @@ theorem fromPb_err (pb : proto.pq_ratchet.chain.epoch.EpochDirection) (e : Error
   · cases h
   · cases h; rfl
 
+/-- A valid key decodes to a direction; an invalid key produces `StateDecode`. -/
+theorem fromPb_cases (pb : proto.pq_ratchet.chain.epoch.EpochDirection) :
+    (∃ d, fromPb pb = .Ok d) ∨ fromPb pb = .Err .StateDecode := by
+  by_cases h : ValidNextKey pb.next
+  · exact .inl ⟨{ ctr := pb.ctr, next := pb.next, prev := { data := pb.prev } },
+      by simp [fromPb, h]⟩
+  · exact .inr (by simp [fromPb, h])
+
 /-- **Round trip `fromPb ∘ intoPb` for
 `spqr::chain::ChainEpochDirection`**, for directions whose `next` key is empty or of
 length 32 (the only ones `fromPb` accepts). -/
 theorem roundtrip_fromPb_intoPb (x : chain.ChainEpochDirection)
-    (hx : x.next.val.isEmpty ∨ x.next.length = 32) :
+    (hx : ValidDirection x) :
     fromPb (intoPb x) = .Ok x := by
   simp only [fromPb, intoPb, hx, ↓reduceIte]
 

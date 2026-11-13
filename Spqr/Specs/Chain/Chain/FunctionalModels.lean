@@ -134,8 +134,8 @@ def fromPb (pb : proto.pq_ratchet.Chain) : core.result.Result chain.Chain Error 
 /-- Both directions of a `ChainEpoch` carry a `next` key that is empty or of length 32 — the
 only directions `ChainEpochDirection::from_pb` accepts. -/
 def epochNextOk (ce : ChainEpoch) : Prop :=
-  (ce.send.next.val.isEmpty ∨ ce.send.next.length = 32) ∧
-  (ce.recv.next.val.isEmpty ∨ ce.recv.next.length = 32)
+  ChainEpochDirection.FunctionalModels.ValidDirection ce.send ∧
+  ChainEpochDirection.FunctionalModels.ValidDirection ce.recv
 
 @[simp]
 theorem roundtrip_epochFromPb_epochIntoPb (ce : ChainEpoch) (h : epochNextOk ce) :
