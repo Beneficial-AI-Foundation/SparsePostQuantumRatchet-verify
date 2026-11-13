@@ -18,10 +18,11 @@ They are still true for the current `Result` model: its only effect, `fail`, nev
 proofs keep working while they are migrated to the compositional style.
 
 It also provides `bind_spec_true`, the inversion of a *no-panic* spec on a `bind`: it recovers
-the value returned by the head and the no-panic spec of the tail.  This is the tool used by
-spec theorems that take a non-panic hypothesis on a whole function (e.g. `spqr.recv_spec`) and
-need to peel it off one `?`/`let ←` at a time.  Unlike `spec_bind`, it works backwards from an
-assumed spec rather than forwards from the sub-call specs.
+the value returned by the head and the no-panic spec of the tail.  It is the tool for spec
+theorems that take a non-panic hypothesis on a whole computation and need to peel it off one
+`?`/`let ←` at a time.  Unlike `spec_bind`, it works backwards from an assumed spec rather
+than forwards from the sub-call specs; prefer the forward style when the sub-call specs exist
+(`spqr.recv_spec` was migrated to it and no longer uses this lemma).
 -/
 
 @[expose] public section
