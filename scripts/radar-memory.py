@@ -72,7 +72,9 @@ def main():
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(repo / source, snapshot)
         run(["lake", "build", module], f"{module}-build")
-        lean = ["lake", "env", "lean", "-j1", source]
+        # `lake env lean` sets paths but does not apply lakefile.toml's leanOptions.
+        # Match the project's maxRecDepth setting used by `lake build`.
+        lean = ["lake", "env", "lean", "-j1", "-DmaxRecDepth=10000", source]
         run(lean, f"{module}-warmup")
         rss, elapsed = [], []
         for trial in range(1, args.trials + 1):
