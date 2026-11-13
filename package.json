@@ -6,6 +6,8 @@
     "aeneas-extract": "tsx scripts/aeneas-extract.ts",
     "src-diff": "tsx scripts/src-diff.ts",
     "split-probe-lean": "python3 scripts/split-probe-lean.py",
+    "generate-lean-definitions": "python3 scripts/generate-lean-definitions.py",
+    "apply-generated-definitions": "python3 scripts/apply-generated-definitions.py",
     "verification-status": "lake exe status",
     "typecheck": "tsc --noEmit",
     "patches-check": "tsx scripts/patches-check.ts"
