@@ -27,7 +27,7 @@ from a later epoch. `Step` is one step of one party, and `Run` is a sequence of 
 
 open Aeneas Aeneas.Std Result
 
-namespace Braid
+namespace BraidModel
 
 /-- A byte string. The model gives bytes no structure beyond concatenation and splitting. -/
 abbrev Bytes := List Std.U8
@@ -313,4 +313,4 @@ inductive Run (P : Prims Enc Dec Chunk) : State Enc Dec → State Enc Dec → Li
   | cons {σ σ₁ σ₂ : State Enc Dec} {k : Option Key} {ks : List Key} :
       Step P σ σ₁ k → Run P σ₁ σ₂ ks → Run P σ σ₂ (k.toList ++ ks)
 
-end Braid
+end BraidModel
