@@ -112,8 +112,8 @@ theorem body_spec
              ret_none' = ret_none) ⦄ := by
   unfold body
   step*
-  all_goals (first | simp_all only [Option.some.injEq, reduceCtorEq, false_and, ite_false_right,
-    Array.length, Array.property, UScalar.ofNatCore_val_eq] <;> scalar_tac | scalar_tac | grind)
+  all_goals (first | (simp_all only [Option.some.injEq, reduceCtorEq, false_and, ite_false_right,
+    Array.length, Array.property, UScalar.ofNatCore_val_eq]; scalar_tac) | scalar_tac | grind)
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop0
 
