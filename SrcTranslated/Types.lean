@@ -198,12 +198,6 @@ structure rand_1.rng.Rng (Self : Type _) where
 structure rand_core_1.CryptoRng (Self : Type _) where
   RngCoreInst : rand_core_1.RngCore Self
 
-/-- [spqr::encoding::gf::GF16]
-    Source: 'src/encoding/gf.rs', lines 16:0-18:1
-    Visibility: public -/
-structure encoding.gf.GF16 where
-  value : Std.U16
-
 /-- [spqr::proto::pq_ratchet::PolynomialEncoder]
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 3:0-13:1
     Visibility: public -/
@@ -599,7 +593,8 @@ structure chain.Chain where
   dir : proto.pq_ratchet.Direction
   current_epoch : Std.U64
   send_epoch : Std.U64
-  links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global
+  links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global
   next_root : alloc.vec.Vec Std.U8
   params : proto.pq_ratchet.ChainParams
 
@@ -664,6 +659,12 @@ structure EpochSecret where
     Source: 'src/chain.rs', lines 452:50-452:72 -/
 @[reducible]
 def chain.Chain.from_pb.closure := Unit
+
+/-- [spqr::encoding::gf::GF16]
+    Source: 'src/encoding/gf.rs', lines 16:0-18:1
+    Visibility: public -/
+structure encoding.gf.GF16 where
+  value : Std.U16
 
 /-- [spqr::encoding::polynomial::Pt]
     Source: 'src/encoding/polynomial.rs', lines 30:0-33:1 -/

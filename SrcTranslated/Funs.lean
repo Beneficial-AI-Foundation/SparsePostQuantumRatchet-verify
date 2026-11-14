@@ -34,7 +34,7 @@ def Shared0T.Insts.CoreBorrowBorrow (T : Type _) : core.borrow.Borrow T T := {
 }
 
 /-- Trait implementation: [core::fmt::{impl core::fmt::Display for &'_0 T}]
-    Source: '/rustc/library/core/src/fmt/mod.rs', lines 2871:8-2871:46
+    Source: '/rustc/library/core/src/fmt/mod.rs', lines 2871:8-2871:46; this code is generated from a macro invocation at: '/rustc/library/core/src/fmt/mod.rs', lines 2882:0-2882:83
     Name pattern: [core::fmt::Display<&'0 @T>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<&'0 @T>"]
 def Shared0T.Insts.CoreFmtDisplay {T : Type _} (DisplayInst : core.fmt.Display
@@ -43,7 +43,7 @@ def Shared0T.Insts.CoreFmtDisplay {T : Type _} (DisplayInst : core.fmt.Display
 }
 
 /-- Trait implementation: [core::fmt::num::imp::{impl core::fmt::Display for u8}]
-    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39
+    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39; this code is generated from a macro invocation at: '/rustc/library/core/src/fmt/num.rs', lines 606:4-606:94
     Name pattern: [core::fmt::Display<u8>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<u8>"]
 def U8.Insts.CoreFmtDisplay : core.fmt.Display Std.U8 := {
@@ -51,7 +51,7 @@ def U8.Insts.CoreFmtDisplay : core.fmt.Display Std.U8 := {
 }
 
 /-- Trait implementation: [core::fmt::num::imp::{impl core::fmt::Display for usize}]
-    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39
+    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39; this code is generated from a macro invocation at: '/rustc/library/core/src/fmt/num.rs', lines 606:4-606:94
     Name pattern: [core::fmt::Display<usize>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<usize>"]
 def Usize.Insts.CoreFmtDisplay : core.fmt.Display Std.Usize := {
@@ -111,18 +111,6 @@ def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type _} (corecloneCloneInst
   clone := sorted_vec.SortedSet.Insts.CoreCloneClone.clone corecloneCloneInst
     corecmpOrdInst
 }
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
-    Source: 'src/encoding/gf.rs', lines 542:4-542:44
-    Visibility: public -/
-@[global_simps, irreducible]
-def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
-    Source: 'src/encoding/gf.rs', lines 541:4-541:45
-    Visibility: public -/
-@[global_simps, irreducible]
-def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
 
 /-- [spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::PolynomialEncoder}::clone]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 2:9-2:14
@@ -4294,7 +4282,7 @@ def chain.KeyHistory.remove
   ok { data := v1 }
 
 /-- [spqr::chain::{spqr::chain::KeyHistory}::gc]: loop body 0:
-    Source: 'src/chain.rs', lines 155:18-157:58 -/
+    Source: 'src/chain.rs', lines 155:12-166:13 -/
 @[rust_loop_body]
 def chain.KeyHistory.gc_loop.body
   (i : Std.Usize) (params : proto.pq_ratchet.ChainParams)
@@ -4323,7 +4311,7 @@ def chain.KeyHistory.gc_loop.body
   else ok (done self.data)
 
 /-- [spqr::chain::{spqr::chain::KeyHistory}::gc]: loop 0:
-    Source: 'src/chain.rs', lines 155:18-157:58 -/
+    Source: 'src/chain.rs', lines 155:12-166:13 -/
 @[rust_loop]
 def chain.KeyHistory.gc_loop
   (i : Std.Usize) (self : chain.KeyHistory)
@@ -4758,8 +4746,8 @@ def chain.Chain.epoch_idx
     Visibility: public -/
 @[rust_loop_body]
 def chain.Chain.send_key_loop0.body
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
-  (epoch_index : Std.Usize) :
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (epoch_index : Std.Usize) :
   Result (ControlFlow ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
     alloc.alloc.Global) × Std.Usize) ((alloc.collections.vec_deque.VecDeque
     chain.ChainEpoch alloc.alloc.Global) × Std.Usize))
@@ -4776,10 +4764,10 @@ def chain.Chain.send_key_loop0.body
     Visibility: public -/
 @[rust_loop]
 def chain.Chain.send_key_loop0
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
-  (epoch_index : Std.Usize) :
-  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) ×
-    Std.Usize)
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (epoch_index : Std.Usize) :
+  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global) × Std.Usize)
   := do
   loop
     (fun (vd1, epoch_index1) => chain.Chain.send_key_loop0.body vd1
@@ -4792,7 +4780,8 @@ def chain.Chain.send_key_loop0
 @[rust_loop_body]
 def chain.Chain.send_key_loop1.body
   (iter : core.ops.range.Range Std.Usize)
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) :
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
   Result (ControlFlow ((core.ops.range.Range Std.Usize) ×
     (alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global))
     (alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global))
@@ -4815,8 +4804,10 @@ def chain.Chain.send_key_loop1.body
 @[rust_loop]
 def chain.Chain.send_key_loop1
   (iter : core.ops.range.Range Std.Usize)
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) :
-  Result (alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
+  Result (alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global)
   := do
   loop
     (fun (iter1, vd1) => chain.Chain.send_key_loop1.body iter1 vd1)
@@ -4916,11 +4907,11 @@ def chain.Chain.recv_key
     Source: 'src/chain.rs', lines 428:8-433:9 -/
 @[rust_loop_body]
 def chain.Chain.into_pb_loop.body
-  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
-  (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
+  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
   Result (ControlFlow ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
-    alloc.alloc.Global) × (alloc.vec.Vec proto.pq_ratchet.chain.Epoch)) (alloc.vec.Vec
-    proto.pq_ratchet.chain.Epoch))
+    alloc.alloc.Global) × (alloc.vec.Vec proto.pq_ratchet.chain.Epoch))
+    (alloc.vec.Vec proto.pq_ratchet.chain.Epoch))
   := do
   let (o, chain_links1) ←
     alloc.collections.vec_deque.VecDeque.pop_front chain_links
@@ -4938,8 +4929,8 @@ def chain.Chain.into_pb_loop.body
     Source: 'src/chain.rs', lines 428:8-433:9 -/
 @[rust_loop]
 def chain.Chain.into_pb_loop
-  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
-  (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
+  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
   Result (alloc.vec.Vec proto.pq_ratchet.chain.Epoch)
   := do
   loop
@@ -5028,11 +5019,13 @@ def chain.Chain.from_pb.link_from_pb
 @[rust_loop_body]
 def chain.Chain.from_pb_loop.body
   (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
-  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) :
+  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
   Result (ControlFlow ((alloc.vec.into_iter.IntoIter
     proto.pq_ratchet.chain.Epoch) × (alloc.collections.vec_deque.VecDeque
-    chain.ChainEpoch alloc.alloc.Global)) ((alloc.collections.vec_deque.VecDeque
-    chain.ChainEpoch alloc.alloc.Global) × (Option Error)))
+    chain.ChainEpoch alloc.alloc.Global))
+    ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
+    × (Option Error)))
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
@@ -5050,9 +5043,10 @@ def chain.Chain.from_pb_loop.body
 @[rust_loop]
 def chain.Chain.from_pb_loop
   (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
-  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) :
-  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) ×
-    (Option Error))
+  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
+  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global) × (Option Error))
   := do
   loop
     (fun (iter1, links1) => chain.Chain.from_pb_loop.body iter1 links1)
@@ -5719,6 +5713,18 @@ def encoding.gf.unaccelerated.mul2
   let i ← encoding.gf.unaccelerated.mul a b1
   let i1 ← encoding.gf.unaccelerated.mul a b2
   ok (i, i1)
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
+    Source: 'src/encoding/gf.rs', lines 541:4-541:45
+    Visibility: public -/
+@[global_simps, irreducible]
+def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
+    Source: 'src/encoding/gf.rs', lines 542:4-542:44
+    Visibility: public -/
+@[global_simps, irreducible]
+def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::new]:
     Source: 'src/encoding/gf.rs', lines 544:4-546:5
@@ -12077,7 +12083,8 @@ def send
                                 (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                 vs))
                         }
-                    let b2 ← alloc.vec.Vec.is_empty alloc.alloc.Global msg_key
+                    let b2 ←
+                      alloc.vec.Vec.is_empty alloc.alloc.Global msg_key
                     if b2
                     then
                       ok (core.result.Result.Ok
@@ -12120,7 +12127,8 @@ def send
                             vs))
                     }
                 let b2 ←
-                  alloc.vec.Vec.is_empty alloc.alloc.Global (alloc.vec.Vec.new Std.U8)
+                  alloc.vec.Vec.is_empty alloc.alloc.Global (alloc.vec.Vec.new
+                    Std.U8)
                 if b2
                 then
                   ok (core.result.Result.Ok { state := v, msg, key := none },
@@ -13508,7 +13516,9 @@ def recv
                                           (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                           vs))
                                     }
-                                let b ← alloc.vec.Vec.is_empty alloc.alloc.Global val7
+                                let b ←
+                                  alloc.vec.Vec.is_empty alloc.alloc.Global
+                                    val7
                                 if b
                                 then
                                   ok (core.result.Result.Ok
@@ -13593,7 +13603,8 @@ def recv
                                       (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                       vs))
                                 }
-                            let b ← alloc.vec.Vec.is_empty alloc.alloc.Global val5
+                            let b ←
+                              alloc.vec.Vec.is_empty alloc.alloc.Global val5
                             if b
                             then
                               ok (core.result.Result.Ok
@@ -13734,7 +13745,8 @@ def recv
                                         (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                         vs))
                                   }
-                              let b ← alloc.vec.Vec.is_empty alloc.alloc.Global val7
+                              let b ←
+                                alloc.vec.Vec.is_empty alloc.alloc.Global val7
                               if b
                               then
                                 ok (core.result.Result.Ok
@@ -13817,7 +13829,8 @@ def recv
                                     (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                     vs))
                               }
-                          let b ← alloc.vec.Vec.is_empty alloc.alloc.Global val5
+                          let b ←
+                            alloc.vec.Vec.is_empty alloc.alloc.Global val5
                           if b
                           then
                             ok (core.result.Result.Ok
@@ -13982,6 +13995,16 @@ def serialize.Error.Insts.CoreConvertFromPolynomialError.from
 def serialize.Error.Insts.CoreConvertFromPolynomialError : core.convert.From
   serialize.Error encoding.polynomial.PolynomialError := {
   «from» := serialize.Error.Insts.CoreConvertFromPolynomialError.from
+}
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<u8, alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 105:0-119:1 -/
+@[reducible]
+def v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String :
+  core.convert.TryFrom v1.chunked.states.serialize.MessageType Std.U8 String
+  := {
+  try_from :=
+    v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from
 }
 
 end spqr
