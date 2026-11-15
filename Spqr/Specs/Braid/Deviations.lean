@@ -8,9 +8,9 @@ module
 /-! # Where the code differs from ML-KEM Braid §2.5
 
 The chunked state machine of `src/v1/chunked/states.rs` differs from [ML-KEM Braid] §2.5 in three
-places. Each is a constructor of `Braid.Deviation`, and its docstring says what the two sources do.
-A declaration that states a deviation, or follows the code at one, carries
-`@[braid_deviation Braid.Deviation.x]` (`Spqr/Auxiliary/SpecTags.lean`). Lean checks that the
+places. Each is a constructor of `BraidModel.Deviation`, and its docstring says what the two
+sources do. A declaration that states a deviation, or follows the code at one, carries
+`@[braid_deviation BraidModel.Deviation.x]` (`Spqr/Auxiliary/SpecTags.lean`). Lean checks that the
 argument names a constructor. Comments on the arms of a `match` name the constructor in the same
 way, for example `-- Deviation.lateEkChunk`.
 
@@ -42,7 +42,7 @@ the theorems of `EpochDispatch.lean` show. In these docstrings, paths are relati
 
 @[expose] public section
 
-namespace Braid
+namespace BraidModel
 
 /-- A place where the chunked state machine differs from ML-KEM Braid §2.5. -/
 inductive Deviation where
@@ -122,4 +122,4 @@ inductive Deviation where
   *Effect* are not proved. -/
   | lateEkChunk
 
-end Braid
+end BraidModel

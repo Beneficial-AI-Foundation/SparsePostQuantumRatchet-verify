@@ -44,7 +44,7 @@ open Aeneas Aeneas.Std Result spqr
 
 namespace spqr.v1.chunked.states
 
-open Braid
+open BraidModel
 
 /-- The primitives of the code: encoders, decoders and codewords are `PolyEncoder`,
 `PolyDecoder` and `encoding.Chunk`. -/

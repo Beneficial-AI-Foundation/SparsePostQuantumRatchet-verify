@@ -35,7 +35,7 @@ When `msg.epoch ≠ e`, the arm decides without reading the payload.
 
 All three theorems are total. `recv_of_lt` and `recv_Ct2Sampled_next_epoch` agree with §2.5, so
 they carry the attributes `correctness_spec` and `braid_spec "§2.5"`. `recv_of_gt` states
-`Braid.Deviation.futureEpochError`, where the code differs from §2.5, so it carries
+`BraidModel.Deviation.futureEpochError`, where the code differs from §2.5, so it carries
 `braid_deviation` instead.
 
 ## Messages from the state's own epoch
@@ -52,8 +52,8 @@ acts on. In eight of the eleven states, some payload satisfies it. In `KeysUnsam
   exactly when `specRecvEq s msg.payload` is `none` (`recv_of_eq_refines`).
 
 `specRecvEq` is the §2.5 `Receive` at the level of state names and key presence, plus
-`Braid.Deviation.ct1AckAccepted` and `Braid.Deviation.lateEkChunk`. When a chunk completes a
-decoder, it takes the transition if the state's check passes on the completed message
+`BraidModel.Deviation.ct1AckAccepted` and `BraidModel.Deviation.lateEkChunk`. When a chunk
+completes a decoder, it takes the transition if the state's check passes on the completed message
 (`States.Accepts`), and it is `none` if the check fails (`States.Rejects`). The decoder and the
 checks are the code's calls: `add_chunk` and `decoded_message` for the decoder, `recv_ct2` for
 `Decaps`, `KDF_OK`, `Update` and `VfyCt`, `verify_hdr` for `VfyHdr`, and `ek_matches_header` for
@@ -67,12 +67,12 @@ our reading of §2.5, not a theorem.
   `src/v1/chunked/send_ek.rs:91-92` and transition (12) at `src/incremental_mlkem768.rs:75-76`.
   Ruling this out needs state invariants and specifications of the opaque libcrux calls.
 * `States.Accepts s p` and `States.Rejects s p` hold only if the chunk in `p` completes the decoder
-  of `s`. Transitions (3), (5), (6), (9), (10) and (11), and `Braid.Deviation.lateEkChunk`, need one
-  of them. For these pairs of state and payload, if the chunk does not complete the decoder,
-  `recv_of_eq_refines` says only that the state keeps its name. The exception is `Ct1Sampled` on
-  `EkCt1Ack`, which takes transition (8). That the peer's chunks complete the decoder after enough
-  calls is not proved. So `recv_of_eq_refines` also holds for a run in which the decoder never
-  completes and none of these transitions occurs.
+  of `s`. Transitions (3), (5), (6), (9), (10) and (11), and `BraidModel.Deviation.lateEkChunk`,
+  need one of them. For these pairs of state and payload, if the chunk does not complete the
+  decoder, `recv_of_eq_refines` says only that the state keeps its name. The exception is
+  `Ct1Sampled` on `EkCt1Ack`, which takes transition (8). That the peer's chunks complete the
+  decoder after enough calls is not proved. So `recv_of_eq_refines` also holds for a run in which
+  the decoder never completes and none of these transitions occurs.
 * That the code's decoder and checks compute the spec's decoder and checks is not proved. For
   the `ek` check, the model of `validate_pk_bytes` differs from the spec (see
   `States.CheckPasses`).
@@ -81,7 +81,7 @@ our reading of §2.5, not a theorem.
 
 ## Deviations from §2.5
 
-`States::recv` differs from §2.5 in three places, the constructors of `Braid.Deviation`
+`States::recv` differs from §2.5 in three places, the constructors of `BraidModel.Deviation`
 (`Spqr/Specs/Braid/Deviations.lean`), which say what each source does. The theorems state what
 the code does, and each place carries the constructor's name. The five theorems cover every value
 of `msg.epoch` relative to `e`. In each case they give the code's next state name, key presence
@@ -126,8 +126,8 @@ theorem recv_of_lt (s : States) (msg : Message) (h : msg.epoch.val < s.epochOf.v
 
 /-- Let `e` be the epoch of `s`, let `msg.epoch > e`, and if `s` is `Ct2Sampled`, let
 `msg.epoch ≠ e + 1`. Then `States.recv s msg` returns `Err(EpochOutOfRange msg.epoch)`.
-§2.5 ignores such a message instead: `Braid.Deviation.futureEpochError`. -/
-@[braid_deviation Braid.Deviation.futureEpochError]
+§2.5 ignores such a message instead: `BraidModel.Deviation.futureEpochError`. -/
+@[braid_deviation BraidModel.Deviation.futureEpochError]
 theorem recv_of_gt (s : States) (msg : Message) (h : s.epochOf.val < msg.epoch.val)
     (hnext : ∀ st, s = .Ct2Sampled st → msg.epoch.val ≠ st.uc.epoch.val + 1) :
     States.recv s msg = ok (.Err (Error.EpochOutOfRange msg.epoch)) := by
@@ -164,9 +164,9 @@ theorem recv_Ct2Sampled_next_epoch (st : send_ct.Ct2Sampled) (msg : Message)
 
 /-- `s.Expects p` holds when `States::recv` in state `s` acts on payload `p` of a message from the
 epoch of `s`. The pairs are those that pass a `msg.type ==` test of a `Receive` function in ML-KEM
-Braid §2.5, plus `Ct1Ack true` in `EkReceivedCt1Sampled` (`Braid.Deviation.ct1AckAccepted`) and `Ek`
-in `Ct1Acknowledged` (`Braid.Deviation.lateEkChunk`). -/
-@[braid_deviation Braid.Deviation.ct1AckAccepted Braid.Deviation.lateEkChunk]
+Braid §2.5, plus `Ct1Ack true` in `EkReceivedCt1Sampled` (`BraidModel.Deviation.ct1AckAccepted`)
+and `Ek` in `Ct1Acknowledged` (`BraidModel.Deviation.lateEkChunk`). -/
+@[braid_deviation BraidModel.Deviation.ct1AckAccepted BraidModel.Deviation.lateEkChunk]
 def States.Expects : States → MessagePayload → Prop
   | .KeysSampled _, .Ct1 _ => True
   | .HeaderSent _, .Ct1 _ => True
@@ -277,7 +277,8 @@ def States.name : States → SpecState
 
 open Classical in
 /-- `specRecvEq s p` is ML-KEM Braid §2.5 `Receive` in state `s` on payload `p` of a message from
-the epoch of `s`, extended by `Braid.Deviation.ct1AckAccepted` and `Braid.Deviation.lateEkChunk`.
+the epoch of `s`, extended by `BraidModel.Deviation.ct1AckAccepted` and
+`BraidModel.Deviation.lateEkChunk`.
 Its decoder and checks are the code's, through `States.Accepts` and `States.Rejects`, not the
 spec's. The result is the next state's name and whether a key is emitted, or `none` when `s.Rejects
 p` holds. `none` stands at the places of the spec's `raise` in the `ek` check and its `FAIL` in
@@ -285,9 +286,9 @@ p` holds. `none` stands at the places of the spec's `raise` in the `ek` check an
 (§2.4, p. 9) is outside `specRecvEq`.
 The comments on the arms give the spec's transition numbers, or the deviation that adds the arm.
 
-* Transitions (2), (4) and (12), and `Braid.Deviation.ct1AckAccepted`, need no completed message
-  and are taken directly.
-* Transitions (3), (5), (6), (9), (10), (11), and `Braid.Deviation.lateEkChunk`, are taken when
+* Transitions (2), (4) and (12), and `BraidModel.Deviation.ct1AckAccepted`, need no completed
+  message and are taken directly.
+* Transitions (3), (5), (6), (9), (10), (11), and `BraidModel.Deviation.lateEkChunk`, are taken when
   `States.Accepts` holds. The result is `none` when `States.Rejects` holds. When no message
   completes the decoder, neither holds and the state keeps its name. The exception is `Ct1Sampled`
   on `EkCt1Ack`, which then takes transition (8).
@@ -296,7 +297,7 @@ The comments on the arms give the spec's transition numbers, or the deviation th
 Only transition (5) emits a key. `States.Accepts` and `States.Rejects` read the code's calls.
 A call that returns excludes the panic cases. It does not make the code's decoder and checks
 agree with the spec's. -/
-@[braid_deviation Braid.Deviation.ct1AckAccepted Braid.Deviation.lateEkChunk]
+@[braid_deviation BraidModel.Deviation.ct1AckAccepted BraidModel.Deviation.lateEkChunk]
 noncomputable def specRecvEq (s : States) (p : MessagePayload) : Option (SpecState × Bool) :=
   let stay := some (s.name, false)
   let complete (n : SpecState) (key : Bool) (otherwise : Option (SpecState × Bool)) :=
@@ -598,9 +599,9 @@ theorem Ct1Sampled_recv_ek_chunk_outcome (st : send_ct.Ct1Sampled) (e : Std.U64)
 * `Ok StillReceiving` means that chunk `c` completes no message in the decoder
   `st.receiving_ek`.
 * `Ok Done` means that a completed message passes the `ek` check. On an `EkCt1Ack` payload this
-  is transition (11). On an `Ek` payload it is `Braid.Deviation.lateEkChunk`.
+  is transition (11). On an `Ek` payload it is `BraidModel.Deviation.lateEkChunk`.
 * `Err` means that a completed message fails the check. -/
-@[braid_deviation Braid.Deviation.lateEkChunk]
+@[braid_deviation BraidModel.Deviation.lateEkChunk]
 theorem Ct1Acknowledged_recv_ek_chunk_outcome (st : send_ct.Ct1Acknowledged) (e : Std.U64)
     (c : encoding.Chunk) {r : core.result.Result send_ct.Ct1AcknowledgedRecvChunk Error}
     (h : send_ct.Ct1Acknowledged.recv_ek_chunk st e c = ok r) :
@@ -673,11 +674,11 @@ theorem recv_of_eq_unexpected (s : States) (msg : Message) (h : msg.epoch = s.ep
   all_goals rfl
 
 /-- If `msg.epoch = s.epochOf` and `States.recv s msg` returns `r`, then `r` agrees with `specRecvEq
-s msg.payload`, our model of §2.5 `Receive` extended by `Braid.Deviation.ct1AckAccepted` and
-`Braid.Deviation.lateEkChunk`. An `Ok` result has the next state's name and key presence that
+s msg.payload`, our model of §2.5 `Receive` extended by `BraidModel.Deviation.ct1AckAccepted` and
+`BraidModel.Deviation.lateEkChunk`. An `Ok` result has the next state's name and key presence that
 `specRecvEq` gives. An `Err` result occurs exactly when `specRecvEq` gives `none`. -/
 @[correctness_spec, braid_spec "§2.5",
-  braid_deviation Braid.Deviation.ct1AckAccepted Braid.Deviation.lateEkChunk]
+  braid_deviation BraidModel.Deviation.ct1AckAccepted BraidModel.Deviation.lateEkChunk]
 theorem recv_of_eq_refines (s : States) (msg : Message) (h : msg.epoch = s.epochOf)
     (r : core.result.Result Recv Error) (hr : States.recv s msg = ok r) :
     match r with
