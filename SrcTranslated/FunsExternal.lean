@@ -1268,13 +1268,13 @@ theorem alloc.collections.vec_deque.VecDeque.push_back_spec
   simp only [dite_eq_left hbuf]
   step*
 
-/-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, alloc::alloc::alloc.alloc.Global>}::new]:
+/-- [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::new]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs'
-    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::alloc.alloc.Global>}::new]
+    Name pattern: [alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new]
 
     Growing-list model: the empty deque (empty buffer, `head = 0`, `length = 0`). -/
 @[rust_fun
-  "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::alloc.alloc.Global>}::new"]
+  "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new"]
 def alloc.collections.vec_deque.VecDequeTGlobal.new
   (T : Type) : Result (alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) :=
   ok { buf := alloc.vec.Vec.new T, head := 0#usize, length := 0#usize }
@@ -1379,11 +1379,11 @@ theorem alloc.collections.vec_deque.VecDeque.Insts.CoreOpsIndexIndexMutUsizeT.in
     since our model does not distinguish zero-sized types. -/
 def alloc.collections.vec_deque.IS_ZST (_T : Type) : Bool := false
 
-/-- [alloc::collections::vec_deque::{core::convert::From<[T; N]> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::alloc.alloc.Global>}::from]:
+/-- [alloc::collections::vec_deque::{core::convert::From<[T; N]> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3812:4-3812:32
-    Name pattern: [alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::alloc.alloc.Global>, [@T; @N]>}::from] -/
+    Name pattern: [alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, [@T; @N]>}::from] -/
 @[rust_fun
-  "alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::alloc.alloc.Global>, [@T; @N]>}::from"]
+  "alloc::collections::vec_deque::{core::convert::From<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, [@T; @N]>}::from"]
 def
   alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from
   {T : Type} {N : Std.Usize} :
@@ -2770,11 +2770,11 @@ def
   (fn: F): Result (core.iter.adapters.map.Map (alloc.collections.vec_deque.into_iter.IntoIter T A) F) :=
     ok {iter:= intoIter, f:= fn}
 
-/-- [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::alloc.alloc.Global>}::from_iter]:
+/-- [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<T> for alloc::collections::vec_deque::VecDeque<T, alloc::alloc::Global>}::from_iter]:
     Source: '/rustc/library/alloc/src/collections/vec_deque/mod.rs', lines 3641:4-3641:67
-    Name pattern: [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::alloc.alloc.Global>, @T>}::from_iter] -/
+    Name pattern: [alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>}::from_iter] -/
 @[rust_fun
-  "alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::alloc.alloc.Global>, @T>}::from_iter"]
+  "alloc::collections::vec_deque::{core::iter::traits::collect::FromIterator<alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>, @T>}::from_iter"]
 def
   alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator.from_iter
   {T : Type} {I : Type} {Clause0_IntoIter : Type}
