@@ -112,8 +112,8 @@ theorem body_spec
              ret_none' = ret_none) ⦄ := by
   unfold body
   step*
-  all_goals (first | simp_all only [Option.some.injEq, reduceCtorEq, false_and, ite_false_right,
-    Array.length, Array.property, UScalar.ofNatCore_val_eq] <;> scalar_tac | scalar_tac | grind)
+  all_goals (first | (simp_all only [Option.some.injEq, reduceCtorEq, false_and, ite_false_right,
+    Array.length, Array.property, UScalar.ofNatCore_val_eq]; scalar_tac) | scalar_tac | grind)
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_loop0
 
@@ -386,7 +386,7 @@ theorem body_spec
           let sv1 ← sorted_vec.SortedSet.Insts.CoreOpsDerefDerefSortedVec.deref
             Pt.Insts.CoreCmpOrd (a.val[poly.val]'(by simp; omega))
           let v1 ← sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref Pt.Insts.CoreCmpOrd sv1
-          let s1 ← alloc.vec.Vec.as_slice Global v1
+          let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global v1
           let i3 ← encoding.polynomial.PolyDecoder.necessary_points
             { pts_needed := i, pts := a, is_complete := b } poly
           let points ← core.slice.index.SliceIndexRangeToUsizeSlice.index { «end» := i3 } s1

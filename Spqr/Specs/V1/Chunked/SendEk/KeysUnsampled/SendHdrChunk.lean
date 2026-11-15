@@ -146,7 +146,7 @@ theorem send_hdr_chunk_spec {R : Type} (rngInst : rand_1.rng.Rng R)
     simp only [alloc.vec.Vec.length] at h_hdr; rw [h_hdr]; decide
   have h_mac_len : mac.val.length = 32 := by
     simp only [alloc.vec.Vec.length] at h_mac; rw [h_mac]; simp [MACSIZE]
-  step with alloc.vec.Vec.append_spec Global hdr mac
+  step with alloc.vec.Vec.append_spec alloc.alloc.Global hdr mac
     (by rw [h_hdr_len, h_mac_len]; scalar_tac)
     as ⟨to_send, _, h_to_send⟩
   have h_len : (alloc.vec.Vec.deref to_send).length = 96 := by

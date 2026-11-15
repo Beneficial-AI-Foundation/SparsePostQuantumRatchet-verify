@@ -1276,14 +1276,14 @@ theorem alloc.collections.vec_deque.VecDeque.push_back_spec
 @[rust_fun
   "alloc::collections::vec_deque::{alloc::collections::vec_deque::VecDeque<@T, alloc::alloc::Global>}::new"]
 def alloc.collections.vec_deque.VecDequeTGlobal.new
-  (T : Type) : Result (alloc.collections.vec_deque.VecDeque T Global) :=
+  (T : Type) : Result (alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) :=
   ok { buf := alloc.vec.Vec.new T, head := 0#usize, length := 0#usize }
 
 /-- Spec: `new` returns the empty deque. -/
 @[step]
 theorem alloc.collections.vec_deque.VecDequeTGlobal.new_spec (T : Type) :
     alloc.collections.vec_deque.VecDequeTGlobal.new T ⦃
-      (d : alloc.collections.vec_deque.VecDeque T Global) =>
+      (d : alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) =>
       d.buf.val = [] ∧ d.head = 0#usize ∧ d.length = 0#usize ⦄ := by
   simp [alloc.collections.vec_deque.VecDequeTGlobal.new, alloc.vec.Vec.new, WP.spec_ok]
 
@@ -1387,13 +1387,13 @@ def alloc.collections.vec_deque.IS_ZST (_T : Type) : Bool := false
 def
   alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from
   {T : Type} {N : Std.Usize} :
-  Array T N → Result (alloc.collections.vec_deque.VecDeque T Global) :=
+  Array T N → Result (alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) :=
   fun arr =>
     -- `let mut deq = VecDeque::with_capacity(N);`
-    let deq : alloc.collections.vec_deque.VecDeque T Global :=
+    let deq : alloc.collections.vec_deque.VecDeque T alloc.alloc.Global :=
       { buf := alloc.vec.Vec.new T, head := 0#usize, length := 0#usize }
     -- `if !<T>::IS_ZST { ptr::copy_nonoverlapping(arr.as_ptr(), deq.ptr(), N); }`
-    let deq : alloc.collections.vec_deque.VecDeque T Global :=
+    let deq : alloc.collections.vec_deque.VecDeque T alloc.alloc.Global :=
       if alloc.collections.vec_deque.IS_ZST T then
         deq
       else
@@ -1406,7 +1406,7 @@ def
 @[step]
 theorem alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from_spec
     {T : Type} {N : Std.Usize} (arr : Array T N) :
-    alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from arr ⦃ (vd : alloc.collections.vec_deque.VecDeque T Global) =>
+    alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from arr ⦃ (vd : alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) =>
       vd.buf.val = arr.val ∧ vd.head = 0#usize ∧ vd.length = N ⦄ := by
   simp [alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreConvertFromArray.from,
     alloc.collections.vec_deque.IS_ZST]
@@ -2780,7 +2780,7 @@ def
   {T : Type} {I : Type} {Clause0_IntoIter : Type}
   (coreitertraitscollectIntoIteratorInst :
   core.iter.traits.collect.IntoIterator I T Clause0_IntoIter) :
-  I → Result (alloc.collections.vec_deque.VecDeque T Global) :=
+  I → Result (alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) :=
   fun input => do
     let v ← alloc.vec.FromIteratorVec.from_iter
               coreitertraitscollectIntoIteratorInst input
@@ -2788,7 +2788,7 @@ def
           head := 0#usize,
           length := Std.Usize.ofNatCore v.length
             (by have := v.property; scalar_tac) }
-        : alloc.collections.vec_deque.VecDeque T Global)
+        : alloc.collections.vec_deque.VecDeque T alloc.alloc.Global)
 
 /-- Spec for `VecDeque::from_iter`: if the underlying `Vec` collection
     yields `v`, the returned deque has `buf = v`, `head = 0`, and
@@ -2800,7 +2800,7 @@ theorem alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectF
     (input : I) (v : alloc.vec.Vec T)
     (hv : alloc.vec.FromIteratorVec.from_iter inst input = ok v) :
     alloc.collections.vec_deque.VecDequeTGlobal.Insts.CoreIterTraitsCollectFromIterator.from_iter
-      inst input ⦃ (vd : alloc.collections.vec_deque.VecDeque T Global) =>
+      inst input ⦃ (vd : alloc.collections.vec_deque.VecDeque T alloc.alloc.Global) =>
       vd.buf = v ∧
       vd.head = 0#usize ∧
       vd.length.val = v.val.length ⦄ := by

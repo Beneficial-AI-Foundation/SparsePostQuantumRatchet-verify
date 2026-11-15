@@ -461,7 +461,7 @@ noncomputable def recvV1Model (mp : MsgPreamble)
             let cpb ← chain.Chain.into_pb c2
             let bytes ← encode_state_pb
               { version_negotiation := none, chain := some cpb, inner := some (.V1 vs) }
-            let b ← alloc.vec.Vec.is_empty Global k
+            let b ← alloc.vec.Vec.is_empty alloc.alloc.Global k
             if b then ok (.Ok { state := bytes, key := none })
             else ok (.Ok { state := bytes, key := some k })
 
@@ -806,7 +806,7 @@ theorem recvV1Model_spec (mp : MsgPreamble)
     let cpb ← chain.Chain.into_pb c2
     let bytes ← encode_state_pb
       { version_negotiation := none, chain := some cpb, inner := some (.V1 vs) }
-    let b ← alloc.vec.Vec.is_empty Global k
+    let b ← alloc.vec.Vec.is_empty alloc.alloc.Global k
     if b then ok (core.result.Result.Ok (E := Error) (Recv.mk bytes none))
     else ok (core.result.Result.Ok (E := Error) (Recv.mk bytes (some k)))) ⦃ _ ⦄
   obtain ⟨vs, hvs, hok⟩ := WP.bind_spec_true hok

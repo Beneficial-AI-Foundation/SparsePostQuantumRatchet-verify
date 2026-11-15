@@ -34,7 +34,7 @@ def Shared0T.Insts.CoreBorrowBorrow (T : Type _) : core.borrow.Borrow T T := {
 }
 
 /-- Trait implementation: [core::fmt::{impl core::fmt::Display for &'_0 T}]
-    Source: '/rustc/library/core/src/fmt/mod.rs', lines 2871:8-2871:46
+    Source: '/rustc/library/core/src/fmt/mod.rs', lines 2871:8-2871:46; this code is generated from a macro invocation at: '/rustc/library/core/src/fmt/mod.rs', lines 2882:0-2882:83
     Name pattern: [core::fmt::Display<&'0 @T>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<&'0 @T>"]
 def Shared0T.Insts.CoreFmtDisplay {T : Type _} (DisplayInst : core.fmt.Display
@@ -43,7 +43,7 @@ def Shared0T.Insts.CoreFmtDisplay {T : Type _} (DisplayInst : core.fmt.Display
 }
 
 /-- Trait implementation: [core::fmt::num::imp::{impl core::fmt::Display for u8}]
-    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39
+    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39; this code is generated from a macro invocation at: '/rustc/library/core/src/fmt/num.rs', lines 606:4-606:94
     Name pattern: [core::fmt::Display<u8>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<u8>"]
 def U8.Insts.CoreFmtDisplay : core.fmt.Display Std.U8 := {
@@ -51,7 +51,7 @@ def U8.Insts.CoreFmtDisplay : core.fmt.Display Std.U8 := {
 }
 
 /-- Trait implementation: [core::fmt::num::imp::{impl core::fmt::Display for usize}]
-    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39
+    Source: '/rustc/library/core/src/fmt/num.rs', lines 134:8-134:39; this code is generated from a macro invocation at: '/rustc/library/core/src/fmt/num.rs', lines 606:4-606:94
     Name pattern: [core::fmt::Display<usize>] -/
 @[reducible, rust_trait_impl "core::fmt::Display<usize>"]
 def Usize.Insts.CoreFmtDisplay : core.fmt.Display Std.Usize := {
@@ -111,18 +111,6 @@ def sorted_vec.SortedSet.Insts.CoreCloneClone {T : Type _} (corecloneCloneInst
   clone := sorted_vec.SortedSet.Insts.CoreCloneClone.clone corecloneCloneInst
     corecmpOrdInst
 }
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
-    Source: 'src/encoding/gf.rs', lines 542:4-542:44
-    Visibility: public -/
-@[global_simps, irreducible]
-def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
-
-/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
-    Source: 'src/encoding/gf.rs', lines 541:4-541:45
-    Visibility: public -/
-@[global_simps, irreducible]
-def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
 
 /-- [spqr::proto::pq_ratchet::{impl core::clone::Clone for spqr::proto::pq_ratchet::PolynomialEncoder}::clone]:
     Source: 'generated/signal.proto.pq_ratchet.rs', lines 2:9-2:14
@@ -3961,7 +3949,7 @@ def authenticator.Authenticator.update
   (self : authenticator.Authenticator) (ep : Std.U64) (k : Slice Std.U8) :
   Result authenticator.Authenticator
   := do
-  let s ← alloc.vec.Vec.as_slice Global self.root_key
+  let s ← alloc.vec.Vec.as_slice alloc.alloc.Global self.root_key
   let s1 ← lift (Array.to_slice (Array.make 2#usize [ s, k ]))
   let ikm ←
     alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
@@ -3986,7 +3974,7 @@ def authenticator.Authenticator.update
   let s6 := alloc.vec.Vec.deref ikm
   let s7 := alloc.vec.Vec.deref info
   let kdf_out ← kdf.hkdf_to_vec s5 s6 s7 64#usize
-  let s8 ← alloc.vec.Vec.as_slice Global kdf_out
+  let s8 ← alloc.vec.Vec.as_slice alloc.alloc.Global kdf_out
   let s9 ←
     core.slice.index.Slice.index (core.slice.index.SliceIndexRangeToUsizeSlice
       Std.U8) s8 { «end» := 32#usize }
@@ -4290,11 +4278,11 @@ def chain.KeyHistory.remove
       let v1 := deref_mut_back s1
       ok (v1, new_end)
     else ok (self.data, my_array_index)
-  let v1 ← alloc.vec.Vec.truncate Global v my_array_index1
+  let v1 ← alloc.vec.Vec.truncate alloc.alloc.Global v my_array_index1
   ok { data := v1 }
 
 /-- [spqr::chain::{spqr::chain::KeyHistory}::gc]: loop body 0:
-    Source: 'src/chain.rs', lines 155:18-157:58 -/
+    Source: 'src/chain.rs', lines 155:12-166:13 -/
 @[rust_loop_body]
 def chain.KeyHistory.gc_loop.body
   (i : Std.Usize) (params : proto.pq_ratchet.ChainParams)
@@ -4323,7 +4311,7 @@ def chain.KeyHistory.gc_loop.body
   else ok (done self.data)
 
 /-- [spqr::chain::{spqr::chain::KeyHistory}::gc]: loop 0:
-    Source: 'src/chain.rs', lines 155:18-157:58 -/
+    Source: 'src/chain.rs', lines 155:12-166:13 -/
 @[rust_loop]
 def chain.KeyHistory.gc_loop
   (i : Std.Usize) (self : chain.KeyHistory)
@@ -4364,7 +4352,7 @@ def chain.KeyHistory.gc
     Source: 'src/chain.rs', lines 170:4-172:5 -/
 def chain.KeyHistory.clear
   (self : chain.KeyHistory) : Result chain.KeyHistory := do
-  let v ← alloc.vec.Vec.clear Global self.data
+  let v ← alloc.vec.Vec.clear alloc.alloc.Global self.data
   ok { data := v }
 
 /-- [spqr::chain::{spqr::chain::KeyHistory}::get]: loop body 0:
@@ -4393,7 +4381,7 @@ def chain.KeyHistory.get_loop.body
     let b ← Slice.Insts.CoreCmpPartialEqArray.eq core.cmp.PartialEqU8 s want
     if b
     then
-      let s1 ← alloc.vec.Vec.as_slice Global v
+      let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global v
       let i3 ← i1 + i
       let s2 ←
         core.slice.index.Slice.index
@@ -4478,7 +4466,7 @@ def chain.ChainEpochDirection.next_key_internal
   let v ←
     alloc.slice.Slice.concat (Slice.Insts.AllocSliceConcatTVec
       core.clone.CloneU8 (Shared0T.Insts.CoreBorrowBorrow (Slice Std.U8))) s3
-  let s4 ← alloc.vec.Vec.as_slice Global v
+  let s4 ← alloc.vec.Vec.as_slice alloc.alloc.Global v
   let (s5, to_slice_mut_back) ← lift (Array.to_slice_mut genr8r)
   let s6 ← kdf.hkdf_to_slice s next s4 s5
   let genr8r1 := to_slice_mut_back s6
@@ -4601,7 +4589,7 @@ def chain.ChainEpochDirection.from_pb
   (pb : proto.pq_ratchet.chain.epoch.EpochDirection) :
   Result (core.result.Result chain.ChainEpochDirection Error)
   := do
-  let b ← alloc.vec.Vec.is_empty Global pb.next
+  let b ← alloc.vec.Vec.is_empty alloc.alloc.Global pb.next
   if b
   then
     ok (core.result.Result.Ok
@@ -4618,7 +4606,7 @@ def chain.ChainEpochDirection.from_pb
     Source: 'src/chain.rs', lines 318:4-320:5 -/
 def chain.ChainEpochDirection.clear_next
   (self : chain.ChainEpochDirection) : Result chain.ChainEpochDirection := do
-  let v ← alloc.vec.Vec.clear Global self.next
+  let v ← alloc.vec.Vec.clear alloc.alloc.Global self.next
   ok { self with next := v }
 
 /-- [spqr::chain::{spqr::chain::Chain}::ced_for_direction]:
@@ -4758,11 +4746,11 @@ def chain.Chain.epoch_idx
     Visibility: public -/
 @[rust_loop_body]
 def chain.Chain.send_key_loop0.body
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
-  (epoch_index : Std.Usize) :
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (epoch_index : Std.Usize) :
   Result (ControlFlow ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
-    Global) × Std.Usize) ((alloc.collections.vec_deque.VecDeque
-    chain.ChainEpoch Global) × Std.Usize))
+    alloc.alloc.Global) × Std.Usize) ((alloc.collections.vec_deque.VecDeque
+    chain.ChainEpoch alloc.alloc.Global) × Std.Usize))
   := do
   if epoch_index > chain.EPOCHS_TO_KEEP_PRIOR_TO_SEND_EPOCH
   then
@@ -4776,10 +4764,10 @@ def chain.Chain.send_key_loop0.body
     Visibility: public -/
 @[rust_loop]
 def chain.Chain.send_key_loop0
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
-  (epoch_index : Std.Usize) :
-  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) ×
-    Std.Usize)
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (epoch_index : Std.Usize) :
+  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global) × Std.Usize)
   := do
   loop
     (fun (vd1, epoch_index1) => chain.Chain.send_key_loop0.body vd1
@@ -4792,10 +4780,11 @@ def chain.Chain.send_key_loop0
 @[rust_loop_body]
 def chain.Chain.send_key_loop1.body
   (iter : core.ops.range.Range Std.Usize)
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
   Result (ControlFlow ((core.ops.range.Range Std.Usize) ×
-    (alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global))
-    (alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global))
+    (alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global))
+    (alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global))
   := do
   let (o, iter1) ←
     core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
@@ -4815,8 +4804,10 @@ def chain.Chain.send_key_loop1.body
 @[rust_loop]
 def chain.Chain.send_key_loop1
   (iter : core.ops.range.Range Std.Usize)
-  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
-  Result (alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+  (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
+  Result (alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global)
   := do
   loop
     (fun (iter1, vd1) => chain.Chain.send_key_loop1.body iter1 vd1)
@@ -4916,11 +4907,11 @@ def chain.Chain.recv_key
     Source: 'src/chain.rs', lines 428:8-433:9 -/
 @[rust_loop_body]
 def chain.Chain.into_pb_loop.body
-  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
-  (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
+  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
   Result (ControlFlow ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
-    Global) × (alloc.vec.Vec proto.pq_ratchet.chain.Epoch)) (alloc.vec.Vec
-    proto.pq_ratchet.chain.Epoch))
+    alloc.alloc.Global) × (alloc.vec.Vec proto.pq_ratchet.chain.Epoch))
+    (alloc.vec.Vec proto.pq_ratchet.chain.Epoch))
   := do
   let (o, chain_links1) ←
     alloc.collections.vec_deque.VecDeque.pop_front chain_links
@@ -4938,8 +4929,8 @@ def chain.Chain.into_pb_loop.body
     Source: 'src/chain.rs', lines 428:8-433:9 -/
 @[rust_loop]
 def chain.Chain.into_pb_loop
-  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
-  (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
+  (chain_links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) (links : alloc.vec.Vec proto.pq_ratchet.chain.Epoch) :
   Result (alloc.vec.Vec proto.pq_ratchet.chain.Epoch)
   := do
   loop
@@ -5028,11 +5019,13 @@ def chain.Chain.from_pb.link_from_pb
 @[rust_loop_body]
 def chain.Chain.from_pb_loop.body
   (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
-  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
+  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
   Result (ControlFlow ((alloc.vec.into_iter.IntoIter
     proto.pq_ratchet.chain.Epoch) × (alloc.collections.vec_deque.VecDeque
-    chain.ChainEpoch Global)) ((alloc.collections.vec_deque.VecDeque
-    chain.ChainEpoch Global) × (Option Error)))
+    chain.ChainEpoch alloc.alloc.Global))
+    ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
+    × (Option Error)))
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
@@ -5050,9 +5043,10 @@ def chain.Chain.from_pb_loop.body
 @[rust_loop]
 def chain.Chain.from_pb_loop
   (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
-  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) :
-  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) ×
-    (Option Error))
+  (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+  alloc.alloc.Global) :
+  Result ((alloc.collections.vec_deque.VecDeque chain.ChainEpoch
+    alloc.alloc.Global) × (Option Error))
   := do
   loop
     (fun (iter1, links1) => chain.Chain.from_pb_loop.body iter1 links1)
@@ -5719,6 +5713,18 @@ def encoding.gf.unaccelerated.mul2
   let i ← encoding.gf.unaccelerated.mul a b1
   let i1 ← encoding.gf.unaccelerated.mul a b2
   ok (i, i1)
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ZERO]
+    Source: 'src/encoding/gf.rs', lines 541:4-541:45
+    Visibility: public -/
+@[global_simps, irreducible]
+def encoding.gf.GF16.ZERO : encoding.gf.GF16 := { value := 0#u16 }
+
+/-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::ONE]
+    Source: 'src/encoding/gf.rs', lines 542:4-542:44
+    Visibility: public -/
+@[global_simps, irreducible]
+def encoding.gf.GF16.ONE : encoding.gf.GF16 := { value := 1#u16 }
 
 /-- [spqr::encoding::gf::{spqr::encoding::gf::GF16}::new]:
     Source: 'src/encoding/gf.rs', lines 544:4-546:5
@@ -6449,7 +6455,7 @@ def encoding.polynomial.Poly.lagrange_interpolate
     let working1 ←
       encoding.polynomial.Poly.lagrange_interpolate_complete working pts
         0#usize
-    let s ← alloc.vec.Vec.as_slice Global working1.coefficients
+    let s ← alloc.vec.Vec.as_slice alloc.alloc.Global working1.coefficients
     let s1 ←
       core.slice.index.Slice.index
         (core.slice.index.SliceIndexRangeFromUsizeSlice encoding.gf.GF16) s
@@ -6472,7 +6478,7 @@ def encoding.polynomial.Poly.lagrange_interpolate_pt
   let result ← encoding.polynomial.Poly.lagrange_interpolate_prepare pts
   let result1 ←
     encoding.polynomial.Poly.lagrange_interpolate_complete result pts i
-  let s ← alloc.vec.Vec.as_slice Global result1.coefficients
+  let s ← alloc.vec.Vec.as_slice alloc.alloc.Global result1.coefficients
   let s1 ←
     core.slice.index.Slice.index
       (core.slice.index.SliceIndexRangeFromUsizeSlice encoding.gf.GF16) s
@@ -7724,7 +7730,7 @@ def encoding.polynomial.PolyEncoder.from_pb
   Result (core.result.Result encoding.polynomial.PolyEncoder
     encoding.polynomial.PolynomialError)
   := do
-  let b ← alloc.vec.Vec.is_empty Global pb.pts
+  let b ← alloc.vec.Vec.is_empty alloc.alloc.Global pb.pts
   if b
   then
     let i := alloc.vec.Vec.len pb.polys
@@ -7746,7 +7752,7 @@ def encoding.polynomial.PolyEncoder.from_pb
       ok (core.result.Result.Err
         encoding.polynomial.PolynomialError.SerializationInvalid)
   else
-    let b1 ← alloc.vec.Vec.is_empty Global pb.polys
+    let b1 ← alloc.vec.Vec.is_empty alloc.alloc.Global pb.polys
     if b1
     then
       let i := alloc.vec.Vec.len pb.pts
@@ -8154,7 +8160,7 @@ def encoding.polynomial.PolyEncoder.chunk_at
   let (self1, out1) ←
     encoding.polynomial.PolyEncoder.chunk_at_loop
       { start := 0#usize, «end» := 16#usize } self idx out
-  let s ← alloc.vec.Vec.as_slice Global out1
+  let s ← alloc.vec.Vec.as_slice alloc.alloc.Global out1
   let r ←
     core.array.TryFromArrayCopySlice.try_from 32#usize core.marker.CopyU8 s
   let a ←
@@ -8750,7 +8756,7 @@ def
           let v1 ←
             sorted_vec.SortedVec.Insts.CoreOpsDerefDerefVec.deref
               encoding.polynomial.Pt.Insts.CoreCmpOrd sv1
-          let s1 ← alloc.vec.Vec.as_slice Global v1
+          let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global v1
           let i3 ←
             encoding.polynomial.PolyDecoder.necessary_points
               { pts_needed := i, pts := a, is_complete := b } poly
@@ -9286,7 +9292,7 @@ def incremental_mlkem768.encaps1
   let state ← alloc.vec.from_elem core.clone.CloneU8 0#u8 i
   let i1 ← libcrux_ml_kem.constants.SHARED_SECRET_SIZE
   let ss ← alloc.vec.from_elem core.clone.CloneU8 0#u8 i1
-  let s2 ← alloc.vec.Vec.as_slice Global hdr
+  let s2 ← alloc.vec.Vec.as_slice alloc.alloc.Global hdr
   let randomness1 := to_slice_mut_back s1
   let (s3, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut state)
   let (s4, deref_mut_back1) ← lift (alloc.vec.Vec.deref_mut ss)
@@ -9446,12 +9452,12 @@ def incremental_mlkem768.encaps2
       es
   let o ← core.option.Option.as_ref maybe_fix
   let es1 ← lift (core.option.Option.unwrap_or o es)
-  let s ← alloc.vec.Vec.as_slice Global es1
+  let s ← alloc.vec.Vec.as_slice alloc.alloc.Global es1
   let r ← core.array.TryFromSharedArraySlice.try_from 2080#usize s
   let a ←
     core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
       "size should be correct")
-  let s1 ← alloc.vec.Vec.as_slice Global ek
+  let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global ek
   let r1 ← core.array.TryFromSharedArraySlice.try_from 1152#usize s1
   let a1 ←
     core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
@@ -9468,19 +9474,19 @@ def incremental_mlkem768.decaps
   (ct2 : alloc.vec.Vec Std.U8) :
   Result (alloc.vec.Vec Std.U8)
   := do
-  let s ← alloc.vec.Vec.as_slice Global ct1
+  let s ← alloc.vec.Vec.as_slice alloc.alloc.Global ct1
   let r ←
     core.array.TryFromArrayCopySlice.try_from 960#usize core.marker.CopyU8 s
   let a ←
     core.result.Result.expect core.fmt.DebugTryFromSliceError r (toStr
       "size should be correct")
-  let s1 ← alloc.vec.Vec.as_slice Global ct2
+  let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global ct2
   let r1 ←
     core.array.TryFromArrayCopySlice.try_from 128#usize core.marker.CopyU8 s1
   let a1 ←
     core.result.Result.expect core.fmt.DebugTryFromSliceError r1 (toStr
       "size should be correct")
-  let s2 ← alloc.vec.Vec.as_slice Global dk
+  let s2 ← alloc.vec.Vec.as_slice alloc.alloc.Global dk
   let r2 ← core.array.TryFromSharedArraySlice.try_from 2400#usize s2
   let a2 ←
     core.result.Result.expect core.fmt.DebugTryFromSliceError r2 (toStr
@@ -10155,13 +10161,13 @@ def decode_state
   (s : alloc.vec.Vec Std.U8) :
   Result (core.result.Result proto.pq_ratchet.PqRatchetState Error)
   := do
-  let b ← alloc.vec.Vec.is_empty Global s
+  let b ← alloc.vec.Vec.is_empty alloc.alloc.Global s
   if b
   then
     ok (core.result.Result.Ok
       { version_negotiation := none, chain := none, inner := none })
   else
-    let s1 ← alloc.vec.Vec.as_slice Global s
+    let s1 ← alloc.vec.Vec.as_slice alloc.alloc.Global s
     let r ← decode_state_pb s1
     core.result.Result.map_err
       decode_state.closure.Insts.CoreOpsFunctionFnOnceTupleDecodeErrorError r
@@ -10326,7 +10332,7 @@ def v1.chunked.send_ek.KeysUnsampled.send_hdr_chunk
   let ((uc, to_send, mac), rng1) ←
     v1.unchunked.send_ek.KeysUnsampled.send_header rand_1rngRngInst
       rand_core_1CryptoRngInst self.uc rng
-  let (to_send1, _) ← alloc.vec.Vec.append Global to_send mac
+  let (to_send1, _) ← alloc.vec.Vec.append alloc.alloc.Global to_send mac
   let s := alloc.vec.Vec.deref to_send1
   let encoder ←
     encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder.encode_bytes s
@@ -12053,7 +12059,7 @@ def send
                     let msg ←
                       v1.chunked.states.serialize.Message.serialize val2.msg
                         index
-                    let b1 ← alloc.vec.Vec.is_empty Global msg
+                    let b1 ← alloc.vec.Vec.is_empty alloc.alloc.Global msg
                     massert (¬ b1)
                     let left_val ←
                       alloc.vec.Vec.index
@@ -12077,7 +12083,8 @@ def send
                                 (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                 vs))
                         }
-                    let b2 ← alloc.vec.Vec.is_empty Global msg_key
+                    let b2 ←
+                      alloc.vec.Vec.is_empty alloc.alloc.Global msg_key
                     if b2
                     then
                       ok (core.result.Result.Ok
@@ -12098,7 +12105,7 @@ def send
               else
                 let msg ←
                   v1.chunked.states.serialize.Message.serialize val2.msg 0#u32
-                let b1 ← alloc.vec.Vec.is_empty Global msg
+                let b1 ← alloc.vec.Vec.is_empty alloc.alloc.Global msg
                 massert (¬ b1)
                 let left_val ←
                   alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
@@ -12120,7 +12127,8 @@ def send
                             vs))
                     }
                 let b2 ←
-                  alloc.vec.Vec.is_empty Global (alloc.vec.Vec.new Std.U8)
+                  alloc.vec.Vec.is_empty alloc.alloc.Global (alloc.vec.Vec.new
+                    Std.U8)
                 if b2
                 then
                   ok (core.result.Result.Ok { state := v, msg, key := none },
@@ -12148,7 +12156,7 @@ def send
                 let c ← chain.Chain.into_pb ratchet_chain1
                 let msg ←
                   v1.chunked.states.serialize.Message.serialize val2.msg index
-                let b ← alloc.vec.Vec.is_empty Global msg
+                let b ← alloc.vec.Vec.is_empty alloc.alloc.Global msg
                 massert (¬ b)
                 let left_val ←
                   alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice
@@ -12170,7 +12178,7 @@ def send
                             (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                             vs))
                     }
-                let b1 ← alloc.vec.Vec.is_empty Global msg_key
+                let b1 ← alloc.vec.Vec.is_empty alloc.alloc.Global msg_key
                 if b1
                 then
                   ok (core.result.Result.Ok { state := v, msg, key := none },
@@ -12297,7 +12305,7 @@ def v1.chunked.send_ek.EkSentCt1Received.recv_ct2_chunk
       (v1.chunked.send_ek.EkSentCt1ReceivedRecvChunk.StillReceiving
       { self with receiving_ct2 }))
   | some ct2 =>
-    let s ← alloc.vec.Vec.as_slice Global ct2
+    let s ← alloc.vec.Vec.as_slice alloc.alloc.Global ct2
     let i ← incremental_mlkem768.CIPHERTEXT2_SIZE
     let s1 ←
       core.slice.index.Slice.index
@@ -12639,7 +12647,7 @@ def v1.chunked.send_ct.NoHeaderReceived.recv_hdr_chunk
       (v1.chunked.send_ct.NoHeaderReceivedRecvChunk.StillReceiving
       { self with receiving_hdr }))
   | some hdr =>
-    let s ← alloc.vec.Vec.as_slice Global hdr
+    let s ← alloc.vec.Vec.as_slice alloc.alloc.Global hdr
     let i ← incremental_mlkem768.HEADER_SIZE
     let s1 ←
       core.slice.index.Slice.index
@@ -13289,7 +13297,7 @@ def msg_preamble
   (msg : alloc.vec.Vec Std.U8) :
   Result (core.result.Result MsgPreamble Error)
   := do
-  let b ← alloc.vec.Vec.is_empty Global msg
+  let b ← alloc.vec.Vec.is_empty alloc.alloc.Global msg
   if b
   then
     let s ←
@@ -13508,7 +13516,9 @@ def recv
                                           (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                           vs))
                                     }
-                                let b ← alloc.vec.Vec.is_empty Global val7
+                                let b ←
+                                  alloc.vec.Vec.is_empty alloc.alloc.Global
+                                    val7
                                 if b
                                 then
                                   ok (core.result.Result.Ok
@@ -13593,7 +13603,8 @@ def recv
                                       (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                       vs))
                                 }
-                            let b ← alloc.vec.Vec.is_empty Global val5
+                            let b ←
+                              alloc.vec.Vec.is_empty alloc.alloc.Global val5
                             if b
                             then
                               ok (core.result.Result.Ok
@@ -13734,7 +13745,8 @@ def recv
                                         (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                         vs))
                                   }
-                              let b ← alloc.vec.Vec.is_empty Global val7
+                              let b ←
+                                alloc.vec.Vec.is_empty alloc.alloc.Global val7
                               if b
                               then
                                 ok (core.result.Result.Ok
@@ -13817,7 +13829,8 @@ def recv
                                     (proto.pq_ratchet.pq_ratchet_state.Inner.V1
                                     vs))
                               }
-                          let b ← alloc.vec.Vec.is_empty Global val5
+                          let b ←
+                            alloc.vec.Vec.is_empty alloc.alloc.Global val5
                           if b
                           then
                             ok (core.result.Result.Ok
@@ -13982,6 +13995,16 @@ def serialize.Error.Insts.CoreConvertFromPolynomialError.from
 def serialize.Error.Insts.CoreConvertFromPolynomialError : core.convert.From
   serialize.Error encoding.polynomial.PolynomialError := {
   «from» := serialize.Error.Insts.CoreConvertFromPolynomialError.from
+}
+
+/-- Trait implementation: [spqr::v1::chunked::states::serialize::{impl core::convert::TryFrom<u8, alloc::string::String> for spqr::v1::chunked::states::serialize::MessageType}]
+    Source: 'src/v1/chunked/states/serialize.rs', lines 105:0-119:1 -/
+@[reducible]
+def v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String :
+  core.convert.TryFrom v1.chunked.states.serialize.MessageType Std.U8 String
+  := {
+  try_from :=
+    v1.chunked.states.serialize.MessageType.Insts.CoreConvertTryFromU8String.try_from
 }
 
 end spqr

@@ -97,7 +97,7 @@ theorem send_header_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       Slice.length, alloc.vec.Vec.deref_val, Nat.reduceAdd, ge_iff_le, Nat.reduceMul]
     scalar_tac
   · and_intros
-    all_goals try (first | rfl | assumption | exact ⟨seed, keys_post, keys_post1, keys_post2⟩)
+    all_goals try (first | assumption | exact ⟨seed, keys_post, keys_post1, keys_post2⟩)
     intro data h_data
     convert mac_post1
     apply Slice.ext; simp [h_data]

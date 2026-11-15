@@ -42,7 +42,7 @@ and the termination measure strictly decreases. -/
 @[step]
 theorem body_spec
     (iter : core.ops.range.Range Std.Usize)
-    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (h_end_le : iter.end.val ≤ vd.length.val)
     (h_wf : vd.head.val + vd.length.val ≤ vd.buf.val.length) :
     body iter vd ⦃ cf =>
@@ -102,11 +102,11 @@ Full clearing loop. Preserves deque shape, clears visited window, leaves other s
 @[step]
 theorem send_key_loop1_spec
     (iter : core.ops.range.Range Std.Usize)
-    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (h_end_le : iter.end.val ≤ vd.length.val)
     (h_wf : vd.head.val + vd.length.val ≤ vd.buf.val.length) :
     send_key_loop1 iter vd
-      ⦃ (vd' : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global) =>
+      ⦃ (vd' : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global) =>
       vd'.head = vd.head ∧
       vd'.length = vd.length ∧
       vd'.buf.val.length = vd.buf.val.length ∧
@@ -196,7 +196,7 @@ One step of the trimming loop. **Done**: unchanged when `epoch_index ≤ 1`.
 **Cont**: pops front, decrements index, preserves loop invariant, measure decreases. -/
 @[step]
 theorem body_spec
-    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (epoch_index : Std.Usize)
     (h_head_room : vd.head.val + epoch_index.val < vd.buf.val.length)
     (h_len_ge : vd.length.val ≥ epoch_index.val + 1) :
@@ -238,7 +238,7 @@ Full trimming loop. Result: `ei' = min epoch_index EPOCHS_TO_KEEP_PRIOR_TO_SEND_
 head advances by `epoch_index - ei'`, buffer unchanged, deque stays well-formed. -/
 @[step]
 theorem send_key_loop0_spec
-    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (vd : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (epoch_index : Std.Usize)
     (h_head_room : vd.head.val + epoch_index.val < vd.buf.val.length)
     (h_len_ge : vd.length.val ≥ epoch_index.val + 1) :

@@ -262,7 +262,7 @@ theorem recv_hdr_chunk_spec (self : NoHeaderReceived) (epoch : U64) (chunk : enc
   | some msg =>
     have h_len : msg.length = 96 := h_decoded_len receiving_hdr msg o_post
     have h_len' : msg.val.length = 96 := h_len
-    step with alloc.vec.Vec.as_slice_spec Global msg as ⟨s, h_s⟩
+    step with alloc.vec.Vec.as_slice_spec alloc.alloc.Global msg as ⟨s, h_s⟩
     have h_s_len : s.length = 96 := by simp only [Slice.length, h_s, h_len']
     rw [incremental_mlkem768.HEADER_SIZE_eq]
     simp only [bind_ok]
