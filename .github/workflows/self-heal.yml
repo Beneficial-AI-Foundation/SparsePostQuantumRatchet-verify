@@ -1,0 +1,40 @@
+# Self-heal: when a PR's Lean build fails after a pin or extraction change (e.g. an Aeneas or Lean
+# bump), self-healing-fv tries to repair the broken proofs and writes the result as a "Repair"
+# section into this repo's sorry-delta comment. It never pushes and never edits statements; a PR
+# that does not qualify gets nothing posted.
+# Off for one PR: the `no-self-heal` label. Off for the repo: the repository variable SELF_HEAL=off.
+# How it works: https://github.com/Beneficial-AI-Foundation/self-healing-fv/blob/main/docs/ACTIONS.md
+name: Self-heal
+on:
+  workflow_run:
+    workflows: ["Lean Verification", "Aeneas extraction"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr: {description: "PR number", required: true}
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+  actions: read
+jobs:
+  self-heal:
+    # Only a failed (or timed-out) Lean build, or a passed extraction (it may finish after the Lean
+    # build), on a PR; or a manual dispatch. The select job then checks both on the PR's head.
+    if: >-
+      vars.SELF_HEAL != 'off' && (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.pull_requests[0].number &&
+      ((github.event.workflow_run.name == 'Lean Verification' &&
+      (github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'timed_out')) ||
+      (github.event.workflow_run.name == 'Aeneas extraction' && github.event.workflow_run.conclusion == 'success'))))
+    # Job-level, so a run whose job the `if` skips does not cancel a running repair.
+    concurrency:
+      group: self-heal-${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+      cancel-in-progress: true
+    uses: Beneficial-AI-Foundation/self-healing-fv/.github/workflows/pr-repair.yml@fbfcd771f307426ec3c50facbfec40239001b0fe
+    with:
+      target: spqr
+      pr: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+      per_run_usd: "15"
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
