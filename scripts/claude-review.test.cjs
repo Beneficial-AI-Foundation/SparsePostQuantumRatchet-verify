@@ -1,6 +1,9 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { authorize, collect, render, publish } = require('./codex-review.cjs');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { authorize, collect, extract, render, publish } = require('./claude-review.cjs');
 
 function fixture(permission = 'write') {
   const outputs = {};
@@ -95,5 +98,25 @@ test('metadata collection fails before reading evidence if revisions changed', a
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
     }
+  }
+});
+
+test('extract review from Claude result, with assistant text fallback', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-review-test-'));
+  const file = path.join(dir, 'execution.json');
+  try {
+    fs.writeFileSync(file, JSON.stringify([
+      { type: 'assistant', message: { content: [{ type: 'text', text: 'draft' }] } },
+      { type: 'result', result: ' final review ' },
+    ]));
+    assert.equal(extract(file), 'final review');
+    fs.writeFileSync(file, JSON.stringify([
+      { type: 'assistant', message: { content: [{ type: 'text', text: 'review' }] } },
+    ]));
+    assert.equal(extract(file), 'review');
+    assert.equal(extract(''), '');
+  } finally {
+    fs.unlinkSync(file);
+    fs.rmdirSync(dir);
   }
 });

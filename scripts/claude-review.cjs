@@ -37,7 +37,7 @@ async function collect({ github, context }) {
   const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
     ...context.repo, ref: head, per_page: 100,
   });
-  fs.writeFileSync('.codex-review/context.json', JSON.stringify({
+  fs.writeFileSync('.claude-review/context.json', JSON.stringify({
     head, baseTip: base, mergeBase,
     title: pr.title, body: pr.body, draft: pr.draft,
     labels: pr.labels.map(label => label.name),
@@ -49,6 +49,26 @@ async function collect({ github, context }) {
   }, null, 2));
 }
 
+function extract(executionFile) {
+  if (!executionFile) return '';
+  const entries = JSON.parse(fs.readFileSync(executionFile, 'utf8'));
+  if (!Array.isArray(entries)) throw new Error('Invalid Claude execution log');
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i]?.type === 'result' && typeof entries[i].result === 'string') {
+      return entries[i].result.trim();
+    }
+  }
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const entry = entries[i];
+    if (entry?.type !== 'assistant' || !Array.isArray(entry.message?.content)) continue;
+    const text = entry.message.content
+      .filter(block => block?.type === 'text' && typeof block.text === 'string')
+      .map(block => block.text).join('\n').trim();
+    if (text) return text;
+  }
+  return '';
+}
+
 function render({ message, result, head, base, mergeBase, currentHead, currentBase, runUrl }) {
   let body = result === 'success' && message.trim()
     ? message.trim()
@@ -57,7 +77,7 @@ function render({ message, result, head, base, mergeBase, currentHead, currentBa
   if (head !== currentHead || base !== currentBase) {
     body = '**Outdated review: the PR head or base changed during this run. Post `!review` again.**\n\n' + body;
   }
-  return body + `\n\n---\nCodex quick review · head \`${head}\` · base tip \`${base}\` · merge base \`${mergeBase || 'unavailable'}\`\n` +
+  return body + `\n\n---\nClaude quick review · head \`${head}\` · base tip \`${base}\` · merge base \`${mergeBase || 'unavailable'}\`\n` +
     `Static inspection only; builds, lint, trust audits, extraction, and benchmarks were not run by this bot. ` +
     `AI assistance, not human approval. [Workflow run](${runUrl}).`;
 }
@@ -78,4 +98,4 @@ async function publish({ github, context }) {
   });
 }
 
-module.exports = { authorize, collect, render, publish };
+module.exports = { authorize, collect, extract, render, publish };

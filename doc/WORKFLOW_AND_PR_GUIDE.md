@@ -78,7 +78,7 @@ See our [performance tracking guidelines](./PERFORMANCE.md) for more information
 
 ## AI contributions
 
-### Quick Codex review
+### Quick Claude review
 
 A collaborator with repository write access can post exactly `!review` as a new
 comment in an open PR's conversation (including fork PRs). Edits to comments and
@@ -96,20 +96,22 @@ remain necessary. If either the head or base changes while it works, its comment
 is marked outdated; post a new `!review` to review the updated PR. Failed runs post
 a link to the workflow logs. Each review job has a 15-minute timeout.
 
-To enable the bot, merge `.github/workflows/codex-review.yml`, its prompt, and
-`scripts/codex-review.cjs` into the default branch, enable GitHub Actions, and add
-an Actions secret named `OPENAI_API_KEY` with API access and billing. Optionally
-set the Actions variable `CODEX_REVIEW_MODEL`; otherwise the Codex action chooses
-its default model. API usage is billed to that key. Repository/organization policy
+To enable the bot, merge `.github/workflows/claude-review.yml`, its prompt, and
+`scripts/claude-review.cjs` into the default branch and enable GitHub Actions.
+The workflow uses the existing Actions secret named `ANTHROPIC_API_KEY`; its
+Anthropic API project must have usable access and billing. API usage is billed
+to that key. Repository/organization policy
 must permit the workflow's read permissions and the publishing job's
 `pull-requests: write` permission. No separate GitHub PAT or bot account is needed.
 
 The workflow checks the requester's current write permission before using the key.
-It never checks out or runs PR code: Codex uses a read-only sandbox with sudo
-removed, and only the separate publishing job can write comments. PR content is
-untrusted review evidence; it cannot replace the trusted prompt or guides.
-Implementation uses the [official Codex GitHub Action](https://developers.openai.com/codex/github-action).
-Run the bot's offline checks with `node --test scripts/codex-review.test.cjs`.
+It never checks out or runs PR code: Claude reads the pinned diff and source from
+the trusted default-branch checkout with read-only inspection tools. The review
+job has no GitHub write permission; only the separate publishing job can write
+comments. PR content is untrusted review evidence; it cannot replace the trusted
+prompt or guides. Implementation uses the
+[official Claude Code base action](https://github.com/anthropics/claude-code-action/tree/main/base-action).
+Run the bot's offline checks with `node --test scripts/claude-review.test.cjs`.
 
 ### Contribution policy
 
