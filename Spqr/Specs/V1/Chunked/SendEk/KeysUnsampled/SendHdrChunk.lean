@@ -146,7 +146,7 @@ theorem send_hdr_chunk_spec {R : Type} (rngInst : rand_1.rng.Rng R)
     simp only [alloc.vec.Vec.length] at h_hdr; rw [h_hdr]; decide
   have h_mac_len : mac.val.length = 32 := by
     simp only [alloc.vec.Vec.length] at h_mac; rw [h_mac]; simp [MACSIZE]
-  step with alloc.vec.Vec.append_spec Global hdr mac
+  step with alloc.vec.Vec.append_spec alloc.alloc.Global hdr mac
     (by rw [h_hdr_len, h_mac_len]; scalar_tac)
     as ⟨to_send, _, h_to_send⟩
   have h_len : (alloc.vec.Vec.deref to_send).length = 96 := by
@@ -172,7 +172,6 @@ theorem send_hdr_chunk_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       step with core.result.Result.expect_ok_spec as ⟨sending_hdr, h_sending⟩
       subst h_sending
       step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec ⟨idx, EncoderState.Points pts⟩
-        (by simp [h_idx])
         (by
           intro pts' hpts j hj
           simp only [EncoderState.Points.injEq] at hpts
@@ -183,7 +182,7 @@ theorem send_hdr_chunk_spec {R : Type} (rngInst : rand_1.rng.Rng R)
         as ⟨chunk, sending_hdr1, h_next⟩
       obtain ⟨h_index, h_chunk_len, h_idx1, h_state⟩ := h_next
       have h0 : (0#u32).val = 0 := rfl
-      simp only [h_idx, h0] at h_index h_idx1 h_state
+      simp only [h_idx, h0, PolyEncoder.wireIndex, Nat.zero_mod] at h_index h_idx1 h_state
       have h_idx1' : sending_hdr1.idx.val = 1 := by rw [h_idx1]; scalar_tac
       refine ⟨h_epoch, h_auth, h_ek, h_dk, ⟨seed, h_seed_dk, h_seed_ek⟩, h_ek_slice, h_index,
         h_chunk_len, h_idx1', hdr, mac, h_hdr, h_mac, h_hdr_slice, h_mac_hdr, pts, h_lens3, ?_, ?_⟩

@@ -19,7 +19,7 @@ namespace Aeneas.Std.alloc.vec.Vec
 
 /-- A successful `as_slice` returns the elements of the vector. -/
 theorem as_slice_ok_val {α : Type} {v : alloc.vec.Vec α} {s : Slice α}
-    (h : alloc.vec.Vec.as_slice Global v = ok s) : s.val = v.val := by
+    (h : alloc.vec.Vec.as_slice alloc.alloc.Global v = ok s) : s.val = v.val := by
   simp only [alloc.vec.Vec.as_slice, ok.injEq] at h; subst h; exact Slice.from_val _ _
 
 end Aeneas.Std.alloc.vec.Vec

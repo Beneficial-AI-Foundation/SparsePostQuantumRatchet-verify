@@ -12,6 +12,7 @@ public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
 import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ct::{Ct1Acknowledged}::recv_ek_chunk`
 
@@ -51,19 +52,17 @@ obtained from `ekAccepted` on the accepting path.
 The main theorem follows the predicate-lifting pattern of
 `Specs/Encoding/Decoder/DecodedMessage.lean`: it is parametrised by a postcondition
 `decodedPost` for `decoded_message`, taken as the hypothesis `h_decoded`, and threads it through
-to every branch of the result.  `h_decoded` is stated only for decoders `pd` that are
-`self.receiving_ek` with `chunk` absorbed (`addChunkPost self.receiving_ek chunk pd`) and are
-`PointsValid` — exactly what `add_chunk_spec` and `add_chunk_spec_valid` guarantee about the
-updated decoder — so the registered `decoded_message_spec` can be plugged in
-(`recv_ek_chunk_spec_concrete` does so), while the projection
-`recv_ek_chunk_spec_still_receiving` can be instantiated non-vacuously: the hypothesis does not
-range over unrelated decoders (e.g. one with all point sets empty) on which `decoded_message`
-would behave differently.  No dual "done" projection is provided: `AddChunkPost` does not
+to every branch of the result.  `h_decoded` is stated for the decoder `pd` *actually* produced
+by `add_chunk` (`add_chunk self.receiving_ek chunk = ok pd`), which moreover satisfies
+`addChunkPost self.receiving_ek chunk pd` and `PointsValid pd.pts` — what `add_chunk_spec` and
+`add_chunk_spec_valid` guarantee — so the registered `decoded_message_spec` can be plugged in
+(`recv_ek_chunk_spec_concrete` does so).  The equation matters: `AddChunkPost` does not
 determine the updated decoder uniquely (through `IsSortedPushResult` a replace step may shrink a
-slot), so a hypothesis of the form "`decoded_message` returns `some` on *every* decoder related
-by `addChunkPost`" would be unsatisfiable whenever completion happens by inserting into a
-nonempty slot; clients needing the `Done` case should instantiate `recv_ek_chunk_spec` (or use
-`recv_ek_chunk_spec_concrete`) and case on the result.
+slot, e.g. `[0..28] ↦ [0..27, 29]`), so a hypothesis or postcondition stated for *every*
+`addChunkPost`-related decoder would be unsatisfiable, resp. too weak, whenever completion
+happens by inserting into a nonempty slot.  For the same reason `recvEkChunkPost` records the
+equation in all three arms, which makes the branch taken a function of the real decoder
+(`recv_ek_chunk_spec_concrete_done_of_complete`).
 All other callees (`add_chunk`, `recv_ek`, `send_ct2`, `send_ct2_encoder`) are discharged by
 their registered specs.
 
@@ -131,32 +130,42 @@ def doneSampledPost (uc : unchunked.send_ct.Ct1Sent) (ek : alloc.vec.Vec U8)
 
   - **`Ok (StillReceiving st)`** — the decoder did not yet yield a message
     (`decodedPost st.receiving_ek none`); the unchunked state is untouched
-    (`st.uc = self.uc`), `st.receiving_ek` is `self.receiving_ek` with `chunk` absorbed
-    (`addChunkPost self.receiving_ek chunk st.receiving_ek`) and still satisfies the
+    (`st.uc = self.uc`), `st.receiving_ek` is *exactly* the decoder produced by `add_chunk`
+    (`add_chunk self.receiving_ek chunk = ok st.receiving_ek`), hence also
+    `addChunkPost self.receiving_ek chunk st.receiving_ek`, and still satisfies the
     `PointsValid` invariant, so that the contract can be reapplied to the next chunk.
-  - **`Ok (Done st)`** — some updated decoder `pd` with `addChunkPost self.receiving_ek chunk pd`
-    yielded `some ek` (`decodedPost pd (some ek)`); `ek` was accepted against the header
-    (`ekAccepted self.uc ek`, in particular `ek.length = 1152`), and `st` satisfies
-    `doneSampledPost self.uc ek st`.
+  - **`Ok (Done st)`** — the updated decoder `pd` with `add_chunk self.receiving_ek chunk = ok pd`
+    (and `addChunkPost self.receiving_ek chunk pd`) yielded `some ek` (`decodedPost pd (some
+    ek)`); `ek` was accepted against the header (`ekAccepted self.uc ek`, in particular
+    `ek.length = 1152`), and `st` satisfies `doneSampledPost self.uc ek st`.
   - **`Err e`** — as in the `Done` case a key `ek` was decoded, but it was rejected
-    (`¬ ekAccepted self.uc ek`) and `e = ErroneousDataReceived`. -/
+    (`¬ ekAccepted self.uc ek`) and `e = ErroneousDataReceived`.
+
+  The actual-result equation is what makes the branch determined: `addChunkPost` alone admits a
+  replacement (`[0..28] ↦ [0..27, 29]`) and so would still permit `StillReceiving` when the
+  chunk supplies the final missing points (see
+  `recv_ek_chunk_spec_concrete_done_of_complete`). -/
 def recvEkChunkPost (self : Ct1Acknowledged) (chunk : encoding.Chunk)
     (decodedPost : PolyDecoder → Option (alloc.vec.Vec U8) → Prop)
     (result : core.result.Result Ct1AcknowledgedRecvChunk spqr.Error) : Prop :=
   match result with
   | core.result.Result.Ok (Ct1AcknowledgedRecvChunk.StillReceiving st) =>
       st.uc = self.uc ∧
+      PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk =
+        ok st.receiving_ek ∧
       addChunkPost self.receiving_ek chunk st.receiving_ek ∧
       PolyDecoder.PointsValid st.receiving_ek.pts ∧
       decodedPost st.receiving_ek none
   | core.result.Result.Ok (Ct1AcknowledgedRecvChunk.Done st) =>
       ∃ (pd : PolyDecoder) (ek : alloc.vec.Vec U8),
+        PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk = ok pd ∧
         addChunkPost self.receiving_ek chunk pd ∧
         decodedPost pd (some ek) ∧
         Spqr.V1.Unchunked.SendCt.Ct1Sent.ekAccepted self.uc ek ∧
         doneSampledPost self.uc ek st
   | core.result.Result.Err e =>
       ∃ (pd : PolyDecoder) (ek : alloc.vec.Vec U8),
+        PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk = ok pd ∧
         addChunkPost self.receiving_ek chunk pd ∧
         decodedPost pd (some ek) ∧
         ¬ Spqr.V1.Unchunked.SendCt.Ct1Sent.ekAccepted self.uc ek ∧
@@ -195,12 +204,13 @@ open Spqr.V1.Chunked.SendCt.Ct1Acknowledged
       `chunk.index * 16 + 16` fits, and each of the 16 sorted sets has room for 16 more points;
     – `h_valid` — every slot of `self.receiving_ek.pts` is `SlotSorted` (the `SortedSet`
       invariant of the Rust decoder), preserved by `add_chunk_spec_valid`;
-    – `h_decoded` — the assumed behaviour of `decoded_message` on any decoder `pd` related to
-      `self.receiving_ek` by `addChunkPost self.receiving_ek chunk pd` and `PointsValid` (which
-      is all `add_chunk_spec` / `add_chunk_spec_valid` guarantee about the shape of the updated
-      decoder).  In particular it must assert totality; everything else it asserts is forwarded
-      verbatim through `decodedPost`.  `recv_ek_chunk_spec_concrete` instantiates it with the
-      registered `decoded_message_spec`;
+    – `h_decoded` — the assumed behaviour of `decoded_message` on the decoder `pd` actually
+      produced by `add_chunk` (`add_chunk self.receiving_ek chunk = ok pd`), which moreover
+      satisfies `addChunkPost self.receiving_ek chunk pd` and `PointsValid pd.pts`.  In
+      particular it must assert totality; everything else it asserts is forwarded verbatim
+      through `decodedPost`.  `recv_ek_chunk_spec_concrete` instantiates it with the registered
+      `decoded_message_spec` (ignoring the equation), while
+      `recv_ek_chunk_spec_still_receiving` relies on it;
     – `h_es`, `h_key`, `h_ct` — the length guards of `send_ct2_spec` on the stored
       encapsulation state, MAC key and `ct1`.  In `h_ct` the `128` is the length of `ct2` and
       the `43` is the `mac_ct` overhead: the 35-byte `MAC_CT_LABEL` plus the 8-byte big-endian
@@ -232,6 +242,7 @@ theorem recv_ek_chunk_spec (self : Ct1Acknowledged) (epoch : U64) (chunk : encod
       (self.receiving_ek.pts[k]!).length + 17 ≤ Usize.max)
     (h_valid : PolyDecoder.PointsValid self.receiving_ek.pts)
     (h_decoded : ∀ (pd : PolyDecoder),
+      PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk = ok pd →
       addChunkPost self.receiving_ek chunk pd →
       PolyDecoder.PointsValid pd.pts →
       PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message pd ⦃
@@ -243,17 +254,17 @@ theorem recv_ek_chunk_spec (self : Ct1Acknowledged) (epoch : U64) (chunk : encod
       (result : core.result.Result Ct1AcknowledgedRecvChunk Error) =>
       recvEkChunkPost self chunk decodedPost result ⦄ := by
   unfold recv_ek_chunk
-  step with WP.spec_and
+  obtain ⟨receiving_ek, h_ok, h_add, h_valid'⟩ := WP.spec_imp_exists (WP.spec_and
     (PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_spec_post self.receiving_ek chunk
       h_overflow h_push_cap)
     (PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk_spec_valid self.receiving_ek chunk
-      h_overflow h_push_cap h_valid)
-    as ⟨receiving_ek, h_add, h_valid'⟩
-  step with h_decoded receiving_ek h_add h_valid'
+      h_overflow h_push_cap h_valid))
+  rw [h_ok, bind_ok]
+  step with h_decoded receiving_ek h_ok h_add h_valid'
   cases o with
   | none =>
     simp only [WP.spec_ok, recvEkChunkPost, true_and]
-    exact ⟨h_add, h_valid', o_post⟩
+    exact ⟨h_ok, h_add, h_valid', o_post⟩
   | some decoded =>
     step with unchunked.send_ct.Ct1Sent.recv_ek_spec self.uc epoch decoded h_epoch
     cases result with
@@ -270,7 +281,7 @@ theorem recv_ek_chunk_spec (self : Ct1Acknowledged) (epoch : U64) (chunk : encod
         (by simpa [Slice.length, alloc.vec.Vec.deref_val] using h_mac_len)
         as ⟨pe, h_idx, pts, h_s, h_lens, h_coeffs⟩
       simp only [recvEkChunkPost]
-      refine ⟨receiving_ek, decoded, h_add, o_post, h_acc,
+      refine ⟨receiving_ek, decoded, h_ok, h_add, o_post, h_acc,
         h_uc_ep.trans h_ep, h_uc_auth.trans h_auth, ct2, mac, h_ct2_len, ?_, h_mac_len,
         ⟨data, ?_, ?_⟩, h_idx, pts, h_s, h_lens, ?_⟩
       · rw [h_ek', h_es'] at h_enc; exact h_enc
@@ -284,21 +295,20 @@ theorem recv_ek_chunk_spec (self : Ct1Acknowledged) (epoch : U64) (chunk : encod
       simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok,
         core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual,
         core.convert.FromSame.from, bind_tc_ok, WP.spec_ok, recvEkChunkPost]
-      exact ⟨receiving_ek, decoded, h_add, o_post, h_rej, h_e⟩
+      exact ⟨receiving_ek, decoded, h_ok, h_add, o_post, h_rej, h_e⟩
 
 /-- **Spec theorem for `spqr.v1.chunked.send_ct.Ct1Acknowledged.recv_ek_chunk`**
 (still-receiving case):
 
 If the updated decoder does not yet yield a message (`decoded_message` returns `none`), the
-call returns `Ok (StillReceiving st)` with `st.uc = self.uc`, the decoder advanced by
-`addChunkPost` and still `PointsValid` (so the theorem can be reapplied to the next chunk).
-Projection of `recv_ek_chunk_spec` with `decodedPost := fun _ o => o = none`.
+call returns `Ok (StillReceiving st)` with `st.uc = self.uc`, the decoder being exactly the
+`add_chunk` result (hence advanced by `addChunkPost`) and still `PointsValid` (so the theorem
+can be reapplied to the next chunk).  The hypothesis `h_decoded_none` is stated on the decoder
+*actually* produced by `add_chunk`, not on every `addChunkPost`-related one (which would be
+unsatisfiable whenever some related decoder happens to be complete).  Projection of
+`recv_ek_chunk_spec` with `decodedPost := fun _ o => o = none`.
 
-There is deliberately no dual `recv_ek_chunk_spec_done` projection: see the module docstring —
-`AddChunkPost` does not determine the updated decoder uniquely, so a hypothesis that
-`decoded_message` returns `some` on *every* related decoder would be unsatisfiable whenever
-completion happens by inserting into a nonempty slot.  Clients needing the `Done` case should
-instantiate `recv_ek_chunk_spec` (or use `recv_ek_chunk_spec_concrete`) and case on the result.
+For the dual completion case see `recv_ek_chunk_spec_concrete_done_of_complete`.
 
 **Source**: spqr/src/v1/chunked/send_ct.rs (lines 259:4-279:5)
 -/
@@ -310,8 +320,7 @@ theorem recv_ek_chunk_spec_still_receiving (self : Ct1Acknowledged) (epoch : U64
       (self.receiving_ek.pts[k]!).length + 17 ≤ Usize.max)
     (h_valid : PolyDecoder.PointsValid self.receiving_ek.pts)
     (h_decoded_none : ∀ (pd : PolyDecoder),
-      addChunkPost self.receiving_ek chunk pd →
-      PolyDecoder.PointsValid pd.pts →
+      PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk = ok pd →
       PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message pd ⦃
         (o : Option (alloc.vec.Vec U8)) => o = none ⦄)
     (h_es : self.uc.es.length = 2080)
@@ -322,15 +331,17 @@ theorem recv_ek_chunk_spec_still_receiving (self : Ct1Acknowledged) (epoch : U64
       ∃ st : Ct1Acknowledged,
         result = core.result.Result.Ok (Ct1AcknowledgedRecvChunk.StillReceiving st) ∧
         st.uc = self.uc ∧
+        PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk =
+          ok st.receiving_ek ∧
         addChunkPost self.receiving_ek chunk st.receiving_ek ∧
         PolyDecoder.PointsValid st.receiving_ek.pts ⦄ := by
   apply WP.spec_mono (recv_ek_chunk_spec self epoch chunk (fun _ o => o = none) h_epoch
-    h_overflow h_push_cap h_valid h_decoded_none h_es h_key h_ct)
+    h_overflow h_push_cap h_valid (fun pd h_ok _ _ => h_decoded_none pd h_ok) h_es h_key h_ct)
   intro result h
   match result with
-  | .Ok (.StillReceiving st) => exact ⟨st, rfl, h.1, h.2.1, h.2.2.1⟩
-  | .Ok (.Done _) => obtain ⟨_, _, _, h_none, _⟩ := h; exact absurd h_none (by simp)
-  | .Err _ => obtain ⟨_, _, _, h_none, _⟩ := h; exact absurd h_none (by simp)
+  | .Ok (.StillReceiving st) => exact ⟨st, rfl, h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
+  | .Ok (.Done _) => obtain ⟨_, _, _, _, h_none, _⟩ := h; exact absurd h_none (by simp)
+  | .Err _ => obtain ⟨_, _, _, _, h_none, _⟩ := h; exact absurd h_none (by simp)
 
 /-- **Spec theorem for `spqr.v1.chunked.send_ct.Ct1Acknowledged.recv_ek_chunk`**
 (concrete `decoded_message` semantics):
@@ -376,11 +387,77 @@ theorem recv_ek_chunk_spec_concrete (self : Ct1Acknowledged) (epoch : U64)
         result ⦄ := by
   apply recv_ek_chunk_spec self epoch chunk _ h_epoch h_overflow h_push_cap h_valid
     _ h_es h_key h_ct
-  intro pd h_add h_pv
+  intro pd _ h_add h_pv
   have h_pn' : pd.pts_needed.val = 576 := by rw [h_add.1, h_pts_needed]
   apply WP.spec_mono (PolyDecoder.Insts.SpqrEncodingDecoder.decoded_message_spec pd h_pv
     (by rw [h_pn']; scalar_tac))
   intro o h
   exact ⟨h_pn', h⟩
+
+/-- **Spec theorem for `spqr.v1.chunked.send_ct.Ct1Acknowledged.recv_ek_chunk`**
+(progress in the completion case):
+
+If the decoder `pd` that `add_chunk` *actually* produces from `self.receiving_ek` and `chunk`
+is not yet marked complete and no slot lacks points (`¬ someIncomplete pd.pts pd.pts_needed
+0 16`), the call does **not** return `StillReceiving`: a `1152`-byte key `ek` decoding `pd.pts`
+is reconstructed, and the result is either `Ok (Done st)` with `ekAccepted self.uc ek` and
+`doneSampledPost self.uc ek st`, or `Err ErroneousDataReceived` with `¬ ekAccepted self.uc ek`.
+
+This closes the specification gap left by `addChunkPost` alone: it admits replacing an existing
+point (e.g. `[0..28] ↦ [0..27, 29]`), so a decoder merely *related* to the input by
+`addChunkPost` may remain incomplete even when the real one is complete.  Since
+`recvEkChunkPost` records the actual-result equation `add_chunk self.receiving_ek chunk = ok
+pd`, the `StillReceiving` arm of `recv_ek_chunk_spec_concrete` is refuted by determinism of
+`add_chunk` whenever `h_complete` holds on the actual decoder.  Projection of
+`recv_ek_chunk_spec_concrete`.
+
+**Source**: spqr/src/v1/chunked/send_ct.rs (lines 259:4-279:5)
+-/
+theorem recv_ek_chunk_spec_concrete_done_of_complete (self : Ct1Acknowledged) (epoch : U64)
+    (chunk : encoding.Chunk) (pd : PolyDecoder)
+    (h_epoch : epoch = self.uc.epoch)
+    (h_overflow : chunk.index * 16 + 16 ≤ Usize.max)
+    (h_push_cap : ∀ (k : Nat), k < 16 →
+      (self.receiving_ek.pts[k]!).length + 17 ≤ Usize.max)
+    (h_valid : PolyDecoder.PointsValid self.receiving_ek.pts)
+    (h_pts_needed : self.receiving_ek.pts_needed.val = 576)
+    (h_es : self.uc.es.length = 2080)
+    (h_key : self.uc.auth.mac_key.length ≤ U32.max)
+    (h_ct : self.uc.ct1.length + 128 + 43 ≤ U32.max)
+    (h_add : PolyDecoder.Insts.SpqrEncodingDecoder.add_chunk self.receiving_ek chunk = ok pd)
+    (h_complete : pd.is_complete = false ∧
+      ¬ PolyDecoder.Insts.SpqrEncodingDecoder.someIncomplete pd.pts pd.pts_needed 0 16) :
+    recv_ek_chunk self epoch chunk ⦃
+      (result : core.result.Result Ct1AcknowledgedRecvChunk Error) =>
+      ∃ ek : alloc.vec.Vec U8,
+        ek.length = 1152 ∧
+        PolyDecoder.Insts.SpqrEncodingDecoder.BytesDecode pd.pts pd.pts_needed ek.val 0 ∧
+        ((∃ st : Ct2Sampled,
+            result = core.result.Result.Ok (Ct1AcknowledgedRecvChunk.Done st) ∧
+            Spqr.V1.Unchunked.SendCt.Ct1Sent.ekAccepted self.uc ek ∧
+            doneSampledPost self.uc ek st) ∨
+          (result = core.result.Result.Err Error.ErroneousDataReceived ∧
+            ¬ Spqr.V1.Unchunked.SendCt.Ct1Sent.ekAccepted self.uc ek)) ⦄ := by
+  apply WP.spec_mono (recv_ek_chunk_spec_concrete self epoch chunk h_epoch h_overflow
+    h_push_cap h_valid h_pts_needed h_es h_key h_ct)
+  intro result h
+  match result with
+  | .Ok (.StillReceiving st) =>
+    obtain ⟨_, h_ok, _, _, _, h_none⟩ := h
+    rw [h_add, ok.injEq] at h_ok
+    subst h_ok
+    rcases h_none with h_c | h_inc
+    · exact absurd h_c (by rw [h_complete.1]; decide)
+    · exact absurd h_inc h_complete.2
+  | .Ok (.Done st) =>
+    obtain ⟨pd', ek, h_ok, _, ⟨h_pn, _, _, h_len, h_dec⟩, h_acc, h_done⟩ := h
+    rw [h_add, ok.injEq] at h_ok
+    subst h_ok
+    exact ⟨ek, by rw [h_len, h_pn], h_dec, Or.inl ⟨st, rfl, h_acc, h_done⟩⟩
+  | .Err e =>
+    obtain ⟨pd', ek, h_ok, _, ⟨h_pn, _, _, h_len, h_dec⟩, h_rej, h_e⟩ := h
+    rw [h_add, ok.injEq] at h_ok
+    subst h_ok h_e
+    exact ⟨ek, by rw [h_len, h_pn], h_dec, Or.inr ⟨rfl, h_rej⟩⟩
 
 end spqr.v1.chunked.send_ct.Ct1Acknowledged

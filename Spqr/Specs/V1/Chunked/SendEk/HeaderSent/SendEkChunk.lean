@@ -62,14 +62,7 @@ namespace spqr.v1.chunked.send_ek.HeaderSent
   which yields a pair `(chunk, sending_ek')`.
 • Returns `({ self with sending_ek := sending_ek' }, chunk)`.
 
-• The function succeeds under exactly the preconditions of `next_chunk_spec`:
-    – `h_idx_fits`: the current encoder index fits in a `u16`
-      (`self.sending_ek.idx.val ≤ U16.max`), so the cast performed by `next_chunk` is lossless.
-      This restriction is inherited from `next_chunk_spec`: Rust truncates with
-      `self.idx as u16` (spqr/src/encoding/polynomial.rs), so after 2¹⁶ unacknowledged chunks
-      `chunk.index` wraps while `idx` keeps counting.  Those states are accepted by Rust but
-      are outside this contract; the index relation would need to be stated modulo 2¹⁶ to cover
-      them, which should be done in the supporting contract first;
+• The function succeeds under the preconditions of `next_chunk_spec`:
     – `h_admissible`: if the encoder is still in the `Points` phase, every one of the sixteen
       point-vectors has one of the admissible lengths `0, 1, 3, 5, 30, 34, 36` so that Lagrange
       interpolation is well-defined;
@@ -88,7 +81,7 @@ The result satisfies the postcondition:
 
 where `NextChunkPostCond` (defined once in `PolyEncoder.Defs` and shared verbatim with
 `next_chunk_spec`, `Ct1Received.send_ek_chunk_spec`, and the `send_ct*_chunk` specs) states
-`chunk.index.val = self.sending_ek.idx.val`, `chunk.data.length = 32`,
+`chunk.index.val = self.sending_ek.wireIndex` (the counter mod 2¹⁶), `chunk.data.length = 32`,
 `result.sending_ek.idx.val = (self.sending_ek.idx.val + 1) % U32.size`, and the
 phase-dependent encoder invariant:
 
@@ -96,13 +89,13 @@ phase-dependent encoder invariant:
     (`result.sending_ek.s = self.sending_ek.s`) and for every `j < 16` the `j`-th 16-bit
     big-endian word of the chunk is the evaluation of the `j`-th polynomial at the index:
       `chunkWord chunk.data j =
-          polys[j].toGF216Poly.eval (self.sending_ek.idx.val.toGF216)`
+          polys[j].toGF216Poly.eval (self.sending_ek.wireIndex.toGF216)`
   • `Points pts` phase — either the encoder stays in `Points` (cache hit) and every chunk word
-    is the stored point `pts[j][idx]`, or it transitions to `Polys polys'` where
+    is the stored point `pts[j][wireIndex]`, or it transitions to `Polys polys'` where
       `polys'[j].toGF216Poly =
           ∑ k < |pts[j]|, C (pts[j][k].toGF216) * scaledLagrangeBasis |pts[j]| k`,
     the coefficient count is bounded, and each chunk word is either a cache hit or an
-    evaluation of the interpolant at `idx`
+    evaluation of the interpolant at the wire index
 
 The proof unfolds `send_ek_chunk` and applies `next_chunk_spec` with the supplied hypotheses;
 the `uc`- and `receiving_ct1`-preservation conjuncts are closed by reflexivity
@@ -113,7 +106,6 @@ is exactly the inherited postcondition.
 -/
 @[step]
 theorem send_ek_chunk_spec (self : HeaderSent)
-    (h_idx_fits : self.sending_ek.idx.val ≤ U16.max)
     (h_admissible : ∀ pts, self.sending_ek.s = .Points pts →
         ∀ (j : Nat), j < 16 →
           let len := (pts[j]!).value.length
@@ -128,7 +120,7 @@ theorem send_ek_chunk_spec (self : HeaderSent)
       PolyEncoder.NextChunkPostCond self.sending_ek result.sending_ek chunk ⦄ := by
   unfold send_ek_chunk
   step with PolyEncoder.Insts.SpqrEncodingEncoder.next_chunk_spec self.sending_ek
-    h_idx_fits h_admissible h_coeff_bound
+    h_admissible h_coeff_bound
   exact chunk_post
 
 end spqr.v1.chunked.send_ek.HeaderSent

@@ -218,9 +218,7 @@ theorem decode_varint_loop_body_spec
       · -- Terminator flag, backward direction
         intro hf
         have hf' : byte.val < 128 := by
-          first
-          | exact hf
-          | (rw [hbyte]; exact hf)
+          rw [hbyte]; exact hf
         have hv : i8.val = 0 := by omega
         have hz : i8 = 0#u8 := by scalar_tac
         simp [hz]

@@ -1,0 +1,68 @@
+Translation patch: potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275 (spqr::incremental_mlkem768)
+
+Change: the function is removed from the Charon `opaque` list in Cargo.toml, so its body is
+extracted. The `log::info!` and `log::warn!` calls are commented out. Each 2-byte word is read
+with `u16::from_le_bytes` instead of `i16::from_le_bytes`, and the patterns are the same bit
+patterns as `u16` literals (`NEG1_I16` is `0xFFFF`, `NEG2_I16_GOOD` is `0xFFFE`, `NEG2_I16_BAD`
+is `0xFEFF`); the three constants are commented out.
+Why: `log` is excluded from the translation; its macros make Aeneas fail ("Internal error").
+Aeneas emits negative `i16` literal patterns as `(-1)#iscalar`, which Lean's match compiler
+rejects ("Failed to compile pattern matching").
+Behaviour: identical apart from logging (no log output). `u16` and `i16` read the same two
+bytes, and each pattern matches the same bit pattern as before, so every word takes the same
+branch.
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 4765fb8..900ae3b 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -90,7 +90,6 @@ exclude = [
+ opaque = [
+     # `hkdf_to_slice`: https://github.com/Beneficial-AI-Foundation/SparsePostQuantumRatchet-verify/issues/104
+     "spqr::kdf::hkdf_to_slice",
+-    "spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275",  # has log calls; kept opaque so encaps2 can call it
+     # prost encoding/decoding of the ratchet state (translation patch lib-state_pb.patch)
+     "spqr::encode_state_pb",
+     "spqr::decode_state_pb",
+diff --git a/src/incremental_mlkem768.rs b/src/incremental_mlkem768.rs
+index dc2d584..0950005 100644
+--- a/src/incremental_mlkem768.rs
++++ b/src/incremental_mlkem768.rs
+@@ -110,26 +110,26 @@ fn potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275(
+     // All error2 values should be in the range [-2, 2].
+     // This is 𝜂2 from https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.203.pdf
+     // page 39 table 2, generated as 𝑒2 on page 30 algorithm 14 line 17.
+-    const NEG1_I16: i16 = 0xFFFFu16 as i16;
+-    const NEG2_I16_GOOD: i16 = 0xFFFEu16 as i16;
+-    const NEG2_I16_BAD: i16 = 0xFEFFu16 as i16;
++    // const NEG1_I16: i16 = 0xFFFFu16 as i16;
++    // const NEG2_I16_GOOD: i16 = 0xFFFEu16 as i16;
++    // const NEG2_I16_BAD: i16 = 0xFEFFu16 as i16;
+ 
+     for c in es[1536..2080 - 32].chunks(2) {
+-        match i16::from_le_bytes(c.try_into().expect("chunk should be size 2")) {
+-            0x0000i16 | NEG1_I16 => {} // These have the same encoding for i16 in little/big-endian
+-            0x0001i16 | 0x0002i16 | NEG2_I16_GOOD => {
++        match u16::from_le_bytes(c.try_into().expect("chunk should be size 2")) {
++            0x0000u16 | 0xFFFFu16 => {} // These have the same encoding for i16 in little/big-endian
++            0x0001u16 | 0x0002u16 | 0xFFFEu16 => {
+                 return None;
+             }
+-            0x0100i16 | 0x0200i16 | NEG2_I16_BAD => {
++            0x0100u16 | 0x0200u16 | 0xFEFFu16 => {
+                 // If they aren't in the expected range, we probably have a state with bad endian-ness.  So flip it.
+-                #[cfg(not(hax))]
+-                log::info!("spqr fixing bad encapsulate1 stored state endianness");
++                // #[cfg(not(hax))]
++                // log::info!("spqr fixing bad encapsulate1 stored state endianness");
+                 return Some(flip_endianness_of_encapsulation_state(es));
+             }
+             _ => {
+                 // We're in a weird state, so just use what we had initially.
+-                #[cfg(not(hax))]
+-                log::warn!("spqr unable to fix encapsulate1 stored state endianness");
++                // #[cfg(not(hax))]
++                // log::warn!("spqr unable to fix encapsulate1 stored state endianness");
+                 return None;
+             }
+         }

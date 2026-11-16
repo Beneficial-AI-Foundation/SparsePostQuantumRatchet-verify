@@ -570,63 +570,6 @@ theorem into_pb_spec_postcond
     have e := (h_polys j hj).2 k hk
     exact ⟨e, by rw [e], by rw [e]⟩
 
-/-- **The functional model satisfies the byte-level postcondition**
-• `FunctionalModels.intoPb self` satisfies `PolyEncoder.IntoPbPostCond self` under the two
-  overflow hypotheses of `into_pb_spec`; lets consumers of `into_pb_spec` recover the byte-level
-  facts about the result. -/
-theorem intoPbPostCond_intoPb
-    (self : PolyEncoder)
-    (h_overflow_points : ∀ points,
-      self.s = .Points points →
-        ∀ j < points.length, 2 * (points[j]!).value.length ≤ Usize.max)
-    (h_overflow_polys : ∀ polys, self.s = .Polys polys →
-        ∀ j < polys.length, 2 * (polys[j]!).degree ≤ Usize.max) :
-    IntoPbPostCond self (FunctionalModels.intoPb self) := by
-  rcases self with ⟨idx, points | polys⟩
-  · have h_ov := h_overflow_points points rfl
-    unfold IntoPbPostCond FunctionalModels.intoPb
-    simp only
-    refine ⟨trivial, by simp [alloc.vec.Vec.new],
-      by simp only [alloc.vec.Vec.length]; rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]; simp,
-      fun j hj => ?_⟩
-    have hj' : j < points.val.length := hj
-    have hb := h_ov j hj
-    rw [Array.getElem!_Nat_eq] at hb
-    rw [alloc.vec.Vec.getElem!_Nat_eq (alloc.vec.Vec.ofList _) j,
-      alloc.vec.Vec.ofList_val _ (by scalar_tac), List.getElem!_map_eq _ _ _ hj',
-      Array.getElem!_Nat_eq]
-    simp only [alloc.vec.Vec.length] at hb
-    obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff
-      (Poly.FunctionalModels.serialize { coefficients := (points.val[j]!).value })
-      (points.val[j]!).value.val (by omega)).mp rfl
-    refine ⟨hl, fun k hk' => ?_⟩
-    have e := hk k hk'
-    rw [List.Inhabited_getElem_eq_getElem! _ _ hk'] at e
-    simp only [alloc.vec.Vec.getElem!_Nat_eq] at e ⊢
-    exact ⟨e, by rw [e], by rw [e]⟩
-  · have h_ov := h_overflow_polys polys rfl
-    unfold IntoPbPostCond FunctionalModels.intoPb
-    simp only
-    refine ⟨trivial, by simp [alloc.vec.Vec.new],
-      by simp only [alloc.vec.Vec.length]; rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]; simp,
-      fun j hj => ?_⟩
-    have hj' : j < polys.val.length := hj
-    have hb := h_ov j hj
-    rw [Array.getElem!_Nat_eq] at hb
-    rw [alloc.vec.Vec.getElem!_Nat_eq (alloc.vec.Vec.ofList _) j,
-      alloc.vec.Vec.ofList_val _ (by scalar_tac), List.getElem!_map_eq _ _ _ hj',
-      Array.getElem!_Nat_eq]
-    unfold Poly.degree at hb ⊢
-    simp only [alloc.vec.Vec.length] at hb
-    obtain ⟨hl, hk⟩ := (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff
-      (Poly.FunctionalModels.serialize (polys.val[j]!)) (polys.val[j]!).coefficients.val
-      (by omega)).mp rfl
-    refine ⟨hl, fun k hk' => ?_⟩
-    have e := hk k hk'
-    rw [List.Inhabited_getElem_eq_getElem! _ _ hk'] at e
-    simp only [alloc.vec.Vec.getElem!_Nat_eq] at e ⊢
-    exact ⟨e, by rw [e], by rw [e]⟩
-
 /-- **The byte-level postcondition determines the result**
 • Any `result` satisfying `PolyEncoder.IntoPbPostCond self result` is
   `FunctionalModels.intoPb self`: the byte layout leaves no freedom. -/

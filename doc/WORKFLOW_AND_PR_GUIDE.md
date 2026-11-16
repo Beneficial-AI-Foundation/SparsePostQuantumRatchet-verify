@@ -81,6 +81,43 @@ See our [performance tracking guidelines](./PERFORMANCE.md) for more information
 
 ## AI contributions
 
+### Quick Claude review
+
+A collaborator with repository write access can post exactly `!review` as a new
+comment in an open PR's conversation (including fork PRs). Edits to comments and
+inline review comments do not trigger it. The bot posts a new comment with a quick
+static review using [the AI review questions](AI_PR_REVIEW_QUESTIONS.md) and the
+reviewer, style, and workflow guides from the trusted default-branch revision.
+It reports findings by severity and category, with evidence and precise locations.
+It does not approve PRs or generate specifications.
+
+The bot reads the pinned diff, relevant source through Git, PR metadata, existing
+comments (including performance and sorry-delta reports), and head CI checks. It
+does not run builds, lint, trust audits, extraction, or benchmarks. Its comment
+identifies these limits and the reviewed commits. Full validation and human review
+remain necessary. If either the head or base changes while it works, its comment
+is marked outdated; post a new `!review` to review the updated PR. Failed runs post
+a link to the workflow logs. Each review job has a 15-minute timeout.
+
+To enable the bot, merge `.github/workflows/claude-review.yml`, its prompt, and
+`scripts/claude-review.cjs` into the default branch and enable GitHub Actions.
+The workflow uses the existing Actions secret named `ANTHROPIC_API_KEY`; its
+Anthropic API project must have usable access and billing. API usage is billed
+to that key. Repository/organization policy
+must permit the workflow's read permissions and the publishing job's
+`pull-requests: write` permission. No separate GitHub PAT or bot account is needed.
+
+The workflow checks the requester's current write permission before using the key.
+It never checks out or runs PR code: Claude reads the pinned diff and source from
+the trusted default-branch checkout with read-only inspection tools. The review
+job has no GitHub write permission; only the separate publishing job can write
+comments. PR content is untrusted review evidence; it cannot replace the trusted
+prompt or guides. Implementation uses the
+[official Claude Code base action](https://github.com/anthropics/claude-code-action/tree/main/base-action).
+Run the bot's offline checks with `node --test scripts/claude-review.test.cjs`.
+
+### Contribution policy
+
 **Specifications:** PRs introducing AI-generated specifications of any kind are strictly prohibited, and their submission may result in a contribution ban at the maintainers' discretion.
 
 **Proofs:** AI-generated proofs are welcome, as long as they are compliant with the style guide and requirements listed in this document. The human submitting the PR is held responsible for the contents of the PR, in particular its adherence to style and contribution guidelines, as well as the performance impact outlined above.
