@@ -11,6 +11,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.SlotSize
 import Spqr.Auxiliary.Aeneas.SpecImpExists
+import Spqr.Auxiliary.Aeneas.Array
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
@@ -46,6 +47,10 @@ authenticator keys, the ML-KEM 768 lengths of the stored byte vectors, the slot 
 encoder and the point count, completion flag and sortedness of every decoder. `init_a_ok` and
 `init_b_ok` show that the initial states satisfy it, and `inv_step` that every successful
 `send`, with any RNG, and every successful `recv`, of any message, keeps it.
+
+The sizes of `generate` and `encaps1` come from `generate_ok_lengths` and `encaps1_ok_lengths`.
+`generate_spec` and `encaps1_spec` assume that `fill_bytes` succeeds on every input. These two
+lemmas use only the one call of the run, so `inv_step` holds for any RNG.
 
 **Source**: spqr/src/v1/chunked/states.rs:58-64, spqr/src/v1/chunked/states.rs:115-533 -/
 
@@ -106,15 +111,6 @@ def Inv : States → Prop
       s.uc.ct1.length = 960 ∧ DecoderInv 576 s.receiving_ek
   | .Ct2Sampled s => AuthInv s.uc.auth ∧ EncoderInv 5 s.sending_ct2
 
-/-- A property of all 16 entries of an array holds for every member of it. -/
-theorem forall_mem_of_forall_lt {α : Type} [Inhabited α] {a : Std.Array α 16#usize} {P : α → Prop}
-    (h : ∀ j < 16, P a[j]!) : ∀ x ∈ a.val, P x := by
-  intro x hx
-  obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hx
-  have hj' : j < 16 := by have := a.property; simp only [UScalar.ofNatCore_val_eq] at this; omega
-  have := h j hj'
-  rwa [Array.getElem!_Nat_eq, getElem!_pos a.val j hj] at this
-
 /-- An encoder that satisfies `EncoderInv n` with `n` one of 3, 5, 30 and 36 satisfies the
 premises of `next_chunk_spec`, and of `PolyEncoder.into_pb_spec` and the encoder round trip:
 no slot is empty, and twice the slot size fits in `usize`. -/
@@ -133,11 +129,11 @@ theorem EncoderInv.ready {n : Nat} {e : encoding.polynomial.PolyEncoder}
   · unfold encoding.polynomial.PolyEncoder.FunctionalModels.WellFormed
     split
     · rename_i pts hp
-      exact forall_mem_of_forall_lt (P := fun p : encoding.polynomial.Point =>
+      exact Array.forall_mem_of_forall_lt (P := fun p : encoding.polynomial.Point =>
         2 * p.value.length ≤ Usize.max)
         fun j hj => by simp only [hpts pts hp j hj]; scalar_tac
     · rename_i polys hp
-      refine forall_mem_of_forall_lt
+      refine Array.forall_mem_of_forall_lt
         (P := fun p => encoding.polynomial.Poly.FunctionalModels.WellFormed p) fun j hj => ?_
       have := hpolys polys hp j hj
       refine ⟨fun he => ?_, ?_⟩
@@ -220,6 +216,10 @@ theorem EncoderInv.next_chunk {n : Nat} {e e' : encoding.polynomial.PolyEncoder}
     EncoderInv n e' :=
   encoding.polynomial.PolyEncoder.next_chunk_slotSize h hc
 
+/-- `EncoderInv n` is the slot size predicate `PolyEncoder.SlotSize n`. -/
+theorem EncoderInv_iff_slotSize {n : Nat} {e : encoding.polynomial.PolyEncoder} :
+    EncoderInv n e ↔ encoding.polynomial.PolyEncoder.SlotSize n e := Iff.rfl
+
 /-- A successful `Authenticator::update` gives 32-byte keys. -/
 theorem AuthInv.update {a a' : authenticator.Authenticator} {ep : Std.U64} {k : Slice Std.U8}
     (h : authenticator.Authenticator.update a ep k = ok a') : AuthInv a' := by
@@ -227,9 +227,8 @@ theorem AuthInv.update {a a' : authenticator.Authenticator} {ep : Std.U64} {k : 
     (authenticator.Authenticator.length_le_of_update_ok h)) h
   exact ⟨h1, h2⟩
 
-/-- Success inversion for `generate`: whatever `fill_bytes` returns, a successful call gives a
-2400-byte `dk`, a 1152-byte `ek` and a 64-byte `hdr`. `generate_spec` assumes that `fill_bytes`
-succeeds on every input; here only the one call of this run succeeds. -/
+/-- If `generate` returns `ok (k, rng')`, then `k.dk`, `k.ek` and `k.hdr` have 2400, 1152 and 64
+bytes. -/
 theorem generate_ok_lengths {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
     {rng rng' : R} {k : incremental_mlkem768.Keys}
     (h : incremental_mlkem768.generate i₁ i₂ rng = ok (k, rng')) :
@@ -254,8 +253,8 @@ theorem generate_ok_lengths {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_co
   · rw [he]; decide
   · rw [hh]; decide
 
-/-- Success inversion for `encaps1` on a 64-byte header: whatever `fill_bytes` returns, a
-successful call gives a 960-byte `ct1` and a 2080-byte `es`. -/
+/-- If `hdr` has 64 bytes and `encaps1` on `hdr` returns `ok ((ct1, es, ss), rng')`, then `ct1` has
+960 bytes and `es` has 2080 bytes. -/
 theorem encaps1_ok_lengths {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
     {hdr ct1 es ss : alloc.vec.Vec Std.U8} {rng rng' : R} (hh : hdr.length = 64)
     (h : incremental_mlkem768.encaps1 i₁ i₂ hdr rng = ok ((ct1, es, ss), rng')) :
@@ -416,9 +415,9 @@ theorem inv_send {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.Crypto
 
 /-! ## `recv` keeps the invariant -/
 
-/-- The `ct2` step of the encapsulating side: if `send_ct2` and `send_ct2_encoder` succeed on a
-state with 32-byte keys and ML-KEM 768 sizes, the new state keeps the authenticator and the
-encoder holds 5 points per slot. -/
+/-- Assume that `uc` has 32-byte keys and the ML-KEM 768 sizes. If `send_ct2` and
+`send_ct2_encoder` succeed, the new authenticator has 32-byte keys and the encoder satisfies
+`EncoderInv 5`. -/
 theorem ct2_encoder_inv (uc : v1.unchunked.send_ct.Ct1SentEkReceived)
     (u2 : v1.unchunked.send_ct.Ct2Sent) (ct2 mac : alloc.vec.Vec Std.U8)
     (pe : encoding.polynomial.PolyEncoder) (ha : AuthInv uc.auth) (hek : uc.ek.length = 1152)
@@ -553,9 +552,8 @@ theorem ct1Sampled_chunk_inv (st : send_ct.Ct1Sampled) (c : encoding.Chunk) (ack
 
 open encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
   (add_chunk_pts_needed decoded_message_length) in
-/-- `NoHeaderReceived::recv_hdr_chunk` keeps the invariant: the state stays `NoHeaderReceived`
-while the header is incomplete and moves to `HeaderReceived` with a 64-byte header and an `ek`
-decoder for 576 points when it completes. -/
+/-- If `NoHeaderReceived::recv_hdr_chunk` returns `ok (.Ok v)` on a state that satisfies `Inv`,
+the state that `v` holds satisfies `Inv`. -/
 theorem noHeaderReceived_chunk_inv (st : send_ct.NoHeaderReceived) (c : encoding.Chunk)
     (v : send_ct.NoHeaderReceivedRecvChunk) (h : Inv (.NoHeaderReceived st))
     (hr : send_ct.NoHeaderReceived.recv_hdr_chunk st st.uc.epoch c = ok (.Ok v)) :
@@ -599,9 +597,8 @@ theorem noHeaderReceived_chunk_inv (st : send_ct.NoHeaderReceived) (c : encoding
 
 open encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder
   (add_chunk_pts_needed decoded_message_length) in
-/-- `EkSentCt1Received::recv_ct2_chunk` keeps the invariant: the state stays
-`EkSentCt1Received` while `ct2` is incomplete and moves to `NoHeaderReceived` of the next epoch,
-with an updated authenticator and a header decoder for 48 points, when it completes. -/
+/-- If `EkSentCt1Received::recv_ct2_chunk` returns `ok (.Ok v)` on a state that satisfies `Inv`,
+the state that `v` holds satisfies `Inv`. -/
 theorem ekSentCt1Received_chunk_inv (st : send_ek.EkSentCt1Received) (c : encoding.Chunk)
     (v : send_ek.EkSentCt1ReceivedRecvChunk) (h : Inv (.EkSentCt1Received st))
     (hr : send_ek.EkSentCt1Received.recv_ct2_chunk st st.uc.epoch c = ok (.Ok v)) :

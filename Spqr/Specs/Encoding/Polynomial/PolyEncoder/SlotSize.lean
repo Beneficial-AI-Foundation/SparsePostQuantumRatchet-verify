@@ -10,6 +10,8 @@ public import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Math.Poly.Identities.Basic
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Spqr.Auxiliary.Aeneas.Loop
+import Spqr.Auxiliary.Aeneas.EnumerateNext
+import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Auxiliary.Aeneas.SpecImpExists
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.Poly.AddAssign
@@ -33,30 +35,6 @@ size of an encoder is the same before and after the switch.
 
 open Aeneas Aeneas.Std Result WP
 
-namespace Aeneas.Std.core.iter.adapters.enumerate.IteratorEnumerate
-
-/-- A successful `next` on an enumerated slice iterator keeps the slice. It yields an item
-exactly when the cursor is inside the slice, and then moves the cursor by one. -/
-theorem next_slice_ok {T : Type} {it it' : Enumerate (core.slice.iter.Iter T)}
-    {o : Option (Usize × T)}
-    (h : next (core.iter.traits.iterator.IteratorSliceIter T) it = ok (o, it')) :
-    it'.iter.slice = it.iter.slice ∧
-      (o = none → ¬ it.iter.i < it.iter.slice.length) ∧
-      (o ≠ none → it.iter.i < it.iter.slice.length ∧ it'.iter.i = it.iter.i + 1) := by
-  unfold next at h
-  by_cases hlt : it.iter.i < it.iter.slice.len
-  · simp only [core.slice.iter.IteratorSliceIter.next,
-      dite_eq_left hlt, bind_ok, uncurry_apply_pair, Result.bind_eq_ok] at h
-    obtain ⟨c, -, h⟩ := h
-    simp only [ok.injEq, Prod.mk.injEq] at h
-    obtain ⟨rfl, rfl⟩ := h
-    exact ⟨rfl, fun h => absurd h (by simp), fun _ => ⟨by scalar_tac, rfl⟩⟩
-  · simp only [core.slice.iter.IteratorSliceIter.next,
-      dite_eq_right hlt, bind_ok, uncurry_apply_pair, ok.injEq, Prod.mk.injEq] at h
-    obtain ⟨rfl, rfl⟩ := h
-    exact ⟨rfl, fun _ => by scalar_tac, fun h => absurd rfl h⟩
-
-end Aeneas.Std.core.iter.adapters.enumerate.IteratorEnumerate
 
 namespace spqr.encoding.polynomial.Poly
 
@@ -200,18 +178,6 @@ end spqr.encoding.polynomial.Poly
 
 namespace spqr.encoding.polynomial.PolyEncoder
 
-/-- A successful `Vec::push` appends one element. -/
-theorem vec_push_ok {α : Type} {v w : alloc.vec.Vec α} {x : α} (h : alloc.vec.Vec.push v x = ok w) :
-    w.val = v.val ++ [x] := by
-  have hl : v.val.length < Usize.max := by
-    rw [alloc.vec.Vec.push] at h
-    split at h
-    · rename_i hc; simp only [Bool.or_eq_true, decide_eq_true_eq] at hc
-      have := v.property; scalar_tac
-    · simp at h
-  have := post_of_ok (alloc.vec.Vec.push_spec v x hl) h
-  exact this
-
 /-- The inner loop of `point_at` pushes one point for every value left in the slice. -/
 theorem point_at_loop0_loop0_length
     {it : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter encoding.gf.GF16)}
@@ -242,10 +208,10 @@ theorem point_at_loop0_loop0_length
     simp only [uncurry_apply_pair, Result.bind_eq_ok] at hb
     obtain ⟨i, -, g, -, v1, hv1, hb⟩ := hb
     simp only [ok.injEq] at hb; subst hb
-    have hv := vec_push_ok hv1
+    have hv := alloc.vec.Vec.push_ok_length hv1
     dsimp only
     refine ⟨⟨hsl.trans hs0, ?_⟩, ?_⟩
-    · simp only [alloc.vec.Vec.length, hv, List.length_append, List.length_singleton] at hl0 ⊢
+    · simp only [alloc.vec.Vec.length, hv] at hl0 ⊢
       rw [hsl, hi]; simp only [Slice.length] at hlt hl0 ⊢; omega
     · rw [hsl, hi]; simp only [Slice.length] at hlt ⊢; omega
 
@@ -393,6 +359,6 @@ theorem next_chunk_slotSize {n : Nat} {e e' : PolyEncoder} {c : encoding.Chunk}
   simp only [ok.injEq, Prod.mk.injEq] at hc
   obtain ⟨-, rfl⟩ := hc
   have h1 := chunk_at_slotSize h hca
-  exact ⟨fun p hp => h1.1 p hp, fun p hp => h1.2 p hp⟩
+  exact h1
 
 end spqr.encoding.polynomial.PolyEncoder
