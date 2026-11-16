@@ -73,8 +73,8 @@ the decoded value fits in a `u16`, since `c.index` does — and the chunk payloa
 The varint block is characterized by the shared `varintBlockAt` predicate, so the byte-level
 conjuncts — byte `n-1` is the terminator (high bit clear) and bytes `0, …, n-2` are
 continuation bytes (high bit set) — are literally the ones `decode_varint_spec` establishes.
-They are what pins `n` down to a single value for a given buffer, so a future roundtrip
-theorem against `encode_chunk` can identify the varint block it produced. -/
+They are what pins `n` down to a single value for a given buffer. `decode_chunk_of_block`
+below gives the converse: a chunk block at the cursor is decoded. -/
 @[step]
 theorem decode_chunk_spec
     (from1 : Slice Std.U8) (at1 : Std.Usize)
@@ -112,4 +112,28 @@ theorem decode_chunk_spec
         ⟨hn1, hn10, hnlen, by rw [‹i1.val = v.val›, hval], hterm, hcont⟩, by scalar_tac, ?_⟩
       simp [*]
 
+/-- If `chunkBlockAt from1.val at1.val n c` holds, then `decode_chunk from1 at1` returns `c` and
+moves the cursor to `at1 + n + 32`. -/
+theorem decode_chunk_of_block (from1 : Slice Std.U8) (at1 : Std.Usize) (n : ℕ)
+    (c : encoding.Chunk) (hblk : chunkBlockAt from1.val at1.val n c) :
+    decode_chunk from1 at1 ⦃ (p : (core.result.Result encoding.Chunk Error) × Std.Usize) =>
+      p.1 = .Ok c ∧ p.2.val = at1.val + n + 32 ⦄ := by
+  obtain ⟨hvb, hend, hdata⟩ := hblk
+  -- The block ends inside the slice, so the cursor's `+ 32` cannot overflow.
+  have hlen : at1.val + n + 32 ≤ Std.Usize.max := by scalar_tac
+  unfold decode_chunk
+  step with decode_varint_of_block from1 at1 n c.index.val hvb as ⟨r, at2, w, hr, hwv, hat2⟩
+  subst hr
+  simp only [core.result.Result.Insts.CoreOpsTry.branch, bind_ok]
+  step*
+  match r1 with
+  | .Err () => exact absurd (by scalar_tac : s.length = 32) ‹_›
+  | .Ok a =>
+    obtain ⟨ha, _⟩ : a.val = s.val ∧ a.length = 32 := by assumption
+    simp only [core.result.Result.expect, bind_ok, WP.spec_ok]
+    refine ⟨?_, by scalar_tac⟩
+    obtain ⟨ci, cd⟩ := c
+    simp only [core.result.Result.Ok.injEq, encoding.Chunk.mk.injEq]
+    refine ⟨UScalar.eq_of_val_eq (by rw [i1_post]; exact hwv), Aeneas.Std.Array.ext _ _ ?_⟩
+    rw [ha, s_post, hdata]; simp only [at2_post, hat2]
 end spqr.v1.chunked.states.serialize

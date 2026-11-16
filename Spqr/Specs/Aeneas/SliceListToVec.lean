@@ -30,4 +30,12 @@ theorem listToVec_spec {T : Type} (l : List T)
     Slice.listToVec l ⦃ (v : alloc.vec.Vec T) => v.val = l ⦄ := by
   simp [Slice.listToVec, dite_eq_left hlen, spec_ok]
 
+/-- A successful `listToVec` returns a vector that holds the list. -/
+theorem listToVec_ok_val {T : Type} {l : List T} {v : alloc.vec.Vec T}
+    (h : Slice.listToVec l = ok v) : v.val = l := by
+  simp only [Slice.listToVec] at h
+  split at h
+  · simp only [ok.injEq] at h; subst h; simp [alloc.vec.Vec.from_val]
+  · exact absurd h fail_not_ok
+
 end Aeneas.Std.Slice

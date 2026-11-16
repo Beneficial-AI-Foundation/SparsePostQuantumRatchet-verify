@@ -92,7 +92,7 @@ private theorem into_iter_next_spec {T : Type} (it : alloc.vec.into_iter.IntoIte
 @[step]
 theorem from_pb_loop.body_spec
     (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
-    (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (hcap : links.buf.val.length + iter.val.length ≤ Usize.max)
     (hlen : links.length.val = links.buf.val.length) :
     from_pb_loop.body iter links ⦃ cf =>
@@ -124,7 +124,7 @@ otherwise it returns the first error. -/
 @[step]
 theorem from_pb_loop_spec
     (iter : alloc.vec.into_iter.IntoIter proto.pq_ratchet.chain.Epoch)
-    (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+    (links : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (hcap : links.buf.val.length + iter.val.length ≤ Usize.max)
     (hlen : links.length.val = links.buf.val.length) :
     from_pb_loop iter links ⦃ res =>

@@ -12,6 +12,7 @@ import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Specs.Aeneas.SliceConcat
 public import Spqr.Crypto.Hkdf
+public import Spqr.Auxiliary.Aeneas.Result
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::update`
@@ -60,5 +61,22 @@ theorem update_spec (self : Authenticator) (ep : U64) (k : Slice U8)
   · simp [*]
   · simp [*]; grind
   · simp_all [updateLabel, alloc.vec.Vec.val]
+
+/-- A successful `update` had `self.root_key ++ k` within `Usize.max`, the premise of
+`update_spec`. -/
+theorem length_le_of_update_ok {self : Authenticator} {ep : U64} {k : Slice U8}
+    {a : Authenticator} (h : update self ep k = ok a) :
+    self.root_key.length + k.length ≤ Usize.max := by
+  simp only [update, Result.bind_eq_ok] at h
+  obtain ⟨s, hs, s1, hs1, ikm, hikm, -⟩ := h
+  have hv := alloc.slice.Slice.concat_shared_id_ok_val _ (fun _ => rfl) hikm
+  simp only [alloc.vec.Vec.as_slice, ok.injEq, lift] at hs hs1
+  subst hs hs1
+  have := ikm.property
+  simp only [Array.val_to_slice, Array.make_val, List.map_cons, Slice.from_val, List.map_nil,
+      List.flatten_cons, List.flatten_nil, List.append_nil, alloc.vec.Vec.length, Slice.length,
+      ge_iff_le] at hv ⊢
+  rw [hv, List.length_append] at this
+  exact this
 
 end spqr.authenticator.Authenticator

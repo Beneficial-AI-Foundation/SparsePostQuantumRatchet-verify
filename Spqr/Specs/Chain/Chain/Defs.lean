@@ -21,7 +21,7 @@ namespace spqr.chain
 
 /-- Slot `j` is *cleared*: element exists in both deques, `recv`/`send.ctr`/`send.prev` unchanged,
 `send.next` emptied. -/
-def clearedAt (vd vd' : alloc.collections.vec_deque.VecDeque chain.ChainEpoch Global)
+def clearedAt (vd vd' : alloc.collections.vec_deque.VecDeque chain.ChainEpoch alloc.alloc.Global)
     (j : Nat) : Prop :=
   ∃ ce ce' : chain.ChainEpoch,
     vd.buf.val[j]? = some ce ∧

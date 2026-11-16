@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-!
 # Spec theorems for `alloc::vec::Vec::extend_from_slice`
@@ -55,5 +56,16 @@ theorem extend_from_slice_GF16_spec
   have hlen : v.length + s.length ≤ Usize.max := h
   rw [dite_eq_left hlen]
   step*
+
+/-- A successful `extend_from_slice` on bytes appends the slice. -/
+theorem extend_from_slice_U8_ok_val {v r : alloc.vec.Vec U8} {sl : Slice U8}
+    (h : alloc.vec.Vec.extend_from_slice core.clone.CloneU8 v sl = ok r) :
+    r.val = v.val ++ sl.val := by
+  by_cases hb : v.length + sl.length ≤ Usize.max
+  · obtain ⟨w, hw, hp⟩ := WP.spec_imp_exists (extend_from_slice_U8_spec v sl hb)
+    rw [h, ok.injEq] at hw
+    rw [hw, hp]
+  · simp only [alloc.vec.Vec.extend_from_slice, alloc.vec.Vec.length, Slice.length, hb,
+      ↓reduceDIte, fail_not_ok] at h
 
 end Aeneas.Std.alloc.vec.Vec

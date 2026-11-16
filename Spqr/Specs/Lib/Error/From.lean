@@ -27,7 +27,6 @@ namespace spqr.Error.Insts.CoreConvertFromEncodingError
 • Always succeeds: returns `ok (Error.EncodingDecoding e)`.
 
 Postcondition: `result = Error.EncodingDecoding e`. -/
-@[step]
 theorem from_spec (e : encoding.EncodingError) :
     «from» e ⦃ (result : Error) =>
       result = Error.EncodingDecoding e ⦄ := by

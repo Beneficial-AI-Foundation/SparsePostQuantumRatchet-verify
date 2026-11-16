@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 The Beneficial AI Foundation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
-Authors: Hoang Le Truong
+Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
@@ -11,6 +11,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 public import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
+public import Spqr.Specs.Encoding.Polynomial.Poly.FunctionalModels
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 
 
@@ -61,12 +62,17 @@ theorem body_spec
             g.value = 256 * (serialized[i.val]!).val + (serialized[i.val + 1]!).val ⦄ := by
   unfold body
   split
-  · have h_i1_lt : i.val + 1 < serialized.length := by scalar_tac
+  · rename_i h_lt
+    have h_lt' : i.val < serialized_len.val := (UScalar.lt_equiv i serialized_len).mp h_lt
+    have h_i1_lt : i.val + 1 < serialized.length := by omega
     have h_i_lt : i.val < serialized.length := by omega
     step*
-    refine ⟨by scalar_tac, by scalar_tac, _, ‹_›, ?_⟩
-    simp_all [Array.make, Nat.mul_comm, getElem!_pos]
-  · simp_all
+    refine ⟨h_lt', i5_post, g, coefficients1_post, ?_⟩
+    simp_all only [alloc.vec.Vec.length, Order.add_one_le_iff, Slice.length, Array.make,
+      Array.getElem!_Nat_eq, Array.from_val, List.length_cons, List.length_nil, zero_add,
+      Nat.reduceAdd, Order.lt_two_iff, zero_le, getElem!_pos, List.getElem_cons_zero, Nat.mul_comm,
+      Std.le_refl, List.getElem_cons_succ, Slice.getElem!_Nat_eq]
+  · exact (WP.spec_ok _).mpr ⟨rfl, (UScalar.lt_equiv i serialized_len).not.mp ‹_›⟩
 
 end spqr.encoding.polynomial.Poly.deserialize_loop
 
@@ -135,7 +141,8 @@ theorem loop_spec
       · have h2j : 2 * j = i'.val := by omega
         rw [List.getElem!_append_right _ _ _ (by omega), h2j,
           show j - (↑coefficients' : List GF16).length = 0 by omega]
-        simpa using h_g
+        simpa only [List.length_cons, List.length_nil, zero_add, Order.lt_one_iff, getElem!_pos,
+          List.getElem_cons_zero, Slice.getElem!_Nat_eq, List.getElem!_eq_getElem?_getD] using h_g
     · obtain ⟨rfl, h_ge⟩ := hcf
       have h_eq : i'.val = serialized.length := by omega
       refine ⟨by omega, fun j hj => h_pre' j (by omega)⟩
@@ -160,7 +167,7 @@ rejects with `SerializationInvalid`. -/
 
 namespace spqr.encoding.polynomial.Poly
 
-/-- **Spec theorem for `encoding.polynomial.Poly.deserialize`**:
+/-- **Byte-level spec theorem for `encoding.polynomial.Poly.deserialize`**:
 
 Total characterisation of `Poly::deserialize` over GF(2¹⁶), stated **without** any assumption
 on the shape of the input so that the error behaviour is pinned down rather than assumed away:
@@ -177,9 +184,9 @@ on the shape of the input so that the error behaviour is pinned down rather than
         `poly.coefficients[j]!.value.val = 256 * serialized[2*j]! + serialized[2*j+1]!`
 
 There is no precondition: the `while i < serialized_len` loop advances `i` by 2 from an even
-start, so `i + 2 ≤ serialized_len` never overflows. -/
-@[step]
-theorem deserialize_spec
+start, so `i + 2 ≤ serialized_len` never overflows. Stepping stone to `deserialize_spec`, which
+pins the result to the functional model. -/
+theorem deserialize_spec_postcond
     (serialized : Slice U8) :
     deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
       match result with
@@ -194,7 +201,8 @@ theorem deserialize_spec
           (serialized.length = 0 ∨ serialized.length % 2 = 1) ⦄ := by
   unfold Poly.deserialize degree
   step*
-  simp [alloc.vec.Vec.with_capacity]
+  simp only [alloc.vec.Vec.length, alloc.vec.Vec.with_capacity, alloc.vec.Vec.from_val,
+    List.length_nil, UScalar.ofNatCore_val_eq, Nat.zero_div]
 
 /-- **Corollary (defect 16 witness)**: the byte string `Poly::serialize` produces for the zero
 polynomial — the empty slice — is rejected by `Poly::deserialize`. Hence `deserialize` is not a
@@ -204,9 +212,42 @@ theorem deserialize_empty_is_err
     (h_empty : serialized.length = 0) :
     deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
       result = core.result.Result.Err PolynomialError.SerializationInvalid ⦄ := by
-  apply WP.spec_mono (deserialize_spec serialized)
+  apply WP.spec_mono (deserialize_spec_postcond serialized)
   rintro (poly | e) h
   · exact absurd h_empty h.1
   · simp [h.1]
+
+/-- **Spec theorem for `encoding.polynomial.Poly.deserialize`**
+• The call always succeeds (no panic).
+• The extracted function agrees with its associated high-level functional model
+  `FunctionalModels.deserialize` (see def): `Ok` of the polynomial with coefficients
+  `FunctionalModels.coeffsOfBytes` on a non-empty even-length input and `Err SerializationInvalid`
+  otherwise.
+-/
+@[step]
+theorem deserialize_spec
+    (serialized : Slice U8) :
+    deserialize serialized ⦃ (result : core.result.Result Poly PolynomialError) =>
+      result = FunctionalModels.deserialize serialized ⦄ := by
+  apply WP.spec_mono (deserialize_spec_postcond serialized)
+  rintro (poly | e) h
+  · obtain ⟨h_ne, h_ev, h_deg, h_coef⟩ := h
+    unfold degree at h_deg
+    simp only [Slice.length, alloc.vec.Vec.length] at h_ne h_ev h_deg h_coef
+    have h_val : serialized.val = FunctionalModels.bytesOfCoeffs poly.coefficients.val :=
+      (FunctionalModels.eq_bytesOfCoeffs_iff _ _).mpr ⟨by omega, fun k hk => by
+        simpa only [alloc.vec.Vec.getElem!_Nat_eq, Slice.getElem!_Nat_eq,
+          List.Inhabited_getElem_eq_getElem! _ _ hk] using (h_coef k (by omega)).symm⟩
+    unfold FunctionalModels.deserialize
+    rw [ite_eq_left (show serialized.val ≠ [] ∧ serialized.val.length % 2 = 0 from
+      ⟨by simpa [← List.length_eq_zero_iff] using h_ne, h_ev⟩)]
+    simp only [h_val, FunctionalModels.coeffsOfBytes_bytesOfCoeffs,
+      alloc.vec.Vec.val_ofList]
+  · obtain ⟨h_err, h_bad⟩ := h
+    simp only [Slice.length] at h_bad
+    unfold FunctionalModels.deserialize
+    rw [ite_eq_right (by
+      simp only [ne_eq, ← List.length_eq_zero_iff, not_and]
+      omega), h_err]
 
 end spqr.encoding.polynomial.Poly

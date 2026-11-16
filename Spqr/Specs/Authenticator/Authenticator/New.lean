@@ -9,6 +9,7 @@ public import SrcTranslated.Funs
 public import Spqr.Specs.Authenticator.Authenticator.Update
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Kdf.HkdfToVec
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::new`
@@ -42,5 +43,12 @@ theorem new_spec (root_key : alloc.vec.Vec U8) (ep : U64)
   unfold new
   step*
   simp_all
+
+/-- A successful `new` returns a 32-byte MAC key. -/
+theorem mac_key_length_of_new_ok {v : alloc.vec.Vec U8} {ep : U64} {a : Authenticator}
+    (h : new v ep = ok a) : a.mac_key.length = 32 := by
+  simp only [new, Result.bind_eq_ok] at h
+  obtain ⟨z, -, hu⟩ := h
+  exact (WP.post_of_ok (update_spec _ _ _ (length_le_of_update_ok hu)) hu).2.1
 
 end spqr.authenticator.Authenticator

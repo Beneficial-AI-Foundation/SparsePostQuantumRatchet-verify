@@ -30,6 +30,36 @@ end Aeneas.Std
 
 open Aeneas.Std
 
+/-- Equation for `Result::branch` on an `Ok`.  Not a `simp` lemma: proofs that step through a
+`?` with `branch_eq_continue` / `branch_eq_break` rely on `branch` staying folded. -/
+theorem core.result.Result.Insts.CoreOpsTry.branch_Ok {T E : Type} (v : T) :
+    core.result.Result.Insts.CoreOpsTry.branch (E := E) (.Ok v) = Result.ok (.Continue v) :=
+  rfl
+
+/-- Equation for `Result::branch` on an `Err`.  Not a `simp` lemma, see `branch_Ok`. -/
+theorem core.result.Result.Insts.CoreOpsTry.branch_Err {T E : Type} (e : E) :
+    core.result.Result.Insts.CoreOpsTry.branch (T := T) (.Err e) =
+      Result.ok (.Break (.Err e)) :=
+  rfl
+
+/-- Equation for `Result::from_residual` with the identity `From` instance: the error is
+propagated unchanged.  Not a `simp` lemma, see `branch_Ok`. -/
+theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_same
+    {T E : Type} (e : E) :
+    core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+      T (core.convert.FromSame E) (.Err e) = Result.ok (.Err e) := by
+  simp [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual]
+
+/-- Inversion of `from_residual_same`: if the `Break` arm of a `?` (with the identity `From`
+instance) returns `r`, then `r` is the propagated error. -/
+theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_same_eq_ok
+    {T E : Type} {e : E} {r : core.result.Result T E}
+    (h : core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+      T (core.convert.FromSame E) (.Err e) = Result.ok r) :
+    r = .Err e := by
+  rw [from_residual_same, Result.ok.injEq] at h
+  exact h.symm
+
 theorem core.result.Result.Insts.CoreOpsTry.branch_eq_continue {T E : Type}
     {r : core.result.Result T E} {v : T}
     (h : core.result.Result.Insts.CoreOpsTry.branch r = Result.ok (.Continue v)) :
@@ -59,3 +89,21 @@ theorem core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residua
   | Err e =>
     simp only [core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual] at h
     cases hf : inst.from e <;> simp_all [Bind.bind]
+
+/-- If `branch r` returns `cf`, `f cf` returns `Ok x`, and `f` maps every `Break res` to
+`from_residual res`, then `r` is `Ok v` for some `v`, and `f (Continue v)` returns `Ok x`. -/
+theorem core.result.Result.Insts.CoreOpsTry.continue_of_ok {T E F U : Type}
+    {inst : core.convert.From F E} {r : core.result.Result T E}
+    {f : core.ops.control_flow.ControlFlow (core.result.Result Never E) T →
+      Result (core.result.Result U F)} {x : U}
+    (h : ∃ cf, core.result.Result.Insts.CoreOpsTry.branch r = Result.ok cf ∧
+      f cf = Result.ok (.Ok x))
+    (hb : ∀ res, f (.Break res) =
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual U inst res) :
+    ∃ v, r = .Ok v ∧ f (.Continue v) = Result.ok (.Ok x) := by
+  obtain ⟨cf, hcf, h⟩ := h
+  cases cf with
+  | Continue v => exact ⟨v, branch_eq_continue hcf, h⟩
+  | Break res =>
+    rw [hb] at h
+    exact (core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual_ne_ok h).elim

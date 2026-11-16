@@ -54,4 +54,11 @@ theorem bind_spec_true {α β : Type} {m : Result α} {k : α → Result β}
   | vis _ _ => rw [hm, bind_vis] at h; exact (spec_vis _ _).mp h |>.elim
   | div => rw [hm, bind_div] at h; exact spec_div.mp h |>.elim
 
+/-- The postcondition of a spec holds of the value that the computation returns. -/
+theorem post_of_ok {α : Type} {m : Result α} {p : Post α} {v : α} (hs : spec m p)
+    (h : m = ok v) : p v := by
+  obtain ⟨w, hw, hp⟩ := spec_imp_exists hs
+  rw [h, ok.injEq] at hw
+  exact hw ▸ hp
+
 end Aeneas.Std.WP

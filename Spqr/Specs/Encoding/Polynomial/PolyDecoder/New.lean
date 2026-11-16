@@ -7,6 +7,7 @@ module
 
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-! # Spec theorem for `spqr::encoding::polynomial::{impl Decoder for PolyDecoder}::new`
 
@@ -59,6 +60,27 @@ theorem PointsValid_replicate_default (pts : Array (sorted_vec.SortedSet Pt) 16#
   rw [hs.2]
   rfl
 
+/-- Every slot of a point array all of whose slots are `default` (empty) is the empty list. -/
+theorem getElem!_replicate_default (pts : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (h : pts.val = List.replicate 16 default) (k : Nat) (hk : k < 16) :
+    (pts[k]!).val = [] := by
+  have h_slot : pts[k]! = default := by
+    simp only [Array.getElem!_Nat_eq, h]
+    rw [List.getElem!_eq_getElem?_getD, List.getElem?_replicate]
+    simp [hk]
+  rw [h_slot]; rfl
+
+/-- A decoder all of whose slots are empty trivially has room for `17` more points in every
+slot: this discharges the `h_push_cap` guard of `add_chunk_spec` for a fresh decoder, so
+callers that build the decoder with `new` need not assume it. -/
+theorem push_cap_of_replicate_default (pts : Array (sorted_vec.SortedSet Pt) 16#usize)
+    (h : pts.val = List.replicate 16 default) :
+    ∀ (k : Nat), k < 16 → (pts[k]!).length + 17 ≤ Usize.max := by
+  intro k hk
+  have := getElem!_replicate_default pts h k hk
+  simp only [alloc.vec.Vec.length, this, List.length_nil, Nat.zero_add]
+  scalar_tac
+
 /-- **`new_with_poly_count` establishes `PointsValid`**: on success the fresh decoder's 16
 slots are all empty, hence trivially sorted. -/
 theorem new_with_poly_count_spec_valid (len_bytes _polys : Std.Usize) :
@@ -85,5 +107,14 @@ theorem new_spec_valid (len_bytes : Std.Usize) :
       | core.result.Result.Err _ => True ⦄ := by
   unfold new
   exact new_with_poly_count_spec_valid len_bytes 16#usize
+
+/-- A new decoder for an even number of bytes needs half as many points. -/
+theorem new_pts_needed {n : Std.Usize} {d : encoding.polynomial.PolyDecoder}
+    (hn : n.val % 2 = 0)
+    (h : encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new n = ok (.Ok d)) :
+    d.pts_needed.val = n.val / 2 := by
+  have := WP.post_of_ok (encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder.new_spec n) h
+  simp only [hn, ↓reduceIte] at this
+  rw [this.1]; rfl
 
 end spqr.encoding.polynomial.PolyDecoder.Insts.SpqrEncodingDecoder

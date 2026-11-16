@@ -15,6 +15,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.FunctionalModels
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Aeneas.IndexRangeFull
@@ -53,7 +54,7 @@ theorem body_spec
     (iter : core.ops.range.Range Usize)
     (v : alloc.vec.Vec U8)
     (h_end_le : iter.end ≤ pts.length)
-    (h_out_overflow : v.length + 2 ≤ Usize.max) :
+    (h_out_overflow : iter.start < iter.end → v.length + 2 ≤ Usize.max) :
     body pts iter v ⦃ cf =>
       match cf with
       | ControlFlow.done v' =>
@@ -71,6 +72,7 @@ theorem body_spec
   by_cases h_lt : iter.start < iter.end
   · obtain ⟨h_opt_eq, h_start1, h_end1⟩ := h_some h_lt
     rw [h_opt_eq]
+    have h_room : v.length + 2 ≤ Usize.max := h_out_overflow h_lt
     step as ⟨pt, h_pt⟩
     -- the two big-endian bytes of `pt.value`
     obtain ⟨b0, b1, h_bytes⟩ : ∃ b0 b1, (core.num.U16.to_be_bytes pt.value).val = [b0, b1] :=
@@ -107,7 +109,7 @@ theorem loop_spec
     (h_end_le : iter.end ≤ pts.length)
     (h_out_len : v.length = 2 * iter.start)
     (h_start_le : iter.start ≤ iter.end)
-    (h_overflow : 2 * pts.length + 2 ≤ Usize.max)
+    (h_overflow : 2 * pts.length ≤ Usize.max)
     (h_pre : ∀ (j : Nat), j < iter.start →
           256 * v[2 * j]! + v[2 * j + 1]! = (pts[j]!).value.val) :
     into_pb_loop0_loop0 iter pts v ⦃ (result : alloc.vec.Vec U8) =>
@@ -129,10 +131,12 @@ theorem loop_spec
     have h_end_val : iter'.end.val = iter.end.val := by rw [h_end']
     have h_sl : iter'.start.val ≤ iter'.end.val := h_start_le'
     have h_end_le' : iter.end.val ≤ pts.val.length := h_end_le
-    have h_overflow' : 2 * pts.val.length + 2 ≤ Usize.max := h_overflow
+    have h_overflow' : 2 * pts.val.length ≤ Usize.max := h_overflow
     have h_out_len'' : out'.val.length = 2 * iter'.start.val := h_out_len'
     apply WP.spec_mono (body_spec pts iter' out' (show iter'.end.val ≤ pts.val.length by omega)
-      (show out'.val.length + 2 ≤ Usize.max by omega))
+      (fun h_lt => by
+        have h_lt' : iter'.start.val < iter'.end.val := h_lt
+        omega))
     rintro (⟨iter'', out''⟩ | out'') h_cf
     · -- one more point serialized
       obtain ⟨h_lt, h_start1, h_end1, hi, lo, h_out_eq, h_enc⟩ := h_cf
@@ -185,7 +189,7 @@ theorem body_spec
     (h_end_le : iter.end ≤ points.val.length)
     (h_out_overflow : v.length + 1 ≤ Usize.max)
     (h_inner_overflow : ∀ (j : Nat), j < points.length →
-        2 * (points.val[j]!).value.length + 2 ≤ Usize.max) :
+        2 * (points.val[j]!).value.length ≤ Usize.max) :
     body points iter v ⦃ cf =>
       match cf with
       | ControlFlow.done v' => v' = v ∧ ¬(iter.start < iter.end)
@@ -258,7 +262,7 @@ theorem loop_spec
     (h_start_le : iter.start ≤ iter.end.val)
     (h_overflow : points.length + 1 ≤ Usize.max)
     (h_inner_overflow : ∀ (j : Nat), j < points.length →
-        2 * (points.val[j]!).value.length + 2 ≤ Usize.max)
+        2 * (points.val[j]!).value.length ≤ Usize.max)
     (h_pre : ∀ (j : Nat), j < iter.start →
           (v.val[j]!).length = 2 * (points[j]!).value.length ∧
           ∀ (k : Nat), k < (points[j]!).value.length →
@@ -347,7 +351,7 @@ theorem body_spec
     (h_end_le : iter.end ≤ polys.val.length)
     (h_out_overflow : v.length + 1 ≤ Usize.max)
     (h_ser_overflow : ∀ j < polys.length,
-        2 * (polys.val[j]!).degree + 2 ≤ Usize.max) :
+        2 * (polys.val[j]!).degree ≤ Usize.max) :
     body polys iter v ⦃ cf =>
       match cf with
       | ControlFlow.done v' =>
@@ -374,7 +378,7 @@ theorem body_spec
       rw [← List.Inhabited_getElem_eq_getElem! (hi := h_j_lt)]
     have h_ser := h_ser_overflow iter.start.val h_j_lt
     step as ⟨p, h_p⟩
-    step as ⟨v1, h_len, _, _, h_enc⟩
+    step with Poly.serialize_spec_postcond as ⟨v1, h_len, _, _, h_enc⟩
     step as ⟨v2, h_v2⟩
     rw [h_getelem, ← h_p]
     exact ⟨h_lt, h_start1, h_end1, v1, h_v2, h_len, h_enc⟩
@@ -408,7 +412,7 @@ theorem loop_spec
     (h_start_le : iter.start ≤ iter.end.val)
     (h_overflow : polys.length + 1 ≤ Usize.max)
     (h_ser_overflow : ∀ j < polys.length,
-        2 * (polys.val[j]!).degree + 2 ≤ Usize.max)
+        2 * (polys.val[j]!).degree ≤ Usize.max)
     (h_pre : ∀ j < iter.start.val,
           (v[j]!).length = 2 * (polys.val[j]!).degree ∧
           ∀ k < (polys.val[j]!).degree,
@@ -475,6 +479,9 @@ end spqr.encoding.polynomial.PolyEncoder.into_pb_loop1
 Converts a `PolyEncoder` (chunk index `idx` + `EncoderState`) into its protobuf representation.
 For `Points`: serializes each point's GF(2¹⁶) coefficients into `result.pts` (big-endian).
 For `Polys`: serializes each polynomial's coefficients into `result.polys` via `Poly::serialize`.
+The result is pinned to the pure functional model `FunctionalModels.intoPb`, which in turn calls
+the functional model of the `Poly` serialisation; `into_pb_spec_bytes` and `into_pb_spec_postcond`
+are the byte-level stepping stones. The reverse direction is `from_pb`.
 
 **Source**: spqr/src/encoding/polynomial.rs -/
 
@@ -487,10 +494,10 @@ theorem into_pb_spec_bytes
     (self : PolyEncoder)
     (h_overflow_points : ∀ points,
       self.s = .Points points →
-        ∀ j < points.length, 2 * (points[j]!).value.length + 2 ≤ Usize.max)
+        ∀ j < points.length, 2 * (points[j]!).value.length ≤ Usize.max)
     (h_overflow_polys : ∀ polys,
       self.s = .Polys polys →
-        ∀ j < polys.length, 2 * (polys[j]!).degree + 2 ≤ Usize.max) :
+        ∀ j < polys.length, 2 * (polys[j]!).degree ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.PolynomialEncoder) =>
       result.idx = self.idx ∧
       match self.s with
@@ -526,19 +533,19 @@ theorem into_pb_spec_bytes
     refine ⟨by simp [alloc.vec.Vec.new], by rw [h_len, h_slen]; simp, fun j hj => ?_⟩
     simpa [Array.getElem!_Nat_eq] using h_v2 j (by rw [h_slen]; simpa using hj)
 
-/-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
-• The call always succeeds (no panic) under the sole hypothesis `2 * len + 2 ≤ Usize.max` on
-  each element's coefficient count `len`.
+/-- **Byte-level spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
+• The call always succeeds (no panic) under the sole hypothesis `2 * len ≤ Usize.max` on
+  each element's coefficient count `len`, the bound `FunctionalModels.WellFormed` imposes.
 • Serialization is faithful, as spelled out by `PolyEncoder.IntoPbPostCond`.
+• Stepping stone to `into_pb_spec`, which pins the result to the functional model.
 -/
-@[step]
-theorem into_pb_spec
+theorem into_pb_spec_postcond
     (self : PolyEncoder)
     (h_overflow_points : ∀ points,
       self.s = .Points points →
-        ∀ j < points.length, 2 * (points[j]!).value.length + 2 ≤ Usize.max)
+        ∀ j < points.length, 2 * (points[j]!).value.length ≤ Usize.max)
     (h_overflow_polys : ∀ polys, self.s = .Polys polys →
-        ∀ j < polys.length, 2 * (polys[j]!).degree + 2 ≤ Usize.max) :
+        ∀ j < polys.length, 2 * (polys[j]!).degree ≤ Usize.max) :
     into_pb self ⦃ (result : proto.pq_ratchet.PolynomialEncoder) =>
       IntoPbPostCond self result ⦄ := by
   have h_raw := into_pb_spec_bytes self h_overflow_points h_overflow_polys
@@ -562,5 +569,75 @@ theorem into_pb_spec
     refine ⟨(h_polys j hj).1, fun k hk => ?_⟩
     have e := (h_polys j hj).2 k hk
     exact ⟨e, by rw [e], by rw [e]⟩
+
+/-- **The byte-level postcondition determines the result**
+• Any `result` satisfying `PolyEncoder.IntoPbPostCond self result` is
+  `FunctionalModels.intoPb self`: the byte layout leaves no freedom. -/
+theorem eq_intoPb_of_intoPbPostCond (self : PolyEncoder)
+    (result : proto.pq_ratchet.PolynomialEncoder) (h : IntoPbPostCond self result) :
+    result = FunctionalModels.intoPb self := by
+  rcases self with ⟨idx, points | polys⟩ <;> rcases result with ⟨ridx, rpts, rpolys⟩
+  · unfold IntoPbPostCond at h
+    simp only at h
+    obtain ⟨hidx, hpolys, hlen, hpts⟩ := h
+    unfold FunctionalModels.intoPb
+    simp only [proto.pq_ratchet.PolynomialEncoder.mk.injEq]
+    refine ⟨hidx, ?_, alloc.vec.Vec.ext _ _ (by simp [alloc.vec.Vec.new, hpolys])⟩
+    apply alloc.vec.Vec.ext
+    rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]
+    apply (List.eq_iff_forall_eq_getElem! _ _).mpr
+    simp only [alloc.vec.Vec.length, Array.length] at hlen
+    refine ⟨by simpa using hlen, fun j hj => ?_⟩
+    have hj' : j < points.val.length := by omega
+    rw [List.getElem!_map_eq _ _ _ hj']
+    obtain ⟨hl, hk⟩ := hpts j hj'
+    simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length] at hl hk
+    have hb : 2 * (points.val[j]!).value.val.length ≤ Usize.max := by
+      have := (rpts.val[j]!).property
+      omega
+    refine (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _ hb).mpr ⟨hl, fun k hk' => ?_⟩
+    rw [List.Inhabited_getElem_eq_getElem! _ _ hk']
+    exact (hk k hk').1
+  · unfold IntoPbPostCond at h
+    simp only at h
+    obtain ⟨hidx, hpts, hlen, hpolys⟩ := h
+    unfold FunctionalModels.intoPb
+    simp only [proto.pq_ratchet.PolynomialEncoder.mk.injEq]
+    refine ⟨hidx, alloc.vec.Vec.ext _ _ (by simp [alloc.vec.Vec.new, hpts]), ?_⟩
+    apply alloc.vec.Vec.ext
+    rw [alloc.vec.Vec.ofList_val _ (by scalar_tac)]
+    apply (List.eq_iff_forall_eq_getElem! _ _).mpr
+    simp only [alloc.vec.Vec.length, Array.length] at hlen
+    refine ⟨by simpa using hlen, fun j hj => ?_⟩
+    have hj' : j < polys.val.length := by omega
+    rw [List.getElem!_map_eq _ _ _ hj']
+    obtain ⟨hl, hk⟩ := hpolys j hj'
+    simp only [Array.getElem!_Nat_eq, alloc.vec.Vec.getElem!_Nat_eq, alloc.vec.Vec.length,
+      Poly.degree] at hl hk
+    have hb : 2 * (polys.val[j]!).coefficients.val.length ≤ Usize.max := by
+      have := (rpolys.val[j]!).property
+      omega
+    exact (Poly.FunctionalModels.eq_ofList_bytesOfCoeffs_iff _ _ hb).mpr ⟨hl, fun k hk' => by
+      rw [List.Inhabited_getElem_eq_getElem! _ _ hk']
+      exact (hk k hk').1⟩
+
+/-- **Spec theorem for `spqr::encoding::polynomial::PolyEncoder::into_pb`**
+• The call always succeeds (no panic) under the sole hypothesis `2 * len ≤ Usize.max` on
+  each element's coefficient count `len`, the bound `FunctionalModels.WellFormed` imposes.
+• The extracted function agrees with its associated high-level functional model
+  `FunctionalModels.intoPb` (see def).
+-/
+@[step]
+theorem into_pb_spec
+    (self : PolyEncoder)
+    (h_overflow_points : ∀ points,
+      self.s = .Points points →
+        ∀ j < points.length, 2 * (points[j]!).value.length ≤ Usize.max)
+    (h_overflow_polys : ∀ polys, self.s = .Polys polys →
+        ∀ j < polys.length, 2 * (polys[j]!).degree ≤ Usize.max) :
+    into_pb self ⦃ (result : proto.pq_ratchet.PolynomialEncoder) =>
+      result = FunctionalModels.intoPb self ⦄ :=
+  WP.spec_mono (into_pb_spec_postcond self h_overflow_points h_overflow_polys)
+    (eq_intoPb_of_intoPbPostCond self)
 
 end spqr.encoding.polynomial.PolyEncoder
