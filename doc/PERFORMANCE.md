@@ -37,3 +37,6 @@ reads PR metadata and writes comments; never add checkout or execution of PR
 code to this privileged workflow.
 
 An exhaustive collection of metrics for this repository can be found [here](https://radar.18.118.100.156.nip.io/) and is available for public use.
+
+For a local, iterative memory optimization workflow, see
+[逐轮降低 Lean 内存消耗](MEMORY_OPTIMIZATION_WORKFLOW.md).
