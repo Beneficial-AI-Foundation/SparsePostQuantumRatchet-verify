@@ -131,11 +131,14 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+public import Spqr.Specs.Braid.StateMachine.ConstRng
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
 public import Spqr.Specs.Braid.StateMachine.Model
 public import Spqr.Specs.Braid.StateMachine.Refinement
 public import Spqr.Specs.Braid.StateMachine.Relation
 public import Spqr.Specs.Braid.StateMachine.Run
+public import Spqr.Specs.Braid.StateMachine.SeededPrims
+public import Spqr.Specs.Braid.StateMachine.SeededRun
 public import Spqr.Specs.Chain.Chain.AddEpoch
 public import Spqr.Specs.Chain.Chain.CedForDirection
 public import Spqr.Specs.Chain.Chain.Defs
