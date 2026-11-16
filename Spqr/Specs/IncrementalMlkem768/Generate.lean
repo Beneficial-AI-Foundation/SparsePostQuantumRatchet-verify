@@ -7,6 +7,7 @@ module
 public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
 public import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
+public import Spqr.Auxiliary.Aeneas.SpecImpExists
 import all SrcTranslated.Funs
 import all SrcTranslated.FunsExternal
 
@@ -41,6 +42,50 @@ namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
 open Spqr.Mlkem
+
+/-- If `fill_bytes` on the 64 zero bytes returns `(rng₁, b)`, then `generate` returns the
+generator state `rng₁` and the FIPS 203 key pair of the seed that it reads from `b`: `dk`, `ek`
+and `hdr` are `keyPairList seed`, `pk2Bytes seed` and `pk1Bytes seed`, `ek` and `hdr` are the
+sub-ranges `[enc, 2·enc)` and `[2·enc, 2·enc + 64)` of `dk`, and they have
+`encapsulationKeyBytes`, `headerBytes` and `decapsulationKeyBytes` bytes. -/
+theorem generate_fill_spec {R : Type} (rngInst : rand_1.rng.Rng R)
+    (cryptoInst : rand_core_1.CryptoRng R) (rng rng₁ : R) (b : Slice Std.U8)
+    (hf : rngInst.rand_core_1RngCoreInst.fill_bytes rng (Array.repeat 64#usize 0#u8).to_slice =
+      ok (rng₁, b)) :
+    generate rngInst cryptoInst rng ⦃ (result : Keys × R) =>
+        let seed := Fips203.Refinement.seedOfArray (Array.from_slice (Array.repeat 64#usize 0#u8) b)
+        result.2 = rng₁ ∧
+        result.1.dk.val  = Fips203.Refinement.keyPairList seed ∧
+        result.1.ek.val  = Fips203.Refinement.toU8List (Fips203.Refinement.pk2Bytes seed) ∧
+        result.1.hdr.val = Fips203.Refinement.toU8List (Fips203.Refinement.pk1Bytes seed) ∧
+        result.1.ek.val  = result.1.dk.val.slice mlkem768Params.encapsulationKeyBytes
+        (2 * mlkem768Params.encapsulationKeyBytes) ∧
+        result.1.hdr.val = result.1.dk.val.slice (2 * mlkem768Params.encapsulationKeyBytes)
+        (2 * mlkem768Params.encapsulationKeyBytes + headerBytes) ∧
+        result.1.hdr.length = headerBytes ∧
+        result.1.ek.length = mlkem768Params.encapsulationKeyBytes ∧
+        result.1.dk.length = mlkem768Params.decapsulationKeyBytes ⦄ := by
+  unfold generate
+  simp only [lift, Array.to_slice_mut, uncurry_apply_pair, hf, bind_ok]
+  step*
+  have hv : v.val = a.val := by rw [alloc.vec.Vec.val, ← v_post, Array.val_to_slice]
+  have hv1 : v1.val = a1.val := by rw [alloc.vec.Vec.val, ← v1_post, Array.val_to_slice]
+  have hv2 : v2.val = a2.val := by rw [alloc.vec.Vec.val, ← v2_post, Array.val_to_slice]
+  have henc : mlkem768Params.encapsulationKeyBytes = 1152 := by decide
+  have hhdr : headerBytes = 64 := by decide
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [hv2, a2_post1, k_post1]
+  · rw [hv1, a1_post1, k_post1]
+    simp only [henc, Nat.reduceMul]
+    exact Fips203.Refinement.keyPairList_slice_pk2 _
+  · rw [hv, a_post, k_post1]
+    simp only [henc, hhdr, Nat.reduceMul, Nat.reduceAdd]
+    exact Fips203.Refinement.keyPairList_slice_pk1 _
+  · rw [hv1, hv2, a1_post1, a2_post1]
+  · rw [hv, hv2, a_post, a2_post1]
+  · rw [alloc.vec.Vec.length, hv]; exact ‹a.length = headerBytes›
+  · rw [alloc.vec.Vec.length, hv1]; exact a1_post
+  · rw [alloc.vec.Vec.length, hv2]; exact a2_post
 
 /-- **Spec theorem for `incremental_mlkem768.generate`**:
 
@@ -78,29 +123,10 @@ theorem generate_spec {R : Type} (rngInst : rand_1.rng.Rng R)
         result.1.hdr.length = headerBytes ∧
         result.1.ek.length = mlkem768Params.encapsulationKeyBytes ∧
         result.1.dk.length = mlkem768Params.decapsulationKeyBytes ⦄ := by
-  unfold generate
-  step*
-  -- The three owned `Vec`s are byte-for-byte the arrays returned by `pk1`/`pk2`/`sk`.
-  have hv : v.val = a.val := by
-    rw [alloc.vec.Vec.val, ← s2_post, ‹s2 = a.to_slice›, Array.val_to_slice]
-  have hv1 : v1.val = a1.val := by
-    rw [alloc.vec.Vec.val, ← s3_post, ‹s3 = a1.to_slice›, Array.val_to_slice]
-  have hv2 : v2.val = a2.val := by
-    rw [alloc.vec.Vec.val, ← s4_post, ‹s4 = a2.to_slice›, Array.val_to_slice]
-  have henc : mlkem768Params.encapsulationKeyBytes = 1152 := by decide
-  have hhdr : headerBytes = 64 := by decide
-  refine ⟨⟨Fips203.Refinement.seedOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [hv2, a2_post1, k_post1]
-  · rw [hv1, a1_post1, k_post1]
-    simp only [henc, Nat.reduceMul]
-    exact Fips203.Refinement.keyPairList_slice_pk2 _
-  · rw [hv, a_post, k_post1]
-    simp only [henc, hhdr, Nat.reduceMul, Nat.reduceAdd]
-    exact Fips203.Refinement.keyPairList_slice_pk1 _
-  · rw [hv1, hv2, a1_post1, a2_post1]
-  · rw [hv, hv2, a_post, a2_post1]
-  · rw [alloc.vec.Vec.length, hv]; exact ‹a.length = headerBytes›
-  · rw [alloc.vec.Vec.length, hv1]; exact a1_post
-  · rw [alloc.vec.Vec.length, hv2]; exact a2_post
+  obtain ⟨⟨rng₁, b⟩, hf, -⟩ :=
+    WP.spec_imp_exists (h_fill rng (Array.repeat 64#usize 0#u8).to_slice)
+  refine WP.spec_mono (generate_fill_spec rngInst cryptoInst rng rng₁ b hf) ?_
+  rintro r ⟨-, hdk, hek, hhdr, h1, h2, h3, h4, h5⟩
+  exact ⟨⟨_, hdk, hek, hhdr⟩, h1, h2, h3, h4, h5⟩
 
 end spqr.incremental_mlkem768

@@ -69,9 +69,8 @@ noncomputable def sendRest (s : States) (buf : Slice Std.U8) :
 private theorem uncurry_eq {α β γ : Type} (f : α → β → γ) : uncurry f = fun q => f q.1 q.2 :=
   rfl
 
-/-- `send` with a generator of any type is its `fill_bytes` call (`sendFill`), then `sendRest` on
-the returned buffer, which uses no generator. The new generator state is the one that
-`fill_bytes` returned. -/
+/-- `send` with a generator of any type is `sendFill`, then `sendRest` on the buffer that
+`sendFill` returned. The new generator state is the one that `sendFill` returned. -/
 theorem send_eq_fill {R : Type} (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R)
     (s : States) (rng : R) :
     States.send i₁ i₂ s rng =
