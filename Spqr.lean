@@ -1,5 +1,7 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import Spqr.Auxiliary.Aeneas.Array
+public import Spqr.Auxiliary.Aeneas.EnumerateNext
 public import Spqr.Auxiliary.Aeneas.Loop
 public import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Auxiliary.Aeneas.Scalar
@@ -132,6 +134,7 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
+public import Spqr.Specs.Braid.StateMachine.Invariant
 public import Spqr.Specs.Braid.StateMachine.Model
 public import Spqr.Specs.Braid.StateMachine.Refinement
 public import Spqr.Specs.Braid.StateMachine.Relation
@@ -263,6 +266,7 @@ public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.GetEncoderState
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.SlotSize
 public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 public import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
 public import Spqr.Specs.Encoding.Polynomial.Pt.Eq
