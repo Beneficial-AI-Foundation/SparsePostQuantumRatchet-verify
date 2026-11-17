@@ -140,8 +140,8 @@ theorem EncoderInv.ready {n : Nat} {e : encoding.polynomial.PolyEncoder}
       · simp only [alloc.vec.Vec.length, he, List.length_nil] at this; omega
       · rw [this]; scalar_tac
 
-/-- A decoder that satisfies `DecoderInv m` has at most 65536 points per slot. So it satisfies
-the premises of `add_chunk_spec_valid`, `decoded_message_spec`,
+/-- Assume `m ≤ 576` and `DecoderInv m d`. Then every slot of `d` has at most 65536 points, and
+`d` satisfies the premises of `add_chunk_spec_valid`, `decoded_message_spec`,
 `PolyDecoder.into_pb_spec` and the decoder round trip. -/
 theorem DecoderInv.ready {m : Nat} {d : encoding.polynomial.PolyDecoder} (hm : m ≤ 576)
     (h : DecoderInv m d) :
@@ -803,7 +803,7 @@ theorem inv_recv (s : States) (h : Inv s) (msg : Message) (out : Recv)
       simp only [ok.injEq, reduceCtorEq] at hs
 
 /-- If `k.length + 32 ≤ Usize.max`, `init_a k` succeeds, and its state satisfies `Inv` and
-refines `InitAlice` for every `P` that agrees with the code. -/
+refines `initAlice` for every `P` that agrees with the code. -/
 theorem init_a_ok (k : Slice Std.U8) (hk : k.length + 32 ≤ Usize.max) :
     ∃ s, States.init_a k = ok s ∧ Inv s ∧
       ∀ P : CodePrims, CodeAgrees P → Refines s (initAlice P k.val) := by
@@ -812,7 +812,7 @@ theorem init_a_ok (k : Slice Std.U8) (hk : k.length + 32 ≤ Usize.max) :
   exact ⟨_, hs, ⟨hr, hm⟩, fun P hP => (init_refines P hP k).1 _ hs⟩
 
 /-- If `k.length + 32 ≤ Usize.max`, `init_b k` succeeds, and its state satisfies `Inv` and
-refines `InitBob` for every `P` that agrees with the code. -/
+refines `initBob` for every `P` that agrees with the code. -/
 theorem init_b_ok (k : Slice Std.U8) (hk : k.length + 32 ≤ Usize.max) :
     ∃ s, States.init_b k = ok s ∧ Inv s ∧
       ∀ P : CodePrims, CodeAgrees P → Refines s (initBob P k.val) := by
