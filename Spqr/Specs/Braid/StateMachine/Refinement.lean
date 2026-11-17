@@ -401,6 +401,125 @@ theorem recv_ct1_ack_ok (P : CodePrims) (hP : CodeAgrees P) (st : send_ct.EkRece
   obtain ⟨rfl, rfl⟩ := ct2_encoder_ok P hP _ _ _ _ _ hdr h1 h2
   simp only [Refines, and_self]
 
+/-- Assume `CodeAgrees P` and `Refines (.KeysUnsampled s) σ`. If `States::send` succeeds on
+`.KeysUnsampled s`, then its `generate` call returned some `keys`, and for every `r` with
+`P.keyGen r = (keys.dk.val, keys.hdr.val, keys.ek.val)` the model's `Send()` on `σ` with
+randomness `r` gives a related state, the code's message and the code's key. -/
+theorem send_keysUnsampled_refines (P : CodePrims) (hP : CodeAgrees P) {R : Type}
+    (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R) (s : send_ek.KeysUnsampled)
+    (σ : State _ _) (h : Refines (.KeysUnsampled s) σ) (rng rng' : R) (out : Send)
+    (hs : States.send i₁ i₂ (.KeysUnsampled s) rng = ok (.Ok out, rng')) :
+    ∃ (keys : incremental_mlkem768.Keys) (rk : R),
+      incremental_mlkem768.generate i₁ i₂ rng = ok (keys, rk) ∧
+      ∀ r, P.keyGen r = (keys.dk.val, keys.hdr.val, keys.ek.val) →
+        Refines out.state (BraidModel.send P σ r).1 ∧
+        absMsg out.msg = (BraidModel.send P σ r).2.1 ∧
+        out.key.map absKey = (BraidModel.send P σ r).2.2 := by
+  cases σ <;> simp only [Refines] at h
+  case keysUnsampled e a =>
+    simp only [States.send, Result.bind_eq_ok] at hs
+    obtain ⟨rfl, rfl⟩ := h
+    obtain ⟨ep, hep, ⟨⟨s1, c⟩, rng1⟩, hc, hout⟩ := hs
+    simp only [send_ek.KeysUnsampled.epoch, Result.ok.injEq] at hep; subst hep
+    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq,
+        core.result.Result.Ok.injEq] at hout; obtain ⟨rfl, -⟩ := hout
+    simp only [send_ek.KeysUnsampled.send_hdr_chunk,
+      v1.unchunked.send_ek.KeysUnsampled.send_header, Result.bind_eq_ok] at hc
+    obtain ⟨⟨⟨uc, ts, mac⟩, r1⟩, ⟨⟨keys, rk⟩, hg, hk⟩, hrest⟩ := hc
+    simp only [uncurry_apply_pair] at hk hrest
+    simp only [Result.bind_eq_ok] at hk hrest
+    obtain ⟨m, hm, hk⟩ := hk
+    simp only [Result.ok.injEq, Prod.mk.injEq] at hk
+    obtain ⟨⟨h1, h2, h3⟩, h4⟩ := hk
+    subst h2 h3
+    obtain ⟨⟨ts1, z⟩, hap, hrest⟩ := hrest
+    simp only [uncurry_apply_pair] at hrest
+    simp only [Result.bind_eq_ok] at hrest
+    obtain ⟨enc0, henc, sh, hsh, ⟨c', e'⟩, hn, hfin⟩ := hrest
+    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq, and_assoc] at hfin
+    obtain ⟨rfl, rfl, -⟩ := hfin
+    have hsh' := eq_Ok_of_expect_eq_ok hsh; subst hsh'
+    have hmac := mac_hdr_ok P hP _ _ _ _ hm
+    have hts := alloc.vec.Vec.append_ok_val hap
+    have he := hP.encode _ _ henc
+    have hnc := hP.nextChunk _ _ _ hn
+    simp only [alloc.vec.Vec.deref, Slice.from_val] at hmac he
+    rw [hts, hmac] at he
+    subst h1
+    refine ⟨keys, rk, hg, fun r hr => ?_⟩
+    simp only [BraidModel.send, hr, he, hnc]
+    simp only [Refines, and_self, absMsg, Option.map_none]
+
+/-- Assume `CodeAgrees P` and `Refines (.HeaderReceived s) σ`. If `States::send` succeeds on
+`.HeaderReceived s`, then its `encaps1` call on some header `hdr` returned some
+`(ct1, es, ss)`, and for every `r` with `P.encaps1 hdr.val r = (es.val, ct1.val, ss.val)` the
+model's `Send()` on `σ` with randomness `r` gives a related state, the code's message and the
+code's key. -/
+theorem send_headerReceived_refines (P : CodePrims) (hP : CodeAgrees P) {R : Type}
+    (i₁ : rand_1.rng.Rng R) (i₂ : rand_core_1.CryptoRng R) (s : send_ct.HeaderReceived)
+    (σ : State _ _) (h : Refines (.HeaderReceived s) σ) (rng rng' : R) (out : Send)
+    (hs : States.send i₁ i₂ (.HeaderReceived s) rng = ok (.Ok out, rng')) :
+    ∃ (hdr ct1 es ss : alloc.vec.Vec Std.U8) (rk : R),
+      incremental_mlkem768.encaps1 i₁ i₂ hdr rng = ok ((ct1, es, ss), rk) ∧
+      ∀ r, P.encaps1 hdr.val r = (es.val, ct1.val, ss.val) →
+        Refines out.state (BraidModel.send P σ r).1 ∧
+        absMsg out.msg = (BraidModel.send P σ r).2.1 ∧
+        out.key.map absKey = (BraidModel.send P σ r).2.2 := by
+  cases σ <;> simp only [Refines] at h
+  case headerReceived e a hdr d =>
+    simp only [States.send, Result.bind_eq_ok] at hs
+    obtain ⟨rfl, rfl, rfl, rfl⟩ := h
+    obtain ⟨ep, hep, ⟨⟨s1, c, k⟩, rng1⟩, hc, hout⟩ := hs
+    simp only [send_ct.HeaderReceived.epoch, Result.ok.injEq] at hep; subst hep
+    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq,
+        core.result.Result.Ok.injEq] at hout; obtain ⟨rfl, -⟩ := hout
+    simp only [send_ct.HeaderReceived.send_ct1_chunk, Result.bind_eq_ok] at hc
+    obtain ⟨⟨⟨uc, ct1, k'⟩, r1⟩, hsc, hrest⟩ := hc
+    simp only [uncurry_apply_pair] at hrest
+    simp only [Result.bind_eq_ok] at hrest
+    obtain ⟨enc0, henc, sh, hsh, ⟨c', e'⟩, hn, hfin⟩ := hrest
+    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq, and_assoc] at hfin
+    obtain ⟨rfl, rfl, rfl, -⟩ := hfin
+    have hsh' := eq_Ok_of_expect_eq_ok hsh; subst hsh'
+    simp only [unchunked.send_ct.HeaderReceived.send_ct1, Result.bind_eq_ok] at hsc
+    obtain ⟨⟨⟨ct1₀, es, ss₀⟩, rk⟩, he1, hsc⟩ := hsc
+    simp only [alloc.slice.Slice.concat_eq, Slice.Insts.AllocSliceConcatTVec.concat_eq,
+        Std.bind_assoc, uncurry_apply_pair] at hsc
+    simp only [Result.bind_eq_ok] at hsc
+    obtain ⟨_, h1, _, h2, _, h3, _, h4, l, hl, info, hinfo, _, h5, sec, hk, a', hu, v, hv, hsc⟩ :=
+      hsc
+    simp only [lift, Result.ok.injEq] at h1 h2 h3 h4 h5
+    subst h1 h2 h3 h4 h5
+    rw [Slice.concatListAux_shared_id_spec _ (fun _ => rfl), Result.ok.injEq] at hl
+    subst hl
+    have hiv := Slice.listToVec_ok_val hinfo
+    have hiv' : info.val = Spqr.V1.Unchunked.SendCt.sckaKeyLabel ++
+        (core.num.U64.to_be_bytes s.uc.epoch).val := by
+      rw [hiv]; simp only [Array.to_slice, Array.make, Array.from_val, Slice.from_val,
+          List.map_cons, List.map_nil, List.flatten_cons, List.flatten_nil, List.append_nil,
+          List.cons_append, List.nil_append, Spqr.V1.Unchunked.SendCt.sckaKeyLabel]
+    have hsec := (post_of_ok (kdf.hkdf_to_vec_spec _ _ _ _ (by simp only [UScalar.ofNatCore_val_eq,
+        Nat.reduceMul, Nat.reduceLeDiff])) hk).1
+    simp only [alloc.vec.Vec.deref, Slice.from_val, hiv'] at hsec
+    have hz : (Array.repeat 32#usize 0#u8).to_slice.val = List.replicate 32 0#u8 := by
+      simp only [Array.to_slice, Array.repeat, UScalar.ofNatCore_val_eq, List.reduceReplicate,
+          Array.from_val, Slice.from_val]
+    rw [hz, show (32#usize : Std.Usize).val = 32 by simp only [UScalar.ofNatCore_val_eq],
+      ← hP.kdfOk] at hsec
+    have hau := absAuth_update P hP _ _ _ _ hu
+    simp only [alloc.vec.Vec.deref, Slice.from_val, hsec] at hau
+    have hv' := post_of_ok (alloc.vec.CloneVec.clone_U8_spec _) hv
+    subst hv'
+    simp only [Result.ok.injEq, Prod.mk.injEq] at hsc
+    obtain ⟨⟨h6, rfl, rfl⟩, -⟩ := hsc
+    subst h6
+    have he := hP.encode _ _ henc
+    have hnc := hP.nextChunk _ _ _ hn
+    simp only [alloc.vec.Vec.deref, Slice.from_val] at he
+    refine ⟨_, _, _, _, rk, he1, fun r hr => ?_⟩
+    simp only [BraidModel.send, hr, he, hnc]
+    simp only [Refines, hau, and_self, absMsg, Option.map_some, absKey, hsec]
+
 /-- Assume `CodeAgrees P` and `Refines s σ`. If `States::send` succeeds on `s`, then for some
 randomness the model's `Send()` on `σ` gives a related state, the code's message and the code's
 key. -/
@@ -411,8 +530,19 @@ theorem send_refines (P : CodePrims) (hP : CodeAgrees P) {R : Type} (i₁ : rand
     ∃ r, Refines out.state (BraidModel.send P σ r).1 ∧
       absMsg out.msg = (BraidModel.send P σ r).2.1 ∧
       out.key.map absKey = (BraidModel.send P σ r).2.2 := by
-  cases s <;> cases σ <;> simp only [Refines] at h <;> simp only [States.send,
-    Result.bind_eq_ok, Result.ok.injEq, Prod.mk.injEq, core.result.Result.Ok.injEq] at hs
+  cases s
+  case KeysUnsampled s =>
+    obtain ⟨keys, rk, hg, hk⟩ := send_keysUnsampled_refines P hP i₁ i₂ s σ h rng rng' out hs
+    obtain ⟨r, hr⟩ := hP.keyGen i₁ i₂ rng rk keys hg
+    exact ⟨r, hk r hr⟩
+  case HeaderReceived s =>
+    obtain ⟨hdr, ct1, es, ss, rk, he1, hk⟩ :=
+      send_headerReceived_refines P hP i₁ i₂ s σ h rng rng' out hs
+    obtain ⟨r, hr⟩ := hP.encaps1 i₁ i₂ rng rk hdr ct1 es ss he1
+    exact ⟨r, hk r hr⟩
+  all_goals cases σ <;> simp only [Refines] at h
+  all_goals simp only [States.send, Result.bind_eq_ok, Result.ok.injEq, Prod.mk.injEq,
+    core.result.Result.Ok.injEq] at hs
   case KeysSampled.keysSampled s e a dk hdr ek enc =>
     obtain ⟨rfl, rfl, rfl, rfl, rfl⟩ := h
     obtain ⟨ep, hep, ⟨s1, c⟩, hc, hout⟩ := hs
@@ -508,92 +638,6 @@ theorem send_refines (P : CodePrims) (hP : CodeAgrees P) {R : Type} (i₁ : rand
     obtain ⟨rfl, -⟩ := hout
     refine ⟨[], ?_⟩
     simp only [Refines, BraidModel.send, and_self, absMsg, Option.map_none]
-  case KeysUnsampled.keysUnsampled s e a =>
-    obtain ⟨rfl, rfl⟩ := h
-    obtain ⟨ep, hep, ⟨⟨s1, c⟩, rng1⟩, hc, hout⟩ := hs
-    simp only [send_ek.KeysUnsampled.epoch, Result.ok.injEq] at hep; subst hep
-    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq,
-        core.result.Result.Ok.injEq] at hout; obtain ⟨rfl, -⟩ := hout
-    simp only [send_ek.KeysUnsampled.send_hdr_chunk,
-      v1.unchunked.send_ek.KeysUnsampled.send_header, Result.bind_eq_ok] at hc
-    obtain ⟨⟨⟨uc, ts, mac⟩, r1⟩, ⟨⟨keys, rk⟩, hg, hk⟩, hrest⟩ := hc
-    simp only [uncurry_apply_pair] at hk hrest
-    simp only [Result.bind_eq_ok] at hk hrest
-    obtain ⟨m, hm, hk⟩ := hk
-    simp only [Result.ok.injEq, Prod.mk.injEq] at hk
-    obtain ⟨⟨h1, h2, h3⟩, h4⟩ := hk
-    subst h2 h3 h4
-    obtain ⟨⟨ts1, z⟩, hap, hrest⟩ := hrest
-    simp only [uncurry_apply_pair] at hrest
-    simp only [Result.bind_eq_ok] at hrest
-    obtain ⟨enc0, henc, sh, hsh, ⟨c', e'⟩, hn, hfin⟩ := hrest
-    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq, and_assoc] at hfin
-    obtain ⟨rfl, rfl, -⟩ := hfin
-    have hsh' := eq_Ok_of_expect_eq_ok hsh; subst hsh'
-    obtain ⟨r, hr⟩ := hP.keyGen i₁ i₂ rng rk keys hg
-    have hmac := mac_hdr_ok P hP _ _ _ _ hm
-    have hts := alloc.vec.Vec.append_ok_val hap
-    have he := hP.encode _ _ henc
-    have hnc := hP.nextChunk _ _ _ hn
-    simp only [alloc.vec.Vec.deref, Slice.from_val] at hmac he
-    rw [hts, hmac] at he
-    refine ⟨r, ?_⟩
-    subst h1
-    simp only [BraidModel.send, hr, he, hnc]
-    simp only [Refines, and_self, absMsg, Option.map_none]
-  case HeaderReceived.headerReceived s e a hdr d =>
-    obtain ⟨rfl, rfl, rfl, rfl⟩ := h
-    obtain ⟨ep, hep, ⟨⟨s1, c, k⟩, rng1⟩, hc, hout⟩ := hs
-    simp only [send_ct.HeaderReceived.epoch, Result.ok.injEq] at hep; subst hep
-    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq,
-        core.result.Result.Ok.injEq] at hout; obtain ⟨rfl, -⟩ := hout
-    simp only [send_ct.HeaderReceived.send_ct1_chunk, Result.bind_eq_ok] at hc
-    obtain ⟨⟨⟨uc, ct1, k'⟩, r1⟩, hsc, hrest⟩ := hc
-    simp only [uncurry_apply_pair] at hrest
-    simp only [Result.bind_eq_ok] at hrest
-    obtain ⟨enc0, henc, sh, hsh, ⟨c', e'⟩, hn, hfin⟩ := hrest
-    simp only [uncurry_apply_pair, ok.injEq, Prod.mk.injEq, and_assoc] at hfin
-    obtain ⟨rfl, rfl, rfl, -⟩ := hfin
-    have hsh' := eq_Ok_of_expect_eq_ok hsh; subst hsh'
-    simp only [unchunked.send_ct.HeaderReceived.send_ct1, Result.bind_eq_ok] at hsc
-    obtain ⟨⟨⟨ct1₀, es, ss₀⟩, rk⟩, he1, hsc⟩ := hsc
-    simp only [alloc.slice.Slice.concat_eq, Slice.Insts.AllocSliceConcatTVec.concat_eq,
-        Std.bind_assoc, uncurry_apply_pair] at hsc
-    simp only [Result.bind_eq_ok] at hsc
-    obtain ⟨_, h1, _, h2, _, h3, _, h4, l, hl, info, hinfo, _, h5, sec, hk, a', hu, v, hv, hsc⟩ :=
-      hsc
-    simp only [lift, Result.ok.injEq] at h1 h2 h3 h4 h5
-    subst h1 h2 h3 h4 h5
-    rw [Slice.concatListAux_shared_id_spec _ (fun _ => rfl), Result.ok.injEq] at hl
-    subst hl
-    have hiv := Slice.listToVec_ok_val hinfo
-    have hiv' : info.val = Spqr.V1.Unchunked.SendCt.sckaKeyLabel ++
-        (core.num.U64.to_be_bytes s.uc.epoch).val := by
-      rw [hiv]; simp only [Array.to_slice, Array.make, Array.from_val, Slice.from_val,
-          List.map_cons, List.map_nil, List.flatten_cons, List.flatten_nil, List.append_nil,
-          List.cons_append, List.nil_append, Spqr.V1.Unchunked.SendCt.sckaKeyLabel]
-    have hsec := (post_of_ok (kdf.hkdf_to_vec_spec _ _ _ _ (by simp only [UScalar.ofNatCore_val_eq,
-        Nat.reduceMul, Nat.reduceLeDiff])) hk).1
-    simp only [alloc.vec.Vec.deref, Slice.from_val, hiv'] at hsec
-    have hz : (Array.repeat 32#usize 0#u8).to_slice.val = List.replicate 32 0#u8 := by
-      simp only [Array.to_slice, Array.repeat, UScalar.ofNatCore_val_eq, List.reduceReplicate,
-          Array.from_val, Slice.from_val]
-    rw [hz, show (32#usize : Std.Usize).val = 32 by simp only [UScalar.ofNatCore_val_eq],
-      ← hP.kdfOk] at hsec
-    have hau := absAuth_update P hP _ _ _ _ hu
-    simp only [alloc.vec.Vec.deref, Slice.from_val, hsec] at hau
-    have hv' := post_of_ok (alloc.vec.CloneVec.clone_U8_spec _) hv
-    subst hv'
-    simp only [Result.ok.injEq, Prod.mk.injEq] at hsc
-    obtain ⟨⟨h6, rfl, rfl⟩, -⟩ := hsc
-    subst h6
-    obtain ⟨r, hr⟩ := hP.encaps1 i₁ i₂ rng rk _ _ _ _ he1
-    have he := hP.encode _ _ henc
-    have hnc := hP.nextChunk _ _ _ hn
-    simp only [alloc.vec.Vec.deref, Slice.from_val] at he
-    refine ⟨r, ?_⟩
-    simp only [BraidModel.send, hr, he, hnc]
-    simp only [Refines, hau, and_self, absMsg, Option.map_some, absKey, hsec]
 
 /-- Related states have the same epoch. -/
 theorem Refines.epoch {s : States} {σ : State _ _} (h : Refines s σ) :

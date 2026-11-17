@@ -8,6 +8,7 @@ public import SrcTranslated.Funs
 public import SrcTranslated.FunsExternal
 public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps1
 public import Spqr.Specs.Aeneas.ResultExpect
+public import Spqr.Auxiliary.Aeneas.SpecImpExists
 /-! # Spec theorem for `incremental_mlkem768::encaps1`
 
 `encaps1` is round 1 of ML-KEM-768 encapsulation packaged for the SPQR ratchet: given the
@@ -73,6 +74,68 @@ namespace spqr.incremental_mlkem768
 
 open libcrux_ml_kem.mlkem768.incremental
 
+/-- If `fill_bytes` on the 32 zero bytes returns `(rng₁, b)` and `hdr` has at least 64 bytes,
+then `encaps1` returns the generator state `rng₁` and the FIPS 203 round 1 values of the message
+`m` that it reads from `b`: `ct1`, `es` and `ss` are `ct1List hdr m`, `stateOut hdr m` and
+`ssOut hdr m`, and they have 960, `encapsStateSize` and `sharedSecretSize` bytes. -/
+theorem encaps1_fill_spec {R : Type} (rngInst : rand_1.rng.Rng R)
+    (cryptoInst : rand_core_1.CryptoRng R) (hdr : alloc.vec.Vec Std.U8) (rng rng₁ : R)
+    (b : Slice Std.U8)
+    (hf : rngInst.rand_core_1RngCoreInst.fill_bytes rng (Array.repeat 32#usize 0#u8).to_slice =
+      ok (rng₁, b))
+    (h_hdr : 64 ≤ hdr.val.length) :
+    encaps1 rngInst cryptoInst hdr rng ⦃ (result :
+        ((alloc.vec.Vec Std.U8) × (alloc.vec.Vec Std.U8) × (alloc.vec.Vec Std.U8)) × R) =>
+      let m := Fips203.Refinement.msgOfArray (Array.from_slice (Array.repeat 32#usize 0#u8) b)
+      result.2 = rng₁ ∧
+      result.1.1.val = Fips203.Refinement.ct1List hdr.val h_hdr m ∧
+      result.1.2.1.val =
+        Fips203.Refinement.toU8List (Fips203.Refinement.stateOut hdr.val h_hdr m) ∧
+      result.1.2.2.val =
+        Fips203.Refinement.toU8List (Fips203.Refinement.ssOut hdr.val h_hdr m) ∧
+      result.1.1.length = 960 ∧
+      result.1.2.1.length = Fips203.Refinement.encapsStateSize ∧
+      result.1.2.2.length = Fips203.Refinement.sharedSecretSize ⦄ := by
+  unfold encaps1
+  simp only [lift, Array.to_slice_mut, uncurry_apply_pair, hf, bind_ok]
+  step*
+  simp only [alloc.vec.Vec.deref_mut]
+  have h_s2 : 64 ≤ s2.length := by simp only [Slice.length, s2_post]; exact h_hdr
+  have h_state : Fips203.Refinement.encapsStateSize ≤ state.slice.length := by
+    change Fips203.Refinement.encapsStateSize ≤ state.val.length; scalar_tac
+  have h_ss : (32 : ℕ) ≤ ss.slice.length := by
+    change (32 : ℕ) ≤ ss.val.length; scalar_tac
+  step*
+  subst ct1_post
+  step*
+  have h_state_len : state.slice.val.length = Fips203.Refinement.encapsStateSize := by
+    change state.val.length = _
+    simp only [state_post, List.length_replicate, «Fips203.Refinement.encapsStateSize_post»]
+  have h_ss_len : ss.slice.val.length = (32 : ℕ) := by
+    change ss.val.length = _
+    simp only [ss_post, List.length_replicate, i1_post]
+  have h_hdr' : (64 : ℕ) ≤ s2.val.length := h_s2
+  have h_v : v.slice.val = Fips203.Refinement.ct1List s2.val h_s2
+      (Fips203.Refinement.msgOfArray (Array.from_slice (Array.repeat 32#usize 0#u8) b)) := by
+    rw [← v_post, c_post, Array.val_to_slice, Fips203.Refinement.ct1Array, Array.make_val]
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · change v.slice.val = _
+    rw [h_v]; exact Fips203.Refinement.ct1List_congr s2_post h_hdr' h_hdr _
+  · change s5.val = _
+    rw [ct1_post1, Fips203.Refinement.overwritePrefix_of_length_eq _ _ h_state_len,
+      Fips203.Refinement.stateOut_congr s2_post h_hdr' h_hdr]
+  · change s6.val = _
+    rw [ct1_post2, Fips203.Refinement.overwritePrefix_of_length_eq _ _ h_ss_len,
+      Fips203.Refinement.ssOut_congr s2_post h_hdr' h_hdr]
+  · change v.slice.val.length = _
+    rw [h_v, Fips203.Refinement.ct1List_length]
+  · change s5.val.length = _
+    rw [ct1_post1, Fips203.Refinement.overwritePrefix_length _ _ (le_of_eq h_state_len.symm),
+      h_state_len]
+  · change s6.val.length = _
+    rw [ct1_post2, Fips203.Refinement.overwritePrefix_length _ _ (le_of_eq h_ss_len.symm), h_ss_len]
+    rfl
+
 /-- **Spec theorem for `incremental_mlkem768.encaps1`**:
 
 Assuming `fill_bytes` is panic-free and `64 ≤ hdr.len()` (the Rust precondition is
@@ -99,42 +162,10 @@ theorem encaps1_spec {R : Type} (rngInst : rand_1.rng.Rng R)
       result.1.1.length = 960 ∧
       result.1.2.1.length = Fips203.Refinement.encapsStateSize ∧
       result.1.2.2.length = Fips203.Refinement.sharedSecretSize ⦄ := by
-  unfold encaps1
-  step*
-  simp only [alloc.vec.Vec.deref_mut, lift]
-  have h_s2 : 64 ≤ s2.length := by simp only [Slice.length, s2_post]; exact h_hdr
-  have h_state : Fips203.Refinement.encapsStateSize ≤ state.slice.length := by
-    change Fips203.Refinement.encapsStateSize ≤ state.val.length; scalar_tac
-  have h_ss : (32 : ℕ) ≤ ss.slice.length := by
-    change (32 : ℕ) ≤ ss.val.length; scalar_tac
-  step*
-  subst ct1_post
-  step*
-  have h_state_len : state.slice.val.length = Fips203.Refinement.encapsStateSize := by
-    change state.val.length = _
-    simp only [state_post, List.length_replicate, «Fips203.Refinement.encapsStateSize_post»]
-  have h_ss_len : ss.slice.val.length = (32 : ℕ) := by
-    change ss.val.length = _
-    simp only [ss_post, List.length_replicate, i1_post]
-  have h_hdr' : (64 : ℕ) ≤ s2.val.length := h_s2
-  have h_v : v.val = Fips203.Refinement.ct1List s2.val h_s2
-      (Fips203.Refinement.msgOfArray (to_slice_mut_back s1)) := by
-    change v.slice.val = _
-    rw [← v_post, c_post, Array.val_to_slice, Fips203.Refinement.ct1Array, Array.make_val]
-  refine ⟨⟨Fips203.Refinement.msgOfArray (to_slice_mut_back s1), ?_, ?_, ?_⟩, ?_, ?_, ?_⟩
-  · rw [h_v]; exact Fips203.Refinement.ct1List_congr s2_post h_hdr' h_hdr _
-  · change s5.val = _
-    rw [ct1_post1, Fips203.Refinement.overwritePrefix_of_length_eq _ _ h_state_len,
-      Fips203.Refinement.stateOut_congr s2_post h_hdr' h_hdr]
-  · change s6.val = _
-    rw [ct1_post2, Fips203.Refinement.overwritePrefix_of_length_eq _ _ h_ss_len,
-      Fips203.Refinement.ssOut_congr s2_post h_hdr' h_hdr]
-  · rw [alloc.vec.Vec.length, h_v, Fips203.Refinement.ct1List_length]
-  · change s5.val.length = _
-    rw [ct1_post1, Fips203.Refinement.overwritePrefix_length _ _ (le_of_eq h_state_len.symm),
-      h_state_len]
-  · change s6.val.length = _
-    rw [ct1_post2, Fips203.Refinement.overwritePrefix_length _ _ (le_of_eq h_ss_len.symm), h_ss_len]
-    rfl
+  obtain ⟨⟨rng₁, b⟩, hf, -⟩ :=
+    WP.spec_imp_exists (h_fill rng (Array.repeat 32#usize 0#u8).to_slice)
+  refine WP.spec_mono (encaps1_fill_spec rngInst cryptoInst hdr rng rng₁ b hf h_hdr) ?_
+  rintro r ⟨-, hct1, hes, hss, h1, h2, h3⟩
+  exact ⟨⟨_, hct1, hes, hss⟩, h1, h2, h3⟩
 
 end spqr.incremental_mlkem768
