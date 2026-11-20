@@ -20,8 +20,8 @@ step's `Q` and every observation is what the model's step gives.
 `checkRun_sound`, `accepted_alice` and `accepted_bob` state what an accepted replay means: for
 every `P` that extends each `Q` (`Agrees P Q`), the observations are steps of the model under
 `P` (`Explains`), with the observed messages of `send`, keys, state names and epochs, and the
-model has a `Run` under `P` that emits the observed keys. The monitor executable builds each `Q`
-from the logged calls; nothing here depends on how.
+model has a `Run` under `P` that emits the observed keys. A monitor builds each `Q` from the
+calls it logs; nothing here depends on how.
 
 **Source**: ML-KEM Braid Rev. 1, §2.5, §2.6 -/
 
