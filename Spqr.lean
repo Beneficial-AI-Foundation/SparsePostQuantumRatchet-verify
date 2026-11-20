@@ -133,6 +133,8 @@ public import Spqr.Specs.Braid.Scka.EpochUniqueness.KeyFloor
 public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
 public import Spqr.Specs.Braid.StateMachine.Model
+public import Spqr.Specs.Braid.StateMachine.Monitor
+public import Spqr.Specs.Braid.StateMachine.PartialModel
 public import Spqr.Specs.Braid.StateMachine.Refinement
 public import Spqr.Specs.Braid.StateMachine.Relation
 public import Spqr.Specs.Braid.StateMachine.Run
