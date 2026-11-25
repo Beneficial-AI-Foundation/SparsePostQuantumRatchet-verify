@@ -338,6 +338,9 @@ public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.Epoch
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.RecvHdrChunk
 public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct1Acknowledged.FromPb
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct1Acknowledged.FunctionalModels
+public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct1Acknowledged.IntoPb
 public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.FromPb
 public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.FunctionalModels
 public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct2Sampled.IntoPb
