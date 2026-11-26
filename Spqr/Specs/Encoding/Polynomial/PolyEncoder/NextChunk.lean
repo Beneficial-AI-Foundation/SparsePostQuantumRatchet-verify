@@ -6,6 +6,7 @@ Authors: Hoang Le Truong
 module
 
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
+import Spqr.Math.Poly.Lagrange.EvalAtNode
 public import Spqr.Math.Poly.Lagrange.CompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Mathlib.Order.Int.ConditionallyCompleteOrder
@@ -23,7 +24,7 @@ indices.
 
 @[expose] public section
 
-open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf Polynomial
+open Aeneas Aeneas.Std Result spqr.encoding.polynomial spqr.encoding.gf spqr.math.gf Polynomial
 
 namespace spqr.encoding.polynomial.PolyEncoder.Insts.SpqrEncodingEncoder
 
@@ -134,6 +135,128 @@ theorem nextChunks_index_ne (n : Nat) (self : PolyEncoder) (h_ready : NextChunkR
   have h_val := congrArg UScalar.val h_eq
   rw [h_idx i (Nat.lt_trans hij hj), h_idx j hj] at h_val
   omega
+
+/-- The polynomial that slot `j` of the encoder evaluates: in the `Points` state the interpolant
+of the stored points of the slot, in the `Polys` state the stored polynomial. -/
+noncomputable def slotPoly (self : PolyEncoder) (j : Nat) : GF216[X] :=
+  match self.s with
+  | .Points pts =>
+      ∑ k ∈ Finset.range (pts[j]!).value.length,
+        C (((pts[j]!).value[k]!).toGF216) *
+          scaledLagrangeBasis (alloc.vec.Vec.len ((pts[j]!).value)) k
+  | .Polys polys => (polys[j]!).toGF216Poly
+
+/-- The interpolant of at most 2^16 stored points takes the stored value at every index below
+the number of points. -/
+theorem eval_interpolant_of_lt (v : alloc.vec.Vec GF16) (h_len : v.length ≤ 2 ^ 16) {x : Nat}
+    (hx : x < v.length) :
+    (∑ k ∈ Finset.range v.length,
+      C ((v[k]!).toGF216) * scaledLagrangeBasis (alloc.vec.Vec.len v) k).eval (Nat.toGF216 x) =
+      (v[x]!).toGF216 := by
+  have h_val : (alloc.vec.Vec.len v).val = v.length := rfl
+  have h := eval_sum_scaledLagrangeBasis_node (N := alloc.vec.Vec.len v)
+    (by rw [h_val]; exact h_len) (fun k => (v[k]!).toGF216) (m := x) (by rw [h_val]; exact hx)
+  rw [h_val] at h
+  exact h
+
+/-- Two 32-byte payloads with the same 16 `chunkWord` values are equal. -/
+theorem data_eq_of_chunkWord_eq {d₁ d₂ : Array U8 32#usize}
+    (h : ∀ (j : Nat), j < 16 → chunkWord d₁ j = chunkWord d₂ j) : d₁ = d₂ := by
+  have h_len₁ : d₁.val.length = 32 := d₁.property
+  have h_len₂ : d₂.val.length = 32 := d₂.property
+  have h_pair : ∀ (j : Nat), j < 16 →
+      d₁.val[2 * j]! = d₂.val[2 * j]! ∧ d₁.val[2 * j + 1]! = d₂.val[2 * j + 1]! := by
+    intro j hj
+    have h_a₁ : (d₁.val[2 * j]!).val < 2 ^ 8 := (d₁.val[2 * j]!).hBounds
+    have h_b₁ : (d₁.val[2 * j + 1]!).val < 2 ^ 8 := (d₁.val[2 * j + 1]!).hBounds
+    have h_a₂ : (d₂.val[2 * j]!).val < 2 ^ 8 := (d₂.val[2 * j]!).hBounds
+    have h_b₂ : (d₂.val[2 * j + 1]!).val < 2 ^ 8 := (d₂.val[2 * j + 1]!).hBounds
+    have h_nat := Nat.toGF216_injOn
+      (x₁ := 256 * (d₁.val[2 * j]!).val + (d₁.val[2 * j + 1]!).val) (by rw [Set.mem_Iio]; omega)
+      (x₂ := 256 * (d₂.val[2 * j]!).val + (d₂.val[2 * j + 1]!).val) (by rw [Set.mem_Iio]; omega)
+      (h j hj)
+    exact ⟨UScalar.eq_of_val_eq (by omega), UScalar.eq_of_val_eq (by omega)⟩
+  apply Aeneas.Std.Array.ext
+  apply List.ext_getElem (by rw [h_len₁, h_len₂])
+  intro k hk₁ hk₂
+  rw [List.Inhabited_getElem_eq_getElem! d₁.val k hk₁,
+    List.Inhabited_getElem_eq_getElem! d₂.val k hk₂]
+  obtain ⟨h_even, h_odd⟩ := h_pair (k / 2) (by omega)
+  rcases Nat.mod_two_eq_zero_or_one k with h_k | h_k
+  · have h_idx : 2 * (k / 2) = k := by omega
+    rw [h_idx] at h_even
+    exact h_even
+  · have h_idx : 2 * (k / 2) + 1 = k := by omega
+    rw [h_idx] at h_odd
+    exact h_odd
+
+/-- A `next_chunk` step keeps the polynomial of every slot, and each word of the emitted chunk
+is the polynomial of its slot evaluated at the emitted index. -/
+theorem slotPoly_of_postCond {self self' : PolyEncoder} {chunk : encoding.Chunk}
+    (h_ready : NextChunkReady self) (h_post : NextChunkPostCond self self' chunk) (j : Nat)
+    (hj : j < 16) :
+    slotPoly self' j = slotPoly self j ∧
+      chunkWord chunk.data j = (slotPoly self j).eval (Nat.toGF216 self.wireIndex) := by
+  obtain ⟨-, -, -, h_match⟩ := h_post
+  unfold slotPoly
+  cases h_s : self.s with
+  | Polys polys =>
+    simp only [h_s] at h_match
+    obtain ⟨h_eq, h_eval⟩ := h_match
+    simp only [h_eq]
+    exact ⟨trivial, h_eval j hj⟩
+  | Points pts =>
+    simp only [h_s] at h_match
+    have h_len : (pts[j]!).value.length ≤ 2 ^ 16 := by
+      have h_adm := h_ready.1 pts h_s j hj
+      simp only at h_adm
+      omega
+    rcases h_match with ⟨h_eq, h_cache⟩ | ⟨polys', h_polys', h_interp, -, h_words⟩
+    · obtain ⟨h_lt, h_word⟩ := h_cache j hj
+      simp only [h_eq]
+      exact ⟨trivial, by rw [h_word, eval_interpolant_of_lt _ h_len h_lt]⟩
+    · simp only [h_polys']
+      refine ⟨h_interp j hj, ?_⟩
+      rcases h_words j hj with ⟨h_lt, h_word⟩ | h_word
+      · rw [h_word, eval_interpolant_of_lt _ h_len h_lt]
+      · rw [h_word, h_interp j hj]
+
+/-- Assume the encoder satisfies the premises of `next_chunk_spec`. Then every word of every
+chunk that `n` consecutive calls emit is the polynomial of its slot, fixed by the starting
+encoder, evaluated at the index of the chunk. -/
+theorem nextChunks_chunkWord (n : Nat) (self : PolyEncoder) (h_ready : NextChunkReady self) :
+    nextChunks n self ⦃ ((cs, _) : List encoding.Chunk × PolyEncoder) =>
+      ∀ (i : Nat) (hi : i < cs.length) (j : Nat), j < 16 →
+        chunkWord cs[i].data j = (slotPoly self j).eval (Nat.toGF216 cs[i].index.val) ⦄ := by
+  induction n generalizing self with
+  | zero =>
+    simp only [nextChunks, WP.spec_ok, List.length_nil, Nat.not_lt_zero, IsEmpty.forall_iff,
+      implies_true]
+  | succ n ih =>
+    simp only [nextChunks]
+    step with next_chunk_spec self h_ready.1 h_ready.2 as ⟨c, e₁, h_post⟩
+    step with ih e₁ (nextChunkReady_of_postCond h_ready h_post) as ⟨cs, e₂, h_ih⟩
+    intro i hi j hj
+    obtain ⟨h_poly, h_word⟩ := slotPoly_of_postCond h_ready h_post j hj
+    cases i with
+    | zero => rw [List.getElem_cons_zero, h_word, h_post.1]
+    | succ k =>
+      rw [List.length_cons] at hi
+      rw [List.getElem_cons_succ, h_ih k (by omega) j hj, h_poly]
+
+/-- Assume the encoder satisfies the premises of `next_chunk_spec`. Then any two of `n`
+consecutive calls that emit the same index emit the same data. So a repeated index, which
+occurs after 2^16 calls, carries the payload that the first chunk with that index carried. -/
+theorem nextChunks_data_eq_of_index_eq (n : Nat) (self : PolyEncoder)
+    (h_ready : NextChunkReady self) :
+    nextChunks n self ⦃ ((cs, _) : List encoding.Chunk × PolyEncoder) =>
+      ∀ (i j : Nat) (hi : i < cs.length) (hj : j < cs.length),
+        cs[i].index = cs[j].index → cs[i].data = cs[j].data ⦄ := by
+  apply WP.spec_mono (nextChunks_chunkWord n self h_ready)
+  rintro ⟨cs, e⟩ h_word i j hi hj h_eq
+  apply data_eq_of_chunkWord_eq
+  intro k hk
+  rw [h_word i hi k hk, h_word j hj k hk, h_eq]
 
 /-- Two calls from counter `2^16 - 1`: indices `65535` then `0`, counter `65537`. -/
 example (s : EncoderState) (h_ready : NextChunkReady ⟨65535#u32, s⟩) :
