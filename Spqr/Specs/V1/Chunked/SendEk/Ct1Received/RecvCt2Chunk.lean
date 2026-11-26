@@ -5,8 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
+import SrcTranslated.Funs
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.RecvCt2Chunk
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Authenticator.Authenticator.MACSIZE

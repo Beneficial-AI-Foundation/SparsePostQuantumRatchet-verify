@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import Aeneas
-public import Spqr.Auxiliary.Aeneas.Scalar
+import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Crypto.Fips203.KEM.Decaps
 public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
 /-!

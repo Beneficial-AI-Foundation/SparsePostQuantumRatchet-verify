@@ -8,10 +8,10 @@ module
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Aeneas.SliceChunksExact
 import Spqr.Specs.Encoding.Gf.GF16.New
-public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
+import Spqr.Specs.Encoding.Polynomial.PolyEncoder.IntoPb
 public import Spqr.Auxiliary.Aeneas.Slice
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
@@ -19,6 +19,8 @@ import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Specs.Aeneas.VecExtendFromSlice
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.List
 
 /-! # Spec theorem for `PolyEncoder::encode_bytes_base`: loop body 0
 

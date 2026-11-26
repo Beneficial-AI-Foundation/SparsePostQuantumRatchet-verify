@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.List
+import Spqr.Math.List
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
@@ -13,6 +13,8 @@ import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
 import Spqr.Math.Poly.LinearFactors.Degree
+public import Spqr.Math.Poly.Basic.Defs
+import Spqr.Math.Poly.Coeff.Basic
 
 /-! # Polynomial identity for `mult_xdiff_assign_trailing`
 

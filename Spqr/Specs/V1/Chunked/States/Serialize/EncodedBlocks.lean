@@ -5,7 +5,7 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
 public import Spqr.Specs.V1.Chunked.States.Serialize.EncodeChunk
 

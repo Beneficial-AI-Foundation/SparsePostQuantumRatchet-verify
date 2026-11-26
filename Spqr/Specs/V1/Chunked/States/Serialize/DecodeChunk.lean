@@ -5,7 +5,7 @@ Authors: Liao Zhang
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 
 /-! # Spec theorem for `spqr::v1::chunked::states::serialize::decode_chunk`

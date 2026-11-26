@@ -5,7 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
+import Spqr.Specs.Encoding.Polynomial.CHUNK_SIZE
+public import SrcTranslated.Funs
 
 /-! # Spec theorem for `spqr::encoding::polynomial::NUM_POLYS`
 

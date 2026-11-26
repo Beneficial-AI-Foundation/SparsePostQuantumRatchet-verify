@@ -5,7 +5,7 @@ Authors: Markus Dablander
 -/
 module
 
-public import SrcTranslated.Types
+import SrcTranslated.Types
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 
 /-!

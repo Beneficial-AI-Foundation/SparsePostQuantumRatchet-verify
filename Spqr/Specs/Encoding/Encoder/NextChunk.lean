@@ -5,9 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
-public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Spqr.Math.Poly.Lagrange.CompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Mathlib.Tactic.ComputeDegree
 

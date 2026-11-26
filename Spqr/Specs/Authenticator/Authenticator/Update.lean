@@ -6,13 +6,13 @@ Authors: Oliver Butterley
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Authenticator.MACSIZE
-public import Spqr.Specs.Kdf.HkdfToSlice
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Specs.Aeneas.SliceConcat
 public import Spqr.Crypto.Hkdf
-public import Spqr.Auxiliary.Aeneas.Result
+import Spqr.Auxiliary.Aeneas.Result
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::update`

@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Types
+import SrcTranslated.Types
 public import Spqr.Specs.Chain.ChainEpochDirection.FunctionalModels
 
 /-!

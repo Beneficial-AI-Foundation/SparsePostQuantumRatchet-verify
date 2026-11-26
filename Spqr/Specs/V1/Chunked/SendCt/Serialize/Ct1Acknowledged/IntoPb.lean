@@ -5,7 +5,7 @@ Authors: Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.Ct1Sent.IntoPb
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
 public import Spqr.Specs.V1.Chunked.SendCt.Serialize.Ct1Acknowledged.FunctionalModels

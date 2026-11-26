@@ -4,11 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import Spqr.Crypto.Fips203.PKE.Encrypt
+import Spqr.Crypto.Fips203.PKE.Encrypt
 public import Spqr.Crypto.Fips203.PKE.Decrypt
 public import Spqr.Crypto.Fips203.NTT.RoundTrip
-public import Spqr.Crypto.Fips203.Conversion.Compress
-public import Spqr.Crypto.Fips203.Conversion.Decompress
+import Spqr.Crypto.Fips203.Conversion.Compress
+import Spqr.Crypto.Fips203.Conversion.Decompress
+import Spqr.Crypto.Fips203.Conversion.RoundTrip
+import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
 /-!
 # FIPS 203 K-PKE Round-Trip Correctness: `decrypt(dk, encrypt(ek, m, r)) = m`
 

@@ -6,7 +6,7 @@ Authors: Markus Dablander
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Specs.Aeneas.SliceConcat

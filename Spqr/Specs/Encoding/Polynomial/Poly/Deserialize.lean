@@ -5,10 +5,10 @@ Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
-public import Spqr.Math.List
-public import Spqr.Math.Gf16.Field
+import Spqr.Math.List
+import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
-public import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Polynomial.Poly.FunctionalModels

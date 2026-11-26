@@ -15,6 +15,9 @@ import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
 import Spqr.Math.Poly.LinearFactors.Degree
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Coeff.Basic
 
 /-!
 # Polynomial identities for `mult_xdiff`

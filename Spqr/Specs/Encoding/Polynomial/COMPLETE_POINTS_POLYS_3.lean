@@ -5,9 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Polynomial.LagrangePolysForCompletePoints
-public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Spqr.Math.Poly.Lagrange.CompletePoints
 
 /-! # Spec theorem for `spqr::encoding::polynomial::COMPLETE_POINTS_POLYS_3`
 

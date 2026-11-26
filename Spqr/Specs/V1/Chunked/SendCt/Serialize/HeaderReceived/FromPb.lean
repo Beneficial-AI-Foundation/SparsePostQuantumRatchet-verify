@@ -5,7 +5,7 @@ Authors: Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Specs.V1.Unchunked.SendCt.Serialize.HeaderReceived.FromPb
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.FromPb
 import Spqr.Specs.IncrementalMlkem768.ENCAPSULATION_KEY_SIZE

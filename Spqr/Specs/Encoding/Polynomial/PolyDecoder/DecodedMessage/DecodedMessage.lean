@@ -11,10 +11,11 @@ import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 import Spqr.Specs.Encoding.Polynomial.Poly.LagrangeInterpolate
 import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
 import Spqr.Auxiliary.Aeneas.Vec
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
-public import Spqr.Math.Poly.Basic.Defs
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
+import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.Defs
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
+public import Spqr.Math.Poly.Eval
 
 /-!
 # Spec theorem for `spqr::encoding::polynomial::

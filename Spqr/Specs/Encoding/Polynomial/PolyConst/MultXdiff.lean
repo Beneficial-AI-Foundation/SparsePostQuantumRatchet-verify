@@ -5,8 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Gf.GF16.ZERO
-public import Spqr.Math.List
+import Spqr.Specs.Encoding.Gf.GF16.ZERO
+import Spqr.Math.List
 import Spqr.Math.Poly.Identities.MultXdiff
 import Spqr.Specs.Encoding.Gf.GF16.ConstSub
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul

@@ -11,6 +11,8 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
+public import Spqr.Math.Poly.Basic.Defs
+public import SrcTranslated.Funs
 
 /-!
 # Complete evaluation points and scaled Lagrange basis

@@ -5,14 +5,15 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
+import SrcTranslated.Funs
+import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
 public import Spqr.Specs.V1.Unchunked.SendEk.HeaderSent.SendEk
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Aeneas.ResultExpect
 import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 /-!
 # Spec theorem for
 `spqr::v1::chunked::send_ek::{spqr::v1::chunked::send_ek::KeysSampled}::recv_ct1_chunk`

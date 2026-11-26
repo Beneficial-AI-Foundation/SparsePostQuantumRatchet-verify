@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 import Spqr.Specs.Aeneas.VecIndexRangeFull
 

@@ -6,8 +6,8 @@ Authors: Liao Zhang
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Specs.Aeneas.VecClone
+import SrcTranslated.FunsExternal
+import Spqr.Specs.Aeneas.VecClone
 
 /-! # Spec theorem for `spqr::incremental_mlkem768::flip_endianness_of_encapsulation_state`
 

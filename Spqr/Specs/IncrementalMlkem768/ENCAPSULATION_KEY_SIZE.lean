@@ -6,7 +6,7 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal
 /-! # Spec theorem for `spqr::incremental_mlkem768::ENCAPSULATION_KEY_SIZE`
 
 `ENCAPSULATION_KEY_SIZE` is libcrux's `pk2_len()`, the size in bytes of the encoding

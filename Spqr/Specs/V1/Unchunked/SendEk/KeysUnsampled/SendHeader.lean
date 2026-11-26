@@ -5,8 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.IncrementalMlkem768.Generate
+import SrcTranslated.Funs
+import Spqr.Specs.IncrementalMlkem768.Generate
 public import Spqr.Specs.Authenticator.Authenticator.MacHdr
 import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.Vec

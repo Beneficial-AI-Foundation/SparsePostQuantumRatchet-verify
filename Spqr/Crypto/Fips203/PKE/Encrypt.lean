@@ -8,7 +8,7 @@ public import Spqr.Crypto.Fips203.PKE.KeyGen
 public import Spqr.Crypto.Fips203.NTT.InvNTT
 public import Spqr.Crypto.Fips203.Conversion.ByteDecode
 public import Spqr.Crypto.Fips203.Conversion.Compress
-public import Spqr.Crypto.Fips203.Conversion.Decompress
+import Spqr.Crypto.Fips203.Conversion.Decompress
 /-!
 # FIPS 203 Algorithm 14: `K-PKE.Encrypt(ekPKE, m, r)`
 

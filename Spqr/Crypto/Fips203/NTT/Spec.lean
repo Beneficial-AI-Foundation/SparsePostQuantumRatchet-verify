@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
+import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
+public import Spqr.Crypto.Fips203.NTT.BaseCaseMultiply
 /-!
 # FIPS 203 NTT Specification via the CRT Decomposition
 

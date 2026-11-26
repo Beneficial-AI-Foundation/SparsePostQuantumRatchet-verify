@@ -4,14 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import Spqr.Crypto.Fips203.NTT.Kernel0
-public import Spqr.Crypto.Fips203.NTT.Kernel1
-public import Spqr.Crypto.Fips203.NTT.Kernel2
-public import Spqr.Crypto.Fips203.NTT.Kernel3
-public import Spqr.Crypto.Fips203.NTT.InvKernel0
-public import Spqr.Crypto.Fips203.NTT.InvKernel1
-public import Spqr.Crypto.Fips203.NTT.InvKernel2
-public import Spqr.Crypto.Fips203.NTT.InvKernel3
+import Spqr.Crypto.Fips203.NTT.Kernel0
+import Spqr.Crypto.Fips203.NTT.Kernel1
+import Spqr.Crypto.Fips203.NTT.Kernel2
+import Spqr.Crypto.Fips203.NTT.Kernel3
+import Spqr.Crypto.Fips203.NTT.InvKernel0
+import Spqr.Crypto.Fips203.NTT.InvKernel1
+import Spqr.Crypto.Fips203.NTT.InvKernel2
+import Spqr.Crypto.Fips203.NTT.InvKernel3
+public import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT — combined kernel verification
 

@@ -24,6 +24,8 @@ import Spqr.Math.Poly.Identities.MultXdiff
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Specs.Encoding.Gf.GF16.ConstMul
 import Spqr.Specs.Encoding.Gf.GF16.ConstSub
+import Spqr.Math.Poly.Coeff.Basic
+import Spqr.Specs.Encoding.Gf.GF16.ZERO
 
 /-! # Spec theorem for `PolyConst::lagrange_interpolate_pt`: loop body 0
 

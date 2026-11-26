@@ -6,9 +6,9 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Auxiliary.Aeneas.Result
-public import Spqr.Auxiliary.Aeneas.Scalar
+import SrcTranslated.FunsExternal
+import Spqr.Auxiliary.Aeneas.Result
+import Spqr.Auxiliary.Aeneas.Scalar
 
 /-! # Epochs of the states returned by the unchunked callees of the chunked states
 

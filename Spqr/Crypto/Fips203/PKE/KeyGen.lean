@@ -4,14 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import Spqr.Crypto.Fips203.Params
-public import Spqr.Crypto.Fips203.Ring
-public import Spqr.Crypto.Fips203.Primitives
+import Spqr.Crypto.Fips203.Params
+import Spqr.Crypto.Fips203.Ring
+import Spqr.Crypto.Fips203.Primitives
 public import Spqr.Crypto.Fips203.Sampling.SampleNTT
 public import Spqr.Crypto.Fips203.Sampling.SamplePolyCBD
 public import Spqr.Crypto.Fips203.NTT.NTT
-public import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
+import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
 public import Spqr.Crypto.Fips203.Conversion.ByteEncode
+public import Spqr.Crypto.Fips203.NTT.BaseCaseMultiply
 /-!
 # FIPS 203 Algorithm 13: `K-PKE.KeyGen(d)`
 

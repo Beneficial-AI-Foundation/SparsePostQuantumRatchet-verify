@@ -8,9 +8,9 @@ module
 import Spqr.Specs.Aeneas.GF16New
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NecessaryPoints
-public import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
+import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
@@ -27,6 +27,7 @@ import Spqr.Specs.Encoding.Polynomial.Pt.PartialCmp
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Auxiliary.Aeneas.Loop
 import Spqr.Auxiliary.Aeneas.SpecImpExists
+import Spqr.Auxiliary.Aeneas.Result
 
 /-! # Spec theorem for `spqr::encoding::polynomial::PolyDecoder::add_chunk` — loop body 0
 

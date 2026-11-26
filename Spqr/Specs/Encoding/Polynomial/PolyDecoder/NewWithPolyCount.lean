@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.CallOnce
 import Spqr.Specs.Encoding.EncodingError.From
 public import SrcTranslated.Funs
 /-! # Spec theorem for `spqr::encoding::polynomial::{PolyDecoder}::new_with_poly_count`

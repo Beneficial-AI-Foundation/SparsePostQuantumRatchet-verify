@@ -5,7 +5,7 @@ Authors: Hoang Le Truong, Lacramioara Astefanoaei
 -/
 module
 
-public import Spqr.Specs.Aeneas.SliceIter
+import Spqr.Specs.Aeneas.SliceIter
 import Spqr.Specs.Encoding.Polynomial.PolyConst.ToPoly
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs

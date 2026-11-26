@@ -5,7 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # Postcondition predicate for `gc_loop_spec`
 

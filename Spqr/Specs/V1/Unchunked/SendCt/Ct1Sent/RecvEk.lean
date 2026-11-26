@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.IncrementalMlkem768.EkMatchesHeader
+import Spqr.Specs.IncrementalMlkem768.EkMatchesHeader
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::{Ct1Sent}::recv_ek`
 

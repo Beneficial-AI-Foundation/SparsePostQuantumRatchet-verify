@@ -5,7 +5,7 @@ Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.SliceChunksExact

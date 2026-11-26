@@ -5,12 +5,12 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Lib.EmptyState
+import SrcTranslated.Funs
+import Spqr.Specs.Lib.EmptyState
 public import Spqr.Specs.Proto.PqRatchet.Direction.From
 public import Spqr.Specs.Proto.PqRatchet.Version.From
-public import Spqr.Specs.Chain.ChainParams.IntoPb
-public import Spqr.Specs.Lib.InitInner
+import Spqr.Specs.Chain.ChainParams.IntoPb
+import Spqr.Specs.Lib.InitInner
 public import Spqr.Specs.Lib.StatePb
 /-!
 # Spec theorem for `spqr::initial_state`

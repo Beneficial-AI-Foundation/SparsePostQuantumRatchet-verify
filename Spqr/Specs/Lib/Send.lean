@@ -5,7 +5,7 @@ Authors: Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Lib.StatePb
 public import Spqr.Specs.Lib.ChainFromVersionNegotiation
 public import Spqr.Specs.Chain.Chain.FunctionalModels

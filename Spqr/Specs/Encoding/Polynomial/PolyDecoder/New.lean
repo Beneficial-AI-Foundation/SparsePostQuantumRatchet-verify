@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 import Spqr.Auxiliary.Aeneas.SpecImpExists
 

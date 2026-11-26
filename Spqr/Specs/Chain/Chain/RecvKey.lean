@@ -5,10 +5,10 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Chain.Chain.EpochIdx
 import Spqr.Specs.Chain.ChainEpochDirection.Key
-public import Spqr.Specs.Aeneas.VecDerefMut
+import Spqr.Specs.Aeneas.VecDerefMut
 public import Spqr.Specs.Chain.Chain.Defs
 /-! # Spec theorem for `spqr::chain::{spqr::chain::Chain}::recv_key`
 

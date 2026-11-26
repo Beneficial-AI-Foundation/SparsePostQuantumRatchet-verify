@@ -5,7 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
+import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.New
+public import Spqr.Specs.Authenticator.Authenticator.Update
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 /-!
 # Spec theorem for `spqr::v1::chunked::states::{States}::init_b`
 

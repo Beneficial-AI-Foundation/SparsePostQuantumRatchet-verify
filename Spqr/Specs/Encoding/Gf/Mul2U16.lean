@@ -7,7 +7,7 @@ module
 
 public import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
-public import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul2
+import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul2
 import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Specs.Encoding.Gf.Unaccelerated.Mul

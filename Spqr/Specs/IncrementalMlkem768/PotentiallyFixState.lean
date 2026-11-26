@@ -5,10 +5,10 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Specs.Aeneas.SliceChunks
-public import Spqr.Specs.Aeneas.ResultExpect
-public import Spqr.Specs.IncrementalMlkem768.FlipEndianness
+import SrcTranslated.FunsExternal
+import Spqr.Specs.Aeneas.SliceChunks
+import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.IncrementalMlkem768.FlipEndianness
 /-! # Spec theorems for the libcrux 1275 endianness workaround
 
 Rust: `spqr::incremental_mlkem768::potentially_fix_state_incorrectly_encoded_by_libcrux_issue_1275`

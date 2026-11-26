@@ -7,9 +7,9 @@ module
 
 public import SrcTranslated.Funs
 public meta import Spqr.Auxiliary.SpecTags
-public import Spqr.Auxiliary.Aeneas.Result
+import Spqr.Auxiliary.Aeneas.Result
 public import Spqr.Specs.Braid.Deviations
-public import Spqr.Auxiliary.Aeneas.SpecImpExists
+import Spqr.Auxiliary.Aeneas.SpecImpExists
 import Spqr.Auxiliary.Aeneas.Slice
 import Spqr.Specs.Aeneas.VecAsSlice
 

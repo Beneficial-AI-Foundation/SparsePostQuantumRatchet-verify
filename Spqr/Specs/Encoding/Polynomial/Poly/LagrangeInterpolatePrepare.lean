@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Encoding.Polynomial.Poly.Zero
+import Spqr.Specs.Encoding.Polynomial.Poly.Zero
 import Spqr.Specs.Encoding.Gf.GF16.Eq
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
@@ -22,6 +22,10 @@ import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Encoding.Gf.GF16.Mul
 import Spqr.Specs.Encoding.Gf.GF16.SubAssign
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.ExpectedTrailing.Basic
+import Spqr.Math.List
+import Spqr.Math.Poly.Identities.Basic
 
 /-! # Spec theorem for `lagrange_interpolate_prepare`: loop body 0
 

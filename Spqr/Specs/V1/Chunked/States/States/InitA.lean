@@ -5,8 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
+import SrcTranslated.Funs
+import Spqr.Specs.V1.Chunked.SendEk.KeysUnsampled.New
+public import Spqr.Specs.Authenticator.Authenticator.Update
 /-!
 # Spec theorem for `spqr::v1::chunked::states::{States}::init_a`
 

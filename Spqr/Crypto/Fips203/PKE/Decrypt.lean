@@ -5,11 +5,11 @@ Authors: Hoang Le Truong
 -/
 module
 public import Spqr.Crypto.Fips203.PKE.Encrypt
-public import Spqr.Crypto.Fips203.NTT.InvNTT
-public import Spqr.Crypto.Fips203.Conversion.ByteDecode
-public import Spqr.Crypto.Fips203.Conversion.Decompress
-public import Spqr.Crypto.Fips203.Conversion.ByteEncode
-public import Spqr.Crypto.Fips203.Conversion.Compress
+import Spqr.Crypto.Fips203.NTT.InvNTT
+import Spqr.Crypto.Fips203.Conversion.ByteDecode
+import Spqr.Crypto.Fips203.Conversion.Decompress
+import Spqr.Crypto.Fips203.Conversion.ByteEncode
+import Spqr.Crypto.Fips203.Conversion.Compress
 /-!
 # FIPS 203 Algorithm 15: `K-PKE.Decrypt(dkPKE, c)`
 

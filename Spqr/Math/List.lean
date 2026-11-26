@@ -5,12 +5,12 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.ListOps
-public import Spqr.Math.Poly.CharTwo.ToGF216
-public import Spqr.Math.Poly.Eval
-public import Spqr.Math.Poly.Lagrange.InterpolantSum
-public import Spqr.Math.Poly.Horner.Eval
-public import Spqr.Math.Poly.ExpectedTrailing.Basic
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.Eval
+import Spqr.Math.Poly.Lagrange.InterpolantSum
+import Spqr.Math.Poly.Horner.Eval
+import Spqr.Math.Poly.ExpectedTrailing.Basic
 public import Spqr.Math.Poly.Identities.Basic
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder

@@ -5,10 +5,10 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.LibcruxDecaps
-public import Spqr.Specs.Aeneas.ResultExpect
-public import Spqr.Specs.IncrementalMlkem768.Encaps2
+import SrcTranslated.FunsExternal
+import Spqr.Crypto.Fips203.Refinement.LibcruxDecaps
+import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.IncrementalMlkem768.Encaps2
 /-! # Spec theorem for `incremental_mlkem768::decaps`
 
 `decaps` is ML-KEM-768 decapsulation packaged for the SPQR ratchet: given the 2400-byte

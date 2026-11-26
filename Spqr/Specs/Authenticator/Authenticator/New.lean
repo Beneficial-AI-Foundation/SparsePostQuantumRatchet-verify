@@ -5,11 +5,13 @@ Authors: Oliver Butterley
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Authenticator.Authenticator.Update
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Auxiliary.Aeneas.SpecImpExists
+import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.Result
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::new`

@@ -5,9 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Encoding.Gf.GF16.New
-public import Spqr.Math.Poly.Basic.Defs
+import SrcTranslated.Funs
+import Spqr.Specs.Encoding.Gf.GF16.New
+import Spqr.Math.Poly.Basic.Defs
 public import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.PolyConst.LagrangeInterpolatePt
 import Mathlib.Algebra.Order.Ring.Star

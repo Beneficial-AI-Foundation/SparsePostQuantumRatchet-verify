@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Coeff.Basic
+import Spqr.Math.Poly.Coeff.Basic
 public import Spqr.Math.Poly.CharTwo.Basic
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder

@@ -7,7 +7,7 @@ module
 
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.ComputeAt
-public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Spqr.Math.Poly.Lagrange.CompletePoints
 import Spqr.Specs.Encoding.Polynomial.Poly.FromCompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 public import Spqr.Math.Poly.Eval

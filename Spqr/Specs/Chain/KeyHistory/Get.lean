@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Specs.Chain.KeyHistory.KEY_SIZE
 import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 public import Spqr.Specs.Chain.Defs

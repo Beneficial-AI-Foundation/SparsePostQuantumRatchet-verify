@@ -5,10 +5,10 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Hkdf
-public import Spqr.Specs.Authenticator.Authenticator.Update
+import SrcTranslated.Funs
+import SrcTranslated.FunsExternal
+import Spqr.Crypto.Hkdf
+import Spqr.Specs.Authenticator.Authenticator.Update
 public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
 public import Spqr.Specs.Braid.StateMachine.Model
 

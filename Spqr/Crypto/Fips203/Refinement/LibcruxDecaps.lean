@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.DecapsBytes
+import SrcTranslated.FunsExternal
+import Spqr.Crypto.Fips203.Refinement.DecapsBytes
 public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
 public import Spqr.Crypto.Fips203.KEM.RoundTrip
 /-!
