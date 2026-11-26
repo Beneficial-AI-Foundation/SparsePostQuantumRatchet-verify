@@ -5,11 +5,12 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Lib.MsgPreamble
-public import Spqr.Specs.Lib.Recv.ParseEq
-public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
+import SrcTranslated.Funs
+import Spqr.Specs.Lib.MsgPreamble
+import Spqr.Specs.Lib.Recv.ParseEq
+import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
 import Spqr.Auxiliary.Aeneas.SpecImpExists
+public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeVarint
 
 /-!
 # Messages and their byte encodings are not one-to-one

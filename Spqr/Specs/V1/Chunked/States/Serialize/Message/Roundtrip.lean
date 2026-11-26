@@ -5,11 +5,11 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Lib.MsgPreamble
-public import Spqr.Specs.V1.Chunked.States.Serialize.EncodedBlocks
+import SrcTranslated.Funs
+import Spqr.Specs.Lib.MsgPreamble
+import Spqr.Specs.V1.Chunked.States.Serialize.EncodedBlocks
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
-public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
+import Spqr.Specs.V1.Chunked.States.Serialize.Message.Deserialize
 import Spqr.Auxiliary.Aeneas.SpecImpExists
 
 /-!

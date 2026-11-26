@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import Spqr.Crypto.Fips203.Params
+import Spqr.Crypto.Fips203.Params
 public import Spqr.Crypto.Fips203.Ring
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.NormNum

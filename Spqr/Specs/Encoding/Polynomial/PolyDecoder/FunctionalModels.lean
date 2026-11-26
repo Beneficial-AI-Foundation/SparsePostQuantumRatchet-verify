@@ -5,7 +5,7 @@ Authors: Markus Dablander
 -/
 module
 
-public import SrcTranslated.Types
+import SrcTranslated.Types
 public import Spqr.Specs.Encoding.Polynomial.Poly.FunctionalModels
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 

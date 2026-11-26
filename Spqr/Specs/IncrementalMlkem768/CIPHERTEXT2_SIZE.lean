@@ -6,7 +6,7 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal
 /-! # Spec theorem for `spqr::incremental_mlkem768::CIPHERTEXT2_SIZE`
 
 `CIPHERTEXT2_SIZE` is `Ciphertext2::<128>::len()`, the size in bytes of the second

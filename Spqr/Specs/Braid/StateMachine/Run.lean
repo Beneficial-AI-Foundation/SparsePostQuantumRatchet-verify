@@ -6,7 +6,7 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal
 
 /-! # Runs of one party's chunked `States` machine
 

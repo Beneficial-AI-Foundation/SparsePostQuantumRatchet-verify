@@ -6,7 +6,7 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import Aeneas
-public import Spqr.Auxiliary.Aeneas.Result
+import Spqr.Auxiliary.Aeneas.Result
 
 /-! # Staged for upstream to Aeneas `Std/Primitives.lean`
 

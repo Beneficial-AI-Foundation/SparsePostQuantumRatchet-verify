@@ -5,7 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # Spec theorem for `mapIteratorTransformer.next`
 

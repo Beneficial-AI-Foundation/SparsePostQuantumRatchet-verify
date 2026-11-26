@@ -5,8 +5,8 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.EncapsBytes
-public import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
+import Spqr.Crypto.Fips203.Refinement.EncapsBytes
+import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
 /-!
 # Refinement: FIPS 203 Algorithm 17 (round 1) ↔ libcrux `incremental::encapsulate1`
 

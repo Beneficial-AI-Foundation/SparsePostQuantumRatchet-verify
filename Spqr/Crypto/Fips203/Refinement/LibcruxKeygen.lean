@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
+import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
 import all Aeneas.Std.Array.Array
 /-!
 # Refinement: FIPS 203 Algorithm 16 ↔ libcrux `KeyPairCompressedBytes::from_seed`

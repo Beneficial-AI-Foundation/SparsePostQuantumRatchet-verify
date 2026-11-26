@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 /-!

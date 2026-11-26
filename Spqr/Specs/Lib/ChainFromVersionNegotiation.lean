@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Lib.ChainFromVersionNegotiation.CallOnce
 public import Spqr.Specs.Chain.Chain.New
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom

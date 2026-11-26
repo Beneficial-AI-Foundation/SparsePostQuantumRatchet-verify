@@ -5,8 +5,9 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Aeneas.SliceChunksExact
+import SrcTranslated.Funs
+import Spqr.Specs.Aeneas.SliceChunksExact
+public import SrcTranslated.FunsExternal
 
 /-!
 # Spec theorems for `core::slice::{[@T]}::chunks` with chunk size 2

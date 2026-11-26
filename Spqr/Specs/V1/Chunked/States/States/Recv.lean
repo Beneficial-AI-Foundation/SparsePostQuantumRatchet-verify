@@ -5,18 +5,19 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Braid.StateMachine.EpochDispatch
-public import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.RecvCt1Chunk
-public import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
-public import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.RecvCt2Chunk
-public import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.RecvCt2Chunk
-public import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.RecvHdrChunk
-public import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.RecvEkChunk
-public import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.RecvCt1Ack
-public import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.RecvEkChunk
+import Spqr.Specs.V1.Chunked.SendEk.KeysSampled.RecvCt1Chunk
+import Spqr.Specs.V1.Chunked.SendEk.HeaderSent.RecvCt1Chunk
+import Spqr.Specs.V1.Chunked.SendEk.Ct1Received.RecvCt2Chunk
+import Spqr.Specs.V1.Chunked.SendEk.EkSentCt1Received.RecvCt2Chunk
+import Spqr.Specs.V1.Chunked.SendCt.NoHeaderReceived.RecvHdrChunk
+import Spqr.Specs.V1.Chunked.SendCt.Ct1Sampled.RecvEkChunk
+import Spqr.Specs.V1.Chunked.SendCt.EkReceivedCt1Sampled.RecvCt1Ack
+import Spqr.Specs.V1.Chunked.SendCt.Ct1Acknowledged.RecvEkChunk
 import Spqr.Auxiliary.Aeneas.Result
 import Spqr.Auxiliary.Aeneas.SpecImpExists
+public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 /-!
 # Spec theorem for `spqr::v1::chunked::states::{States}::recv`
 

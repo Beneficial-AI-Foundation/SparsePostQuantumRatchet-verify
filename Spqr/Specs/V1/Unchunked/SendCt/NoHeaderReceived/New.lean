@@ -5,8 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Authenticator.New
+import SrcTranslated.Funs
+import Spqr.Specs.Authenticator.Authenticator.New
+public import Spqr.Specs.Authenticator.Authenticator.Update
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::{NoHeaderReceived}::new`
 

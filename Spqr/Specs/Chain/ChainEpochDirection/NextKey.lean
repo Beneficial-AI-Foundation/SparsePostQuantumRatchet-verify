@@ -7,7 +7,7 @@ module
 
 public import SrcTranslated.Funs
 import Spqr.Specs.Chain.ChainEpochDirection.NextKeyInternal
-public import Spqr.Specs.Aeneas.VecDerefMut
+import Spqr.Specs.Aeneas.VecDerefMut
 public import Spqr.Crypto.Hkdf
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key`

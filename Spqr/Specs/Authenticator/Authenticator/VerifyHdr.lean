@@ -13,6 +13,7 @@ import Spqr.Auxiliary.Aeneas.SpecRefl
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Util.IsNonZero
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 
 /-!
 # Spec theorem for `spqr::authenticator::Authenticator::verify_hdr`

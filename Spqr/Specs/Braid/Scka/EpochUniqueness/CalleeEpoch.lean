@@ -6,10 +6,10 @@ Authors: Lacramioara Astefanoaei
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Auxiliary.Aeneas.Result
-public import Spqr.Auxiliary.Aeneas.Scalar
-public import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
+import SrcTranslated.FunsExternal
+import Spqr.Auxiliary.Aeneas.Result
+import Spqr.Auxiliary.Aeneas.Scalar
+import Spqr.Specs.Braid.Scka.EpochUniqueness.UnchunkedEpoch
 
 /-! # Epochs of the states returned by the chunked `send` / `recv` callees
 

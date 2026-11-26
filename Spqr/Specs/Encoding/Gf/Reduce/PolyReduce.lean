@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Gf16.Field
+import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.Reduce.ReduceBytes
 public import Spqr.Specs.Encoding.Gf.Reduce.ReduceFromByte
 import Mathlib.Algebra.Order.Ring.Star

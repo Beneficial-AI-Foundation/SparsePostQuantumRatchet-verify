@@ -5,13 +5,14 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.IncrementalMlkem768.Encaps1
+import SrcTranslated.Funs
+import Spqr.Specs.IncrementalMlkem768.Encaps1
 public import Spqr.Specs.Authenticator.Authenticator.Update
-public import Spqr.Crypto.Hkdf
+import Spqr.Crypto.Hkdf
 import Spqr.Specs.Kdf.HkdfToVec
 import Spqr.Specs.Aeneas.SliceConcat
 import Spqr.Specs.Aeneas.VecClone
+import Spqr.Auxiliary.Aeneas.Vec
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::{HeaderReceived}::send_ct1`
 

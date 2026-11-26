@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Chain.Chain.RecvKey
+import Spqr.Specs.Chain.Chain.RecvKey
 import Spqr.Specs.Chain.ChainEpochDirection.Key32
 public import Spqr.Specs.Chain.Chain.Defs
 import Spqr.Specs.Aeneas.CopyFromSlice

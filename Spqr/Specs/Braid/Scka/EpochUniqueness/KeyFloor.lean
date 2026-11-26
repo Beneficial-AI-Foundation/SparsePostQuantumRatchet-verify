@@ -5,10 +5,10 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Auxiliary.Aeneas.Result
-public import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
+import SrcTranslated.Funs
+import SrcTranslated.FunsExternal
+import Spqr.Auxiliary.Aeneas.Result
+import Spqr.Specs.Braid.Scka.EpochUniqueness.CalleeEpoch
 public import Spqr.Specs.Braid.StateMachine.Run
 
 /-! # The epoch of the next key a state can emit

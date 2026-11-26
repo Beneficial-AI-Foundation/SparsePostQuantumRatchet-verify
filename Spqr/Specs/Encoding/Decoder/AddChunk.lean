@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder

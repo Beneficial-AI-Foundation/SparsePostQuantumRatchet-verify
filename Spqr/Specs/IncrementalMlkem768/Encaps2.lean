@@ -4,10 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
-public import Spqr.Specs.Aeneas.ResultExpect
+import SrcTranslated.Funs
+import SrcTranslated.FunsExternal
+import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps2
+import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.IncrementalMlkem768.PotentiallyFixState
 /-! # Spec theorem for `incremental_mlkem768::encaps2`
 

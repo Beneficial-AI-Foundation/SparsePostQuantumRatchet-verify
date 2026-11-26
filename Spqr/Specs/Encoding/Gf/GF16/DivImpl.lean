@@ -6,11 +6,11 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal
 public import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Gf.GF16.Mul
 import Spqr.Specs.Encoding.Gf.Mul2U16
-public import Spqr.Auxiliary.Aeneas.StdNextStepUsize
+import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 public import Spqr.Auxiliary.Aeneas.StdNextCoreIterRangeStep
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.Polynomial.Basic

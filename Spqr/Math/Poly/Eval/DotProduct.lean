@@ -15,6 +15,7 @@ import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.Coeff.Basic
 
 /-!
 # Dot-product to evaluation bridge

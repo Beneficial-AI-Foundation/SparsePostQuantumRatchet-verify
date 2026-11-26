@@ -5,13 +5,13 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.V1.Unchunked.SendCt.HeaderReceived.SendCt1
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.NextChunk
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.EncodeBytes
 import Spqr.Specs.Aeneas.ResultExpect
 import Spqr.Auxiliary.Aeneas.Vec
-public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Spqr.Math.Poly.Lagrange.CompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 /-!
 # Spec theorem for

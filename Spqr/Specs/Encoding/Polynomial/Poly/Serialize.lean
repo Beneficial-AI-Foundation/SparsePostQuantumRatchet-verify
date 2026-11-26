@@ -5,8 +5,8 @@ Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
-public import Spqr.Math.List
-public import Spqr.Math.Gf16.Field
+import Spqr.Math.List
+import Spqr.Math.Gf16.Field
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Math.Poly.Basic.Defs

@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Math.Gf16.Field
 public import Mathlib.RingTheory.Polynomial.Basic
 

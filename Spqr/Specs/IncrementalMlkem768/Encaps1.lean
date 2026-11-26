@@ -5,9 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps1
-public import Spqr.Specs.Aeneas.ResultExpect
+import SrcTranslated.FunsExternal
+import Spqr.Crypto.Fips203.Refinement.LibcruxEncaps1
+import Spqr.Specs.Aeneas.ResultExpect
 /-! # Spec theorem for `incremental_mlkem768::encaps1`
 
 `encaps1` is round 1 of ML-KEM-768 encapsulation packaged for the SPQR ratchet: given the

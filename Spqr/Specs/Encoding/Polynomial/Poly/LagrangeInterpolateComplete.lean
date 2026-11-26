@@ -5,15 +5,15 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.List
+import Spqr.Math.List
 import Spqr.Math.Poly.Aeneas.PolyIdentity
 import Spqr.Specs.Encoding.Gf.GF16.Sub
 import Spqr.Specs.Encoding.Gf.GF16.Div
 import Spqr.Specs.Encoding.Gf.GF16.Eq
-public import Spqr.Specs.Encoding.Gf.GF16.ZERO
+import Spqr.Specs.Encoding.Gf.GF16.ZERO
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Gf.GF16.AddAssign
-public import Spqr.Specs.Aeneas.RangeIteratorNext
+import Spqr.Specs.Aeneas.RangeIteratorNext
 public import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Aeneas.FmtArgumentsFromStr
 public import Mathlib.RingTheory.DedekindDomain.Basic

@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 import Spqr.Math.Poly.Basic.Zero
-public import Spqr.Math.Poly.Coeff.Basic
+import Spqr.Math.Poly.Coeff.Basic
 public import Spqr.Math.Poly.Basic.Defs
 import Mathlib.Tactic.ComputeDegree
 

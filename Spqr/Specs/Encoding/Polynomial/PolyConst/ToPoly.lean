@@ -10,6 +10,7 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
+public import SrcTranslated.Funs
 /-!
 # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::to_poly`
 

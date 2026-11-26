@@ -4,10 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Hoang Le Truong
 -/
 module
-public import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
-public import Spqr.Crypto.Fips203.NTT.InvNTT
+import Spqr.Crypto.Fips203.NTT.MultiplyNTTs
+import Spqr.Crypto.Fips203.NTT.InvNTT
 public import Spqr.Crypto.Fips203.NTT.Spec
-public import Spqr.Crypto.Fips203.NTT.KernelCheck
+import Spqr.Crypto.Fips203.NTT.KernelCheck
+public import Spqr.Crypto.Fips203.NTT.Packed
 /-!
 # FIPS 203 NTT Round-Trip and Multiplicative Homomorphism
 

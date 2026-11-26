@@ -5,10 +5,10 @@ Authors: Hoang Le Truong
 -/
 module
 public import Aeneas
-public import Spqr.Auxiliary.Aeneas.Scalar
+import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Crypto.Fips203.KEM.EncapsIncremental
 public import Spqr.Crypto.Fips203.Refinement.KeyPairBytes
-public import Spqr.Crypto.Fips203.PKE.RoundTrip
+import Spqr.Crypto.Fips203.PKE.RoundTrip
 /-!
 # FIPS 203 model of libcrux's incremental `encapsulate1`
 

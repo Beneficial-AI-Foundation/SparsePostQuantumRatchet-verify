@@ -5,9 +5,9 @@ Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Math.Gf16.Field
-public import Spqr.Math.Gf2Poly.Basic
+import SrcTranslated.Funs
+import Spqr.Math.Gf16.Field
+import Spqr.Math.Gf2Poly.Basic
 public import Spqr.Math.Poly.Identities.Basic
 public import Spqr.Math.Poly.Lagrange.CompletePoints
 import Mathlib.Algebra.Order.Ring.Star

@@ -5,7 +5,7 @@ Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Specs.Encoding.Polynomial.NUM_POLYS
 import Spqr.Specs.Encoding.Polynomial.Poly.Zero
@@ -22,6 +22,7 @@ import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
 import Spqr.Math.Poly.LinearFactors.Degree
 import Spqr.Specs.Encoding.Polynomial.Pt.Deserialize
+import Spqr.Specs.Aeneas.RangeIteratorNext
 
 /-! # Spec theorem for `PolyEncoder::from_pb`: loop body 0
 

@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
+import Spqr.Specs.Authenticator.Authenticator.VerifyHdr
 import Spqr.Auxiliary.Aeneas.Vec
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ct::{NoHeaderReceived}::recv_header`

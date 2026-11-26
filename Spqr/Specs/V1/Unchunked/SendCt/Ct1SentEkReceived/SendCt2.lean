@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.IncrementalMlkem768.Encaps2
 public import Spqr.Specs.Authenticator.Authenticator.MacCt
 import Spqr.Specs.Aeneas.VecExtendFromSlice

@@ -5,12 +5,14 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Unchunked.SendCt.NoHeaderReceived.New
+import SrcTranslated.Funs
+import Spqr.Specs.V1.Unchunked.SendCt.NoHeaderReceived.New
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.NewWithPolyCount
 import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
 import Spqr.Specs.IncrementalMlkem768.HEADER_SIZE
 import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
+public import Spqr.Specs.Authenticator.Authenticator.Update
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ct::{NoHeaderReceived}::new`
 

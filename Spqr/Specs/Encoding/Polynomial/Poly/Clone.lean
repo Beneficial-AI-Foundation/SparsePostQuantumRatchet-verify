@@ -5,7 +5,7 @@ Authors: Hoang Le Truong, Liao Zhang
 -/
 module
 
-public import Spqr.Math.Poly.Identities.Basic
+import Spqr.Math.Poly.Identities.Basic
 import Spqr.Specs.Aeneas.VecClone
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs

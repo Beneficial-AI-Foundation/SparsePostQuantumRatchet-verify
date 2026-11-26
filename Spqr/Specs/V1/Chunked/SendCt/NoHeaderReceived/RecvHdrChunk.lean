@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedMessage
 public import Spqr.Specs.V1.Unchunked.SendCt.NoHeaderReceived.RecvHeader

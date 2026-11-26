@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
+import Spqr.Specs.Chain.ChainParams.MaxOooKeysOrDefault
 import Spqr.Specs.Chain.DEFAULT_CHAIN_PARAMS
 /-! # Spec theorem for `spqr::chain::{spqr::proto::pq_ratchet::ChainParams}::trim_size`
 

@@ -5,7 +5,7 @@ Authors: Oliver Butterley
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Auxiliary.Aeneas.Scalar
 public import Spqr.Crypto.RFC5869
 

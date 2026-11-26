@@ -5,13 +5,15 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.CharTwo.ToGF216
+import Spqr.Math.Poly.CharTwo.ToGF216
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.RingTheory.DedekindDomain.Basic
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Coeff.Basic
+public import Spqr.Math.Gf16.Field
+public import SrcTranslated.Funs
 
 /-! # Power-vector invariant
 

@@ -5,9 +5,9 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Math.Poly.Lagrange.InterpolantSum
-public import Spqr.Math.Poly.Eval
+import Spqr.Math.Poly.Eval
 import Spqr.Specs.Encoding.Polynomial.Pt.Cmp
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.PointsValid
 import Spqr.Auxiliary.Aeneas.SpecImpExists

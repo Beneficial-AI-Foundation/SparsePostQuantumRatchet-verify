@@ -10,6 +10,7 @@ import Spqr.Auxiliary.Aeneas.Loop
 import Spqr.Auxiliary.Aeneas.SpecImpExists
 import Spqr.Auxiliary.Aeneas.StdNextStepUsize
 import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.Result
 
 /-! # Length of the message that `decoded_message` returns
 

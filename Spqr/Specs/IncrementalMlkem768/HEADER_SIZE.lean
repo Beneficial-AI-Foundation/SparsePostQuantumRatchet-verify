@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal
 /-! # Spec theorem for `spqr::incremental_mlkem768::HEADER_SIZE`
 
 `HEADER_SIZE` is the number of bytes of the ML-KEM-768 incremental "header" `ρ ‖ H(ek)` — the

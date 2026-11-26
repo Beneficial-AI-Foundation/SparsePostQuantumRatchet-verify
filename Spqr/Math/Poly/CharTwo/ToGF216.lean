@@ -12,6 +12,7 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
+import SrcTranslated.Funs
 
 /-!
 # `GF16.toGF216` at distinguished values, and the `getElem!`/`coeff` bridge

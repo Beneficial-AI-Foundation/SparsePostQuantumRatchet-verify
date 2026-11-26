@@ -5,8 +5,9 @@ Authors: Oliver Butterley
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Crypto.Hkdf
+public import SrcTranslated.FunsExternal
 
 /-!
 # Spec axiom for `spqr::kdf::hkdf_to_slice`

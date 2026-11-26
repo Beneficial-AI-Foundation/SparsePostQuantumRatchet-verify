@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Chain.Chain.CedForDirection
 import Spqr.Specs.Lib.Direction.Switch
 import Spqr.Specs.Kdf.HkdfToSlice

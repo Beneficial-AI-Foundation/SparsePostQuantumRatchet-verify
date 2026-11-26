@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 import Spqr.Specs.Encoding.Polynomial.PolyEncoder.ChunkAt
-public import Spqr.Math.Poly.Lagrange.CompletePoints
+import Spqr.Math.Poly.Lagrange.CompletePoints
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree

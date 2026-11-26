@@ -5,11 +5,11 @@ Authors: Liao Zhang
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.V1.Chunked.States.Serialize.DecodeChunk
 public import Spqr.Specs.V1.Chunked.States.Serialize.Message.Serialize
 public import Spqr.Specs.V1.Chunked.States.Serialize.MessageType.TryFrom
-public import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
+import Spqr.Specs.V1.Chunked.States.Serialize.U8.From
 
 /-! # Spec theorem for
 `spqr::v1::chunked::states::serialize::{spqr::v1::chunked::states::Message}::deserialize`

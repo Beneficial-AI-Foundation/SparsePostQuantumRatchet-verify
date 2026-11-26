@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Math.Poly.Eval
+import Spqr.Math.Poly.Eval
 import Spqr.Specs.Encoding.Gf.GF16.ZERO
 public import Spqr.Math.Poly.Basic.Defs
 public import SrcTranslated.Funs
@@ -14,6 +14,7 @@ import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree
 import Spqr.Math.Gf16.Irreducible
 import Spqr.Math.Poly.Basic.Zero
+import Spqr.Math.Poly.Coeff.Basic
 
 /-!
 # Spec theorem for `spqr::encoding::polynomial::{spqr::encoding::polynomial::PolyConst<N>}::ZEROS`

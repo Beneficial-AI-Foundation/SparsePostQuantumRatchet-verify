@@ -5,7 +5,8 @@ Authors: Lacramioara Astefanoaei
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
+public import SrcTranslated.FunsExternal
 
 /-! # `alloc::vec::Vec::as_slice`
 

@@ -5,8 +5,8 @@ Authors: Liao Zhang, Hoang Le Truong
 -/
 module
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
-public import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
+import SrcTranslated.FunsExternal
+import Spqr.Crypto.Fips203.Refinement.LibcruxKeygen
 import all SrcTranslated.Funs
 import all SrcTranslated.FunsExternal
 

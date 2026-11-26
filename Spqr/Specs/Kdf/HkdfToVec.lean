@@ -6,7 +6,7 @@ Authors: Oliver Butterley
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Auxiliary.Aeneas.Vec
+import Spqr.Auxiliary.Aeneas.Vec
 import Spqr.Specs.Kdf.HkdfToSlice
 public import Spqr.Crypto.Hkdf
 

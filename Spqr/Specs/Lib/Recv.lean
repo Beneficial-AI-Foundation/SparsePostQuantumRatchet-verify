@@ -6,7 +6,7 @@ Authors: Hoang Le Truong
 module
 
 public import SrcTranslated.Funs
-public import Spqr.Specs.Lib.StatePb
+import Spqr.Specs.Lib.StatePb
 import Spqr.Specs.Lib.MsgPreamble
 import Spqr.Specs.Lib.ChainFrom
 import Spqr.Specs.Proto.PqRatchet.Direction.TryFrom

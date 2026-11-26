@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Markus Dablander
 -/
 module
-public import SrcTranslated.Types
+import SrcTranslated.Types
 public import Spqr.Specs.Authenticator.Serialize.Authenticator.FunctionalModels
 /-!
 # Functional models of `spqr::v1::unchunked::send_ek::serialize::EkSent::{into_pb, from_pb}`

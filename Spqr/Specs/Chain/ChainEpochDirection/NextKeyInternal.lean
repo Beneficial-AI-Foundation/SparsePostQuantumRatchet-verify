@@ -9,12 +9,12 @@ public import SrcTranslated.Funs
 public import Spqr.Crypto.Hkdf
 import Spqr.Specs.Kdf.HkdfToSlice
 import Spqr.Specs.Aeneas.CopyFromSlice
-public import Spqr.Specs.Aeneas.ArrayIndexRangeTo
-public import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
+import Spqr.Specs.Aeneas.ArrayIndexRangeTo
+import Spqr.Specs.Aeneas.ArrayIndexRangeFrom
 import Spqr.Specs.Aeneas.TryFromSliceToArray
 import Spqr.Specs.Aeneas.ResultExpect
-public import Spqr.Specs.Aeneas.SliceConcatListAux
-public import Spqr.Specs.Aeneas.SliceListToVec
+import Spqr.Specs.Aeneas.SliceConcatListAux
+import Spqr.Specs.Aeneas.SliceListToVec
 import Spqr.Specs.Aeneas.SliceConcat
 /-!
 # Spec theorem for `spqr::chain::{spqr::chain::ChainEpochDirection}::next_key_internal`

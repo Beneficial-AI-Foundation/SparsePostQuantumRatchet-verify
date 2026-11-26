@@ -23,6 +23,8 @@ import Spqr.Specs.Encoding.Gf.GF16.Eq
 import Spqr.Specs.Encoding.Gf.GF16.ONE
 import Spqr.Specs.Encoding.Gf.GF16.Sub
 import Spqr.Specs.Encoding.Polynomial.Poly.MultXdiffAssignTrailing
+import Spqr.Math.Poly.Coeff.ListOps
+import Spqr.Math.Poly.Identities.Basic
 
 /-! # Spec theorem for
 `spqr::encoding::polynomial::{spqr::encoding::polynomial::Poly}::lagrange_interpolate_pt`

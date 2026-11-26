@@ -5,13 +5,17 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.AddChunk
 public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.DecodedMessage.DecodedMessage
 public import Spqr.Specs.V1.Unchunked.SendCt.Ct1Sent.RecvEk
-public import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
-public import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
+import Spqr.Specs.V1.Unchunked.SendCt.Ct1SentEkReceived.SendCt2
+import Spqr.Specs.V1.Chunked.SendCt.SendCt2Encoder
 import Spqr.Auxiliary.Aeneas.Vec
+public import Spqr.Specs.Authenticator.Authenticator.MacCt
+public import Spqr.Specs.IncrementalMlkem768.Encaps2
+public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.Defs
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 /-!
 # Spec theorem for `spqr::v1::chunked::send_ct::{Ct1Sampled}::recv_ek_chunk`
 

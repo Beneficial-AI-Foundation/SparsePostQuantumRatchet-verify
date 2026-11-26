@@ -5,12 +5,12 @@ Authors: Hoang Le Truong, Markus Dablander
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Math.Poly.ModByMonic
-public import Spqr.Math.Poly.Identities.Basic
+import SrcTranslated.Funs
+import Spqr.Math.Poly.ModByMonic
+import Spqr.Math.Poly.Identities.Basic
 import Spqr.Auxiliary.Aeneas.Scalar
 import Spqr.Specs.Encoding.Polynomial.Poly.Serialize
-public import Spqr.Specs.Aeneas.SliceIteratorNext
+import Spqr.Specs.Aeneas.SliceIteratorNext
 import Spqr.Specs.Encoding.Polynomial.Pt.Serialize
 import Spqr.Specs.Aeneas.RangeIteratorNext
 import Spqr.Specs.Aeneas.VecExtendFromSlice

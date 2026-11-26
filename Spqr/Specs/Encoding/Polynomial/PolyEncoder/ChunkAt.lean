@@ -6,8 +6,8 @@ Authors: Hoang Le Truong
 module
 
 import Spqr.Specs.Aeneas.TryFromSliceToArray
-public import Spqr.Specs.Aeneas.VecIndexRangeFull
-public import Spqr.Specs.Aeneas.ResultExpect
+import Spqr.Specs.Aeneas.VecIndexRangeFull
+import Spqr.Specs.Aeneas.ResultExpect
 public import Spqr.Specs.Encoding.Polynomial.PolyEncoder.PointAt
 import Mathlib.Order.Int.ConditionallyCompleteOrder
 import Mathlib.Tactic.ComputeDegree

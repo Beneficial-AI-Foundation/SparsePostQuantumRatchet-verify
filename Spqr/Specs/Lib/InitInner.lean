@@ -5,11 +5,12 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.Funs
-public import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.IntoPb
-public import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
-public import Spqr.Specs.Authenticator.Authenticator.New
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
-public import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
+import Spqr.Specs.V1.Chunked.SendEk.Serialize.KeysUnsampled.IntoPb
+import Spqr.Specs.V1.Unchunked.SendCt.Serialize.NoHeaderReceived.IntoPb
+import Spqr.Specs.Authenticator.Authenticator.New
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.New
+import Spqr.Specs.Encoding.Polynomial.PolyDecoder.IntoPb
+import Spqr.Specs.Authenticator.Authenticator.MACSIZE
 /-!
 # Spec theorem for `spqr::init_inner`
 

@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 public import SrcTranslated.Funs
-public import SrcTranslated.FunsExternal
+import SrcTranslated.FunsExternal
 /-!
 # Spec theorem for `spqr::incremental_mlkem768::ek_matches_header`
 

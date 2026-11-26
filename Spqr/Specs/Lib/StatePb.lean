@@ -5,8 +5,9 @@ Authors: Oliver Butterley
 -/
 module
 
-public import SrcTranslated.Funs
-public import Spqr.Auxiliary.Aeneas.SpecImpExists
+import SrcTranslated.Funs
+import Spqr.Auxiliary.Aeneas.SpecImpExists
+public import SrcTranslated.FunsExternal
 
 /-!
 # Spec axioms for `spqr::encode_state_pb` and `spqr::decode_state_pb`

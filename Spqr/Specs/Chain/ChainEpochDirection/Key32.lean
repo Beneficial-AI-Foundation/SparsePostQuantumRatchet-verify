@@ -5,9 +5,10 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import Spqr.Specs.Chain.ChainEpochDirection.Key
+import Spqr.Specs.Chain.ChainEpochDirection.Key
 -- For the private platform-independent core `key_spec_all_core` and `maxOoo_imp_raw_ooo`.
 import all Spqr.Specs.Chain.ChainEpochDirection.Key
+public import Spqr.Specs.Chain.Chain.Defs
 
 /-! # 32-bit platform variant of the spec for `ChainEpochDirection::key`
 

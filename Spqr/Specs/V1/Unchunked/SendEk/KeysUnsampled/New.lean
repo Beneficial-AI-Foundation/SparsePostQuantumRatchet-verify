@@ -5,7 +5,7 @@ Authors: Hoang Le Truong
 -/
 module
 
-public import SrcTranslated.Funs
+import SrcTranslated.Funs
 public import Spqr.Specs.Authenticator.Authenticator.New
 /-!
 # Spec theorem for `spqr::v1::unchunked::send_ek::{KeysUnsampled}::new`
